@@ -6,10 +6,6 @@ import type { SwapViewOutput } from './output';
 import { HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION } from '@/core/shared/constants';
 import { SwapTransferType } from '@/plugins/swap/schema';
 import { SwapStateHelper } from '@/plugins/swap/state-helper';
-import {
-  formatAccount,
-  formatToken,
-} from '@/plugins/swap/utils/format-helpers';
 
 import { SwapViewInputSchema } from './input';
 
@@ -31,8 +27,8 @@ export class SwapViewCommand implements Command {
       transfers: swap.transfers.map((t, i) => ({
         index: i + 1,
         type: t.type,
-        from: formatAccount(t.from.input, t.from.accountId),
-        to: formatAccount(t.to.input, t.to.accountId),
+        from: t.from.accountId,
+        to: t.to,
         detail: buildDetail(t),
       })),
     };
@@ -49,7 +45,6 @@ export async function swapView(
 
 function buildDetail(t: SwapTransfer): string {
   if (t.type === SwapTransferType.HBAR) return t.amount;
-  if (t.type === SwapTransferType.FT)
-    return `token: ${formatToken(t.token.input, t.token.tokenId)}  ${t.amount}`;
-  return `token: ${formatToken(t.token.input, t.token.tokenId)}  serials: ${t.serials.join(', ')}`;
+  if (t.type === SwapTransferType.FT) return `token: ${t.token}  ${t.amount}`;
+  return `token: ${t.token}  serials: ${t.serials.join(', ')}`;
 }

@@ -7,42 +7,30 @@ export enum SwapTransferType {
 }
 
 export const SwapFromAccountSchema = z.object({
-  input: z.string(),
   accountId: z.string(),
   keyRefId: z.string(),
-});
-
-export const SwapToAccountSchema = z.object({
-  input: z.string(),
-  accountId: z.string(),
-});
-
-export const SwapTokenSchema = z.object({
-  input: z.string(),
-  tokenId: z.string(),
-  decimals: z.number().int().min(0),
 });
 
 export const HbarSwapTransferSchema = z.object({
   type: z.literal(SwapTransferType.HBAR),
   from: SwapFromAccountSchema,
-  to: SwapToAccountSchema,
+  to: z.string(),
   amount: z.string(),
 });
 
 export const FtSwapTransferSchema = z.object({
   type: z.literal(SwapTransferType.FT),
   from: SwapFromAccountSchema,
-  to: SwapToAccountSchema,
-  token: SwapTokenSchema,
+  to: z.string(),
+  token: z.string(),
   amount: z.string(),
 });
 
 export const NftSwapTransferSchema = z.object({
   type: z.literal(SwapTransferType.NFT),
   from: SwapFromAccountSchema,
-  to: SwapToAccountSchema,
-  token: SwapTokenSchema,
+  to: z.string(),
+  token: z.string(),
   serials: z.array(z.number()),
 });
 
@@ -58,8 +46,6 @@ export const SwapEntrySchema = z.object({
 });
 
 export type SwapFromAccount = z.infer<typeof SwapFromAccountSchema>;
-export type SwapToAccount = z.infer<typeof SwapToAccountSchema>;
-export type SwapToken = z.infer<typeof SwapTokenSchema>;
 export type HbarSwapTransfer = z.infer<typeof HbarSwapTransferSchema>;
 export type FtSwapTransfer = z.infer<typeof FtSwapTransferSchema>;
 export type NftSwapTransfer = z.infer<typeof NftSwapTransferSchema>;

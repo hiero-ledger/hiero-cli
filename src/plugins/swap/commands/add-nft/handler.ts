@@ -3,16 +3,12 @@ import type { Command } from '@/core/commands/command.interface';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { SwapAddNftOutput } from './output';
 
-import { EntityIdSchema } from '@/core/schemas';
+import { ValidationError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION } from '@/core/shared/constants';
-import { AliasType, EntityReferenceType } from '@/core/types/shared.types';
+import { AliasType } from '@/core/types/shared.types';
 import { SwapTransferType } from '@/plugins/swap/schema';
 import { SwapStateHelper } from '@/plugins/swap/state-helper';
-import {
-  formatAccount,
-  formatToken,
-} from '@/plugins/swap/utils/format-helpers';
 
 import { SwapAddNftInputSchema } from './input';
 
@@ -34,10 +30,8 @@ export class SwapAddNftCommand implements Command {
 
     const { entityIdOrEvmAddress: tokenId } =
       api.identityResolution.resolveReferenceToEntityOrEvmAddress({
-        entityReference: validArgs.token,
-        referenceType: EntityIdSchema.safeParse(validArgs.token).success
-          ? EntityReferenceType.ENTITY_ID
-          : EntityReferenceType.ALIAS,
+        entityReference: validArgs.token.value,
+        referenceType: validArgs.token.type,
         network,
         aliasType: AliasType.Token,
       });
@@ -53,35 +47,29 @@ export class SwapAddNftCommand implements Command {
       validArgs.to,
       keyManager,
     );
-    const toDestination = toResolved.accountId ?? toResolved.evmAddress ?? '';
+    if (!toResolved.accountId) {
+      throw new ValidationError(
+        'The parameter "to" could not be resolved to an account ID',
+      );
+    }
+    const toDestination = toResolved.accountId;
 
     const updated = helper.addTransfer(name, {
       type: SwapTransferType.NFT,
       from: {
-        input: validArgs.from?.rawValue ?? fromResolved.accountId,
         accountId: fromResolved.accountId,
         keyRefId: fromResolved.keyRefId,
       },
-      to: {
-        input: validArgs.to.rawValue,
-        accountId: toDestination,
-      },
-      token: {
-        input: validArgs.token,
-        tokenId,
-        decimals: 0,
-      },
+      to: toDestination,
+      token: tokenId,
       serials,
     });
 
     const output: SwapAddNftOutput = {
       swapName: name,
-      from: formatAccount(
-        validArgs.from?.rawValue ?? fromResolved.accountId,
-        fromResolved.accountId,
-      ),
-      to: formatAccount(validArgs.to.rawValue, toDestination),
-      token: formatToken(validArgs.token, tokenId),
+      from: fromResolved.accountId,
+      to: toDestination,
+      token: tokenId,
       serials,
       transferCount: updated.transfers.length,
       maxTransfers: HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION,
