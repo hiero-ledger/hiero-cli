@@ -8,18 +8,26 @@ Manage smart contract lifecycle: compile Solidity, deploy to Hedera, import exis
 
 Compile and deploy a smart contract. Accepts a Solidity file or a built-in template.
 
-| Option                    | Short | Type       | Required | Default        | Description                                                                                                                               |
-| ------------------------- | ----- | ---------- | -------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `--name`                  | `-n`  | string     | **yes**  | —              | Local name for the contract in CLI state                                                                                                  |
-| `--file`                  | `-f`  | string     | no       | —              | Path to Solidity file (absolute or relative). Mutually exclusive with `--default`                                                         |
-| `--default`               | `-d`  | string     | no       | —              | Built-in template: `erc20` or `erc721`. Mutually exclusive with `--file`                                                                  |
-| `--base-path`             | `-b`  | string     | no       | current dir    | Base directory for resolving Solidity imports                                                                                             |
-| `--gas`                   | `-g`  | number     | no       | `2000000`      | Gas limit for contract creation                                                                                                           |
-| `--admin-key`             | `-a`  | string     | no       | —              | Admin key: `accountId:privateKey`, `{ed25519\|ecdsa}:public:{hex}`, `{ed25519\|ecdsa}:private:{hex}`, account ID, alias, or key reference |
-| `--memo`                  | `-m`  | string     | no       | —              | Contract memo                                                                                                                             |
-| `--solidity-version`      | `-v`  | string     | no       | —              | Solidity compiler version                                                                                                                 |
-| `--constructor-parameter` | `-c`  | repeatable | no       | —              | Constructor parameter(s). Repeat flag for multiple: `-c "arg1" -c "arg2"`                                                                 |
-| `--key-manager`           | `-k`  | string     | no       | config default | Key manager: `local` or `local_encrypted`                                                                                                 |
+| Option                               | Short | Type       | Required | Default        | Description                                                                                                                                                                      |
+| ------------------------------------ | ----- | ---------- | -------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--name`                             | `-n`  | string     | **yes**  | —              | Local name for the contract in CLI state                                                                                                                                         |
+| `--file`                             | `-f`  | string     | no       | —              | Path to Solidity file (absolute or relative). Mutually exclusive with `--default`                                                                                                |
+| `--default`                          | `-d`  | string     | no       | —              | Built-in template: `erc20` or `erc721`. Mutually exclusive with `--file`                                                                                                         |
+| `--base-path`                        | `-b`  | string     | no       | current dir    | Base directory for resolving Solidity imports                                                                                                                                    |
+| `--gas`                              | `-g`  | number     | no       | `2000000`      | Gas limit for contract creation                                                                                                                                                  |
+| `--admin-key`                        | `-a`  | repeatable | no       | —              | Admin key: `accountId:privateKey`, `{ed25519\|ecdsa}:public:{hex}`, `{ed25519\|ecdsa}:private:{hex}`, account ID, alias, or key reference. Pass multiple times for multiple keys |
+| `--admin-key-threshold`              | `-A`  | number     | no       | —              | M-of-N: number of admin keys required to sign (only when multiple `--admin-key` values are set)                                                                                  |
+| `--memo`                             | `-m`  | string     | no       | —              | Contract memo                                                                                                                                                                    |
+| `--solidity-version`                 | `-v`  | string     | no       | —              | Solidity compiler version                                                                                                                                                        |
+| `--constructor-parameter`            | `-c`  | repeatable | no       | —              | Constructor parameter(s). Repeat flag for multiple: `-c "arg1" -c "arg2"`                                                                                                        |
+| `--initial-balance`                  | `-i`  | string     | no       | —              | Initial HBAR balance for the contract. Format: `"100"` (HBAR) or `"100t"` (tinybars)                                                                                             |
+| `--auto-renew-period`                | `-r`  | string     | no       | —              | Auto-renew period: seconds as integer, or with suffix `s`/`m`/`h`/`d` (e.g. `500`, `500s`, `50m`, `2h`, `30d`)                                                                   |
+| `--auto-renew-account-id`            | `-R`  | string     | no       | —              | Account ID (`0.0.xxx`) that pays for auto-renewal of the contract                                                                                                                |
+| `--max-automatic-token-associations` | `-t`  | number     | no       | —              | Maximum number of automatic token associations (`-1` for unlimited, `0` to disable)                                                                                              |
+| `--staked-account-id`                | `-s`  | string     | no       | —              | Account ID (`0.0.xxx`) to stake this contract to (mutually exclusive with `--staked-node-id`)                                                                                    |
+| `--staked-node-id`                   | `-o`  | number     | no       | —              | Node ID to stake this contract to (mutually exclusive with `--staked-account-id`)                                                                                                |
+| `--decline-staking-reward`           | `-D`  | flag       | no       | `false`        | Decline staking rewards for this contract                                                                                                                                        |
+| `--key-manager`                      | `-k`  | string     | no       | config default | Key manager: `local` or `local_encrypted`                                                                                                                                        |
 
 **Example:**
 
@@ -45,7 +53,7 @@ List all smart contracts stored in local state. No options.
 hcli contract list
 ```
 
-**Output:** Array of `{ contractId, evmAddress, name, verified? }`
+**Output:** Array of `{ contractId, evmAddress, name }`
 
 ---
 
@@ -53,11 +61,10 @@ hcli contract list
 
 Import an existing contract from the Hedera network by contract ID or EVM address.
 
-| Option       | Short | Type    | Required | Default | Description                                                                   |
-| ------------ | ----- | ------- | -------- | ------- | ----------------------------------------------------------------------------- |
-| `--contract` | `-c`  | string  | **yes**  | —       | Contract ID (`0.0.xxx`) or EVM address (`0x...`)                              |
-| `--name`     | `-n`  | string  | no       | —       | Optional local name (stored in state and registered for `--contract` lookups) |
-| `--verified` | `-v`  | boolean | no       | `false` | Whether the contract is verified on Hashscan                                  |
+| Option       | Short | Type   | Required | Default | Description                                                                   |
+| ------------ | ----- | ------ | -------- | ------- | ----------------------------------------------------------------------------- |
+| `--contract` | `-c`  | string | **yes**  | —       | Contract ID (`0.0.xxx`) or EVM address (`0x...`)                              |
+| `--name`     | `-n`  | string | no       | —       | Optional local name (stored in state and registered for `--contract` lookups) |
 
 **Example:**
 
@@ -66,7 +73,7 @@ hcli contract import --contract 0.0.123456 --name myContract
 hcli contract import --contract 0xAbCd1234... --name myAlias
 ```
 
-**Output:** `{ contractId, evmAddress, name, verified, ... }`
+**Output:** `{ contractId, evmAddress, name, ... }`
 
 ---
 

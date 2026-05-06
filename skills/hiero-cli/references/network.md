@@ -57,10 +57,10 @@ hcli network get-operator
 
 Set operator credentials for signing transactions on the active network.
 
-| Option          | Short | Type   | Required | Description                                                                   |
-| --------------- | ----- | ------ | -------- | ----------------------------------------------------------------------------- |
-| `--operator`    | `-o`  | string | **yes**  | Credentials: `accountId:privateKey`, key reference `kr_xxx`, or account alias |
-| `--key-manager` | `-k`  | string | no       | Key manager: `local` or `local_encrypted`                                     |
+| Option          | Short | Type   | Required | Description                                                                         |
+| --------------- | ----- | ------ | -------- | ----------------------------------------------------------------------------------- |
+| `--operator`    | `-o`  | string | **yes**  | Credentials: `accountId:privateKey`, key reference `kr_xxx`, or account alias       |
+| `--key-manager` | `-k`  | string | no       | Key manager: `local` or `local_encrypted`. Defaults to `config.default_key_manager` |
 
 **Example:**
 
