@@ -12,6 +12,7 @@ import type {
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { StateError } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
@@ -44,7 +45,7 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
     const validArgs = TokenCreateNftFromFileInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ??
-      api.config.getOption<KeyManager>('default_key_manager');
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     logger.info(`Creating NFT token from file: ${validArgs.file}`);
 

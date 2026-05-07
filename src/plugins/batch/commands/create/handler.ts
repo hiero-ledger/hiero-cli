@@ -7,6 +7,7 @@ import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { BatchCreateOutput } from './output';
 
 import { ValidationError } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
 
@@ -29,7 +30,7 @@ export class BatchCreateCommand implements Command {
 
     const keyManager =
       validArgs.keyManager ||
-      api.config.getOption<KeyManager>('default_key_manager');
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const resolved = await api.keyResolver.resolveSigningKey(
       batchKey,

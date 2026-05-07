@@ -17,6 +17,7 @@ import {
   ValidationError,
 } from '@/core/errors';
 import { EntityIdSchema } from '@/core/schemas';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
@@ -71,7 +72,8 @@ export class AccountUpdateCommand extends BaseTransactionCommand<
 
     const keyManagerArg = validArgs.keyManager;
     const keyManager =
-      keyManagerArg ?? api.config.getOption<KeyManager>('default_key_manager');
+      keyManagerArg ??
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     let newPublicKey: string | undefined;
     let newKeyRefId: string | undefined;

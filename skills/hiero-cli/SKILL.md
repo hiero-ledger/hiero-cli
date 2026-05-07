@@ -47,7 +47,7 @@ Keys and signers accept multiple formats:
 State is persisted in `~/.hiero-cli/state/` as JSON files, one per plugin namespace:
 
 | Plugin              | File                                                                 |
-|---------------------|----------------------------------------------------------------------|
+| ------------------- | -------------------------------------------------------------------- |
 | `account`           | `account-accounts-storage.json`                                      |
 | `token`             | `token-tokens-storage.json`                                          |
 | `topic`             | `topic-topics-storage.json`                                          |
@@ -68,7 +68,7 @@ State is persisted in `~/.hiero-cli/state/` as JSON files, one per plugin namesp
 ## Plugin catalog
 
 | Plugin              | Description                | Tasks covered                                                                                                                                                                                                                                                                           |
-|---------------------|----------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ------------------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `account`           | Manage Hedera accounts     | create, import, balance, list, view, update, delete, clear                                                                                                                                                                                                                              |
 | `hbar`              | Transfer HBAR              | transfer HBAR, approve/revoke HBAR allowance                                                                                                                                                                                                                                            |
 | `token`             | Manage FT & NFT tokens     | create-ft/nft, create-from-file, mint, burn, wipe, transfer, airdrop, associate, dissociate, freeze/unfreeze, pause/unpause, grant/revoke KYC, allowance (FT/NFT), delete-allowance-nft, update-metadata-nft, pending-airdrops, cancel/claim/reject-airdrop, list, view, import, delete |

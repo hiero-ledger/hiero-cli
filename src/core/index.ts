@@ -28,6 +28,7 @@ export {
 } from './services/allowance/allowance-entries';
 export type * from './services/allowance/allowance-service.interface';
 export type { ConfigService } from './services/config/config-service.interface';
+export { ConfigOptionKey } from './services/config/config-service.interface';
 export type * from './services/contract-compiler/contract-compiler-service.interface';
 export type * from './services/contract-query/contract-query-service.interface';
 export type * from './services/contract-transaction/contract-transaction-service.interface';
