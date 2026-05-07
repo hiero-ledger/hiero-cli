@@ -213,18 +213,11 @@ export const schedulePluginManifest: PluginManifest = {
       ],
       options: [
         {
-          name: 'name',
-          short: 'n',
-          type: OptionType.STRING,
-          required: false,
-          description: 'Local name of schedule record',
-        },
-        {
-          name: 'schedule-id',
+          name: 'schedule',
           short: 's',
           type: OptionType.STRING,
-          required: false,
-          description: 'Schedule ID in format (0.0.x)',
+          required: true,
+          description: 'Schedule ID in format (0.0.x) or local schedule name',
         },
         {
           name: 'key-manager',

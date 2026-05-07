@@ -1,8 +1,4 @@
-import type {
-  CoreApi,
-  HederaMirrornodeService,
-  KeyResolverService,
-} from '@/core';
+import type { CoreApi, HederaMirrornodeService } from '@/core';
 import type { Hook } from '@/core/hooks/hook.interface';
 import type { HookPhase } from '@/core/hooks/types';
 import type { ScheduleInfo } from '@/core/services/mirrornode/types';
@@ -70,7 +66,7 @@ describe('schedule plugin — verify command', () => {
     }));
   });
 
-  test('throws NotFoundError when schedule id cannot be resolved from name or args', async () => {
+  test('throws NotFoundError when schedule name is not found in local state', async () => {
     const logger = makeLogger();
     getScheduledStateMock.mockReturnValue(undefined);
 
@@ -82,10 +78,50 @@ describe('schedule plugin — verify command', () => {
       } as unknown as HederaMirrornodeService,
     };
 
-    const args = makeArgs(api, logger, { name: SCHEDULE_NAME });
+    const args = makeArgs(api, logger, { schedule: SCHEDULE_NAME });
 
     await expect(scheduleVerify(args)).rejects.toThrow(NotFoundError);
     expect(getScheduledMock).not.toHaveBeenCalled();
+  });
+
+  test('returns local state when schedule exists but has not been submitted to network', async () => {
+    const logger = makeLogger();
+    getScheduledStateMock.mockReturnValue({
+      name: SCHEDULE_NAME,
+      network: SupportedNetwork.TESTNET,
+      keyManager: KeyManager.local,
+      scheduled: false,
+      executed: false,
+      waitForExpiry: true,
+      memo: 'local memo',
+      expirationTime: '2026-06-01T00:00:00.000Z',
+      payerAccountId: '0.0.2',
+      command: 'account_create',
+    });
+
+    const api: Partial<CoreApi> = {
+      network: makeNetworkMock(SupportedNetwork.TESTNET),
+      config: makeConfigMock(),
+      mirror: {
+        getScheduled: getScheduledMock,
+      } as unknown as HederaMirrornodeService,
+    };
+
+    const args = makeArgs(api, logger, { schedule: SCHEDULE_NAME });
+
+    const result = await scheduleVerify(args);
+
+    expect(getScheduledMock).not.toHaveBeenCalled();
+    expect(saveScheduledMock).not.toHaveBeenCalled();
+
+    const output = assertOutput(result.result, ScheduleVerifyOutputSchema);
+    expect(output.scheduleId).toBeUndefined();
+    expect(output.executed).toBe(false);
+    expect(output.name).toBe(SCHEDULE_NAME);
+    expect(output.waitForExpiry).toBe(true);
+    expect(output.scheduleMemo).toBe('local memo');
+    expect(output.payerAccountId).toBe('0.0.2');
+    expect(output.command).toBe('account_create');
   });
 
   test('verifies by schedule id only and returns mirror fields without local state', async () => {
@@ -105,7 +141,7 @@ describe('schedule plugin — verify command', () => {
       } as unknown as HederaMirrornodeService,
     };
 
-    const args = makeArgs(api, logger, { scheduleId: ON_CHAIN_SCHEDULE_ID });
+    const args = makeArgs(api, logger, { schedule: ON_CHAIN_SCHEDULE_ID });
 
     const result = await scheduleVerify(args);
 
@@ -145,7 +181,7 @@ describe('schedule plugin — verify command', () => {
       } as unknown as HederaMirrornodeService,
     };
 
-    const args = makeArgs(api, logger, { name: SCHEDULE_NAME });
+    const args = makeArgs(api, logger, { schedule: SCHEDULE_NAME });
 
     await scheduleVerify(args);
 
@@ -153,47 +189,6 @@ describe('schedule plugin — verify command', () => {
       SCHEDULE_COMPOSED_KEY,
       expect.objectContaining({
         executed: false,
-        scheduled: true,
-      }),
-    );
-  });
-
-  test('imports mirror schedule into local state when name and schedule id are provided but no prior record', async () => {
-    const logger = makeLogger();
-    getScheduledStateMock.mockReturnValue(undefined);
-    getScheduledMock.mockResolvedValue(baseMirrorSchedule());
-
-    const getPublicKey = jest.fn().mockResolvedValue({
-      keyRefId: 'kr_payer',
-      publicKey: '02abc',
-    });
-
-    const api: Partial<CoreApi> = {
-      network: makeNetworkMock(SupportedNetwork.TESTNET),
-      config: makeConfigMock(),
-      mirror: {
-        getScheduled: getScheduledMock,
-      } as unknown as HederaMirrornodeService,
-      keyResolver: {
-        getPublicKey,
-        resolveSigningKey: jest.fn(),
-        resolveAccountCredentials: jest.fn(),
-        resolveDestination: jest.fn(),
-      } as unknown as KeyResolverService,
-    };
-
-    const args = makeArgs(api, logger, {
-      name: SCHEDULE_NAME,
-      scheduleId: ON_CHAIN_SCHEDULE_ID,
-    });
-
-    await scheduleVerify(args);
-
-    expect(saveScheduledMock).toHaveBeenCalledWith(
-      SCHEDULE_COMPOSED_KEY,
-      expect.objectContaining({
-        name: SCHEDULE_NAME,
-        network: SupportedNetwork.TESTNET,
         scheduled: true,
       }),
     );
@@ -233,7 +228,7 @@ describe('schedule plugin — verify command', () => {
       } as unknown as HederaMirrornodeService,
     };
 
-    const base = makeArgs(api, logger, { name: SCHEDULE_NAME });
+    const base = makeArgs(api, logger, { schedule: SCHEDULE_NAME });
     const args = { ...base, hooks: phaseHooks };
 
     const result = await scheduleVerify(args);
@@ -268,7 +263,7 @@ describe('schedule plugin — verify command', () => {
       } as unknown as HederaMirrornodeService,
     };
 
-    const args = makeArgs(api, logger, { name: SCHEDULE_NAME });
+    const args = makeArgs(api, logger, { schedule: SCHEDULE_NAME });
 
     const result = await scheduleVerify(args);
 

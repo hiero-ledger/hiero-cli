@@ -81,21 +81,21 @@ hcli contract import --contract 0xAbCd1234... --name myAlias
 
 Update smart contract properties on the Hedera network. The CLI loads the contract's admin key from the mirror node to determine signing requirements and auto-discovers matching KMS keys. At least one updatable field must be provided. After a successful update, local state is synced; if the admin key changes, all registered aliases have their key reference updated.
 
-| Option                               | Short | Type       | Required | Default | Description                                                                                                                    |
-| ------------------------------------ | ----- | ---------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `--contract`                         | `-c`  | string     | **yes**  | —       | Contract ID (`0.0.xxx`), alias, or EVM address                                                                                 |
-| `--admin-key`                        | `-K`  | repeatable | no       | —       | Current admin credential(s) used to sign the update. Omit to use KMS auto-discovery                                            |
-| `--new-admin-key`                    | `-a`  | repeatable | no       | —       | Replacement admin key(s). The new key's private key must also exist in KMS so it can co-sign the update                        |
-| `--new-admin-key-threshold`          | `-A`  | number     | no       | —       | M-of-N: number of new admin keys required to sign. Only valid when multiple `--new-admin-key` values are given                 |
-| `--memo`                             | `-m`  | string     | no       | —       | Contract memo (max 100 chars). Pass `"null"` or `""` to clear                                                                  |
-| `--auto-renew-period`                | `-r`  | string     | no       | —       | Auto-renew period: plain integer = seconds, or suffix `s`/`m`/`h`/`d` (e.g. `500`, `50m`, `2h`, `30d`)                        |
-| `--auto-renew-account-id`            | `-R`  | string     | no       | —       | Account ID (`0.0.xxx`) whose balance pays for auto-renewal. Pass `"null"` to clear                                             |
-| `--max-automatic-token-associations` | `-t`  | number     | no       | —       | Maximum automatic token associations. `-1` for unlimited, `0` to disable                                                       |
-| `--staked-account-id`                | `-s`  | string     | no       | —       | Account ID (`0.0.xxx`) to stake this contract to. Mutually exclusive with `--staked-node-id`                                   |
-| `--staked-node-id`                   | `-o`  | number     | no       | —       | Node ID to stake this contract to. Mutually exclusive with `--staked-account-id`                                               |
-| `--decline-staking-reward`           | `-D`  | boolean    | no       | —       | Whether to decline staking rewards for this contract                                                                           |
-| `--expiration-time`                  | `-e`  | string     | no       | —       | Expiration time as ISO datetime string (e.g. `2026-12-31T00:00:00Z`)                                                           |
-| `--key-manager`                      | `-k`  | string     | no       | config  | Key manager: `local` or `local_encrypted`                                                                                      |
+| Option                               | Short | Type       | Required | Default | Description                                                                                                    |
+| ------------------------------------ | ----- | ---------- | -------- | ------- | -------------------------------------------------------------------------------------------------------------- |
+| `--contract`                         | `-c`  | string     | **yes**  | —       | Contract ID (`0.0.xxx`), alias, or EVM address                                                                 |
+| `--admin-key`                        | `-K`  | repeatable | no       | —       | Current admin credential(s) used to sign the update. Omit to use KMS auto-discovery                            |
+| `--new-admin-key`                    | `-a`  | repeatable | no       | —       | Replacement admin key(s). The new key's private key must also exist in KMS so it can co-sign the update        |
+| `--new-admin-key-threshold`          | `-A`  | number     | no       | —       | M-of-N: number of new admin keys required to sign. Only valid when multiple `--new-admin-key` values are given |
+| `--memo`                             | `-m`  | string     | no       | —       | Contract memo (max 100 chars). Pass `"null"` or `""` to clear                                                  |
+| `--auto-renew-period`                | `-r`  | string     | no       | —       | Auto-renew period: plain integer = seconds, or suffix `s`/`m`/`h`/`d` (e.g. `500`, `50m`, `2h`, `30d`)         |
+| `--auto-renew-account-id`            | `-R`  | string     | no       | —       | Account ID (`0.0.xxx`) whose balance pays for auto-renewal. Pass `"null"` to clear                             |
+| `--max-automatic-token-associations` | `-t`  | number     | no       | —       | Maximum automatic token associations. `-1` for unlimited, `0` to disable                                       |
+| `--staked-account-id`                | `-s`  | string     | no       | —       | Account ID (`0.0.xxx`) to stake this contract to. Mutually exclusive with `--staked-node-id`                   |
+| `--staked-node-id`                   | `-o`  | number     | no       | —       | Node ID to stake this contract to. Mutually exclusive with `--staked-account-id`                               |
+| `--decline-staking-reward`           | `-D`  | boolean    | no       | —       | Whether to decline staking rewards for this contract                                                           |
+| `--expiration-time`                  | `-e`  | string     | no       | —       | Expiration time as ISO datetime string (e.g. `2026-12-31T00:00:00Z`)                                           |
+| `--key-manager`                      | `-k`  | string     | no       | config  | Key manager: `local` or `local_encrypted`                                                                      |
 
 **Example:**
 

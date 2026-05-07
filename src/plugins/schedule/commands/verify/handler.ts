@@ -4,7 +4,7 @@ import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { ScheduledTransactionData } from '@/plugins/schedule/schema';
 import type { ScheduleVerifyOutput } from './output';
 
-import { KeyAlgorithm, NotFoundError } from '@/core';
+import { EntityReferenceType, KeyAlgorithm, NotFoundError } from '@/core';
 import {
   executePhaseHooks,
   processHookResult,
@@ -27,26 +27,45 @@ export class ScheduleVerifyCommand implements Command {
     const { api } = args;
     const validArgs = ScheduleVerifyInputSchema.parse(args.args);
     const stateHelper = new ZustandScheduleStateHelper(api.state, api.logger);
-    const scheduleName = validArgs.name;
-    const scheduleId = validArgs.scheduleId;
     const keyManager =
       validArgs.keyManager ||
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
     const network = api.network.getCurrentNetwork();
-    let scheduleRecord;
-    if (scheduleName) {
+    const scheduleRef = validArgs.schedule;
+
+    let scheduleName: string | undefined;
+    let resolvedScheduleId: string | undefined;
+    let scheduleRecord: ScheduledTransactionData | null = null;
+
+    if (scheduleRef.type === EntityReferenceType.ALIAS) {
+      scheduleName = scheduleRef.value;
       scheduleRecord = stateHelper.getScheduled(
         composeKey(network, scheduleName),
       );
+      if (!scheduleRecord) {
+        throw new NotFoundError(
+          `No saved schedule found for name: ${scheduleName}`,
+        );
+      }
+      resolvedScheduleId = scheduleRecord.scheduledId;
+    } else {
+      resolvedScheduleId = scheduleRef.value;
     }
-    const resolvedScheduleId = scheduleRecord
-      ? scheduleRecord.scheduledId
-      : scheduleId;
+
     if (!resolvedScheduleId) {
-      throw new NotFoundError(
-        `Schedule ID is missing for parameter ${scheduleName} and was not directly specified in schedule-id parameter`,
-      );
+      const outputData: ScheduleVerifyOutput = {
+        network,
+        name: scheduleName,
+        executed: false,
+        waitForExpiry: scheduleRecord?.waitForExpiry ?? false,
+        scheduleMemo: scheduleRecord?.memo,
+        expirationTime: scheduleRecord?.expirationTime,
+        payerAccountId: scheduleRecord?.payerAccountId,
+        command: scheduleRecord?.command,
+      };
+      return { result: outputData };
     }
+
     const scheduleResponse = await api.mirror.getScheduled(resolvedScheduleId);
     let updatedScheduledRecord: ScheduledTransactionData | undefined;
     if (scheduleRecord && !scheduleRecord.executed) {
@@ -123,6 +142,7 @@ export class ScheduleVerifyCommand implements Command {
       scheduleId: resolvedScheduleId,
       network,
       name: scheduleName,
+      executed: !!scheduleResponse.executed_timestamp,
       executedAt: scheduleResponse.executed_timestamp
         ? hederaTimestampToIso(scheduleResponse.executed_timestamp)
         : undefined,
