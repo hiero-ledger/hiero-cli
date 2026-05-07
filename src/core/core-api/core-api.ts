@@ -37,6 +37,7 @@ import { AliasServiceImpl } from '@/core/services/alias/alias-service';
 import { AllowanceServiceImpl } from '@/core/services/allowance/allowance-service';
 import { BatchTransactionServiceImpl } from '@/core/services/batch/batch-transaction-service';
 import { ConfigServiceImpl } from '@/core/services/config/config-service';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { ContractCompilerServiceImpl } from '@/core/services/contract-compiler/contract-compiler-service';
 import { ContractQueryServiceImpl } from '@/core/services/contract-query/contract-query-service';
 import { ContractTransactionServiceImpl } from '@/core/services/contract-transaction/contract-transaction-service';
@@ -95,7 +96,9 @@ export class CoreApiImplementation implements CoreApi {
     this.config = new ConfigServiceImpl(this.state);
 
     // Configure logger level from config service
-    const configuredLogLevel = this.config.getOption<LogLevel>('log_level');
+    const configuredLogLevel = this.config.getOption<LogLevel>(
+      ConfigOptionKey.log_level,
+    );
     this.logger.setLevel(configuredLogLevel);
 
     this.logger.info('🚀 Starting Hiero CLI...');

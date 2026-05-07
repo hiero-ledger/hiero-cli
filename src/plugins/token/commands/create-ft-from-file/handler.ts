@@ -17,6 +17,7 @@ import type {
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { StateError, ValidationError } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
@@ -48,7 +49,7 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
     const validArgs = TokenCreateFtFromFileInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ??
-      api.config.getOption<KeyManager>('default_key_manager');
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     logger.info(`Creating fungible token from file: ${validArgs.file}`);
 

@@ -10,6 +10,7 @@ import type {
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { TransactionError } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
@@ -45,7 +46,8 @@ export class TopicCreateCommand extends BaseTransactionCommand<
     api.alias.availableOrThrow(alias, network);
 
     const keyManager =
-      keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
+      keyManagerArg ||
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     if (memo) {
       logger.info(`Creating topic with memo: ${memo}`);

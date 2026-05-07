@@ -10,6 +10,7 @@ import type {
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { StateError } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { AliasType, SupplyType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
@@ -42,7 +43,7 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
     const validArgs = TokenCreateNftInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ??
-      api.config.getOption<KeyManager>('default_key_manager');
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
     const maxSupply = validArgs.maxSupply
       ? processTokenBalanceInput(validArgs.maxSupply, 0)
       : undefined;

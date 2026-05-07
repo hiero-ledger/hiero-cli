@@ -1,4 +1,5 @@
 import { assertOutput } from '@/__tests__/utils/assert-output';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import {
   configList,
   ConfigListOutputSchema,
@@ -26,13 +27,13 @@ describe('config plugin - list', () => {
     expect(output.options).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          name: 'default_key_manager',
+          name: ConfigOptionKey.default_key_manager,
           type: 'enum',
           value: 'local',
           allowedValues: ['local', 'local_encrypted'],
         }),
         expect.objectContaining({
-          name: 'ed25519_support_enabled',
+          name: ConfigOptionKey.ed25519_support_enabled,
           type: 'boolean',
           value: false,
         }),

@@ -14,6 +14,7 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { HederaTokenType } from '@/core/shared/constants';
 import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
@@ -46,7 +47,8 @@ export class TokenBurnNftCommand extends BaseTransactionCommand<
     const keyManagerArg = validArgs.keyManager;
 
     const keyManager =
-      keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
+      keyManagerArg ||
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
 

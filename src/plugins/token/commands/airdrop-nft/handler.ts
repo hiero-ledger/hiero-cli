@@ -15,6 +15,7 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import {
   resolveDestinationAccountParameter,
@@ -59,7 +60,8 @@ export class TokenAirdropNftCommand extends BaseTransactionCommand<
     }
 
     const keyManager =
-      keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
+      keyManagerArg ||
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
 

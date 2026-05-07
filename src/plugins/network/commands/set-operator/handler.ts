@@ -10,6 +10,7 @@ import type {
 } from './types';
 
 import { ValidationError } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { ERROR_MESSAGES } from '@/plugins/network/error-messages';
 
 import { NetworkSetOperatorInputSchema } from './input';
@@ -22,7 +23,7 @@ const normalizeParams = (
 
   const keyManager =
     validArgs.keyManager ||
-    api.config.getOption<KeyManager>('default_key_manager');
+    api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
   const targetNetwork =
     (validArgs.network as SupportedNetwork) || api.network.getCurrentNetwork();

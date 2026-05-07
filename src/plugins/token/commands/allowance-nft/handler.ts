@@ -15,6 +15,7 @@ import {
   ValidationError,
 } from '@/core/errors';
 import { NftAllowanceEntry } from '@/core/services/allowance';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import {
   resolveDestinationAccountParameter,
@@ -42,7 +43,7 @@ export class TokenAllowanceNftCommand extends BaseTransactionCommand<
     const validArgs = TokenAllowanceNftInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ??
-      api.config.getOption<KeyManager>('default_key_manager');
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
     const network = api.network.getCurrentNetwork();
 
     const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
