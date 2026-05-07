@@ -7,6 +7,7 @@ import {
   KeyManagerTypeSchema,
   KeySchema,
 } from '@/core/schemas';
+import { ZOD_CUSTOM_ISSUE_CODE } from '@/core/shared/constants';
 
 export const TokenAirdropFtInputSchema = z
   .object({
@@ -33,7 +34,7 @@ export const TokenAirdropFtInputSchema = z
   .superRefine((data, ctx) => {
     if (data.to.length !== data.amount.length) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: ZOD_CUSTOM_ISSUE_CODE,
         message: `Number of --to flags (${data.to.length}) must match number of --amount flags (${data.amount.length})`,
         path: ['amount'],
       });

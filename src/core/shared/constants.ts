@@ -59,3 +59,5 @@ export const HEDERA_MAX_ALLOWANCE_ENTRIES_PER_TRANSACTION = 20;
 
 // Hedera SDK limit: max 10 token transfers per TransferTransaction
 export const HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION = 10;
+
+export const ZOD_CUSTOM_ISSUE_CODE = 'custom';

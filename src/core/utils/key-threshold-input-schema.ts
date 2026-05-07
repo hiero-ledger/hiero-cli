@@ -1,4 +1,6 @@
-import { z } from 'zod';
+import type { z } from 'zod';
+
+import { ZOD_CUSTOM_ISSUE_CODE } from '@/core/shared/constants';
 
 /**
  * Messages for the two standard threshold rules (per key role).
@@ -32,13 +34,13 @@ export function applyKeyThresholdSuperRefine<T extends object>(
     const keyCount = pair.getKeyCount(data);
     if (keyCount < 2) {
       context.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: ZOD_CUSTOM_ISSUE_CODE,
         message: pair.messages.thresholdWithoutEnoughKeys,
         path: [pair.thresholdField],
       });
     } else if (typeof threshold === 'number' && threshold > keyCount) {
       context.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: ZOD_CUSTOM_ISSUE_CODE,
         message: pair.messages.thresholdExceedsKeyCount,
         path: [pair.thresholdField],
       });

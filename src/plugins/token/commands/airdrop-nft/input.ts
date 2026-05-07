@@ -7,6 +7,7 @@ import {
   KeySchema,
   NftSerialNumbersSchema,
 } from '@/core/schemas';
+import { ZOD_CUSTOM_ISSUE_CODE } from '@/core/shared/constants';
 
 export const TokenAirdropNftInputSchema = z
   .object({
@@ -33,7 +34,7 @@ export const TokenAirdropNftInputSchema = z
   .superRefine((data, ctx) => {
     if (data.to.length !== data.serials.length) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: ZOD_CUSTOM_ISSUE_CODE,
         message: `Number of --to flags (${data.to.length}) must match number of --serials flags (${data.serials.length})`,
         path: ['serials'],
       });
@@ -54,7 +55,7 @@ export const TokenAirdropNftInputSchema = z
 
     if (duplicates.length > 0) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: ZOD_CUSTOM_ISSUE_CODE,
         message: `Duplicate serial numbers across recipients: ${duplicates.join(', ')}`,
         path: ['serials'],
       });
