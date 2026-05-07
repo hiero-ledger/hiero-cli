@@ -10,6 +10,7 @@ import type {
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { TransactionError, ValidationError } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { HbarTransferEntry } from '@/core/services/transfer';
 import { HBAR_DECIMALS } from '@/core/shared/constants';
 import { processBalanceInput } from '@/core/utils/process-balance-input';
@@ -50,7 +51,7 @@ export class HbarTransferCommand extends BaseTransactionCommand<
     const providedKeyManager = validArgs.keyManager;
     const keyManager =
       providedKeyManager ||
-      api.config.getOption<KeyManager>('default_key_manager');
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const amount = processBalanceInput(validArgs.amount, HBAR_DECIMALS);
     const currentNetwork = api.network.getCurrentNetwork();

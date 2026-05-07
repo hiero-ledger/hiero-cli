@@ -1,16 +1,17 @@
 /**
  * Test Fixtures for Config Plugin
  */
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 
 export const enumOption = {
-  name: 'default_key_manager',
+  name: ConfigOptionKey.default_key_manager,
   type: 'enum' as const,
   value: 'local',
   allowedValues: ['local', 'local_encrypted'],
 };
 
 export const booleanOption = {
-  name: 'ed25519_support_enabled',
+  name: ConfigOptionKey.ed25519_support_enabled,
   type: 'boolean' as const,
   value: false,
 };

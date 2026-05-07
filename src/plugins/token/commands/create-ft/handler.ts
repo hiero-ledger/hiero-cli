@@ -15,6 +15,7 @@ import type {
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { StateError, ValidationError } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { AliasType, SupplyType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
@@ -51,7 +52,7 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
 
     const keyManager =
       validArgs.keyManager ??
-      api.config.getOption<KeyManager>('default_key_manager');
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
     const initialSupply = processTokenBalanceInput(
       validArgs.initialSupply,
       validArgs.decimals,

@@ -1,5 +1,6 @@
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { ConfigurationError } from '@/core';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import {
   configSet,
   ConfigSetOutputSchema,
@@ -16,26 +17,28 @@ describe('config plugin - set', () => {
   test('parses boolean value and sets', async () => {
     const configSvc = makeConfigServiceMock({
       getOption: jest.fn().mockReturnValue(false),
-      listOptions: jest
-        .fn()
-        .mockReturnValue([
-          { name: 'ed25519_support_enabled', type: 'boolean', value: false },
-        ]),
+      listOptions: jest.fn().mockReturnValue([
+        {
+          name: ConfigOptionKey.ed25519_support_enabled,
+          type: 'boolean',
+          value: false,
+        },
+      ]),
       setOption: jest.fn(),
     });
     const api = makeApiMock(configSvc);
     const args = makeCommandArgs({
       api,
-      args: { option: 'ed25519_support_enabled', value: 'true' },
+      args: { option: ConfigOptionKey.ed25519_support_enabled, value: 'true' },
     });
 
     const result = await configSet(args);
     expect(configSvc.setOption).toHaveBeenCalledWith(
-      'ed25519_support_enabled',
+      ConfigOptionKey.ed25519_support_enabled,
       true,
     );
     const output = assertOutput(result.result, ConfigSetOutputSchema);
-    expect(output.name).toBe('ed25519_support_enabled');
+    expect(output.name).toBe(ConfigOptionKey.ed25519_support_enabled);
     expect(output.previousValue).toBe(false);
     expect(output.newValue).toBe(true);
   });
@@ -74,7 +77,7 @@ describe('config plugin - set', () => {
 
     const argsBad = makeCommandArgs({
       api,
-      args: { option: 'default_key_manager', value: 'invalid' },
+      args: { option: ConfigOptionKey.default_key_manager, value: 'invalid' },
     });
     await expect(configSet(argsBad)).rejects.toThrow(
       'Invalid value for default_key_manager',
@@ -82,11 +85,14 @@ describe('config plugin - set', () => {
 
     const argsGood = makeCommandArgs({
       api,
-      args: { option: 'default_key_manager', value: 'local_encrypted' },
+      args: {
+        option: ConfigOptionKey.default_key_manager,
+        value: 'local_encrypted',
+      },
     });
     await configSet(argsGood);
     expect(configSvc.setOption).toHaveBeenCalledWith(
-      'default_key_manager',
+      ConfigOptionKey.default_key_manager,
       'local_encrypted',
     );
   });

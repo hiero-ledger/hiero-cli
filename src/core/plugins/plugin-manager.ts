@@ -24,6 +24,7 @@ import * as Handlebars from 'handlebars';
 import * as path from 'path';
 
 import { ConfigurationError, InternalError } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { Status } from '@/core/shared/constants';
 import { OptionType } from '@/core/types/shared.types';
 import { requireConfirmation } from '@/core/utils/confirmation';
@@ -353,8 +354,9 @@ export class PluginManager {
       return;
     }
 
-    const skipConfirmations =
-      this.coreApi.config.getOption<boolean>('skip_confirmations');
+    const skipConfirmations = this.coreApi.config.getOption<boolean>(
+      ConfigOptionKey.skip_confirmations,
+    );
     if (skipConfirmations) {
       this.logger.debug(
         'Confirmation skipped due to skip_confirmations config',

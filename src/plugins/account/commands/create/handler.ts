@@ -11,6 +11,7 @@ import type {
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { StateError, TransactionError } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { HBAR_DECIMALS, KeyAlgorithm } from '@/core/shared/constants';
 import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
@@ -50,7 +51,8 @@ export class AccountCreateCommand extends BaseTransactionCommand<
     api.alias.availableOrThrow(alias, network);
 
     const keyManager =
-      keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
+      keyManagerArg ||
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const operator = api.network.getCurrentOperatorOrThrow();
     const payer = api.network.getPayer();
