@@ -1,4 +1,4 @@
-import type { SupportedNetwork, TransactionResult } from '@/core';
+import type { BaseExecuteTransactionResult, SupportedNetwork } from '@/core';
 import type { KmsCredentialRecord } from '@/core/services/kms/kms-types.interface';
 import type {
   BaseBuildTransactionResult,
@@ -19,7 +19,6 @@ export interface BatchBuildTransactionResult extends BaseBuildTransactionResult 
 
 export interface BatchSignTransactionResult extends BaseSignTransactionResult {}
 
-export interface BatchExecuteTransactionResult {
-  transactionResult: TransactionResult;
+export interface BatchExecuteTransactionResult extends BaseExecuteTransactionResult {
   updatedBatchData: BatchData;
 }

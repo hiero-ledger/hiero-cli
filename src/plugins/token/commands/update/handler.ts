@@ -287,7 +287,7 @@ export class TokenUpdateCommand extends BaseTransactionCommand<
       );
     }
 
-    return result;
+    return { transactionResult: result };
   }
 
   async outputPreparation(
@@ -297,6 +297,7 @@ export class TokenUpdateCommand extends BaseTransactionCommand<
     _signTransactionResult: TokenUpdateSignTransactionResult,
     executeTransactionResult: TokenUpdateExecuteTransactionResult,
   ): Promise<CommandResult> {
+    const { transactionResult } = executeTransactionResult;
     const { api } = args;
     const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     const tokenInfo = normalisedParams.tokenInfo;
@@ -317,7 +318,7 @@ export class TokenUpdateCommand extends BaseTransactionCommand<
     const outputData: TokenUpdateOutput = {
       tokenId: normalisedParams.tokenId,
       network: normalisedParams.network,
-      transactionId: executeTransactionResult.transactionId ?? '',
+      transactionId: transactionResult.transactionId ?? '',
       updatedFields,
     };
 

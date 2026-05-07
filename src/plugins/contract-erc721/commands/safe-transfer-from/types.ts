@@ -2,10 +2,8 @@ import type {
   ContractExecuteTransaction,
   Transaction as HederaTransaction,
 } from '@hiero-ledger/sdk';
-import type {
-  SupportedNetwork,
-  TransactionResult,
-} from '@/core/types/shared.types';
+import type { BaseExecuteTransactionResult } from '@/core';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 
 export interface SafeTransferFromNormalisedParams {
   contractId: string;
@@ -25,6 +23,4 @@ export interface SafeTransferFromSignTransactionResult {
   signedTransaction: HederaTransaction;
 }
 
-export interface SafeTransferFromExecuteTransactionResult {
-  transactionResult: TransactionResult;
-}
+export interface SafeTransferFromExecuteTransactionResult extends BaseExecuteTransactionResult {}

@@ -142,7 +142,11 @@ export class AccountCreateCommand extends BaseTransactionCommand<
     signTransactionResult: CreateSignTransactionResult,
   ): Promise<CreateExecuteTransactionResult> {
     const { api } = args;
-    return api.txExecute.execute(signTransactionResult.signedTransaction);
+    return {
+      transactionResult: await api.txExecute.execute(
+        signTransactionResult.signedTransaction,
+      ),
+    };
   }
 
   async outputPreparation(
@@ -152,23 +156,24 @@ export class AccountCreateCommand extends BaseTransactionCommand<
     _signTransactionResult: CreateSignTransactionResult,
     executeTransactionResult: CreateExecuteTransactionResult,
   ): Promise<CommandResult> {
+    const { transactionResult } = executeTransactionResult;
     const { api } = args;
 
-    if (!executeTransactionResult.success) {
+    if (!transactionResult.success) {
       throw new TransactionError(
-        `Failed to create account (txId: ${executeTransactionResult.transactionId})`,
+        `Failed to create account (txId: ${transactionResult.transactionId})`,
         false,
       );
     }
 
-    if (!executeTransactionResult.accountId) {
+    if (!transactionResult.accountId) {
       throw new StateError(
         'Transaction completed but did not return an account ID, unable to derive addresses',
       );
     }
 
     const evmAddress = buildEvmAddressFromAccountId(
-      executeTransactionResult.accountId,
+      transactionResult.accountId,
     );
 
     if (normalisedParams.alias) {
@@ -176,17 +181,17 @@ export class AccountCreateCommand extends BaseTransactionCommand<
         alias: normalisedParams.alias,
         type: AliasType.Account,
         network: normalisedParams.network,
-        entityId: executeTransactionResult.accountId,
+        entityId: transactionResult.accountId,
         evmAddress,
         publicKey: normalisedParams.publicKey,
         keyRefId: normalisedParams.keyRefId,
-        createdAt: executeTransactionResult.consensusTimestamp,
+        createdAt: transactionResult.consensusTimestamp,
       });
     }
 
     const accountData: AccountData = {
       name: normalisedParams.name,
-      accountId: executeTransactionResult.accountId,
+      accountId: transactionResult.accountId,
       type: normalisedParams.keyType,
       publicKey: buildTransactionResult.publicKey,
       evmAddress,
@@ -195,7 +200,7 @@ export class AccountCreateCommand extends BaseTransactionCommand<
     };
     const accountKey = composeKey(
       normalisedParams.network,
-      executeTransactionResult.accountId,
+      transactionResult.accountId,
     );
     const accountState = new ZustandAccountStateHelper(api.state, api.logger);
     accountState.saveAccount(accountKey, accountData);
@@ -205,7 +210,7 @@ export class AccountCreateCommand extends BaseTransactionCommand<
       name: accountData.name,
       type: accountData.type,
       network: accountData.network,
-      transactionId: executeTransactionResult.transactionId || '',
+      transactionId: transactionResult.transactionId || '',
       evmAddress,
       publicKey: accountData.publicKey,
     };

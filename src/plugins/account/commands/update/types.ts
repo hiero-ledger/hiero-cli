@@ -2,11 +2,9 @@ import type {
   AccountUpdateTransaction,
   Transaction as HederaTransaction,
 } from '@hiero-ledger/sdk';
+import type { BaseExecuteTransactionResult } from '@/core';
 import type { KeyAlgorithm } from '@/core/shared/constants';
-import type {
-  SupportedNetwork,
-  TransactionResult,
-} from '@/core/types/shared.types';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 
 export interface UpdateNormalisedParams {
   accountId: string;
@@ -34,4 +32,4 @@ export interface UpdateSignTransactionResult {
   signedTransaction: HederaTransaction;
 }
 
-export type UpdateExecuteTransactionResult = TransactionResult;
+export interface UpdateExecuteTransactionResult extends BaseExecuteTransactionResult {}

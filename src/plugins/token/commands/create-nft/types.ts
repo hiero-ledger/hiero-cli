@@ -1,8 +1,8 @@
 import type {
   BaseBuildTransactionResult,
+  BaseExecuteTransactionResult,
   BaseNormalizedParams,
   BaseSignTransactionResult,
-  TransactionResult,
 } from '@/core';
 import type {
   ResolvedAccountCredential,
@@ -51,6 +51,4 @@ export interface TokenCreateNftBuildTransactionResult extends BaseBuildTransacti
 
 export interface TokenCreateNftSignTransactionResult extends BaseSignTransactionResult {}
 
-export interface TokenCreateNftExecuteTransactionResult {
-  transactionResult: TransactionResult;
-}
+export interface TokenCreateNftExecuteTransactionResult extends BaseExecuteTransactionResult {}

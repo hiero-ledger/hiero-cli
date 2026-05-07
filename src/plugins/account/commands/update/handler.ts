@@ -181,7 +181,11 @@ export class AccountUpdateCommand extends BaseTransactionCommand<
     signTransactionResult: UpdateSignTransactionResult,
   ): Promise<UpdateExecuteTransactionResult> {
     const { api } = args;
-    return api.txExecute.execute(signTransactionResult.signedTransaction);
+    return {
+      transactionResult: await api.txExecute.execute(
+        signTransactionResult.signedTransaction,
+      ),
+    };
   }
 
   async outputPreparation(
@@ -191,11 +195,12 @@ export class AccountUpdateCommand extends BaseTransactionCommand<
     _signTransactionResult: UpdateSignTransactionResult,
     executeTransactionResult: UpdateExecuteTransactionResult,
   ): Promise<CommandResult> {
+    const { transactionResult } = executeTransactionResult;
     const { api } = args;
 
-    if (!executeTransactionResult.success) {
+    if (!transactionResult.success) {
       throw new TransactionError(
-        `Failed to update account (txId: ${executeTransactionResult.transactionId})`,
+        `Failed to update account (txId: ${transactionResult.transactionId})`,
         false,
       );
     }
@@ -243,7 +248,7 @@ export class AccountUpdateCommand extends BaseTransactionCommand<
     const outputData: AccountUpdateOutput = {
       accountId: normalisedParams.accountId,
       network: normalisedParams.network,
-      transactionId: executeTransactionResult.transactionId ?? '',
+      transactionId: transactionResult.transactionId ?? '',
       updatedFields: normalisedParams.updatedFields,
     };
 

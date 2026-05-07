@@ -1,8 +1,8 @@
 import type {
   BaseBuildTransactionResult,
+  BaseExecuteTransactionResult,
   BaseNormalizedParams,
   BaseSignTransactionResult,
-  TransactionResult,
 } from '@/core';
 import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
@@ -47,4 +47,4 @@ export interface TokenUpdateBuildTransactionResult extends BaseBuildTransactionR
 
 export interface TokenUpdateSignTransactionResult extends BaseSignTransactionResult {}
 
-export type TokenUpdateExecuteTransactionResult = TransactionResult;
+export interface TokenUpdateExecuteTransactionResult extends BaseExecuteTransactionResult {}

@@ -1,9 +1,9 @@
 import type {
   BaseBuildTransactionResult,
+  BaseExecuteTransactionResult,
   BaseNormalizedParams,
   BaseSignTransactionResult,
   SupportedNetwork,
-  TransactionResult,
 } from '@/core';
 
 export interface WipeFtNormalizedParams extends BaseNormalizedParams {
@@ -18,6 +18,4 @@ export interface WipeFtBuildTransactionResult extends BaseBuildTransactionResult
 
 export interface WipeFtSignTransactionResult extends BaseSignTransactionResult {}
 
-export interface WipeFtExecuteTransactionResult {
-  transactionResult: TransactionResult;
-}
+export interface WipeFtExecuteTransactionResult extends BaseExecuteTransactionResult {}

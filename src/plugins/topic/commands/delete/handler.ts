@@ -242,7 +242,11 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
     signTransactionResult: DeleteTopicSignTransactionResult,
   ): Promise<DeleteTopicExecuteTransactionResult> {
     const { api } = args;
-    return api.txExecute.execute(signTransactionResult.signedTransaction);
+    return {
+      transactionResult: await api.txExecute.execute(
+        signTransactionResult.signedTransaction,
+      ),
+    };
   }
 
   async outputPreparation(
@@ -252,15 +256,16 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
     _signTransactionResult: DeleteTopicSignTransactionResult,
     executeTransactionResult: DeleteTopicExecuteTransactionResult,
   ): Promise<CommandResult> {
+    const { transactionResult } = executeTransactionResult;
     const { api } = args;
 
-    if (!executeTransactionResult.success) {
+    if (!transactionResult.success) {
       throw new TransactionError(
-        `Failed to delete topic (txId: ${executeTransactionResult.transactionId})`,
+        `Failed to delete topic (txId: ${transactionResult.transactionId})`,
         false,
         {
           context: {
-            transactionId: executeTransactionResult.transactionId,
+            transactionId: transactionResult.transactionId,
             network: normalisedParams.network,
           },
         },
@@ -280,7 +285,7 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
       },
       removedAliases,
       network: normalisedParams.network,
-      transactionId: executeTransactionResult.transactionId,
+      transactionId: transactionResult.transactionId,
       stateOnly: false,
     };
 

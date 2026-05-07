@@ -214,7 +214,7 @@ export class UpdateContractCommand extends BaseTransactionCommand<
         },
       );
     }
-    return executeTransactionResult;
+    return { transactionResult: executeTransactionResult };
   }
 
   async outputPreparation(
@@ -224,6 +224,7 @@ export class UpdateContractCommand extends BaseTransactionCommand<
     _signTransactionResult: ContractUpdateSignTransactionResult,
     executeTransactionResult: ContractUpdateExecuteTransactionResult,
   ): Promise<CommandResult> {
+    const { transactionResult } = executeTransactionResult;
     const { api } = args;
     const contractState = new ZustandContractStateHelper(api.state, api.logger);
     const existingContract = contractState.getContract(
@@ -247,7 +248,7 @@ export class UpdateContractCommand extends BaseTransactionCommand<
     const outputData: ContractUpdateOutput = {
       contractId: normalisedParams.contractId,
       network: normalisedParams.network,
-      transactionId: executeTransactionResult.transactionId ?? '',
+      transactionId: transactionResult.transactionId ?? '',
       updatedFields: normalisedParams.updatedFields,
     };
 

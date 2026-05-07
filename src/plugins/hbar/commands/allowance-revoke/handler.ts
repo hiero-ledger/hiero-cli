@@ -122,7 +122,7 @@ export class HbarAllowanceRevokeCommand extends BaseTransactionCommand<
       );
     }
 
-    return result;
+    return { transactionResult: result };
   }
 
   async outputPreparation(
@@ -132,17 +132,18 @@ export class HbarAllowanceRevokeCommand extends BaseTransactionCommand<
     _signResult: AllowanceRevokeSignTransactionResult,
     executeResult: AllowanceRevokeExecuteTransactionResult,
   ): Promise<CommandResult> {
+    const { transactionResult } = executeResult;
     const { api } = args;
 
     api.logger.info(
-      `[HBAR] Allowance revoked successfully, txId=${executeResult.transactionId}`,
+      `[HBAR] Allowance revoked successfully, txId=${transactionResult.transactionId}`,
     );
 
     const outputData: HbarAllowanceRevokeOutput = {
       ownerAccountId: normalizedParams.ownerAccountId,
       spenderAccountId: normalizedParams.spenderAccountId,
       amountTinybar: 0n,
-      transactionId: executeResult.transactionId || '',
+      transactionId: transactionResult.transactionId || '',
       network: normalizedParams.network,
     };
 
