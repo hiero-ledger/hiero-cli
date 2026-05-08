@@ -162,8 +162,6 @@ export class ZustandTokenStateHelper {
     total: number;
     byNetwork: Record<string, number>;
     bySupplyType: Record<string, number>;
-    withAssociations: number;
-    totalAssociations: number;
     withKeys: number;
   } {
     try {
@@ -175,8 +173,6 @@ export class ZustandTokenStateHelper {
         total: tokens.length,
         byNetwork: {} as Record<string, number>,
         bySupplyType: {} as Record<string, number>,
-        withAssociations: 0,
-        totalAssociations: 0,
         withKeys: 0,
       };
 

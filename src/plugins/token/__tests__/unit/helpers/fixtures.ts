@@ -663,16 +663,12 @@ export const makeTokenStats = (
     total: number;
     byNetwork: Record<string, number>;
     bySupplyType: Record<string, number>;
-    withAssociations: number;
-    totalAssociations: number;
     withKeys: number;
   }> = {},
 ) => ({
   total: 0,
   byNetwork: {},
   bySupplyType: {},
-  withAssociations: 0,
-  totalAssociations: 0,
   withKeys: 0,
   ...overrides,
 });
@@ -776,8 +772,6 @@ export const mockTokenStats = {
     total: 2,
     byNetwork: { testnet: 2 },
     bySupplyType: { [SupplyType.INFINITE]: 1, [SupplyType.FINITE]: 1 },
-    withAssociations: 1,
-    totalAssociations: 1,
     withKeys: 2,
   }),
   finiteSupply: makeTokenStats({
