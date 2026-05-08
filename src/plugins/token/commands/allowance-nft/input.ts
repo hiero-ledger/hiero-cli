@@ -7,6 +7,7 @@ import {
   KeySchema,
   NftSerialNumbersSchema,
 } from '@/core/schemas';
+import { ZOD_CUSTOM_ISSUE_CODE } from '@/core/shared/constants';
 
 export const TokenAllowanceNftInputSchema = z
   .object({
@@ -33,13 +34,13 @@ export const TokenAllowanceNftInputSchema = z
   .superRefine((data, ctx) => {
     if (!data.serials && !data.allSerials) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: ZOD_CUSTOM_ISSUE_CODE,
         message: 'Either --serials or --all-serials must be specified',
       });
     }
     if (data.serials && data.allSerials) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: ZOD_CUSTOM_ISSUE_CODE,
         message: '--serials and --all-serials are mutually exclusive',
       });
     }

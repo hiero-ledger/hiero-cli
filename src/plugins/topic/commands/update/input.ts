@@ -10,7 +10,7 @@ import {
   MemoSchema,
   NullLiteralSchema,
 } from '@/core/schemas';
-import { NULL_TOKEN } from '@/core/shared/constants';
+import { NULL_TOKEN, ZOD_CUSTOM_ISSUE_CODE } from '@/core/shared/constants';
 import { applyKeyThresholdSuperRefine } from '@/core/utils/key-threshold-input-schema';
 
 const topicUpdateInputObjectSchema = z.object({
@@ -75,7 +75,7 @@ export const TopicUpdateInputSchema = topicUpdateInputObjectSchema.superRefine(
 
     if (!hasAnyUpdate) {
       context.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: ZOD_CUSTOM_ISSUE_CODE,
         message: 'At least one field to update must be provided',
         path: ['topic'],
       });

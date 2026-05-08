@@ -14,7 +14,7 @@ import {
   NullLiteralSchema,
   OptionalDefaultEmptyKeyListSchema,
 } from '@/core/schemas';
-import { NULL_TOKEN } from '@/core/shared/constants';
+import { NULL_TOKEN, ZOD_CUSTOM_ISSUE_CODE } from '@/core/shared/constants';
 
 const UPDATE_FIELDS = [
   'newAdminKey',
@@ -79,7 +79,7 @@ export const ContractUpdateInputSchema = z
   .superRefine((data, ctx) => {
     if (data.stakedAccountId !== undefined && data.stakedNodeId !== undefined) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: ZOD_CUSTOM_ISSUE_CODE,
         message: 'Cannot specify both --staked-account-id and --staked-node-id',
         path: ['stakedNodeId'],
       });
@@ -91,7 +91,7 @@ export const ContractUpdateInputSchema = z
     });
     if (!hasUpdateField) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: ZOD_CUSTOM_ISSUE_CODE,
         message:
           'At least one field to update must be provided (new-admin-key, memo, auto-renew-period, auto-renew-account-id, max-automatic-token-associations, staked-account-id, staked-node-id, decline-staking-reward, expiration-time)',
         path: [],

@@ -14,6 +14,7 @@ import {
   TokenNameSchema,
   TokenSymbolSchema,
 } from '@/core/schemas';
+import { ZOD_CUSTOM_ISSUE_CODE } from '@/core/shared/constants';
 import { isNullOrNonEmpty } from '@/core/utils/is-null-or-non-empty';
 import { applyKeyThresholdSuperRefine } from '@/core/utils/key-threshold-input-schema';
 
@@ -166,7 +167,7 @@ function validateHasAnyUpdate(
 
   if (!hasAnyUpdate) {
     context.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: ZOD_CUSTOM_ISSUE_CODE,
       message: 'At least one field to update must be provided',
       path: ['token'],
     });
