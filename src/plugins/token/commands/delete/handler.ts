@@ -196,7 +196,7 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
       );
     }
 
-    return result;
+    return { transactionResult: result };
   }
 
   async outputPreparation(
@@ -206,6 +206,7 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
     _signTransactionResult: TokenDeleteSignTransactionResult,
     executeTransactionResult: TokenDeleteExecuteTransactionResult,
   ): Promise<CommandResult> {
+    const { transactionResult } = executeTransactionResult;
     const { api } = args;
     const { network, tokenId, tokenName } = normalisedParams;
 
@@ -229,7 +230,7 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
     }
 
     const outputData: TokenDeleteOutput = {
-      transactionId: executeTransactionResult.transactionId,
+      transactionId: transactionResult.transactionId,
       deletedToken: { name: tokenName, tokenId },
       network,
     };

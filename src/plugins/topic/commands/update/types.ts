@@ -1,5 +1,5 @@
 import type { Transaction } from '@hiero-ledger/sdk';
-import type { TransactionResult } from '@/core';
+import type { BaseExecuteTransactionResult } from '@/core';
 import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
@@ -31,4 +31,4 @@ export interface UpdateTopicSignTransactionResult {
   signedTransaction: Transaction;
 }
 
-export type UpdateTopicExecuteTransactionResult = TransactionResult;
+export interface UpdateTopicExecuteTransactionResult extends BaseExecuteTransactionResult {}

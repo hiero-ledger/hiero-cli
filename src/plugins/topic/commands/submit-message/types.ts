@@ -1,8 +1,8 @@
 import type {
   BaseBuildTransactionResult,
+  BaseExecuteTransactionResult,
   BaseNormalizedParams,
   BaseSignTransactionResult,
-  TransactionResult,
 } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
@@ -19,4 +19,4 @@ export interface SubmitMessageBuildTransactionResult extends BaseBuildTransactio
 
 export interface SubmitMessageSignTransactionResult extends BaseSignTransactionResult {}
 
-export type SubmitMessageExecuteTransactionResult = TransactionResult;
+export interface SubmitMessageExecuteTransactionResult extends BaseExecuteTransactionResult {}

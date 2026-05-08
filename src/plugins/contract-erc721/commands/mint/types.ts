@@ -2,10 +2,8 @@ import type {
   ContractExecuteTransaction,
   Transaction,
 } from '@hiero-ledger/sdk';
-import type {
-  SupportedNetwork,
-  TransactionResult,
-} from '@/core/types/shared.types';
+import type { BaseExecuteTransactionResult } from '@/core';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 
 export interface MintNormalisedParams {
   contractId: string;
@@ -23,6 +21,4 @@ export interface MintSignTransactionResult {
   signedTransaction: Transaction;
 }
 
-export interface MintExecuteTransactionResult {
-  transactionResult: TransactionResult;
-}
+export interface MintExecuteTransactionResult extends BaseExecuteTransactionResult {}

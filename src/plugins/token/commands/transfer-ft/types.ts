@@ -1,9 +1,9 @@
 import type {
   BaseBuildTransactionResult,
+  BaseExecuteTransactionResult,
   BaseNormalizedParams,
   BaseSignTransactionResult,
   SupportedNetwork,
-  TransactionResult,
 } from '@/core';
 
 export interface TokenTransferFtNormalizedParams extends BaseNormalizedParams {
@@ -19,6 +19,4 @@ export interface TokenTransferFtBuildTransactionResult extends BaseBuildTransact
 
 export interface TokenTransferFtSignTransactionResult extends BaseSignTransactionResult {}
 
-export interface TokenTransferFtExecuteTransactionResult {
-  transactionResult: TransactionResult;
-}
+export interface TokenTransferFtExecuteTransactionResult extends BaseExecuteTransactionResult {}

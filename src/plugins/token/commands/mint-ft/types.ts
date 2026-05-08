@@ -1,9 +1,9 @@
 import type {
   BaseBuildTransactionResult,
+  BaseExecuteTransactionResult,
   BaseNormalizedParams,
   BaseSignTransactionResult,
   SupportedNetwork,
-  TransactionResult,
 } from '@/core';
 
 export interface MintFtNormalizedParams extends BaseNormalizedParams {
@@ -16,6 +16,4 @@ export interface MintFtBuildTransactionResult extends BaseBuildTransactionResult
 
 export interface MintFtSignTransactionResult extends BaseSignTransactionResult {}
 
-export interface MintFtExecuteTransactionResult {
-  transactionResult: TransactionResult;
-}
+export interface MintFtExecuteTransactionResult extends BaseExecuteTransactionResult {}

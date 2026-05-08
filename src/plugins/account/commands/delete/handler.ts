@@ -224,7 +224,11 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
     signTransactionResult: DeleteSignTransactionResult,
   ): Promise<DeleteExecuteTransactionResult> {
     const { api } = args;
-    return api.txExecute.execute(signTransactionResult.signedTransaction);
+    return {
+      transactionResult: await api.txExecute.execute(
+        signTransactionResult.signedTransaction,
+      ),
+    };
   }
 
   async outputPreparation(
@@ -234,15 +238,16 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
     _signTransactionResult: DeleteSignTransactionResult,
     executeTransactionResult: DeleteExecuteTransactionResult,
   ): Promise<CommandResult> {
+    const { transactionResult } = executeTransactionResult;
     const { api } = args;
 
-    if (!executeTransactionResult.success) {
+    if (!transactionResult.success) {
       throw new TransactionError(
-        `Failed to delete account (txId: ${executeTransactionResult.transactionId})`,
+        `Failed to delete account (txId: ${transactionResult.transactionId})`,
         false,
         {
           context: {
-            transactionId: executeTransactionResult.transactionId,
+            transactionId: transactionResult.transactionId,
             network: normalisedParams.network,
           },
         },
@@ -272,7 +277,7 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
       },
       removedAliases,
       network: normalisedParams.network,
-      transactionId: executeTransactionResult.transactionId,
+      transactionId: transactionResult.transactionId,
       stateOnly: false,
     };
 

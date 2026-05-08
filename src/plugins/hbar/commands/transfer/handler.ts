@@ -134,7 +134,7 @@ export class HbarTransferCommand extends BaseTransactionCommand<
       );
     }
 
-    return result;
+    return { transactionResult: result };
   }
 
   async outputPreparation(
@@ -144,21 +144,22 @@ export class HbarTransferCommand extends BaseTransactionCommand<
     _signTransactionResult: TransferSignTransactionResult,
     executeTransactionResult: TransferExecuteTransactionResult,
   ): Promise<CommandResult> {
+    const { transactionResult } = executeTransactionResult;
     const { api } = args;
 
     api.logger.info(
-      `[HBAR] Transfer submitted successfully, txId=${executeTransactionResult.transactionId}`,
+      `[HBAR] Transfer submitted successfully, txId=${transactionResult.transactionId}`,
     );
 
     const outputData: HbarTransferOutput = {
-      transactionId: executeTransactionResult.transactionId || '',
+      transactionId: transactionResult.transactionId || '',
       fromAccountId: normalisedParams.fromAccount.accountId,
       toAccountId: normalisedParams.destination,
       amountTinybar: normalisedParams.amount,
       network: normalisedParams.currentNetwork,
       ...(normalisedParams.memo && { memo: normalisedParams.memo }),
-      ...(executeTransactionResult.receipt?.status && {
-        status: executeTransactionResult.receipt.status.status,
+      ...(transactionResult.receipt?.status && {
+        status: transactionResult.receipt.status.status,
       }),
     };
 

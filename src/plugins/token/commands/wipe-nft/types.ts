@@ -1,9 +1,9 @@
 import type {
   BaseBuildTransactionResult,
+  BaseExecuteTransactionResult,
   BaseNormalizedParams,
   BaseSignTransactionResult,
   SupportedNetwork,
-  TransactionResult,
 } from '@/core';
 
 export interface WipeNftNormalizedParams extends BaseNormalizedParams {
@@ -18,6 +18,4 @@ export interface WipeNftBuildTransactionResult extends BaseBuildTransactionResul
 
 export interface WipeNftSignTransactionResult extends BaseSignTransactionResult {}
 
-export interface WipeNftExecuteTransactionResult {
-  transactionResult: TransactionResult;
-}
+export interface WipeNftExecuteTransactionResult extends BaseExecuteTransactionResult {}

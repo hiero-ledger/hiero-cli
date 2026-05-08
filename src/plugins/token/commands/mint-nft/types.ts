@@ -1,9 +1,9 @@
 import type {
   BaseBuildTransactionResult,
+  BaseExecuteTransactionResult,
   BaseNormalizedParams,
   BaseSignTransactionResult,
   SupportedNetwork,
-  TransactionResult,
 } from '@/core';
 
 export interface TokenMintNftNormalizedParams extends BaseNormalizedParams {
@@ -16,6 +16,4 @@ export interface TokenMintNftBuildTransactionResult extends BaseBuildTransaction
 
 export interface TokenMintNftSignTransactionResult extends BaseSignTransactionResult {}
 
-export interface TokenMintNftExecuteTransactionResult {
-  transactionResult: TransactionResult;
-}
+export interface TokenMintNftExecuteTransactionResult extends BaseExecuteTransactionResult {}

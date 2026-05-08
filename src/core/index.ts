@@ -81,6 +81,7 @@ export {
 } from './types/shared.types';
 export type {
   BaseBuildTransactionResult,
+  BaseExecuteTransactionResult,
   BaseNormalizedParams,
   BaseSignTransactionResult,
 } from './types/transaction.types';

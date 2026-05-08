@@ -1,13 +1,11 @@
 import type { AccountAllowanceApproveTransaction } from '@hiero-ledger/sdk';
 import type {
   BaseBuildTransactionResult,
+  BaseExecuteTransactionResult,
   BaseNormalizedParams,
   BaseSignTransactionResult,
 } from '@/core';
-import type {
-  SupportedNetwork,
-  TransactionResult,
-} from '@/core/types/shared.types';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 
 export interface AllowanceRevokeNormalizedParams extends BaseNormalizedParams {
   ownerAccountId: string;
@@ -21,4 +19,4 @@ export interface AllowanceRevokeBuildTransactionResult extends BaseBuildTransact
 
 export interface AllowanceRevokeSignTransactionResult extends BaseSignTransactionResult {}
 
-export type AllowanceRevokeExecuteTransactionResult = TransactionResult;
+export interface AllowanceRevokeExecuteTransactionResult extends BaseExecuteTransactionResult {}

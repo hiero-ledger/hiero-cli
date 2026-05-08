@@ -1,9 +1,9 @@
 import type {
   BaseBuildTransactionResult,
+  BaseExecuteTransactionResult,
   BaseNormalizedParams,
   BaseSignTransactionResult,
   SupportedNetwork,
-  TransactionResult,
 } from '@/core';
 
 export interface CancelAirdropNormalizedParams extends BaseNormalizedParams {
@@ -19,6 +19,4 @@ export interface CancelAirdropBuildTransactionResult extends BaseBuildTransactio
 
 export interface CancelAirdropSignTransactionResult extends BaseSignTransactionResult {}
 
-export interface CancelAirdropExecuteTransactionResult {
-  transactionResult: TransactionResult;
-}
+export interface CancelAirdropExecuteTransactionResult extends BaseExecuteTransactionResult {}

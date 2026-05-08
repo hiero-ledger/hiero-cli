@@ -153,7 +153,7 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
       );
     }
 
-    return txResult;
+    return { transactionResult: txResult };
   }
 
   async outputPreparation(
@@ -163,11 +163,12 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
     _signTransactionResult: SubmitMessageSignTransactionResult,
     executeTransactionResult: SubmitMessageExecuteTransactionResult,
   ): Promise<CommandResult> {
+    const { transactionResult } = executeTransactionResult;
     const outputData: TopicSubmitMessageOutput = {
       topicId: normalisedParams.topicId,
       message: normalisedParams.message,
-      sequenceNumber: executeTransactionResult.topicSequenceNumber ?? 0,
-      transactionId: executeTransactionResult.transactionId || '',
+      sequenceNumber: transactionResult.topicSequenceNumber ?? 0,
+      transactionId: transactionResult.transactionId || '',
       submittedAt: new Date().toISOString(),
       network: normalisedParams.currentNetwork,
     };

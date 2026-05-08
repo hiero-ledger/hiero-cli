@@ -1,4 +1,4 @@
-import type { SupportedNetwork, TransactionResult } from '@/core';
+import type { BaseExecuteTransactionResult, SupportedNetwork } from '@/core';
 import type {
   FtTransferEntry,
   HbarTransferEntry,
@@ -22,4 +22,4 @@ export interface SwapExecuteBuildTransactionResult extends BaseBuildTransactionR
 
 export interface SwapExecuteSignTransactionResult extends BaseSignTransactionResult {}
 
-export type SwapExecuteExecuteTransactionResult = TransactionResult;
+export interface SwapExecuteExecuteTransactionResult extends BaseExecuteTransactionResult {}

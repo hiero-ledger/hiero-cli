@@ -149,7 +149,7 @@ export class TopicCreateCommand extends BaseTransactionCommand<
       );
     }
 
-    return result;
+    return { transactionResult: result };
   }
 
   async outputPreparation(
@@ -159,12 +159,13 @@ export class TopicCreateCommand extends BaseTransactionCommand<
     _signTransactionResult: CreateTopicSignTransactionResult,
     executeTransactionResult: CreateTopicExecuteTransactionResult,
   ): Promise<CommandResult> {
+    const { transactionResult } = executeTransactionResult;
     const { api } = args;
     const topicState = new ZustandTopicStateHelper(api.state, api.logger);
-    const topicId = executeTransactionResult.topicId;
+    const topicId = transactionResult.topicId;
     if (!topicId) {
       throw new TransactionError(
-        `Failed to create topic (txId: ${executeTransactionResult.transactionId})`,
+        `Failed to create topic (txId: ${transactionResult.transactionId})`,
         false,
       );
     }
@@ -181,7 +182,7 @@ export class TopicCreateCommand extends BaseTransactionCommand<
       adminKeyThreshold: normalisedParams.adminKeyThreshold,
       submitKeyThreshold: normalisedParams.submitKeyThreshold,
       network: normalisedParams.network,
-      createdAt: executeTransactionResult.consensusTimestamp,
+      createdAt: transactionResult.consensusTimestamp,
     };
 
     if (normalisedParams.alias) {
@@ -190,7 +191,7 @@ export class TopicCreateCommand extends BaseTransactionCommand<
         type: AliasType.Topic,
         network: normalisedParams.network,
         entityId: topicId,
-        createdAt: executeTransactionResult.consensusTimestamp,
+        createdAt: transactionResult.consensusTimestamp,
       });
     }
 
@@ -208,7 +209,7 @@ export class TopicCreateCommand extends BaseTransactionCommand<
       adminKeyCount: adminKeyCount > 1 ? adminKeyCount : undefined,
       submitKeyThreshold: normalisedParams.submitKeyThreshold,
       submitKeyCount: submitKeyCount > 1 ? submitKeyCount : undefined,
-      transactionId: executeTransactionResult.transactionId || '',
+      transactionId: transactionResult.transactionId || '',
       createdAt: topicData.createdAt,
     };
 

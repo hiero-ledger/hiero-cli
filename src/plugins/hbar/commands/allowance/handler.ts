@@ -126,7 +126,7 @@ export class HbarAllowanceCommand extends BaseTransactionCommand<
       );
     }
 
-    return result;
+    return { transactionResult: result };
   }
 
   async outputPreparation(
@@ -136,17 +136,18 @@ export class HbarAllowanceCommand extends BaseTransactionCommand<
     _signResult: AllowanceSignTransactionResult,
     executeResult: AllowanceExecuteTransactionResult,
   ): Promise<CommandResult> {
+    const { transactionResult } = executeResult;
     const { api } = args;
 
     api.logger.info(
-      `[HBAR] Allowance approved successfully, txId=${executeResult.transactionId}`,
+      `[HBAR] Allowance approved successfully, txId=${transactionResult.transactionId}`,
     );
 
     const outputData: HbarAllowanceOutput = {
       ownerAccountId: normalizedParams.ownerAccountId,
       spenderAccountId: normalizedParams.spenderAccountId,
       amountTinybar: normalizedParams.amountTinybar,
-      transactionId: executeResult.transactionId || '',
+      transactionId: transactionResult.transactionId || '',
       network: normalizedParams.network,
     };
 

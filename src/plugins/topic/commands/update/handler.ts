@@ -254,7 +254,7 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
       );
     }
 
-    return result;
+    return { transactionResult: result };
   }
 
   async outputPreparation(
@@ -264,6 +264,7 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
     _signTransactionResult: UpdateTopicSignTransactionResult,
     executeTransactionResult: UpdateTopicExecuteTransactionResult,
   ): Promise<CommandResult> {
+    const { transactionResult } = executeTransactionResult;
     const { api } = args;
     const topicState = new ZustandTopicStateHelper(api.state, api.logger);
     const existing = normalisedParams.existingTopicData;
@@ -374,7 +375,7 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
       autoRenewAccount: updatedAutoRenewAccount,
       autoRenewPeriod: updatedAutoRenewPeriod,
       expirationTime: updatedExpirationTime,
-      transactionId: executeTransactionResult.transactionId || '',
+      transactionId: transactionResult.transactionId || '',
     };
 
     return { result: outputData };
