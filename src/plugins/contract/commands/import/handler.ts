@@ -19,9 +19,9 @@ import { ContractImportInputSchema } from './input';
 
 export class ImportContractCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    const contractState = new ZustandContractStateHelper(api.state, logger);
+    const contractState = new ZustandContractStateHelper(api.state, api.logger);
 
     const validArgs = ContractImportInputSchema.parse(args.args);
 
@@ -61,7 +61,7 @@ export class ImportContractCommand implements Command {
         contractEvmAddress,
       );
 
-    logger.info(`Importing contract ${contractId}`);
+    api.logger.info(`Importing contract ${contractId}`);
 
     if (name) {
       api.alias.register({

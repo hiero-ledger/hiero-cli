@@ -29,9 +29,6 @@ describe('Create Topic Integration Tests', () => {
     const createTopicResult = await topicCreate({
       args: createTopicArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
 
     const createTopicOutput = createTopicResult.result as TopicCreateOutput;
@@ -47,9 +44,6 @@ describe('Create Topic Integration Tests', () => {
     const listTopicResult = await topicList({
       args: listTopicArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const listTopicOutput = listTopicResult.result as TopicListOutput;
     const topic = listTopicOutput.topics.find(

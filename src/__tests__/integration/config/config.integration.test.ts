@@ -25,9 +25,6 @@ describe('Config Integration Tests', () => {
     const listConfigResult = await configList({
       args: {},
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
 
     const listConfigOutput = listConfigResult.result as ConfigListOutput;
@@ -50,9 +47,6 @@ describe('Config Integration Tests', () => {
     const setConfigResult = await configSet({
       args: setConfigArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const setConfigOutput = setConfigResult.result as ConfigSetOutput;
     expect(setConfigOutput.previousValue).toBe(false);
@@ -64,9 +58,6 @@ describe('Config Integration Tests', () => {
     const getConfigResult = await configGet({
       args: getConfigArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const getConfigOutput = getConfigResult.result as ConfigGetOutput;
     expect(getConfigOutput.name).toBe(ConfigOptionKey.ed25519_support_enabled);

@@ -8,7 +8,6 @@ import {
   MOCK_ACCOUNT_ID_ALT,
   MOCK_HEDERA_ENTITY_ID_1,
 } from '@/__tests__/mocks/fixtures';
-import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NetworkError } from '@/core';
 import { FtAllowanceEntry } from '@/core/services/allowance';
@@ -20,7 +19,7 @@ import {
 } from '@/plugins/token/commands/allowance-ft';
 
 import { mockTransactionResults } from './helpers/fixtures';
-import { makeApiMocks, makeLogger } from './helpers/mocks';
+import { makeApiMocks } from './helpers/mocks';
 
 const TOKEN_ID = MOCK_HEDERA_ENTITY_ID_1;
 const OWNER_ACCOUNT_ID = MOCK_ACCOUNT_ID;
@@ -58,7 +57,6 @@ describe('tokenAllowanceFt', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: TOKEN_ID,
@@ -67,9 +65,6 @@ describe('tokenAllowanceFt', () => {
           amount: '100',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       const result = await tokenAllowanceFt(args);
@@ -122,7 +117,6 @@ describe('tokenAllowanceFt', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: TOKEN_ID,
@@ -131,9 +125,6 @@ describe('tokenAllowanceFt', () => {
           amount: '500t',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       const result = await tokenAllowanceFt(args);
@@ -174,7 +165,6 @@ describe('tokenAllowanceFt', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: TOKEN_ID,
@@ -183,9 +173,6 @@ describe('tokenAllowanceFt', () => {
           amount: '0',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       const result = await tokenAllowanceFt(args);
@@ -236,7 +223,6 @@ describe('tokenAllowanceFt', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: TOKEN_ID,
@@ -245,9 +231,6 @@ describe('tokenAllowanceFt', () => {
           amount: '100',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       const result = await tokenAllowanceFt(args);
@@ -285,7 +268,6 @@ describe('tokenAllowanceFt', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: TOKEN_ID,
@@ -294,9 +276,6 @@ describe('tokenAllowanceFt', () => {
           amount: '100',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       await expect(tokenAllowanceFt(args)).rejects.toThrow();
@@ -321,7 +300,6 @@ describe('tokenAllowanceFt', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: TOKEN_ID,
@@ -330,9 +308,6 @@ describe('tokenAllowanceFt', () => {
           amount: '100',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       await expect(tokenAllowanceFt(args)).rejects.toThrow('Network error');

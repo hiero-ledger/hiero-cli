@@ -16,9 +16,9 @@ import { TopicImportInputSchema } from './input';
 
 export class TopicImportCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    const topicState = new ZustandTopicStateHelper(api.state, logger);
+    const topicState = new ZustandTopicStateHelper(api.state, api.logger);
     const validArgs = TopicImportInputSchema.parse(args.args);
     const network = api.network.getCurrentNetwork();
 
@@ -38,7 +38,7 @@ export class TopicImportCommand implements Command {
     const topicInfo = await api.mirror.getTopicInfo(normalisedParams.topicId);
     const key = composeKey(normalisedParams.network, normalisedParams.topicId);
 
-    logger.info(`Importing topic: ${key} (${normalisedParams.topicId})`);
+    api.logger.info(`Importing topic: ${key} (${normalisedParams.topicId})`);
 
     if (topicState.loadTopic(key)) {
       throw new ValidationError(

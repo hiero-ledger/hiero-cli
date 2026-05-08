@@ -45,8 +45,8 @@ export class BatchExecuteCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<BatchNormalisedParams> {
-    const { api, logger } = args;
-    const batchState = new ZustandBatchStateHelper(api.state, logger);
+    const { api } = args;
+    const batchState = new ZustandBatchStateHelper(api.state, api.logger);
     const validArgs = BatchExecuteInputSchema.parse(args.args);
     const name = validArgs.name;
     const network = api.network.getCurrentNetwork();
@@ -129,8 +129,8 @@ export class BatchExecuteCommand extends BaseTransactionCommand<
     _buildTransactionResult: BatchBuildTransactionResult,
     signTransactionResult: BatchSignTransactionResult,
   ): Promise<BatchExecuteTransactionResult> {
-    const { api, logger } = args;
-    const batchState = new ZustandBatchStateHelper(api.state, logger);
+    const { api } = args;
+    const batchState = new ZustandBatchStateHelper(api.state, api.logger);
     const result = await api.txExecute.execute(
       signTransactionResult.signedTransaction,
     );

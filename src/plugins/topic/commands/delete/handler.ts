@@ -47,9 +47,9 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
   private async executeStateOnlyDelete(
     args: CommandHandlerArgs,
   ): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
     const params = await this.resolveStateTopicForDelete(args);
-    const topicHelper = new TopicHelper(api.alias, api.state, logger);
+    const topicHelper = new TopicHelper(api.alias, api.state, api.logger);
     const removedAliases = topicHelper.removeTopicFromLocalState(
       params.topicToDelete,
       params.network,
@@ -71,8 +71,8 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
   private async resolveStateTopicForDelete(
     args: CommandHandlerArgs,
   ): Promise<DeleteTopicNormalisedParams> {
-    const { api, logger } = args;
-    const topicState = new ZustandTopicStateHelper(api.state, logger);
+    const { api } = args;
+    const topicState = new ZustandTopicStateHelper(api.state, api.logger);
     const validArgs = TopicDeleteInputSchema.parse(args.args);
     const topicRef = validArgs.topic;
     const isEntityId = EntityIdSchema.safeParse(topicRef).success;
@@ -136,12 +136,12 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<DeleteTopicNormalisedParams> {
-    const { api, logger } = args;
+    const { api } = args;
     const validArgs = TopicDeleteInputSchema.parse(args.args);
     const network = api.network.getCurrentNetwork();
     const topicRef = validArgs.topic;
     const isEntityId = EntityIdSchema.safeParse(topicRef).success;
-    const topicState = new ZustandTopicStateHelper(api.state, logger);
+    const topicState = new ZustandTopicStateHelper(api.state, api.logger);
     const keyManager =
       validArgs.keyManager ||
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
@@ -252,7 +252,7 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
     _signTransactionResult: DeleteTopicSignTransactionResult,
     executeTransactionResult: DeleteTopicExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
     if (!executeTransactionResult.success) {
       throw new TransactionError(
@@ -267,7 +267,7 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
       );
     }
 
-    const topicHelper = new TopicHelper(api.alias, api.state, logger);
+    const topicHelper = new TopicHelper(api.alias, api.state, api.logger);
     const removedAliases = topicHelper.removeTopicFromLocalState(
       normalisedParams.topicToDelete,
       normalisedParams.network,

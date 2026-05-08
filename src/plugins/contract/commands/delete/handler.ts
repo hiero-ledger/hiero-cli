@@ -115,8 +115,8 @@ export class DeleteContractCommand extends BaseTransactionCommand<
     stateKey: string;
     contractRef: string;
   } {
-    const { api, logger } = args;
-    const contractState = new ZustandContractStateHelper(api.state, logger);
+    const { api } = args;
+    const contractState = new ZustandContractStateHelper(api.state, api.logger);
     const validArgs = parsedInput ?? ContractDeleteInputSchema.parse(args.args);
     const contractRef = validArgs.contract;
     const network = api.network.getCurrentNetwork();
@@ -146,8 +146,8 @@ export class DeleteContractCommand extends BaseTransactionCommand<
     contractRef: string;
     mirrorContractInfo: ContractInfo | null;
   }> {
-    const { api, logger } = args;
-    const contractState = new ZustandContractStateHelper(api.state, logger);
+    const { api } = args;
+    const contractState = new ZustandContractStateHelper(api.state, api.logger);
     const validArgs = parsedInput ?? ContractDeleteInputSchema.parse(args.args);
     const contractRef = validArgs.contract;
     const network = api.network.getCurrentNetwork();
@@ -186,7 +186,7 @@ export class DeleteContractCommand extends BaseTransactionCommand<
       memo: contractInfo.memo || undefined,
     };
 
-    logger.info(
+    api.logger.info(
       `Contract not in local state; using mirror info for ${contractToDelete.contractId}`,
     );
 

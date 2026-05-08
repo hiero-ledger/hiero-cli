@@ -197,10 +197,10 @@ export class ScheduleDeleteCommand extends BaseTransactionCommand<
     _signTransactionResult: ScheduleDeleteSignTransactionResult,
     executeTransactionResult: ScheduleDeleteExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
     if (normalisedParams.scheduleName) {
-      const stateHelper = new ZustandScheduleStateHelper(api.state, logger);
+      const stateHelper = new ZustandScheduleStateHelper(api.state, api.logger);
       stateHelper.deleteScheduled(
         composeKey(normalisedParams.network, normalisedParams.scheduleName),
       );

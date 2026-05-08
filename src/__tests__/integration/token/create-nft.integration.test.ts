@@ -34,9 +34,6 @@ describe('Create NFT Integration Tests', () => {
     const createAccountResult = await accountCreate({
       args: createAccountArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
 
     const createAccountOutput =
@@ -53,9 +50,6 @@ describe('Create NFT Integration Tests', () => {
     const viewAccountResult = await accountView({
       args: viewAccountArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const viewAccountOutput = viewAccountResult.result as AccountViewOutput;
     expect(viewAccountOutput.accountId).toBe(createAccountOutput.accountId);
@@ -76,9 +70,6 @@ describe('Create NFT Integration Tests', () => {
     const createNftResult = await tokenCreateNft({
       args: createNftArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const createNftOutput = createNftResult.result as TokenCreateNftOutput;
     expect(createNftOutput.network).toBe(network);

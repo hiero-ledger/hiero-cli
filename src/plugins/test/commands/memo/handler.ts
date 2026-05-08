@@ -9,9 +9,9 @@ import { ZustandMemoStateHelper } from '@/plugins/test/zustand-state-helper';
 export async function testMemo(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  const { api, logger } = args;
+  const { api } = args;
 
-  const memoState = new ZustandMemoStateHelper(api.state, logger);
+  const memoState = new ZustandMemoStateHelper(api.state, api.logger);
 
   const validArgs = TestMemoInputSchema.parse(args.args);
   const memo = validArgs.memo;

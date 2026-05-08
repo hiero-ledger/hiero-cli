@@ -5,7 +5,6 @@ import {
   createBatchExecuteParams,
   makeArgs,
   makeLogger,
-  makeStateMock,
 } from '@/__tests__/mocks/mocks';
 import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 import { TOKEN_DELETE_COMMAND_NAME } from '@/plugins/token/commands/delete';
@@ -73,9 +72,7 @@ describe('token plugin - batch-delete hook', () => {
       removeToken: removeTokenMock,
     }));
 
-    const api = {
-      state: makeStateMock(),
-    } as unknown as Partial<CoreApi>;
+    const api = {} as unknown as Partial<CoreApi>;
     const args = makeArgs(api, makeLogger(), {});
 
     const params = createBatchExecuteParams({
@@ -102,9 +99,7 @@ describe('token plugin - batch-delete hook', () => {
     }));
 
     const logger = makeLogger();
-    const api = {
-      state: makeStateMock(),
-    } as unknown as Partial<CoreApi>;
+    const api = {} as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
 
     const params = createBatchExecuteParams({
@@ -137,7 +132,6 @@ describe('token plugin - batch-delete hook', () => {
 
     const removeAliasMock = jest.fn();
     const api = {
-      state: makeStateMock(),
       alias: {
         list: jest.fn().mockReturnValue([
           {
@@ -178,7 +172,6 @@ describe('token plugin - batch-delete hook', () => {
     }));
 
     const api = {
-      state: makeStateMock(),
       alias: { list: jest.fn().mockReturnValue([]) },
     } as unknown as Partial<CoreApi>;
     const args = makeArgs(api, makeLogger(), {});
@@ -205,7 +198,6 @@ describe('token plugin - batch-delete hook', () => {
     }));
 
     const api = {
-      state: makeStateMock(),
       alias: { list: jest.fn().mockReturnValue([]) },
     } as unknown as Partial<CoreApi>;
     const args = makeArgs(api, makeLogger(), {});

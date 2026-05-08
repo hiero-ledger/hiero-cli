@@ -35,7 +35,7 @@ export class TokenGrantKycCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<GrantKycNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
     const validArgs = TokenGrantKycInputSchema.parse(args.args);
 
@@ -61,7 +61,7 @@ export class TokenGrantKycCommand extends BaseTransactionCommand<
       network,
     });
 
-    logger.info(
+    api.logger.info(
       `Granting KYC for account ${accountId} on token ${tokenId} on ${network}`,
     );
 
@@ -88,8 +88,8 @@ export class TokenGrantKycCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
     normalisedParams: GrantKycNormalizedParams,
   ): Promise<GrantKycBuildTransactionResult> {
-    const { api, logger } = args;
-    logger.debug('Building token grant KYC transaction');
+    const { api } = args;
+    api.logger.debug('Building token grant KYC transaction');
     const transaction = api.token.createGrantKycTransaction({
       tokenId: normalisedParams.tokenId,
       accountId: normalisedParams.accountId,
@@ -102,8 +102,8 @@ export class TokenGrantKycCommand extends BaseTransactionCommand<
     normalisedParams: GrantKycNormalizedParams,
     buildTransactionResult: GrantKycBuildTransactionResult,
   ): Promise<GrantKycSignTransactionResult> {
-    const { api, logger } = args;
-    logger.debug(
+    const { api } = args;
+    api.logger.debug(
       `Using ${normalisedParams.keyRefIds.length} key(s) for signing transaction`,
     );
     const signedTransaction = await api.txSign.sign(

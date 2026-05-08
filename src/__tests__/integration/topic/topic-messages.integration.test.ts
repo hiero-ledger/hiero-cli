@@ -41,9 +41,6 @@ describeSuite('Topic Messages Integration Tests', () => {
     const createTopicResult = await topicCreate({
       args: createTopicArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
 
     const createTopicOutput = createTopicResult.result as TopicCreateOutput;
@@ -58,9 +55,6 @@ describeSuite('Topic Messages Integration Tests', () => {
     const listTopicResult = await topicList({
       args: listTopicArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const listTopicOutput = listTopicResult.result as TopicListOutput;
     const topic = listTopicOutput.topics.find(
@@ -84,9 +78,6 @@ describeSuite('Topic Messages Integration Tests', () => {
       const submitMessageResult = await topicSubmitMessage({
         args: topicMessageSubmitArgs,
         api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
       });
       const submitMessageOutput =
         submitMessageResult.result as TopicSubmitMessageOutput;
@@ -103,9 +94,6 @@ describeSuite('Topic Messages Integration Tests', () => {
     const findMessageEqResult = await topicFindMessage({
       args: findMessageEqArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const findMessageEqOutput =
       findMessageEqResult.result as TopicFindMessageOutput;
@@ -119,9 +107,6 @@ describeSuite('Topic Messages Integration Tests', () => {
     const findMessageGtResult = await topicFindMessage({
       args: findMessageGtArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const findMessageGtOutput =
       findMessageGtResult.result as TopicFindMessageOutput;
@@ -135,9 +120,6 @@ describeSuite('Topic Messages Integration Tests', () => {
     const findMessageGteResult = await topicFindMessage({
       args: findMessageGteArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const findMessageGteOutput =
       findMessageGteResult.result as TopicFindMessageOutput;
@@ -151,9 +133,6 @@ describeSuite('Topic Messages Integration Tests', () => {
     const findMessageLtResult = await topicFindMessage({
       args: findMessageLtArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const findMessageLtOutput =
       findMessageLtResult.result as TopicFindMessageOutput;
@@ -167,9 +146,6 @@ describeSuite('Topic Messages Integration Tests', () => {
     const findMessageLteResult = await topicFindMessage({
       args: findMessageLteArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const findMessageLteOutput =
       findMessageLteResult.result as TopicFindMessageOutput;

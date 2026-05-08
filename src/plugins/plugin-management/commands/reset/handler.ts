@@ -9,9 +9,9 @@ import type { PluginManagementResetOutput } from './output';
 
 export class PluginManagementResetCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    logger.info('🔄 Resetting plugin state...');
+    api.logger.info('🔄 Resetting plugin state...');
 
     api.pluginManagement.resetPlugins();
 

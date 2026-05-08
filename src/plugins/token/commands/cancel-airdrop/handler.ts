@@ -33,7 +33,7 @@ export class TokenCancelAirdropCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<CancelAirdropNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
     const validArgs = TokenCancelAirdropInputSchema.parse(args.args);
     const {
@@ -83,7 +83,7 @@ export class TokenCancelAirdropCommand extends BaseTransactionCommand<
     const { accountId: senderAccountId, keyRefId: signerKeyRefId } =
       resolvedFrom;
 
-    logger.info(
+    api.logger.info(
       `Cancelling airdrop: ${tokenId}${serial !== undefined ? `#${serial}` : ''} from ${senderAccountId} to ${receiverAccountId}`,
     );
 
@@ -102,8 +102,8 @@ export class TokenCancelAirdropCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
     normalisedParams: CancelAirdropNormalizedParams,
   ): Promise<CancelAirdropBuildTransactionResult> {
-    const { api, logger } = args;
-    logger.debug('Building cancel airdrop transaction body');
+    const { api } = args;
+    api.logger.debug('Building cancel airdrop transaction body');
 
     const transaction = api.token.createCancelAirdropTransaction({
       senderAccountId: normalisedParams.senderAccountId,
@@ -122,8 +122,10 @@ export class TokenCancelAirdropCommand extends BaseTransactionCommand<
     normalisedParams: CancelAirdropNormalizedParams,
     buildTransactionResult: CancelAirdropBuildTransactionResult,
   ): Promise<CancelAirdropSignTransactionResult> {
-    const { api, logger } = args;
-    logger.debug(`Using key ${normalisedParams.signerKeyRefId} for signing`);
+    const { api } = args;
+    api.logger.debug(
+      `Using key ${normalisedParams.signerKeyRefId} for signing`,
+    );
 
     const transaction = await api.txSign.sign(
       buildTransactionResult.transaction,

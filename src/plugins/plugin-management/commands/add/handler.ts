@@ -27,22 +27,22 @@ import { PluginManagementAddInputSchema } from './input';
 
 export class PluginManagementAddCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
     const validArgs = PluginManagementAddInputSchema.parse(args.args);
 
     let pluginPath: string;
     if (validArgs.name) {
       pluginPath = resolveDefaultPluginPath(validArgs.name);
-      logger.info(`➕ Adding default plugin: ${validArgs.name}...`);
+      api.logger.info(`➕ Adding default plugin: ${validArgs.name}...`);
     } else {
       pluginPath = validArgs.path!;
-      logger.info('➕ Adding plugin from path...');
+      api.logger.info('➕ Adding plugin from path...');
     }
 
     const { resolvedPath, manifestPath } = await validatePluginPath(pluginPath);
 
-    logger.info(`🔍 Loading plugin manifest from: ${manifestPath}`);
+    api.logger.info(`🔍 Loading plugin manifest from: ${manifestPath}`);
 
     const manifest = await loadPluginManifest(manifestPath);
     const pluginName = manifest.name;

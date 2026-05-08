@@ -38,9 +38,9 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<MintFtNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
 
     const validArgs = TokenMintFtInputSchema.parse(args.args);
 
@@ -64,7 +64,7 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
 
     const tokenId = resolvedToken.tokenId;
 
-    logger.info(`Minting tokens for token: ${tokenId}`);
+    api.logger.info(`Minting tokens for token: ${tokenId}`);
 
     const tokenInfo = await api.mirror.getTokenInfo(tokenId);
 
@@ -105,7 +105,7 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
           context: { tokenId, rawAmount, totalSupply, maxSupply },
         });
       }
-      logger.info(
+      api.logger.info(
         `Token has finite supply. Current: ${totalSupply.toString()}, Max: ${maxSupply.toString()}, After mint: ${newTotalSupply.toString()}`,
       );
     }
@@ -121,8 +121,8 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
     normalisedParams: MintFtNormalizedParams,
   ): Promise<MintFtBuildTransactionResult> {
-    const { api, logger } = args;
-    logger.debug('Building mint transaction body');
+    const { api } = args;
+    api.logger.debug('Building mint transaction body');
     const transaction = api.token.createMintTransaction({
       tokenId: normalisedParams.tokenId,
       amount: normalisedParams.rawAmount,
@@ -137,8 +137,8 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
     normalisedParams: MintFtNormalizedParams,
     buildTransactionResult: MintFtBuildTransactionResult,
   ): Promise<MintFtSignTransactionResult> {
-    const { api, logger } = args;
-    logger.debug(
+    const { api } = args;
+    api.logger.debug(
       `Using ${normalisedParams.keyRefIds.length} key(s) for signing transaction`,
     );
     const transaction = await api.txSign.sign(

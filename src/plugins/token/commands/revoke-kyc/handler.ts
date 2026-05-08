@@ -35,7 +35,7 @@ export class TokenRevokeKycCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<RevokeKycNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
     const validArgs = TokenRevokeKycInputSchema.parse(args.args);
 
@@ -61,7 +61,7 @@ export class TokenRevokeKycCommand extends BaseTransactionCommand<
       network,
     });
 
-    logger.info(
+    api.logger.info(
       `Revoking KYC for account ${accountId} on token ${tokenId} on ${network}`,
     );
 
@@ -88,8 +88,8 @@ export class TokenRevokeKycCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
     normalisedParams: RevokeKycNormalizedParams,
   ): Promise<RevokeKycBuildTransactionResult> {
-    const { api, logger } = args;
-    logger.debug('Building token revoke KYC transaction');
+    const { api } = args;
+    api.logger.debug('Building token revoke KYC transaction');
     const transaction = api.token.createRevokeKycTransaction({
       tokenId: normalisedParams.tokenId,
       accountId: normalisedParams.accountId,
@@ -102,8 +102,8 @@ export class TokenRevokeKycCommand extends BaseTransactionCommand<
     normalisedParams: RevokeKycNormalizedParams,
     buildTransactionResult: RevokeKycBuildTransactionResult,
   ): Promise<RevokeKycSignTransactionResult> {
-    const { api, logger } = args;
-    logger.debug(
+    const { api } = args;
+    api.logger.debug(
       `Using ${normalisedParams.keyRefIds.length} key(s) for signing transaction`,
     );
     const signedTransaction = await api.txSign.sign(

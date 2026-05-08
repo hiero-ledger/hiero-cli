@@ -16,11 +16,7 @@ import {
 } from '@/plugins/token/commands/view';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
-import {
-  makeApiMocks,
-  makeLogger,
-  mockZustandTokenStateHelper,
-} from './helpers/mocks';
+import { makeApiMocks, mockZustandTokenStateHelper } from './helpers/mocks';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTokenStateHelper: jest.fn(),
@@ -63,15 +59,11 @@ describe('tokenViewHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: '0.0.123456',
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       const result = await tokenView(args);
@@ -119,13 +111,9 @@ describe('tokenViewHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: { token: '0.0.123456' },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       const result = await tokenView(args);
@@ -164,15 +152,11 @@ describe('tokenViewHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: 'my-token',
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       const result = await tokenView(args);
@@ -201,15 +185,11 @@ describe('tokenViewHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: '0.0.999999',
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenView(args)).rejects.toThrow();
@@ -225,15 +205,11 @@ describe('tokenViewHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: '0.0.123456',
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenView(args)).rejects.toThrow('API Error');

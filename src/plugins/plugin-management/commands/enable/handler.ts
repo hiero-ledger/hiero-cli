@@ -14,12 +14,12 @@ import { PluginManagementEnableInputSchema } from './input';
 
 export class PluginManagementEnableCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
     const validArgs = PluginManagementEnableInputSchema.parse(args.args);
     const name = validArgs.name;
 
-    logger.info('✅ Enabling plugin...');
+    api.logger.info('✅ Enabling plugin...');
 
     const result = api.pluginManagement.enablePlugin(name);
 

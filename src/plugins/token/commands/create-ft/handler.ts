@@ -45,7 +45,7 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<TokenCreateFtNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
     const validArgs: TokenCreateFtInput = TokenCreateFtInputSchema.parse(
       args.args,
     );
@@ -103,7 +103,7 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
       autoRenewAccountCredential !== undefined
     ) {
       if (expirationTime) {
-        logger.warn(
+        api.logger.warn(
           'Expiration time is ignored because auto-renew period is set; auto-renew period takes precedence over fixed expiration.',
         );
       }
@@ -114,25 +114,25 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
     if (validArgs.supplyType === SupplyType.FINITE) {
       finalMaxSupply = determineFiniteMaxSupply(maxSupply, initialSupply);
     } else if (maxSupply !== undefined) {
-      logger.warn(
+      api.logger.warn(
         'Max supply specified for INFINITE supply type - ignoring max supply parameter',
       );
     }
 
-    logger.info(
+    api.logger.info(
       `Creating fungible token: ${validArgs.tokenName} (${validArgs.symbol})`,
     );
     if (finalMaxSupply !== undefined) {
-      logger.info(`Max supply: ${finalMaxSupply}`);
+      api.logger.info(`Max supply: ${finalMaxSupply}`);
     }
 
-    logger.debug('=== TOKEN PARAMS DEBUG ===');
-    logger.debug(`Treasury ID: ${treasury.keyRefId}`);
-    logger.debug(
+    api.logger.debug('=== TOKEN PARAMS DEBUG ===');
+    api.logger.debug(`Treasury ID: ${treasury.keyRefId}`);
+    api.logger.debug(
       `Admin Keys (keyRefIds): ${admin.map((k) => k.keyRefId).join(', ')}`,
     );
-    logger.debug(`Use Custom Treasury: ${String(Boolean(treasury))}`);
-    logger.debug('=========================');
+    api.logger.debug(`Use Custom Treasury: ${String(Boolean(treasury))}`);
+    api.logger.debug('=========================');
 
     return {
       name: validArgs.tokenName,
@@ -281,8 +281,8 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
     _signTransactionResult: TokenCreateFtSignTransactionResult,
     executeTransactionResult: TokenCreateFtExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { api, logger } = args;
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const { api } = args;
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     const result = executeTransactionResult.transactionResult;
 
     const tokenData = buildTokenData(result, {
@@ -317,7 +317,7 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
     const tokenId = result.tokenId ?? '';
     const key = composeKey(normalisedParams.network, tokenId);
     tokenState.saveToken(key, tokenData);
-    logger.info('   Token data saved to state');
+    api.logger.info('   Token data saved to state');
 
     if (normalisedParams.alias) {
       api.alias.register({
@@ -327,7 +327,7 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
         entityId: tokenId,
         createdAt: result.consensusTimestamp,
       });
-      logger.info(`   Name registered: ${normalisedParams.alias}`);
+      api.logger.info(`   Name registered: ${normalisedParams.alias}`);
     }
 
     const outputData: TokenCreateFtOutput = {

@@ -1,4 +1,4 @@
-import type { CoreApi, Logger } from '@/core';
+import type { CoreApi } from '@/core';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
 import type { AccountData } from '@/plugins/account/schema';
@@ -29,14 +29,14 @@ export class AccountUpdateStateHook implements Hook<PostOutputPreparationHookPar
       return { breakFlow: false };
     }
 
-    const { api, logger } = params.args;
+    const { api } = params.args;
 
     switch (parsed.data.source) {
       case OrchestratorSource.BATCH:
-        this.handleBatch(api, logger, parsed.data.batchData);
+        this.handleBatch(api, parsed.data.batchData);
         break;
       case OrchestratorSource.SCHEDULE:
-        await this.handleSchedule(api, logger, parsed.data.scheduledData);
+        await this.handleSchedule(api, parsed.data.scheduledData);
         break;
       default:
         break;
@@ -45,11 +45,7 @@ export class AccountUpdateStateHook implements Hook<PostOutputPreparationHookPar
     return { breakFlow: false };
   }
 
-  private handleBatch(
-    api: CoreApi,
-    logger: Logger,
-    batchData: BatchData,
-  ): void {
+  private handleBatch(api: CoreApi, batchData: BatchData): void {
     if (!batchData.success) {
       return;
     }
@@ -57,44 +53,41 @@ export class AccountUpdateStateHook implements Hook<PostOutputPreparationHookPar
       if (item.command !== ACCOUNT_UPDATE_COMMAND_NAME) {
         continue;
       }
-      this.updateFromBatchItem(api, logger, item);
+      this.updateFromBatchItem(api, item);
     }
   }
 
   private async handleSchedule(
     api: CoreApi,
-    logger: Logger,
     scheduledData: ScheduledTransactionData,
   ): Promise<void> {
     if (scheduledData.command !== ACCOUNT_UPDATE_COMMAND_NAME) {
       return;
     }
-    await this.updateFromScheduled(api, logger, scheduledData);
+    await this.updateFromScheduled(api, scheduledData);
   }
 
   private updateFromBatchItem(
     api: CoreApi,
-    logger: Logger,
     batchDataItem: BatchDataItem,
   ): void {
     const normalisedParams = this.parseAccountUpdateParams(
-      logger,
+      api,
       batchDataItem.normalizedParams,
     );
     if (!normalisedParams) {
       return;
     }
 
-    this.persistAccountUpdate(api, logger, normalisedParams);
+    this.persistAccountUpdate(api, normalisedParams);
   }
 
   private async updateFromScheduled(
     api: CoreApi,
-    logger: Logger,
     scheduledData: ScheduledTransactionData,
   ): Promise<void> {
     const normalisedParams = this.parseAccountUpdateParams(
-      logger,
+      api,
       scheduledData.normalizedParams ?? {},
     );
     if (!normalisedParams) {
@@ -103,7 +96,7 @@ export class AccountUpdateStateHook implements Hook<PostOutputPreparationHookPar
 
     const innerTransactionId = scheduledData.transactionId;
     if (!innerTransactionId) {
-      logger.warn(`No transaction ID found for scheduled transaction`);
+      api.logger.warn(`No transaction ID found for scheduled transaction`);
       return;
     }
 
@@ -116,7 +109,7 @@ export class AccountUpdateStateHook implements Hook<PostOutputPreparationHookPar
     );
     const result = scheduledMirrorTx?.result;
     if (result !== MirrorTransactionResult.SUCCESS) {
-      logger.warn(
+      api.logger.warn(
         `Scheduled transaction result is not ${MirrorTransactionResult.SUCCESS}: ${String(result)}, skipping state update`,
       );
       return;
@@ -124,18 +117,17 @@ export class AccountUpdateStateHook implements Hook<PostOutputPreparationHookPar
 
     const entityId = scheduledMirrorTx?.entity_id;
     if (entityId && entityId !== normalisedParams.accountId) {
-      logger.warn(
+      api.logger.warn(
         `Account ID mismatch: expected ${normalisedParams.accountId}, got ${entityId}, skipping state update`,
       );
       return;
     }
 
-    this.persistAccountUpdate(api, logger, normalisedParams);
+    this.persistAccountUpdate(api, normalisedParams);
   }
 
   private persistAccountUpdate(
     api: CoreApi,
-    logger: Logger,
     normalisedParams: AccountUpdateNormalisedParams,
   ): void {
     const {
@@ -151,11 +143,11 @@ export class AccountUpdateStateHook implements Hook<PostOutputPreparationHookPar
       return;
     }
 
-    const accountState = new ZustandAccountStateHelper(api.state, logger);
+    const accountState = new ZustandAccountStateHelper(api.state, api.logger);
     const existingAccount = accountState.getAccount(accountStateKey);
 
     if (!existingAccount) {
-      logger.warn(
+      api.logger.warn(
         `Account '${accountId}' not found in state, skipping state update`,
       );
       return;
@@ -185,13 +177,13 @@ export class AccountUpdateStateHook implements Hook<PostOutputPreparationHookPar
   }
 
   private parseAccountUpdateParams(
-    logger: Logger,
+    api: CoreApi,
     normalizedParams: unknown,
   ): AccountUpdateNormalisedParams | undefined {
     const parseResult =
       AccountUpdateNormalisedParamsSchema.safeParse(normalizedParams);
     if (!parseResult.success) {
-      logger.warn(
+      api.logger.warn(
         `There was a problem with parsing data schema. The saving will not be done`,
       );
       return;

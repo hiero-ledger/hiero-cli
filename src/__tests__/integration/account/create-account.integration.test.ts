@@ -33,9 +33,6 @@ describe('Create Account Integration Tests', () => {
       const createAccountResult = await accountCreate({
         args: createAccountArgs,
         api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
       });
 
       const createAccountOutput =
@@ -52,9 +49,6 @@ describe('Create Account Integration Tests', () => {
       const viewAccountResult = await accountView({
         args: viewAccountArgs,
         api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
       });
       const viewAccountOutput = viewAccountResult.result as AccountViewOutput;
       expect(viewAccountOutput.accountId).toBe(createAccountOutput.accountId);

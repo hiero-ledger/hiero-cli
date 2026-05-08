@@ -10,18 +10,20 @@ import { TokenListInputSchema } from './input';
 
 export class TokenListCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { api, logger } = args;
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const { api } = args;
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     const validArgs: ListTokensNormalizedParams = TokenListInputSchema.parse(
       args.args,
     );
 
-    logger.info('Listing tokens...');
+    api.logger.info('Listing tokens...');
 
     const tokens = tokenState.listTokens();
-    logger.debug(`[TOKEN LIST] Retrieved ${tokens.length} tokens from state`);
+    api.logger.debug(
+      `[TOKEN LIST] Retrieved ${tokens.length} tokens from state`,
+    );
     tokens.forEach((token, index) => {
-      logger.debug(
+      api.logger.debug(
         `[TOKEN LIST]   ${index + 1}. ${token.name} (${token.symbol}) - ${token.tokenId} on ${token.network}`,
       );
     });

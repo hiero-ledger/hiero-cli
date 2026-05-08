@@ -38,10 +38,10 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
     keyManager: KeyManager,
     topicId: string,
   ): Promise<string[]> {
-    const { api, logger } = args;
+    const { api } = args;
 
     if (!topicInfo.submit_key) {
-      logger.info(`Submitting to public topic (no submit key required)`);
+      api.logger.info(`Submitting to public topic (no submit key required)`);
       return [];
     }
 
@@ -55,14 +55,14 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
         'Not enough submit key(s) found in key manager for this topic. Provide --signer.',
       validationErrorOptions: { context: { topicId } },
     });
-    logger.info(`Using ${keyRefIds.length} signer(s) for submit key`);
+    api.logger.info(`Using ${keyRefIds.length} signer(s) for submit key`);
     return keyRefIds;
   }
 
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<SubmitMessageNormalisedParams> {
-    const { api, logger } = args;
+    const { api } = args;
     const validArgs = TopicSubmitMessageInputSchema.parse(args.args);
 
     const topicIdOrAlias = validArgs.topic;
@@ -83,7 +83,7 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
     if (topicAliasResult?.entityId) {
       topicId = topicAliasResult.entityId;
     }
-    logger.info(`Submitting message to topic: ${topicId}`);
+    api.logger.info(`Submitting message to topic: ${topicId}`);
 
     const topicInfo = await api.mirror.getTopicInfo(topicId);
     const signerKeyRefIds = await this.resolveSubmitSigners(

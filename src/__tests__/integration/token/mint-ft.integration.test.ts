@@ -37,9 +37,6 @@ describe('Mint FT Integration Tests', () => {
     const createAccountResult = await accountCreate({
       args: createAccountArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
 
     const createAccountOutput =
@@ -56,9 +53,6 @@ describe('Mint FT Integration Tests', () => {
     const viewAccountResult = await accountView({
       args: viewAccountArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const viewAccountOutput = viewAccountResult.result as AccountViewOutput;
     expect(viewAccountOutput.accountId).toBe(createAccountOutput.accountId);
@@ -78,9 +72,6 @@ describe('Mint FT Integration Tests', () => {
     const createTokenResult = await tokenCreateFt({
       args: createTokenArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const createTokenOutput = createTokenResult.result as TokenCreateFtOutput;
     expect(createTokenOutput.network).toBe(network);
@@ -102,9 +93,6 @@ describe('Mint FT Integration Tests', () => {
         accountBalance({
           args: accountBalanceBeforeMintArgs,
           api: coreApi,
-          state: coreApi.state,
-          logger: coreApi.logger,
-          config: coreApi.config,
         }).then((r) => r.result as AccountBalanceOutput),
       (output) => (output.tokenBalances?.length ?? 0) > 0,
     );
@@ -126,9 +114,6 @@ describe('Mint FT Integration Tests', () => {
     const mintFtResult = await tokenMintFt({
       args: mintFtArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const mintFtOutput = mintFtResult.result as TokenMintFtOutput;
     expect(mintFtOutput.tokenId).toBe(createTokenOutput.tokenId);
@@ -146,9 +131,6 @@ describe('Mint FT Integration Tests', () => {
         accountBalance({
           args: accountBalanceAfterMintArgs,
           api: coreApi,
-          state: coreApi.state,
-          logger: coreApi.logger,
-          config: coreApi.config,
         }).then((r) => r.result as AccountBalanceOutput),
       (output) => output.tokenBalances?.at(0)?.balance === 150n,
     );

@@ -7,11 +7,11 @@ import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helpe
 
 export class AccountClearCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    const accountState = new ZustandAccountStateHelper(api.state, logger);
+    const accountState = new ZustandAccountStateHelper(api.state, api.logger);
 
-    logger.info('Clearing all accounts...');
+    api.logger.info('Clearing all accounts...');
 
     const accounts = accountState.listAccounts();
     const count = accounts.length;

@@ -22,7 +22,6 @@ import {
 
 import {
   makeApiMocks,
-  makeLogger,
   makeTransactionResult,
   MOCK_NFT_COLLECTION_ENTITY_ID,
 } from './helpers/mocks';
@@ -86,7 +85,6 @@ describe('tokenDeleteAllowanceNft', () => {
   describe('success scenarios', () => {
     test('delete specific serials with account-id:key format', async () => {
       const { api, allowance } = makeDeleteAllowanceSuccessMocks();
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -95,9 +93,6 @@ describe('tokenDeleteAllowanceNft', () => {
           serials: '1,2,3',
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       const result = await tokenDeleteAllowanceNft(args);
@@ -125,7 +120,6 @@ describe('tokenDeleteAllowanceNft', () => {
 
     test('delete all-serials blanket approval with spender', async () => {
       const { api, allowance } = makeDeleteAllowanceSuccessMocks();
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -135,9 +129,6 @@ describe('tokenDeleteAllowanceNft', () => {
           allSerials: true,
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       const result = await tokenDeleteAllowanceNft(args);
@@ -165,7 +156,6 @@ describe('tokenDeleteAllowanceNft', () => {
     test('owner defaults to operator when not provided', async () => {
       const operatorId = MOCK_OPERATOR_ACCOUNT_ID;
       const { api, allowance } = makeDeleteAllowanceSuccessMocks();
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -173,9 +163,6 @@ describe('tokenDeleteAllowanceNft', () => {
           serials: '5',
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       const result = await tokenDeleteAllowanceNft(args);
@@ -193,7 +180,6 @@ describe('tokenDeleteAllowanceNft', () => {
 
     test('resolve token and spender by alias', async () => {
       const { api, allowance } = makeDeleteAllowanceSuccessMocks();
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -203,9 +189,6 @@ describe('tokenDeleteAllowanceNft', () => {
           allSerials: true,
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       const result = await tokenDeleteAllowanceNft(args);
@@ -229,7 +212,6 @@ describe('tokenDeleteAllowanceNft', () => {
       (api.mirror.getTokenInfo as jest.Mock).mockResolvedValue({
         type: 'FUNGIBLE_COMMON',
       });
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -237,9 +219,6 @@ describe('tokenDeleteAllowanceNft', () => {
           serials: '1',
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenDeleteAllowanceNft(args)).rejects.toThrow(
@@ -250,7 +229,6 @@ describe('tokenDeleteAllowanceNft', () => {
     test('throws NotFoundError when spender account not found', async () => {
       const { api } = makeDeleteAllowanceSuccessMocks();
       (api.alias.resolve as jest.Mock).mockReturnValue(null);
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -260,9 +238,6 @@ describe('tokenDeleteAllowanceNft', () => {
           allSerials: true,
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenDeleteAllowanceNft(args)).rejects.toThrow(
@@ -275,7 +250,6 @@ describe('tokenDeleteAllowanceNft', () => {
       (api.txExecute.execute as jest.Mock).mockResolvedValue(
         makeTransactionResult({ success: false, transactionId: '' }),
       );
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -284,9 +258,6 @@ describe('tokenDeleteAllowanceNft', () => {
           serials: '1',
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenDeleteAllowanceNft(args)).rejects.toThrow(
@@ -296,16 +267,12 @@ describe('tokenDeleteAllowanceNft', () => {
 
     test('throws ZodError when neither serials nor all-serials specified', async () => {
       const { api } = makeDeleteAllowanceSuccessMocks();
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
           token: MOCK_HEDERA_ENTITY_ID_1,
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenDeleteAllowanceNft(args)).rejects.toThrow(
@@ -315,7 +282,6 @@ describe('tokenDeleteAllowanceNft', () => {
 
     test('throws ZodError when both serials and all-serials specified', async () => {
       const { api } = makeDeleteAllowanceSuccessMocks();
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -325,9 +291,6 @@ describe('tokenDeleteAllowanceNft', () => {
           spender: MOCK_ACCOUNT_ID_ALT,
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenDeleteAllowanceNft(args)).rejects.toThrow(
@@ -337,7 +300,6 @@ describe('tokenDeleteAllowanceNft', () => {
 
     test('throws ZodError when --all-serials without --spender', async () => {
       const { api } = makeDeleteAllowanceSuccessMocks();
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -345,9 +307,6 @@ describe('tokenDeleteAllowanceNft', () => {
           allSerials: true,
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenDeleteAllowanceNft(args)).rejects.toThrow(
@@ -357,7 +316,6 @@ describe('tokenDeleteAllowanceNft', () => {
 
     test('throws ZodError when --spender used with --serials', async () => {
       const { api } = makeDeleteAllowanceSuccessMocks();
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -366,9 +324,6 @@ describe('tokenDeleteAllowanceNft', () => {
           spender: MOCK_ACCOUNT_ID_ALT,
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenDeleteAllowanceNft(args)).rejects.toThrow(

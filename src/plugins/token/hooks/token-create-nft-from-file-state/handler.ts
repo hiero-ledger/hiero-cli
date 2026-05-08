@@ -1,4 +1,4 @@
-import type { CoreApi, Logger } from '@/core';
+import type { CoreApi } from '@/core';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
 import type { Credential } from '@/core/services/kms/kms-types.interface';
@@ -27,28 +27,27 @@ export class TokenCreateNftFromFileStateHook implements Hook<PostOutputPreparati
       return { breakFlow: false };
     }
     const batchData = parsed.data.batchData;
-    const { api, logger } = params.args;
+    const { api } = params.args;
     if (!batchData.success) {
       return { breakFlow: false };
     }
     for (const batchDataItem of [...batchData.transactions].filter(
       (item) => item.command === TOKEN_CREATE_NFT_FROM_FILE_COMMAND_NAME,
     )) {
-      await this.saveNft(api, logger, batchDataItem);
+      await this.saveNft(api, batchDataItem);
     }
     return { breakFlow: false };
   }
 
   private async saveNft(
     api: CoreApi,
-    logger: Logger,
     batchDataItem: BatchDataItem,
   ): Promise<void> {
     const parseResult = CreateNftFromFileNormalizedParamsSchema.safeParse(
       batchDataItem.normalizedParams,
     );
     if (!parseResult.success) {
-      logger.warn(
+      api.logger.warn(
         `There was a problem with parsing data schema. The saving will not be done`,
       );
       return;
@@ -56,7 +55,7 @@ export class TokenCreateNftFromFileStateHook implements Hook<PostOutputPreparati
     const normalisedParams = parseResult.data;
     const innerTransactionId = batchDataItem.transactionId;
     if (!innerTransactionId) {
-      logger.warn(
+      api.logger.warn(
         `No transaction ID found for batch transaction ${batchDataItem.order}`,
       );
       return;
@@ -68,7 +67,7 @@ export class TokenCreateNftFromFileStateHook implements Hook<PostOutputPreparati
       });
 
     if (!innerTransactionResult.tokenId) {
-      logger.warn(
+      api.logger.warn(
         'Transaction completed but did not return a token ID, skipping state save',
       );
       return;
@@ -83,7 +82,6 @@ export class TokenCreateNftFromFileStateHook implements Hook<PostOutputPreparati
       innerTransactionResult.tokenId,
       normalisedParams.associations as Credential[],
       api,
-      logger,
       normalisedParams.keyManager,
     );
 
@@ -91,13 +89,13 @@ export class TokenCreateNftFromFileStateHook implements Hook<PostOutputPreparati
       normalisedParams.network,
       innerTransactionResult.tokenId,
     );
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     tokenState.saveToken(key, tokenData);
-    logger.info('   Non-fungible token data saved to state');
+    api.logger.info('   Non-fungible token data saved to state');
 
     if (normalisedParams.alias) {
       if (api.alias.exists(normalisedParams.alias, normalisedParams.network)) {
-        logger.warn(
+        api.logger.warn(
           `Alias "${normalisedParams.alias}" already exists, skipping registration`,
         );
       } else {
@@ -108,7 +106,7 @@ export class TokenCreateNftFromFileStateHook implements Hook<PostOutputPreparati
           entityId: innerTransactionResult.tokenId,
           createdAt: innerTransactionResult.consensusTimestamp,
         });
-        logger.info(`   Name registered: ${normalisedParams.alias}`);
+        api.logger.info(`   Name registered: ${normalisedParams.alias}`);
       }
     }
   }
