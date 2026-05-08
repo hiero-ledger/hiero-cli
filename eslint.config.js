@@ -42,6 +42,18 @@ module.exports = [
         NodeJS: 'readonly',
       },
     },
+    settings: {
+      'import/parsers': {
+        [require.resolve('@typescript-eslint/parser')]: ['.ts', '.tsx'],
+      },
+      'import/resolver': {
+        typescript: {
+          alwaysTryTypes: true,
+          project: ['./tsconfig.json', './tsconfig.test.json'],
+          noWarnOnMultipleProjects: true,
+        },
+      },
+    },
     plugins: {
       '@typescript-eslint': tseslint,
       'simple-import-sort': simpleImportSort,
@@ -83,6 +95,15 @@ module.exports = [
       ],
       'simple-import-sort/exports': 'error',
       'import/no-duplicates': 'error',
+      'import/no-unused-modules': [
+        'error',
+        {
+          unusedExports: true,
+          ignoreUnusedTypeExports: true,
+          src: ['src'],
+          ignoreExports: ['src/core/index.ts'],
+        },
+      ],
 
       // Type imports/exports
       '@typescript-eslint/consistent-type-imports': [
@@ -125,6 +146,31 @@ module.exports = [
       '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/unbound-method': 'off',
+      'import/no-unused-modules': 'off',
+    },
+  },
+
+  // import/no-unused-modules only follows static imports. Plugin commands are wired through
+  // PluginManifest objects and loaded at runtime (e.g. jiti), so the rule would flag almost
+  // every plugin export as unused even when the manifest references that module.
+  {
+    files: ['src/plugins/**/*.ts'],
+    rules: {
+      'import/no-unused-modules': 'off',
+    },
+  },
+
+  // Mock/fixture helpers are often exported for selective reuse across tests. The same rule still
+  // reports many of those exports as unused (barrels, optional helpers, uneven import paths),
+  // which adds noise without reflecting a real product-surface dead-export problem.
+  {
+    files: [
+      '**/mocks.ts',
+      '**/__tests__/**/fixtures.ts',
+      '**/__tests__/**/fixtures/**/*.ts',
+    ],
+    rules: {
+      'import/no-unused-modules': 'off',
     },
   },
 
