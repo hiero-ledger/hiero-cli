@@ -253,7 +253,6 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
       tokenId,
       normalisedParams.associations,
       api,
-      api.logger,
       normalisedParams.keyManager,
     );
     tokenData.associations = successfulAssociations;

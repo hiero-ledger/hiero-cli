@@ -1,4 +1,4 @@
-import type { CoreApi, Logger } from '@/core';
+import type { CoreApi } from '@/core';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
 import type { BatchDataItem } from '@/core/types/shared.types';
@@ -31,16 +31,12 @@ export class TokenDissociateStateHook implements Hook<PostOutputPreparationHookP
     for (const batchDataItem of [...batchData.transactions].filter(
       (item) => item.command === TOKEN_DISSOCIATE_COMMAND_NAME,
     )) {
-      this.removeAssociations(api, api.logger, batchDataItem);
+      this.removeAssociations(api, batchDataItem);
     }
     return Promise.resolve({ breakFlow: false });
   }
 
-  private removeAssociations(
-    api: CoreApi,
-    logger: Logger,
-    batchDataItem: BatchDataItem,
-  ): void {
+  private removeAssociations(api: CoreApi, batchDataItem: BatchDataItem): void {
     const parseResult = DissociateNormalizedParamsSchema.safeParse(
       batchDataItem.normalizedParams,
     );

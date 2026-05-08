@@ -1,4 +1,4 @@
-import type { CoreApi, Logger } from '@/core';
+import type { CoreApi } from '@/core';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
 
@@ -31,14 +31,13 @@ export class TopicCreateStateHook implements Hook<PostOutputPreparationHookParam
     for (const batchDataItem of [...batchData.transactions].filter(
       (item) => item.command === TOPIC_CREATE_COMMAND_NAME,
     )) {
-      await this.saveTopic(api, api.logger, batchDataItem);
+      await this.saveTopic(api, batchDataItem);
     }
     return { breakFlow: false };
   }
 
   private async saveTopic(
     api: CoreApi,
-    logger: Logger,
     batchDataItem: BatchDataItem,
   ): Promise<void> {
     const parseResult = TopicCreateNormalisedParamsSchema.safeParse(

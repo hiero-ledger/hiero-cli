@@ -1,4 +1,4 @@
-import type { CoreApi, Logger } from '@/core';
+import type { CoreApi } from '@/core';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
 import type { BatchDataItem } from '@/core/types/shared.types';
@@ -26,14 +26,13 @@ export class TopicDeleteStateHook implements Hook<PostOutputPreparationHookParam
     for (const batchDataItem of [...batchData.transactions].filter(
       (item) => item.command === TOPIC_DELETE_COMMAND_NAME,
     )) {
-      this.applyDeleteFromBatchItem(api, api.logger, batchDataItem);
+      this.applyDeleteFromBatchItem(api, batchDataItem);
     }
     return Promise.resolve({ breakFlow: false });
   }
 
   private applyDeleteFromBatchItem(
     api: CoreApi,
-    logger: Logger,
     batchDataItem: BatchDataItem,
   ): void {
     const parseResult = TopicDeleteNormalisedParamsSchema.safeParse(

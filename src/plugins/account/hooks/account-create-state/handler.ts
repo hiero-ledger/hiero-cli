@@ -35,10 +35,10 @@ export class AccountCreateStateHook implements Hook<PostOutputPreparationHookPar
 
     switch (parsed.data.source) {
       case OrchestratorSource.BATCH:
-        await this.handleBatch(api, api.logger, parsed.data.batchData);
+        await this.handleBatch(api, parsed.data.batchData);
         break;
       case OrchestratorSource.SCHEDULE:
-        await this.handleSchedule(api, api.logger, parsed.data.scheduledData);
+        await this.handleSchedule(api, parsed.data.scheduledData);
         break;
       default:
         break;
@@ -47,11 +47,7 @@ export class AccountCreateStateHook implements Hook<PostOutputPreparationHookPar
     return { breakFlow: false };
   }
 
-  private async handleBatch(
-    api: CoreApi,
-    logger: Logger,
-    batchData: BatchData,
-  ): Promise<void> {
+  private async handleBatch(api: CoreApi, batchData: BatchData): Promise<void> {
     if (!batchData.success) {
       return;
     }
@@ -59,24 +55,22 @@ export class AccountCreateStateHook implements Hook<PostOutputPreparationHookPar
       if (item.command !== ACCOUNT_CREATE_COMMAND_NAME) {
         continue;
       }
-      await this.saveFromBatchItem(api, api.logger, item);
+      await this.saveFromBatchItem(api, item);
     }
   }
 
   private async handleSchedule(
     api: CoreApi,
-    logger: Logger,
     scheduledData: ScheduledTransactionData,
   ): Promise<void> {
     if (scheduledData.command !== ACCOUNT_CREATE_COMMAND_NAME) {
       return;
     }
-    await this.saveFromScheduled(api, api.logger, scheduledData);
+    await this.saveFromScheduled(api, scheduledData);
   }
 
   private async saveFromBatchItem(
     api: CoreApi,
-    logger: Logger,
     batchDataItem: BatchDataItem,
   ): Promise<void> {
     const normalisedParams = this.parseAccountCreateParams(
@@ -106,7 +100,7 @@ export class AccountCreateStateHook implements Hook<PostOutputPreparationHookPar
       return;
     }
 
-    this.persistAccountCreate(api, api.logger, normalisedParams, {
+    this.persistAccountCreate(api, normalisedParams, {
       stateAccountId: receipt.accountId,
       consensusTimestamp: receipt.consensusTimestamp,
     });
@@ -114,7 +108,6 @@ export class AccountCreateStateHook implements Hook<PostOutputPreparationHookPar
 
   private async saveFromScheduled(
     api: CoreApi,
-    logger: Logger,
     scheduledData: ScheduledTransactionData,
   ): Promise<void> {
     const normalisedParams = this.parseAccountCreateParams(
@@ -147,7 +140,7 @@ export class AccountCreateStateHook implements Hook<PostOutputPreparationHookPar
       return;
     }
 
-    this.persistAccountCreate(api, api.logger, normalisedParams, {
+    this.persistAccountCreate(api, normalisedParams, {
       stateAccountId: accountId,
       consensusTimestamp: scheduledMirrorTx?.consensus_timestamp,
     });
@@ -155,7 +148,6 @@ export class AccountCreateStateHook implements Hook<PostOutputPreparationHookPar
 
   private persistAccountCreate(
     api: CoreApi,
-    logger: Logger,
     normalisedParams: AccountCreateNormalisedParams,
     resolved: {
       stateAccountId: string;

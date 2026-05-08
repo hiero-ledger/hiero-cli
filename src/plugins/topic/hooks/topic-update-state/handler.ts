@@ -1,4 +1,4 @@
-import type { CoreApi, Logger } from '@/core';
+import type { CoreApi } from '@/core';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
 import type { BatchDataItem } from '@/core/types/shared.types';
@@ -29,17 +29,13 @@ export class TopicUpdateStateHook implements Hook<PostOutputPreparationHookParam
     for (const batchDataItem of [...batchData.transactions].filter(
       (item) => item.command === TOPIC_UPDATE_COMMAND_NAME,
     )) {
-      this.updateTopicState(api, api.logger, batchDataItem);
+      this.updateTopicState(api, batchDataItem);
     }
 
     return Promise.resolve({ breakFlow: false });
   }
 
-  private updateTopicState(
-    api: CoreApi,
-    logger: Logger,
-    batchDataItem: BatchDataItem,
-  ): void {
+  private updateTopicState(api: CoreApi, batchDataItem: BatchDataItem): void {
     const parseResult = TopicUpdateNormalisedParamsSchema.safeParse(
       batchDataItem.normalizedParams,
     );

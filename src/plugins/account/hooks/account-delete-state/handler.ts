@@ -1,4 +1,4 @@
-import type { CoreApi, Logger } from '@/core';
+import type { CoreApi } from '@/core';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
 
@@ -29,14 +29,13 @@ export class AccountDeleteStateHook implements Hook<PostOutputPreparationHookPar
     for (const batchDataItem of [...batchData.transactions].filter(
       (item) => item.command === ACCOUNT_DELETE_COMMAND_NAME,
     )) {
-      this.removeAccountAfterBatch(api, api.logger, batchDataItem);
+      this.removeAccountAfterBatch(api, batchDataItem);
     }
     return Promise.resolve({ breakFlow: false });
   }
 
   private removeAccountAfterBatch(
     api: CoreApi,
-    logger: Logger,
     batchDataItem: BatchDataItem,
   ): void {
     const parseResult = AccountDeleteNormalisedParamsSchema.safeParse(

@@ -1,4 +1,4 @@
-import type { CoreApi, Logger } from '@/core';
+import type { CoreApi } from '@/core';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
 import type { Credential } from '@/core/services/kms/kms-types.interface';
@@ -34,14 +34,13 @@ export class TokenCreateNftFromFileStateHook implements Hook<PostOutputPreparati
     for (const batchDataItem of [...batchData.transactions].filter(
       (item) => item.command === TOKEN_CREATE_NFT_FROM_FILE_COMMAND_NAME,
     )) {
-      await this.saveNft(api, api.logger, batchDataItem);
+      await this.saveNft(api, batchDataItem);
     }
     return { breakFlow: false };
   }
 
   private async saveNft(
     api: CoreApi,
-    logger: Logger,
     batchDataItem: BatchDataItem,
   ): Promise<void> {
     const parseResult = CreateNftFromFileNormalizedParamsSchema.safeParse(
@@ -83,7 +82,6 @@ export class TokenCreateNftFromFileStateHook implements Hook<PostOutputPreparati
       innerTransactionResult.tokenId,
       normalisedParams.associations as Credential[],
       api,
-      api.logger,
       normalisedParams.keyManager,
     );
 

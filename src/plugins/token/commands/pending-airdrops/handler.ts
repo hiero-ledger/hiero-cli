@@ -1,7 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { TokenAirdropItem } from '@/core/services/mirrornode/types';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { TokenPendingAirdropsOutput } from './output';
@@ -35,11 +34,7 @@ export class TokenPendingAirdropsCommand implements Command {
     );
 
     const uniqueTokenIds = [...new Set(allAirdrops.map((a) => a.token_id))];
-    const tokenInfoMap = await this.fetchTokenInfoMap(
-      api,
-      api.logger,
-      uniqueTokenIds,
-    );
+    const tokenInfoMap = await this.fetchTokenInfoMap(api, uniqueTokenIds);
 
     const hasMore = !validArgs.showAll && allAirdrops.length >= PAGE_LIMIT;
 
@@ -115,7 +110,6 @@ export class TokenPendingAirdropsCommand implements Command {
 
   private async fetchTokenInfoMap(
     api: CoreApi,
-    logger: Logger,
     tokenIds: string[],
   ): Promise<Map<string, { name: string; symbol: string }>> {
     const entries = await Promise.all(

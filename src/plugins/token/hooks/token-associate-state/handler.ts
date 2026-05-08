@@ -1,4 +1,4 @@
-import type { CoreApi, Logger } from '@/core';
+import type { CoreApi } from '@/core';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
 import type { BatchDataItem } from '@/core/types/shared.types';
@@ -27,16 +27,12 @@ export class TokenAssociateStateHook implements Hook<PostOutputPreparationHookPa
     for (const batchDataItem of [...batchData.transactions].filter(
       (item) => item.command === TOKEN_ASSOCIATE_COMMAND_NAME,
     )) {
-      this.saveAssociations(api, api.logger, batchDataItem);
+      this.saveAssociations(api, batchDataItem);
     }
     return Promise.resolve({ breakFlow: false });
   }
 
-  private saveAssociations(
-    api: CoreApi,
-    logger: Logger,
-    batchDataItem: BatchDataItem,
-  ): void {
+  private saveAssociations(api: CoreApi, batchDataItem: BatchDataItem): void {
     const parseResult = AssociateNormalizedParamsSchema.safeParse(
       batchDataItem.normalizedParams,
     );

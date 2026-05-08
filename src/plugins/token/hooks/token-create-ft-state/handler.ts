@@ -1,4 +1,4 @@
-import type { CoreApi, Logger } from '@/core';
+import type { CoreApi } from '@/core';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
 
@@ -32,16 +32,13 @@ export class TokenCreateFtStateHook implements Hook<PostOutputPreparationHookPar
     await Promise.all(
       [...batchData.transactions]
         .filter((item) => item.command === TOKEN_CREATE_FT_COMMAND_NAME)
-        .map((batchDataItem) =>
-          this.saveCreateFt(api, api.logger, batchDataItem),
-        ),
+        .map((batchDataItem) => this.saveCreateFt(api, batchDataItem)),
     );
     return { breakFlow: false };
   }
 
   private async saveCreateFt(
     api: CoreApi,
-    logger: Logger,
     batchDataItem: BatchDataItem,
   ): Promise<void> {
     const parseResult = CreateFtNormalizedParamsSchema.safeParse(
