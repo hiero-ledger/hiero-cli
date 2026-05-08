@@ -29,14 +29,14 @@ export class AccountUpdateStateHook implements Hook<PostOutputPreparationHookPar
       return { breakFlow: false };
     }
 
-    const { api, logger } = params.args;
+    const { api } = params.args;
 
     switch (parsed.data.source) {
       case OrchestratorSource.BATCH:
-        this.handleBatch(api, logger, parsed.data.batchData);
+        this.handleBatch(api, api.logger, parsed.data.batchData);
         break;
       case OrchestratorSource.SCHEDULE:
-        await this.handleSchedule(api, logger, parsed.data.scheduledData);
+        await this.handleSchedule(api, api.logger, parsed.data.scheduledData);
         break;
       default:
         break;
@@ -57,7 +57,7 @@ export class AccountUpdateStateHook implements Hook<PostOutputPreparationHookPar
       if (item.command !== ACCOUNT_UPDATE_COMMAND_NAME) {
         continue;
       }
-      this.updateFromBatchItem(api, logger, item);
+      this.updateFromBatchItem(api, api.logger, item);
     }
   }
 
@@ -69,7 +69,7 @@ export class AccountUpdateStateHook implements Hook<PostOutputPreparationHookPar
     if (scheduledData.command !== ACCOUNT_UPDATE_COMMAND_NAME) {
       return;
     }
-    await this.updateFromScheduled(api, logger, scheduledData);
+    await this.updateFromScheduled(api, api.logger, scheduledData);
   }
 
   private updateFromBatchItem(
@@ -78,14 +78,14 @@ export class AccountUpdateStateHook implements Hook<PostOutputPreparationHookPar
     batchDataItem: BatchDataItem,
   ): void {
     const normalisedParams = this.parseAccountUpdateParams(
-      logger,
+      api.logger,
       batchDataItem.normalizedParams,
     );
     if (!normalisedParams) {
       return;
     }
 
-    this.persistAccountUpdate(api, logger, normalisedParams);
+    this.persistAccountUpdate(api, api.logger, normalisedParams);
   }
 
   private async updateFromScheduled(
@@ -94,7 +94,7 @@ export class AccountUpdateStateHook implements Hook<PostOutputPreparationHookPar
     scheduledData: ScheduledTransactionData,
   ): Promise<void> {
     const normalisedParams = this.parseAccountUpdateParams(
-      logger,
+      api.logger,
       scheduledData.normalizedParams ?? {},
     );
     if (!normalisedParams) {
@@ -103,7 +103,7 @@ export class AccountUpdateStateHook implements Hook<PostOutputPreparationHookPar
 
     const innerTransactionId = scheduledData.transactionId;
     if (!innerTransactionId) {
-      logger.warn(`No transaction ID found for scheduled transaction`);
+      api.logger.warn(`No transaction ID found for scheduled transaction`);
       return;
     }
 
@@ -116,7 +116,7 @@ export class AccountUpdateStateHook implements Hook<PostOutputPreparationHookPar
     );
     const result = scheduledMirrorTx?.result;
     if (result !== MirrorTransactionResult.SUCCESS) {
-      logger.warn(
+      api.logger.warn(
         `Scheduled transaction result is not ${MirrorTransactionResult.SUCCESS}: ${String(result)}, skipping state update`,
       );
       return;
@@ -124,13 +124,13 @@ export class AccountUpdateStateHook implements Hook<PostOutputPreparationHookPar
 
     const entityId = scheduledMirrorTx?.entity_id;
     if (entityId && entityId !== normalisedParams.accountId) {
-      logger.warn(
+      api.logger.warn(
         `Account ID mismatch: expected ${normalisedParams.accountId}, got ${entityId}, skipping state update`,
       );
       return;
     }
 
-    this.persistAccountUpdate(api, logger, normalisedParams);
+    this.persistAccountUpdate(api, api.logger, normalisedParams);
   }
 
   private persistAccountUpdate(
@@ -151,11 +151,11 @@ export class AccountUpdateStateHook implements Hook<PostOutputPreparationHookPar
       return;
     }
 
-    const accountState = new ZustandAccountStateHelper(api.state, logger);
+    const accountState = new ZustandAccountStateHelper(api.state, api.logger);
     const existingAccount = accountState.getAccount(accountStateKey);
 
     if (!existingAccount) {
-      logger.warn(
+      api.logger.warn(
         `Account '${accountId}' not found in state, skipping state update`,
       );
       return;

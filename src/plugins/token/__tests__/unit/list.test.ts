@@ -10,11 +10,7 @@ import {
 } from '@/plugins/token/commands/list';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
-import {
-  makeApiMocks,
-  makeLogger,
-  setupZustandHelperMock,
-} from './helpers/mocks';
+import { makeApiMocks, setupZustandHelperMock } from './helpers/mocks';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTokenStateHelper: jest.fn(),
@@ -31,13 +27,9 @@ describe('tokenListHandler', () => {
     test('should return empty list when no tokens exist', async () => {
       const { api } = makeApiMocks();
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {},
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       const result = await tokenList(args);
@@ -76,13 +68,9 @@ describe('tokenListHandler', () => {
 
       const { api } = makeApiMocks();
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {},
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       const result = await tokenList(args);
@@ -121,13 +109,9 @@ describe('tokenListHandler', () => {
 
       const { api } = makeApiMocks();
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: { network: 'mainnet' },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       const result = await tokenList(args);
@@ -143,18 +127,14 @@ describe('tokenListHandler', () => {
     test('should initialize token state helper', async () => {
       const { api } = makeApiMocks();
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {},
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await tokenList(args);
 
-      expect(MockedHelper).toHaveBeenCalledWith(api.state, logger);
+      expect(MockedHelper).toHaveBeenCalledWith(api.state, api.logger);
     });
   });
 });

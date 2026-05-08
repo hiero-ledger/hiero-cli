@@ -28,11 +28,13 @@ export class TokenCreateFtStateHook implements Hook<PostOutputPreparationHookPar
     if (!batchData.success) {
       return { breakFlow: false };
     }
-    const { api, logger } = params.args;
+    const { api } = params.args;
     await Promise.all(
       [...batchData.transactions]
         .filter((item) => item.command === TOKEN_CREATE_FT_COMMAND_NAME)
-        .map((batchDataItem) => this.saveCreateFt(api, logger, batchDataItem)),
+        .map((batchDataItem) =>
+          this.saveCreateFt(api, api.logger, batchDataItem),
+        ),
     );
     return { breakFlow: false };
   }
@@ -46,7 +48,7 @@ export class TokenCreateFtStateHook implements Hook<PostOutputPreparationHookPar
       batchDataItem.normalizedParams,
     );
     if (!parseResult.success) {
-      logger.warn(
+      api.logger.warn(
         `There was a problem with parsing data schema. The saving will not be done`,
       );
       return;
@@ -54,7 +56,7 @@ export class TokenCreateFtStateHook implements Hook<PostOutputPreparationHookPar
     const normalisedParams = parseResult.data;
     const innerTransactionId = batchDataItem.transactionId;
     if (!innerTransactionId) {
-      logger.warn(
+      api.logger.warn(
         `No transaction ID found for batch transaction ${batchDataItem.order}`,
       );
       return;
@@ -66,7 +68,7 @@ export class TokenCreateFtStateHook implements Hook<PostOutputPreparationHookPar
       });
 
     if (!innerTransactionResult.tokenId) {
-      logger.warn(
+      api.logger.warn(
         'Transaction completed but did not return a token ID, skipping state save',
       );
       return;
@@ -105,13 +107,13 @@ export class TokenCreateFtStateHook implements Hook<PostOutputPreparationHookPar
       normalisedParams.network,
       innerTransactionResult.tokenId,
     );
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     tokenState.saveToken(key, tokenData);
-    logger.info('   Token data saved to state');
+    api.logger.info('   Token data saved to state');
 
     if (normalisedParams.alias) {
       if (api.alias.exists(normalisedParams.alias, normalisedParams.network)) {
-        logger.warn(
+        api.logger.warn(
           `Alias "${normalisedParams.alias}" already exists, skipping registration`,
         );
       } else {
@@ -122,7 +124,7 @@ export class TokenCreateFtStateHook implements Hook<PostOutputPreparationHookPar
           entityId: innerTransactionResult.tokenId,
           createdAt: innerTransactionResult.consensusTimestamp,
         });
-        logger.info(`   Name registered: ${normalisedParams.alias}`);
+        api.logger.info(`   Name registered: ${normalisedParams.alias}`);
       }
     }
   }

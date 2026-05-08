@@ -5,7 +5,6 @@ import {
   createBatchExecuteParams,
   makeArgs,
   makeLogger,
-  makeStateMock,
 } from '@/__tests__/mocks/mocks';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
@@ -79,9 +78,7 @@ describe('token plugin - batch-associate hook', () => {
       addTokenAssociation: addTokenAssociationMock,
     }));
 
-    const api = {
-      state: makeStateMock(),
-    } as unknown as Partial<CoreApi>;
+    const api = {} as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
 
     const params = createBatchExecuteParams({
@@ -111,9 +108,7 @@ describe('token plugin - batch-associate hook', () => {
       addTokenAssociation: addTokenAssociationMock,
     }));
 
-    const api = {
-      state: makeStateMock(),
-    } as unknown as Partial<CoreApi>;
+    const api = {} as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
 
     const params = createBatchExecuteParams({
@@ -145,9 +140,7 @@ describe('token plugin - batch-associate hook', () => {
       addTokenAssociation: addTokenAssociationMock,
     }));
 
-    const api = {
-      state: makeStateMock(),
-    } as unknown as Partial<CoreApi>;
+    const api = {} as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
 
     const params = createBatchExecuteParams({
@@ -190,9 +183,7 @@ describe('token plugin - batch-associate hook', () => {
       addTokenAssociation: addTokenAssociationMock,
     }));
 
-    const api = {
-      state: makeStateMock(),
-    } as unknown as Partial<CoreApi>;
+    const api = {} as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
 
     const params = createBatchExecuteParams({
@@ -239,9 +230,7 @@ describe('token plugin - batch-associate hook', () => {
       addTokenAssociation: addTokenAssociationMock,
     }));
 
-    const api = {
-      state: makeStateMock(),
-    } as unknown as Partial<CoreApi>;
+    const api = {} as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
 
     const params = createBatchExecuteParams({
@@ -270,9 +259,7 @@ describe('token plugin - batch-associate hook', () => {
       addTokenAssociation: addTokenAssociationMock,
     }));
 
-    const api = {
-      state: makeStateMock(),
-    } as unknown as Partial<CoreApi>;
+    const api = {} as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
 
     const params = createBatchExecuteParams({

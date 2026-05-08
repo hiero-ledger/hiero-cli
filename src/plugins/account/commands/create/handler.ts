@@ -37,7 +37,7 @@ export class AccountCreateCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<CreateNormalisedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
     const validArgs = AccountCreateInputSchema.parse(args.args);
 
@@ -67,7 +67,7 @@ export class AccountCreateCommand extends BaseTransactionCommand<
       balanceCheckAccountId,
     );
 
-    logger.info(`Creating account with name: ${alias}`);
+    api.logger.info(`Creating account with name: ${alias}`);
 
     let keyRefId: string;
     let publicKey: string;
@@ -152,7 +152,7 @@ export class AccountCreateCommand extends BaseTransactionCommand<
     _signTransactionResult: CreateSignTransactionResult,
     executeTransactionResult: CreateExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
     if (!executeTransactionResult.success) {
       throw new TransactionError(
@@ -197,7 +197,7 @@ export class AccountCreateCommand extends BaseTransactionCommand<
       normalisedParams.network,
       executeTransactionResult.accountId,
     );
-    const accountState = new ZustandAccountStateHelper(api.state, logger);
+    const accountState = new ZustandAccountStateHelper(api.state, api.logger);
     accountState.saveAccount(accountKey, accountData);
 
     const outputData: AccountCreateOutput = {

@@ -20,7 +20,7 @@ export class AccountDeleteStateHook implements Hook<PostOutputPreparationHookPar
       return Promise.resolve({ breakFlow: false });
     }
 
-    const { api, logger } = params.args;
+    const { api } = params.args;
     const batchData = parsed.data.batchData;
 
     if (!batchData.success) {
@@ -29,7 +29,7 @@ export class AccountDeleteStateHook implements Hook<PostOutputPreparationHookPar
     for (const batchDataItem of [...batchData.transactions].filter(
       (item) => item.command === ACCOUNT_DELETE_COMMAND_NAME,
     )) {
-      this.removeAccountAfterBatch(api, logger, batchDataItem);
+      this.removeAccountAfterBatch(api, api.logger, batchDataItem);
     }
     return Promise.resolve({ breakFlow: false });
   }
@@ -43,7 +43,7 @@ export class AccountDeleteStateHook implements Hook<PostOutputPreparationHookPar
       batchDataItem.normalizedParams,
     );
     if (!parseResult.success) {
-      logger.warn(
+      api.logger.warn(
         'Account delete batch state hook: normalized params did not match schema; skipping local state cleanup',
       );
       return;
@@ -51,7 +51,7 @@ export class AccountDeleteStateHook implements Hook<PostOutputPreparationHookPar
     const normalisedParams = parseResult.data;
     const accountHelper = new AccountHelper(
       api.state,
-      logger,
+      api.logger,
       api.alias,
       api.kms,
       api.network,

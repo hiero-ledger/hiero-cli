@@ -26,13 +26,16 @@ export class ScheduledHook implements Hook<
     >,
   ): Promise<HookResult> {
     const { args, commandName, buildTransactionResult } = params;
-    const { api, logger } = args;
-    const scheduledState = new ZustandScheduleStateHelper(api.state, logger);
+    const { api } = args;
+    const scheduledState = new ZustandScheduleStateHelper(
+      api.state,
+      api.logger,
+    );
     const validArgs = ScheduledInputSchema.parse(args.args);
     const scheduledName = validArgs.scheduled;
     const network = api.network.getCurrentNetwork();
     if (!scheduledName) {
-      logger.debug(
+      api.logger.debug(
         'No parameter "scheduled" found. Transaction will not be scheduled.',
       );
       return { breakFlow: false };
@@ -89,7 +92,7 @@ export class ScheduledHook implements Hook<
       executed: false,
     });
 
-    logger.info(
+    api.logger.info(
       `Transaction scheduled for ${scheduledName}. Transaction ID '${result.transactionId.toString()}'`,
     );
 

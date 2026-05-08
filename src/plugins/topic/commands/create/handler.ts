@@ -33,7 +33,7 @@ export class TopicCreateCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<CreateTopicNormalisedParams> {
-    const { api, logger } = args;
+    const { api } = args;
     const validArgs = TopicCreateInputSchema.parse(args.args);
 
     const memo = validArgs.memo;
@@ -50,7 +50,7 @@ export class TopicCreateCommand extends BaseTransactionCommand<
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     if (memo) {
-      logger.info(`Creating topic with memo: ${memo}`);
+      api.logger.info(`Creating topic with memo: ${memo}`);
     }
 
     const adminKeys = await Promise.all(
@@ -159,8 +159,8 @@ export class TopicCreateCommand extends BaseTransactionCommand<
     _signTransactionResult: CreateTopicSignTransactionResult,
     executeTransactionResult: CreateTopicExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { api, logger } = args;
-    const topicState = new ZustandTopicStateHelper(api.state, logger);
+    const { api } = args;
+    const topicState = new ZustandTopicStateHelper(api.state, api.logger);
     const topicId = executeTransactionResult.topicId;
     if (!topicId) {
       throw new TransactionError(

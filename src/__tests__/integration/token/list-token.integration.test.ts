@@ -31,9 +31,6 @@ describe('List Token Integration Tests', () => {
     const createTokenResult = await tokenCreateFt({
       args: createTokenArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const createTokenOutput = createTokenResult.result as TokenCreateFtOutput;
     expect(createTokenOutput.network).toBe(network);
@@ -51,9 +48,6 @@ describe('List Token Integration Tests', () => {
     const listTokenResult = await tokenList({
       args: listTokenArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const listTokenOutput = listTokenResult.result as TokenListOutput;
     const tokenNames = listTokenOutput.tokens.map((token) => token.tokenId);

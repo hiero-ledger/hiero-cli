@@ -16,11 +16,7 @@ import {
   TokenClaimAirdropOutputSchema,
 } from '@/plugins/token/commands/claim-airdrop';
 
-import {
-  makeApiMocks,
-  makeLogger,
-  makeTransactionResult,
-} from './helpers/mocks';
+import { makeApiMocks, makeTransactionResult } from './helpers/mocks';
 
 const SENDER_ID = '0.0.9999';
 const TOKEN_ID_FT = '0.0.2000';
@@ -102,9 +98,6 @@ const makeArgs = (
     ...args,
   },
   api,
-  state: api.state,
-  config: api.config,
-  logger: makeLogger(),
 });
 
 const makeSuccessApiMocks = (

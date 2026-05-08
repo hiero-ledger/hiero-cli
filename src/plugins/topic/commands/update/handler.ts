@@ -44,14 +44,14 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<UpdateTopicNormalisedParams> {
-    const { api, logger } = args;
+    const { api } = args;
     const validArgs = TopicUpdateInputSchema.parse(args.args);
 
     const network = api.network.getCurrentNetwork();
     const topicId = resolveTopicId(validArgs.topic, api.alias, network);
 
     const stateKey = composeKey(network, topicId);
-    const topicState = new ZustandTopicStateHelper(api.state, logger);
+    const topicState = new ZustandTopicStateHelper(api.state, api.logger);
     const storedTopicData = topicState.loadTopic(stateKey);
     if (!storedTopicData) {
       throw new NotFoundError(
@@ -136,7 +136,7 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
       currentAdminKeyRefIds = keyRefIds;
     }
 
-    logger.info(`Updating topic ${topicId} on ${network}`);
+    api.logger.info(`Updating topic ${topicId} on ${network}`);
 
     return {
       topicId,
@@ -264,8 +264,8 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
     _signTransactionResult: UpdateTopicSignTransactionResult,
     executeTransactionResult: UpdateTopicExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { api, logger } = args;
-    const topicState = new ZustandTopicStateHelper(api.state, logger);
+    const { api } = args;
+    const topicState = new ZustandTopicStateHelper(api.state, api.logger);
     const existing = normalisedParams.existingTopicData;
 
     const updatedFields: string[] = [];

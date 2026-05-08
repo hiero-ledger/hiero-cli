@@ -39,9 +39,9 @@ export class TokenBurnFtCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<BurnFtNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
 
     const validArgs = TokenBurnFtInputSchema.parse(args.args);
 
@@ -65,7 +65,7 @@ export class TokenBurnFtCommand extends BaseTransactionCommand<
 
     const tokenId = resolvedToken.tokenId;
 
-    logger.info(`Burning tokens for token: ${tokenId}`);
+    api.logger.info(`Burning tokens for token: ${tokenId}`);
 
     const tokenInfo = await api.mirror.getTokenInfo(tokenId);
 
@@ -110,7 +110,7 @@ export class TokenBurnFtCommand extends BaseTransactionCommand<
       });
     }
 
-    logger.info(
+    api.logger.info(
       `Burning ${rawAmount.toString()} tokens. Current supply: ${currentTotalSupply.toString()}, after burn: ${(currentTotalSupply - rawAmount).toString()}`,
     );
 
@@ -127,8 +127,8 @@ export class TokenBurnFtCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
     normalisedParams: BurnFtNormalizedParams,
   ): Promise<BurnFtBuildTransactionResult> {
-    const { api, logger } = args;
-    logger.debug('Building burn transaction body');
+    const { api } = args;
+    api.logger.debug('Building burn transaction body');
     const transaction = api.token.createBurnFtTransaction({
       tokenId: normalisedParams.tokenId,
       amount: normalisedParams.rawAmount,
@@ -141,8 +141,8 @@ export class TokenBurnFtCommand extends BaseTransactionCommand<
     normalisedParams: BurnFtNormalizedParams,
     buildTransactionResult: BurnFtBuildTransactionResult,
   ): Promise<BurnFtSignTransactionResult> {
-    const { api, logger } = args;
-    logger.debug(
+    const { api } = args;
+    api.logger.debug(
       `Using ${normalisedParams.keyRefIds.length} key(s) for signing transaction`,
     );
     const transaction = await api.txSign.sign(

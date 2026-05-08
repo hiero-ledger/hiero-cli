@@ -56,8 +56,8 @@ export class TestFooCommand extends BaseTransactionCommand<
   ): Promise<void> {
     void normalisedParams;
     void buildTransactionResult;
-    const { logger } = args;
-    logger.info(signTransactionResult.message);
+    const { api } = args;
+    api.logger.info(signTransactionResult.message);
   }
 
   async outputPreparation(

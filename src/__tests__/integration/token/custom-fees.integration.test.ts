@@ -64,9 +64,6 @@ describe('Token Custom Fees Integration Tests', () => {
     const result = await tokenCreateFtFromFile({
       args: { file: filePath },
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
 
     const output = result.result as TokenCreateFtFromFileOutput;
@@ -113,9 +110,6 @@ describe('Token Custom Fees Integration Tests', () => {
     const result = await tokenCreateFtFromFile({
       args: { file: filePath },
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
 
     const output = result.result as TokenCreateFtFromFileOutput;
@@ -159,9 +153,6 @@ describe('Token Custom Fees Integration Tests', () => {
     const result = await tokenCreateFtFromFile({
       args: { file: filePath },
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
 
     const output = result.result as TokenCreateFtFromFileOutput;

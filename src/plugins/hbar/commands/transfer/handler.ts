@@ -38,9 +38,9 @@ export class HbarTransferCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<TransferNormalisedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    logger.info('[HBAR] Transfer command invoked');
+    api.logger.info('[HBAR] Transfer command invoked');
 
     const validArgs = HbarTransferInputSchema.parse(args.args);
 
@@ -85,9 +85,9 @@ export class HbarTransferCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
     normalisedParams: TransferNormalisedParams,
   ): Promise<TransferBuildTransactionResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    logger.info(
+    api.logger.info(
       `[HBAR] Transferring ${normalisedParams.amount.toString()} tinybars from ${normalisedParams.fromAccount.accountId} to ${normalisedParams.destination}`,
     );
 
@@ -144,9 +144,9 @@ export class HbarTransferCommand extends BaseTransactionCommand<
     _signTransactionResult: TransferSignTransactionResult,
     executeTransactionResult: TransferExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { logger } = args;
+    const { api } = args;
 
-    logger.info(
+    api.logger.info(
       `[HBAR] Transfer submitted successfully, txId=${executeTransactionResult.transactionId}`,
     );
 

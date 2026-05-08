@@ -50,7 +50,7 @@ export class CreateContractCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<ContractCreateNormalisedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
     const validArgs = ContractCreateSchema.parse(args.args);
     const alias = validArgs.name;
@@ -95,7 +95,7 @@ export class CreateContractCommand extends BaseTransactionCommand<
     const adminKeyThreshold = validArgs.adminKeyThreshold ?? adminKeys.length;
 
     if (adminKeys.length === 0) {
-      logger.warn(
+      api.logger.warn(
         `Admin key not specified. Smart contract will lack admin key set`,
       );
     }
@@ -235,7 +235,7 @@ export class CreateContractCommand extends BaseTransactionCommand<
     _signTransactionResult: ContractCreateSignTransactionResult,
     executeTransactionResult: ContractCreateExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
     if (!executeTransactionResult.contractId) {
       throw new StateError('Transaction completed but no contractId returned', {
@@ -249,7 +249,7 @@ export class CreateContractCommand extends BaseTransactionCommand<
     let verificationResult: ContractVerificationResult = { success: false };
 
     if (SupportedNetwork.LOCALNET === normalisedParams.network) {
-      logger.warn(
+      api.logger.warn(
         `Skipping contract verification as the selected network ${normalisedParams.network} is not supported `,
       );
     } else {
@@ -259,14 +259,14 @@ export class CreateContractCommand extends BaseTransactionCommand<
         contractEvmAddress: contractId.toEvmAddress(),
       });
       if (!verificationResult.success && verificationResult.errorMessage) {
-        logger.warn(
+        api.logger.warn(
           `Contract verification failed: ${verificationResult.errorMessage}`,
         );
       }
     }
 
     const contractEvmAddress = `0x${contractId.toEvmAddress()}`;
-    const contractState = new ZustandContractStateHelper(api.state, logger);
+    const contractState = new ZustandContractStateHelper(api.state, api.logger);
 
     const contractData = {
       contractId: executeTransactionResult.contractId,

@@ -24,14 +24,14 @@ export class TopicCreateStateHook implements Hook<PostOutputPreparationHookParam
       return { breakFlow: false };
     }
     const batchData = parsed.data.batchData;
-    const { api, logger } = params.args;
+    const { api } = params.args;
     if (!batchData.success) {
       return { breakFlow: false };
     }
     for (const batchDataItem of [...batchData.transactions].filter(
       (item) => item.command === TOPIC_CREATE_COMMAND_NAME,
     )) {
-      await this.saveTopic(api, logger, batchDataItem);
+      await this.saveTopic(api, api.logger, batchDataItem);
     }
     return { breakFlow: false };
   }
@@ -45,7 +45,7 @@ export class TopicCreateStateHook implements Hook<PostOutputPreparationHookParam
       batchDataItem.normalizedParams,
     );
     if (!parseResult.success) {
-      logger.warn(
+      api.logger.warn(
         `There was a problem with parsing data schema. The saving will not be done`,
       );
       return;
@@ -53,7 +53,7 @@ export class TopicCreateStateHook implements Hook<PostOutputPreparationHookParam
     const normalisedParams = parseResult.data;
     const innerTransactionId = batchDataItem.transactionId;
     if (!innerTransactionId) {
-      logger.warn(
+      api.logger.warn(
         `No transaction ID found for batch transaction ${batchDataItem.order}`,
       );
       return;
@@ -65,7 +65,7 @@ export class TopicCreateStateHook implements Hook<PostOutputPreparationHookParam
       });
 
     if (!innerTransactionResult.topicId) {
-      logger.warn(
+      api.logger.warn(
         'Transaction completed but did not return a topic ID, skipping state save',
       );
       return;
@@ -77,7 +77,7 @@ export class TopicCreateStateHook implements Hook<PostOutputPreparationHookParam
 
     if (normalisedParams.alias) {
       if (api.alias.exists(normalisedParams.alias, normalisedParams.network)) {
-        logger.warn(
+        api.logger.warn(
           `Alias "${normalisedParams.alias}" already exists, skipping registration`,
         );
       } else {
@@ -104,7 +104,7 @@ export class TopicCreateStateHook implements Hook<PostOutputPreparationHookParam
     };
 
     const key = composeKey(normalisedParams.network, topicId);
-    const topicState = new ZustandTopicStateHelper(api.state, logger);
+    const topicState = new ZustandTopicStateHelper(api.state, api.logger);
     topicState.saveTopic(key, topicData);
   }
 }

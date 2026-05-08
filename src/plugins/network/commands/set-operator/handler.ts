@@ -44,7 +44,7 @@ const normalizeParams = (
 
 export class NetworkSetOperatorCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { logger, api } = args;
+    const { api } = args;
     const normalisedParams = normalizeParams(args);
     const operator = await api.keyResolver.resolveAccountCredentials(
       normalisedParams.operatorArg,
@@ -58,11 +58,11 @@ export class NetworkSetOperatorCommand implements Command {
     };
 
     if (executeContext.existingOperator) {
-      logger.info(
+      api.logger.info(
         `Overwriting existing operator for ${normalisedParams.targetNetwork}: ${executeContext.existingOperator.accountId} -> ${executeContext.operator.accountId}`,
       );
     } else {
-      logger.info(
+      api.logger.info(
         `Setting new operator for network ${normalisedParams.targetNetwork}`,
       );
     }

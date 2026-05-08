@@ -33,9 +33,6 @@ describe('Credentials Integration Tests', () => {
     const listResult = await credentialsList({
       args: {},
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const listOutput = listResult.result as CredentialsListOutput;
     const credentialNames = listOutput.credentials.map((c) => c.keyRefId);
@@ -44,9 +41,6 @@ describe('Credentials Integration Tests', () => {
     const removeResult = await credentialsRemove({
       args: { id: 'test-key' },
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const removeOutput = removeResult.result as CredentialsRemoveOutput;
     expect(removeOutput.keyRefId).toBe('test-key');
@@ -55,9 +49,6 @@ describe('Credentials Integration Tests', () => {
     const listAfterResult = await credentialsList({
       args: {},
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const listAfterOutput = listAfterResult.result as CredentialsListOutput;
     const credentialNamesAfterRemoval = listAfterOutput.credentials.map(

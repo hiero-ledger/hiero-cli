@@ -643,23 +643,6 @@ export const makeArgs = (
 
   return {
     api: apiObject,
-    logger,
-    state: {
-      list: jest.fn().mockReturnValue([]),
-      get: jest.fn(),
-      set: jest.fn(),
-      delete: jest.fn(),
-      clear: jest.fn(),
-      has: jest.fn(),
-      getNamespaces: jest.fn(),
-      getKeys: jest.fn(),
-      subscribe: jest.fn(),
-      getActions: jest.fn(),
-      getState: jest.fn(),
-      getStorageDirectory: jest.fn().mockReturnValue(''),
-      isInitialized: jest.fn().mockReturnValue(true),
-    } as unknown as StateService,
-    config: makeConfigMock(),
     args,
     hooks: new Map(),
   };

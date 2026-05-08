@@ -42,9 +42,9 @@ export class TokenWipeNftCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<WipeNftNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     const validArgs = TokenWipeNftInputSchema.parse(args.args);
 
     const keyManager =
@@ -96,7 +96,7 @@ export class TokenWipeNftCommand extends BaseTransactionCommand<
     const serialNumbers = validArgs.serials;
     const currentTotalSupply = BigInt(tokenInfo.total_supply || '0');
 
-    logger.info(
+    api.logger.info(
       `Wiping ${serialNumbers.length} NFT serial(s) from account ${accountId}. Current supply: ${currentTotalSupply.toString()}`,
     );
 
@@ -114,8 +114,8 @@ export class TokenWipeNftCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
     normalisedParams: WipeNftNormalizedParams,
   ): Promise<WipeNftBuildTransactionResult> {
-    const { api, logger } = args;
-    logger.debug('Building NFT wipe transaction body');
+    const { api } = args;
+    api.logger.debug('Building NFT wipe transaction body');
     const transaction = api.token.createWipeNftTransaction({
       tokenId: normalisedParams.tokenId,
       accountId: normalisedParams.accountId,
@@ -129,8 +129,8 @@ export class TokenWipeNftCommand extends BaseTransactionCommand<
     normalisedParams: WipeNftNormalizedParams,
     buildTransactionResult: WipeNftBuildTransactionResult,
   ): Promise<WipeNftSignTransactionResult> {
-    const { api, logger } = args;
-    logger.debug(
+    const { api } = args;
+    api.logger.debug(
       `Using ${normalisedParams.keyRefIds.length} key(s) for signing transaction`,
     );
     const signedTransaction = await api.txSign.sign(

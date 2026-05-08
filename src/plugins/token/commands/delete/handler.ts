@@ -47,7 +47,7 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
     validArgs: TokenDeleteInput,
   ): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
     if (validArgs.adminKey.length > 0) {
       throw new ValidationError(
@@ -56,7 +56,7 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
     }
 
     const network = api.network.getCurrentNetwork();
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
 
     const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
     if (!resolvedToken) {
@@ -104,7 +104,7 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<TokenDeleteNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
     const validArgs = TokenDeleteInputSchema.parse(args.args);
 
@@ -124,7 +124,7 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
 
     const tokenInfo = await api.mirror.getTokenInfo(tokenId);
 
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     const stateKey = composeKey(network, tokenId);
     const tokenInState = tokenState.getToken(stateKey);
 
@@ -154,8 +154,8 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
     normalisedParams: TokenDeleteNormalizedParams,
   ): Promise<TokenDeleteBuildTransactionResult> {
-    const { logger } = args;
-    logger.debug('Building token delete transaction');
+    const { api } = args;
+    api.logger.debug('Building token delete transaction');
     const transaction = args.api.token.createDeleteTransaction({
       tokenId: normalisedParams.tokenId,
     });
@@ -167,8 +167,8 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
     normalisedParams: TokenDeleteNormalizedParams,
     buildTransactionResult: TokenDeleteBuildTransactionResult,
   ): Promise<TokenDeleteSignTransactionResult> {
-    const { api, logger } = args;
-    logger.debug(
+    const { api } = args;
+    api.logger.debug(
       `Using ${normalisedParams.keyRefIds.length} key(s) for signing transaction`,
     );
     const signedTransaction = await api.txSign.sign(
@@ -206,10 +206,10 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
     _signTransactionResult: TokenDeleteSignTransactionResult,
     executeTransactionResult: TokenDeleteExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
     const { network, tokenId, tokenName } = normalisedParams;
 
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     const key = composeKey(network, tokenId);
     const tokenInState = tokenState.getToken(key);
 

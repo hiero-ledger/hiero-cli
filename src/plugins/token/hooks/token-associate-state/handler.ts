@@ -20,14 +20,14 @@ export class TokenAssociateStateHook implements Hook<PostOutputPreparationHookPa
       return Promise.resolve({ breakFlow: false });
     }
     const batchData = parsed.data.batchData;
-    const { api, logger } = params.args;
+    const { api } = params.args;
     if (!batchData.success) {
       return Promise.resolve({ breakFlow: false });
     }
     for (const batchDataItem of [...batchData.transactions].filter(
       (item) => item.command === TOKEN_ASSOCIATE_COMMAND_NAME,
     )) {
-      this.saveAssociations(api, logger, batchDataItem);
+      this.saveAssociations(api, api.logger, batchDataItem);
     }
     return Promise.resolve({ breakFlow: false });
   }
@@ -41,7 +41,7 @@ export class TokenAssociateStateHook implements Hook<PostOutputPreparationHookPa
       batchDataItem.normalizedParams,
     );
     if (!parseResult.success) {
-      logger.warn(
+      api.logger.warn(
         `There was a problem with parsing data schema. The saving will not be done`,
       );
       return;
@@ -49,19 +49,19 @@ export class TokenAssociateStateHook implements Hook<PostOutputPreparationHookPa
     const normalisedParams = parseResult.data;
 
     if (normalisedParams.alreadyAssociated) {
-      logger.debug(
+      api.logger.debug(
         `Skipping already associated token ${normalisedParams.tokenId} for account ${normalisedParams.account.accountId}`,
       );
       return;
     }
 
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     saveAssociationToState(
       tokenState,
       normalisedParams.tokenId,
       normalisedParams.account.accountId,
       normalisedParams.network,
-      logger,
+      api.logger,
     );
   }
 }

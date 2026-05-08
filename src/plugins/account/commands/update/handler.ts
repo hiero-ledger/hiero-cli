@@ -39,12 +39,12 @@ export class AccountUpdateCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<UpdateNormalisedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
     const validArgs = AccountUpdateInputSchema.parse(args.args);
     const network = api.network.getCurrentNetwork();
     const accountRef = validArgs.account;
-    const accountState = new ZustandAccountStateHelper(api.state, logger);
+    const accountState = new ZustandAccountStateHelper(api.state, api.logger);
 
     const isEntityId = EntityIdSchema.safeParse(accountRef).success;
     let accountStateKey: string;
@@ -191,7 +191,7 @@ export class AccountUpdateCommand extends BaseTransactionCommand<
     _signTransactionResult: UpdateSignTransactionResult,
     executeTransactionResult: UpdateExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
     if (!executeTransactionResult.success) {
       throw new TransactionError(
@@ -200,7 +200,7 @@ export class AccountUpdateCommand extends BaseTransactionCommand<
       );
     }
 
-    const accountState = new ZustandAccountStateHelper(api.state, logger);
+    const accountState = new ZustandAccountStateHelper(api.state, api.logger);
     const existingAccount = accountState.getAccount(
       normalisedParams.accountStateKey,
     );

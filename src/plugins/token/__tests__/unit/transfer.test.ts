@@ -4,7 +4,6 @@ import type { NetworkService } from '@/core/services/network/network-service.int
 import '@/core/utils/json-serialize';
 
 import { ECDSA_HEX_PRIVATE_KEY } from '@/__tests__/mocks/fixtures';
-import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NetworkError, SupportedNetwork } from '@/core';
 import { FtTransferEntry } from '@/core/services/transfer';
@@ -16,7 +15,7 @@ import {
 } from '@/plugins/token/commands/transfer-ft';
 
 import { mockAccountIds, mockTransactionResults } from './helpers/fixtures';
-import { makeApiMocks, makeLogger } from './helpers/mocks';
+import { makeApiMocks } from './helpers/mocks';
 
 const FROM_ACCOUNT = `${mockAccountIds.sender}:${ECDSA_HEX_PRIVATE_KEY}`;
 
@@ -52,7 +51,6 @@ describe('transferTokenHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: mockAccountIds.treasury,
@@ -61,9 +59,6 @@ describe('transferTokenHandler', () => {
           amount: '100',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       const result = await tokenTransferFt(args);
@@ -126,7 +121,6 @@ describe('transferTokenHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: mockAccountIds.treasury,
@@ -135,9 +129,6 @@ describe('transferTokenHandler', () => {
           amount: '100',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       const result = await tokenTransferFt(args);
@@ -203,7 +194,6 @@ describe('transferTokenHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: mockAccountIds.treasury,
@@ -212,9 +202,6 @@ describe('transferTokenHandler', () => {
           amount: '100',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       const result = await tokenTransferFt(args);
@@ -245,7 +232,6 @@ describe('transferTokenHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: mockAccountIds.treasury,
@@ -254,9 +240,6 @@ describe('transferTokenHandler', () => {
           amount: '0',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       const result = await tokenTransferFt(args);
@@ -307,7 +290,6 @@ describe('transferTokenHandler', () => {
         }),
       } as NetworkService;
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: mockAccountIds.treasury,
@@ -315,9 +297,6 @@ describe('transferTokenHandler', () => {
           amount: '100',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       const result = await tokenTransferFt(args);
@@ -353,7 +332,6 @@ describe('transferTokenHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: mockAccountIds.treasury,
@@ -362,9 +340,6 @@ describe('transferTokenHandler', () => {
           amount: '100',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       await expect(tokenTransferFt(args)).rejects.toThrow();
@@ -385,7 +360,6 @@ describe('transferTokenHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: mockAccountIds.treasury,
@@ -394,9 +368,6 @@ describe('transferTokenHandler', () => {
           amount: '100',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       await expect(tokenTransferFt(args)).rejects.toThrow('Network error');
@@ -425,7 +396,6 @@ describe('transferTokenHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: mockAccountIds.treasury,
@@ -434,9 +404,6 @@ describe('transferTokenHandler', () => {
           amount: '100',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       await expect(tokenTransferFt(args)).rejects.toThrow('Invalid key');
@@ -469,7 +436,6 @@ describe('transferTokenHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: mockAccountIds.treasury,
@@ -478,9 +444,6 @@ describe('transferTokenHandler', () => {
           amount: '999999999',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       const result = await tokenTransferFt(args);
@@ -528,7 +491,6 @@ describe('transferTokenHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: mockAccountIds.treasury,
@@ -537,9 +499,6 @@ describe('transferTokenHandler', () => {
           amount: '100',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       const result = await tokenTransferFt(args);
@@ -578,7 +537,6 @@ describe('transferTokenHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: mockAccountIds.treasury,
@@ -587,9 +545,6 @@ describe('transferTokenHandler', () => {
           amount: '100',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       const result = await tokenTransferFt(args);
@@ -610,7 +565,6 @@ describe('transferTokenHandler', () => {
 
     test('should handle decimal amounts', async () => {
       const { api } = makeApiMocks({});
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: mockAccountIds.treasury,
@@ -619,9 +573,6 @@ describe('transferTokenHandler', () => {
           amount: '100.5',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       const result = await tokenTransferFt(args);

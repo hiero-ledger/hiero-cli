@@ -19,14 +19,14 @@ export class TopicDeleteStateHook implements Hook<PostOutputPreparationHookParam
       return Promise.resolve({ breakFlow: false });
     }
     const batchData = parsed.data.batchData;
-    const { api, logger } = params.args;
+    const { api } = params.args;
     if (!batchData.success) {
       return Promise.resolve({ breakFlow: false });
     }
     for (const batchDataItem of [...batchData.transactions].filter(
       (item) => item.command === TOPIC_DELETE_COMMAND_NAME,
     )) {
-      this.applyDeleteFromBatchItem(api, logger, batchDataItem);
+      this.applyDeleteFromBatchItem(api, api.logger, batchDataItem);
     }
     return Promise.resolve({ breakFlow: false });
   }
@@ -40,7 +40,7 @@ export class TopicDeleteStateHook implements Hook<PostOutputPreparationHookParam
       batchDataItem.normalizedParams,
     );
     if (!parseResult.success) {
-      logger.warn(
+      api.logger.warn(
         'Topic delete batch item skipped: normalized params did not match schema',
       );
       return;
@@ -49,7 +49,7 @@ export class TopicDeleteStateHook implements Hook<PostOutputPreparationHookParam
     if (normalised.stateOnly) {
       return;
     }
-    const topicHelper = new TopicHelper(api.alias, api.state, logger);
+    const topicHelper = new TopicHelper(api.alias, api.state, api.logger);
     topicHelper.removeTopicFromLocalState(
       normalised.topicToDelete,
       normalised.network,

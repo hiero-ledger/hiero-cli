@@ -62,9 +62,6 @@ export const makeArgs = (
 
   return {
     api: apiObject,
-    logger,
-    state: makeStateMock(),
-    config: makeConfigMock(),
     args,
     hooks: new Map(),
   };

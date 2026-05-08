@@ -2,7 +2,6 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 
 import '@/core/utils/json-serialize';
 
-import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { TransactionError, ValidationError } from '@/core/errors';
 import {
@@ -11,7 +10,7 @@ import {
 } from '@/plugins/token/commands/airdrop-ft';
 
 import { mockTransactionResults } from './helpers/fixtures';
-import { makeApiMocks, makeLogger } from './helpers/mocks';
+import { makeApiMocks } from './helpers/mocks';
 
 describe('tokenAirdropFt', () => {
   const mockAirdropTransaction = { test: 'airdrop-transaction' };
@@ -54,9 +53,6 @@ describe('tokenAirdropFt', () => {
           amount: ['100'],
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger: makeLogger(),
       };
 
       const result = await tokenAirdropFt(args);
@@ -106,9 +102,6 @@ describe('tokenAirdropFt', () => {
           amount: ['10', '20', '30'],
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger: makeLogger(),
       };
 
       const result = await tokenAirdropFt(args);
@@ -153,9 +146,6 @@ describe('tokenAirdropFt', () => {
           amount: ['50'],
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger: makeLogger(),
       };
 
       const result = await tokenAirdropFt(args);
@@ -201,9 +191,6 @@ describe('tokenAirdropFt', () => {
           amount: ['100'],
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger: makeLogger(),
       };
 
       const result = await tokenAirdropFt(args);
@@ -235,9 +222,6 @@ describe('tokenAirdropFt', () => {
           amount: ['500t'],
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger: makeLogger(),
       };
 
       const result = await tokenAirdropFt(args);
@@ -277,9 +261,6 @@ describe('tokenAirdropFt', () => {
           amount: ['100'],
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger: makeLogger(),
       };
 
       const result = await tokenAirdropFt(args);
@@ -303,9 +284,6 @@ describe('tokenAirdropFt', () => {
           amount: ['100'],
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger: makeLogger(),
       };
 
       await expect(tokenAirdropFt(args)).rejects.toThrow(
@@ -334,9 +312,6 @@ describe('tokenAirdropFt', () => {
           amount: amounts,
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger: makeLogger(),
       };
 
       await expect(tokenAirdropFt(args)).rejects.toThrow(ValidationError);
@@ -359,9 +334,6 @@ describe('tokenAirdropFt', () => {
           amount: ['100'],
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger: makeLogger(),
       };
 
       await expect(tokenAirdropFt(args)).rejects.toThrow(
@@ -384,9 +356,6 @@ describe('tokenAirdropFt', () => {
           amount: ['100t'],
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger: makeLogger(),
       };
 
       await expect(tokenAirdropFt(args)).rejects.toThrow(
@@ -420,9 +389,6 @@ describe('tokenAirdropFt', () => {
           amount: ['100t'],
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger: makeLogger(),
       };
 
       await expect(tokenAirdropFt(args)).rejects.toThrow(TransactionError);

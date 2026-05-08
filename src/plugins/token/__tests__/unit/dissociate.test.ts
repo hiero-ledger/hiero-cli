@@ -12,11 +12,7 @@ import {
   TokenDissociateOutputSchema,
 } from '@/plugins/token/commands/dissociate';
 
-import {
-  makeApiMocks,
-  makeLogger,
-  makeTransactionResult,
-} from './helpers/mocks';
+import { makeApiMocks, makeTransactionResult } from './helpers/mocks';
 
 describe('tokenDissociateHandler', () => {
   describe('success scenarios', () => {
@@ -46,7 +42,6 @@ describe('tokenDissociateHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: '0.0.123456',
@@ -54,9 +49,6 @@ describe('tokenDissociateHandler', () => {
             '0.0.789012:3333333333333333333333333333333333333333333333333333333333333333',
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       const result = await tokenDissociate(args);
@@ -104,16 +96,12 @@ describe('tokenDissociateHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: tokenId,
           account: `${accountId}:3333333333333333333333333333333333333333333333333333333333333333`,
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenDissociate(args)).rejects.toThrow(ValidationError);
@@ -144,16 +132,12 @@ describe('tokenDissociateHandler', () => {
         txExecute: { execute: txExecuteExecute },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: tokenId,
           account: `${accountId}:3333333333333333333333333333333333333333333333333333333333333333`,
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenDissociate(args)).rejects.toThrow(ValidationError);
@@ -191,7 +175,6 @@ describe('tokenDissociateHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: '0.0.123456',
@@ -199,9 +182,6 @@ describe('tokenDissociateHandler', () => {
             '0.0.789012:3333333333333333333333333333333333333333333333333333333333333333',
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenDissociate(args)).rejects.toThrow(TransactionError);
@@ -229,7 +209,6 @@ describe('tokenDissociateHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: '0.0.123456',
@@ -237,9 +216,6 @@ describe('tokenDissociateHandler', () => {
             '0.0.789012:3333333333333333333333333333333333333333333333333333333333333333',
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenDissociate(args)).rejects.toThrow(

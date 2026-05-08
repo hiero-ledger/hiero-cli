@@ -19,11 +19,7 @@ import {
   TokenAirdropNftOutputSchema,
 } from '@/plugins/token/commands/airdrop-nft';
 
-import {
-  makeApiMocks,
-  makeLogger,
-  makeTransactionResult,
-} from './helpers/mocks';
+import { makeApiMocks, makeTransactionResult } from './helpers/mocks';
 
 const TOKEN_ID = MOCK_HEDERA_ENTITY_ID_1;
 const SENDER_ACCOUNT_ID = MOCK_ACCOUNT_ID;
@@ -69,7 +65,6 @@ describe('tokenAirdropNft', () => {
   describe('success scenarios', () => {
     test('should airdrop single serial to single recipient using account-id:private-key format', async () => {
       const { api, tokens } = makeAirdropSuccessMocks();
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -79,9 +74,6 @@ describe('tokenAirdropNft', () => {
           from: SENDER_WITH_KEY,
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       const result = await tokenAirdropNft(args);
@@ -103,7 +95,6 @@ describe('tokenAirdropNft', () => {
 
     test('should airdrop multiple serials to single recipient', async () => {
       const { api, tokens } = makeAirdropSuccessMocks();
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -113,9 +104,6 @@ describe('tokenAirdropNft', () => {
           from: SENDER_WITH_KEY,
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       const result = await tokenAirdropNft(args);
@@ -134,7 +122,6 @@ describe('tokenAirdropNft', () => {
 
     test('should airdrop to multiple recipients with different serials', async () => {
       const { api, tokens } = makeAirdropSuccessMocks();
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -144,9 +131,6 @@ describe('tokenAirdropNft', () => {
           from: SENDER_WITH_KEY,
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       const result = await tokenAirdropNft(args);
@@ -174,7 +158,6 @@ describe('tokenAirdropNft', () => {
 
     test('should use operator as sender when --from is not provided', async () => {
       const { api, tokens } = makeAirdropSuccessMocks();
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -183,9 +166,6 @@ describe('tokenAirdropNft', () => {
           serials: ['1'],
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       const result = await tokenAirdropNft(args);
@@ -221,7 +201,6 @@ describe('tokenAirdropNft', () => {
           }),
         },
       });
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -230,9 +209,6 @@ describe('tokenAirdropNft', () => {
           serials: ['5'],
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       const result = await tokenAirdropNft(args);
@@ -261,7 +237,6 @@ describe('tokenAirdropNft', () => {
           }),
         },
       });
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -270,9 +245,6 @@ describe('tokenAirdropNft', () => {
           serials: ['1'],
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       const result = await tokenAirdropNft(args);
@@ -288,7 +260,6 @@ describe('tokenAirdropNft', () => {
   describe('validation errors', () => {
     test('should throw ValidationError when to/serials count mismatch', async () => {
       const { api } = makeAirdropSuccessMocks();
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -297,9 +268,6 @@ describe('tokenAirdropNft', () => {
           serials: ['1'],
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenAirdropNft(args)).rejects.toThrow(
@@ -309,7 +277,6 @@ describe('tokenAirdropNft', () => {
 
     test('should throw ValidationError when duplicate serials across recipients', async () => {
       const { api } = makeAirdropSuccessMocks();
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -318,9 +285,6 @@ describe('tokenAirdropNft', () => {
           serials: ['1,2', '2,3'],
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenAirdropNft(args)).rejects.toThrow(
@@ -330,7 +294,6 @@ describe('tokenAirdropNft', () => {
 
     test('should throw ValidationError when total serials exceed 20', async () => {
       const { api } = makeAirdropSuccessMocks();
-      const logger = makeLogger();
 
       const serials = Array.from({ length: 3 }, (_, i) =>
         Array.from({ length: 7 }, (__, j) => i * 7 + j + 1).join(','),
@@ -344,9 +307,6 @@ describe('tokenAirdropNft', () => {
           serials,
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenAirdropNft(args)).rejects.toThrow(ValidationError);
@@ -369,7 +329,6 @@ describe('tokenAirdropNft', () => {
         },
         alias: { resolve: jest.fn().mockReturnValue(null) },
       });
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -378,9 +337,6 @@ describe('tokenAirdropNft', () => {
           serials: ['1'],
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenAirdropNft(args)).rejects.toThrow(ValidationError);
@@ -395,7 +351,6 @@ describe('tokenAirdropNft', () => {
       const { api } = makeApiMocks({
         alias: { resolve: jest.fn().mockReturnValue(null) },
       });
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -404,9 +359,6 @@ describe('tokenAirdropNft', () => {
           serials: ['1'],
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenAirdropNft(args)).rejects.toThrow(NotFoundError);
@@ -426,7 +378,6 @@ describe('tokenAirdropNft', () => {
           }),
         },
       });
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -435,9 +386,6 @@ describe('tokenAirdropNft', () => {
           serials: ['1'],
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenAirdropNft(args)).rejects.toThrow(NotFoundError);
@@ -463,7 +411,6 @@ describe('tokenAirdropNft', () => {
         mirror: makeNftMirrorMock(),
         alias: { resolve: jest.fn().mockReturnValue(null) },
       });
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -472,9 +419,6 @@ describe('tokenAirdropNft', () => {
           serials: ['1'],
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenAirdropNft(args)).rejects.toThrow(TransactionError);

@@ -22,11 +22,7 @@ import {
 } from '@/plugins/token/commands/transfer-ft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
-import {
-  makeApiMocks,
-  makeLogger,
-  makeTransactionResult,
-} from './helpers/mocks';
+import { makeApiMocks, makeTransactionResult } from './helpers/mocks';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTokenStateHelper: jest.fn(),
@@ -89,7 +85,6 @@ describe('Handler Output Validation - Token Plugin', () => {
 
       const result = await tokenCreateFt({
         api,
-        logger: makeLogger(),
         state: api.state,
         config: api.config,
         args,
@@ -157,7 +152,6 @@ describe('Handler Output Validation - Token Plugin', () => {
 
       const result = await tokenTransferFt({
         api,
-        logger: makeLogger(),
         state: api.state,
         config: api.config,
         args,
@@ -202,7 +196,6 @@ describe('Handler Output Validation - Token Plugin', () => {
 
       const result = await tokenAssociate({
         api,
-        logger: makeLogger(),
         state: api.state,
         config: api.config,
         args,
@@ -222,7 +215,6 @@ describe('Handler Output Validation - Token Plugin', () => {
 
       const result = await tokenList({
         api,
-        logger: makeLogger(),
         state: api.state,
         config: api.config,
         args,
@@ -266,7 +258,6 @@ describe('Handler Output Validation - Token Plugin', () => {
 
       const result = await tokenList({
         api,
-        logger: makeLogger(),
         state: api.state,
         config: api.config,
         args,

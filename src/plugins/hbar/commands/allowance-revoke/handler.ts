@@ -36,9 +36,9 @@ export class HbarAllowanceRevokeCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<AllowanceRevokeNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    logger.info('[HBAR] Allowance revoke command invoked');
+    api.logger.info('[HBAR] Allowance revoke command invoked');
 
     const validArgs = HbarAllowanceRevokeInputSchema.parse(args.args);
     const keyManager =
@@ -64,7 +64,7 @@ export class HbarAllowanceRevokeCommand extends BaseTransactionCommand<
       );
     }
 
-    logger.info(
+    api.logger.info(
       `[HBAR] Revoking allowance for spender ${resolvedSpender.accountId}`,
     );
 
@@ -132,9 +132,9 @@ export class HbarAllowanceRevokeCommand extends BaseTransactionCommand<
     _signResult: AllowanceRevokeSignTransactionResult,
     executeResult: AllowanceRevokeExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { logger } = args;
+    const { api } = args;
 
-    logger.info(
+    api.logger.info(
       `[HBAR] Allowance revoked successfully, txId=${executeResult.transactionId}`,
     );
 

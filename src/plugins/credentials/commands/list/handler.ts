@@ -4,9 +4,9 @@ import type { CredentialsListOutput } from './output';
 
 export class CredentialsListCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { logger, api } = args;
+    const { api } = args;
 
-    logger.info('🔐 Retrieving stored credentials...');
+    api.logger.info('🔐 Retrieving stored credentials...');
 
     const credentials = api.kms.list();
 

@@ -13,7 +13,7 @@ import { TokenViewInputSchema } from './input';
 
 export class TokenViewCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
     const validArgs: ViewTokenNormalizedParams = TokenViewInputSchema.parse(
       args.args,
     );
@@ -27,7 +27,7 @@ export class TokenViewCommand implements Command {
     }
 
     const tokenId = resolvedToken.tokenId;
-    logger.info(`Fetching token info for ${tokenId}...`);
+    api.logger.info(`Fetching token info for ${tokenId}...`);
     const tokenInfo = await api.mirror.getTokenInfo(tokenId);
 
     let nftInfo: NftInfo | null = null;
@@ -45,7 +45,7 @@ export class TokenViewCommand implements Command {
         });
       }
 
-      logger.info(`Fetching NFT serial #${serialNum}...`);
+      api.logger.info(`Fetching NFT serial #${serialNum}...`);
       nftInfo = await api.mirror.getNftInfo(tokenId, serialNum);
     }
     const output: TokenViewOutput = tokenBuildOutput(

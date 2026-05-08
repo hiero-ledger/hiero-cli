@@ -19,10 +19,10 @@ const normalizeParams = (
 
 export class NetworkUseCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { logger, api } = args;
+    const { api } = args;
     const normalisedParams = normalizeParams(args);
 
-    logger.info(`Switching to network: ${normalisedParams.network}`);
+    api.logger.info(`Switching to network: ${normalisedParams.network}`);
     api.network.switchNetwork(normalisedParams.network);
 
     const output: UseNetworkOutput = {

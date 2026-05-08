@@ -138,7 +138,6 @@ describe('tokenCreateNftHandler', () => {
         publicKey: '302a300506032b6570032100' + '0'.repeat(64),
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           tokenName: 'TestToken',
@@ -146,9 +145,6 @@ describe('tokenCreateNftHandler', () => {
           supplyKey: ['test-supply-key'],
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       // Act
@@ -208,7 +204,6 @@ describe('tokenCreateNftHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           tokenName: 'TestNFT',
@@ -224,9 +219,6 @@ describe('tokenCreateNftHandler', () => {
           metadataKey: [mockAccountKeyPairs.supply],
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       const result = await tokenCreateNft(args);
@@ -284,7 +276,6 @@ describe('tokenCreateNftHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           tokenName: 'TestNFT',
@@ -297,9 +288,6 @@ describe('tokenCreateNftHandler', () => {
           expirationTime: '2027-01-01T00:00:00Z',
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       const result = await tokenCreateNft(args);
@@ -318,7 +306,6 @@ describe('tokenCreateNftHandler', () => {
   describe('validation scenarios', () => {
     test('should reject when no supply key provided', async () => {
       const { api } = makeApiMocks();
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           tokenName: 'TestNFT',
@@ -326,9 +313,6 @@ describe('tokenCreateNftHandler', () => {
           supplyType: SupplyType.INFINITE,
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenCreateNft(args)).rejects.toThrow();
@@ -336,7 +320,6 @@ describe('tokenCreateNftHandler', () => {
 
     test('should reject freezeDefault without freezeKey', async () => {
       const { api } = makeApiMocks();
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           tokenName: 'TestNFT',
@@ -346,9 +329,6 @@ describe('tokenCreateNftHandler', () => {
           freezeDefault: true,
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenCreateNft(args)).rejects.toThrow(
@@ -367,7 +347,6 @@ describe('tokenCreateNftHandler', () => {
         Promise.reject(new Error('No operator set')),
       );
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           tokenName: 'TestToken',
@@ -375,9 +354,6 @@ describe('tokenCreateNftHandler', () => {
           supplyKey: ['test-supply-key'],
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenCreateNft(args)).rejects.toThrow('No operator set');
@@ -438,7 +414,6 @@ describe('tokenCreateNftHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           tokenName: 'TestToken',
@@ -447,16 +422,13 @@ describe('tokenCreateNftHandler', () => {
           supplyKey: ['test-supply-key'],
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       // Act
       await tokenCreateNft(args);
 
       // Assert
-      expect(MockedHelper).toHaveBeenCalledWith(api.state, logger);
+      expect(MockedHelper).toHaveBeenCalledWith(api.state, api.logger);
       expect(mockSaveToken).toHaveBeenCalled();
     });
   });

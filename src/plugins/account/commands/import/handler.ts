@@ -15,9 +15,9 @@ import { AccountImportInputSchema } from './input';
 
 export class AccountImportCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    const accountState = new ZustandAccountStateHelper(api.state, logger);
+    const accountState = new ZustandAccountStateHelper(api.state, api.logger);
 
     const validArgs = AccountImportInputSchema.parse(args.args);
 
@@ -46,7 +46,7 @@ export class AccountImportCommand implements Command {
 
     const accountInfo = await api.mirror.getAccountOrThrow(accountId);
 
-    logger.info(`Importing account: ${accountKey} (${accountId})`);
+    api.logger.info(`Importing account: ${accountKey} (${accountId})`);
 
     const evmAddress = buildAccountEvmAddress({
       accountId,

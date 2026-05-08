@@ -48,7 +48,7 @@ export class UpdateContractCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<ContractUpdateNormalisedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
     const validArgs = ContractUpdateInputSchema.parse(args.args);
     const network = api.network.getCurrentNetwork();
@@ -69,7 +69,7 @@ export class UpdateContractCommand extends BaseTransactionCommand<
     const contractId = contractInfo.contract_id;
     const stateKey = composeKey(network, contractId);
 
-    const contractState = new ZustandContractStateHelper(api.state, logger);
+    const contractState = new ZustandContractStateHelper(api.state, api.logger);
     let storedContract = contractState.getContract(stateKey);
 
     const keyManager =
@@ -89,7 +89,7 @@ export class UpdateContractCommand extends BaseTransactionCommand<
         contractId,
         network,
       );
-      logger.info(
+      api.logger.info(
         `Contract not in local state; using mirror info for ${storedContract.contractId}`,
       );
     }
@@ -224,8 +224,8 @@ export class UpdateContractCommand extends BaseTransactionCommand<
     _signTransactionResult: ContractUpdateSignTransactionResult,
     executeTransactionResult: ContractUpdateExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { api, logger } = args;
-    const contractState = new ZustandContractStateHelper(api.state, logger);
+    const { api } = args;
+    const contractState = new ZustandContractStateHelper(api.state, api.logger);
     const existingContract = contractState.getContract(
       normalisedParams.stateKey,
     );

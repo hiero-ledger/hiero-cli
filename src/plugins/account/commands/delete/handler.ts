@@ -107,8 +107,8 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
     stateKey: string;
     accountRef: string;
   }> {
-    const { api, logger } = args;
-    const accountState = new ZustandAccountStateHelper(api.state, logger);
+    const { api } = args;
+    const accountState = new ZustandAccountStateHelper(api.state, api.logger);
     const { stateKey, accountRef, network } =
       await this.resolveEntityIdFromAccountRef(args);
 
@@ -139,7 +139,7 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<DeleteNormalisedParams> {
-    const { api, logger } = args;
+    const { api } = args;
     const validArgs = AccountDeleteInputSchema.parse(args.args);
     const credential = KeySchema.parse(validArgs.account);
     const keyManager = api.config.getOption<KeyManager>(
@@ -159,7 +159,7 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
     }
     const network = api.network.getCurrentNetwork();
     const stateKey = composeKey(network, resolvedCredential.accountId);
-    const accountState = new ZustandAccountStateHelper(api.state, logger);
+    const accountState = new ZustandAccountStateHelper(api.state, api.logger);
     const localAccount = accountState.getAccount(stateKey);
 
     const transferAccountId = this.resolveTransferAccountId(

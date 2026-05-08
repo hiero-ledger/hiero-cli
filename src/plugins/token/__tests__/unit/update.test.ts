@@ -18,11 +18,7 @@ import {
 import { TokenUpdateOutputSchema } from '@/plugins/token/commands/update/output';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
-import {
-  makeApiMocks,
-  makeLogger,
-  makeTransactionResult,
-} from './helpers/mocks';
+import { makeApiMocks, makeTransactionResult } from './helpers/mocks';
 
 jest.mock('@/plugins/token/zustand-state-helper');
 
@@ -95,9 +91,6 @@ const makeArgs = (
     ...argsOverrides,
   },
   api,
-  state: api.state,
-  config: api.config,
-  logger: makeLogger(),
 });
 
 describe('tokenUpdate', () => {

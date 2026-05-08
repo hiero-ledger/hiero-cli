@@ -9,7 +9,7 @@ import {
 } from '@/plugins/token/commands/reject-airdrop';
 
 import { mockTransactionResults } from './helpers/fixtures';
-import { makeApiMocks, makeLogger } from './helpers/mocks';
+import { makeApiMocks } from './helpers/mocks';
 
 const TOKEN_ID = MOCK_HEDERA_ENTITY_ID_1;
 const MOCK_TX_ID = '0.0.123@1234567890.123456789';
@@ -65,9 +65,6 @@ const makeArgs = (
     ...args,
   },
   api,
-  state: api.state,
-  config: api.config,
-  logger: makeLogger(),
 });
 
 describe('tokenRejectAirdrop', () => {

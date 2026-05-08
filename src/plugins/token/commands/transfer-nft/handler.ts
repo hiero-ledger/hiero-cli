@@ -39,7 +39,7 @@ export class TokenTransferNftCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<TransferNftNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
     const validArgs = TokenTransferNftInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ||
@@ -70,8 +70,8 @@ export class TokenTransferNftCommand extends BaseTransactionCommand<
     const fromAccountId = resolvedFromAccount.accountId;
     const signerKeyRefId = resolvedFromAccount.keyRefId;
 
-    logger.info(`🔑 Using from account: ${fromAccountId}`);
-    logger.info('🔑 Will sign with from account key');
+    api.logger.info(`🔑 Using from account: ${fromAccountId}`);
+    api.logger.info('🔑 Will sign with from account key');
 
     for (const serial of validArgs.serials) {
       const nftInfo = await api.mirror.getNftInfo(tokenId, serial);
@@ -101,7 +101,7 @@ export class TokenTransferNftCommand extends BaseTransactionCommand<
       );
     }
 
-    logger.info(
+    api.logger.info(
       `Transferring ${validArgs.serials.length} NFT(s) of ${tokenId} from ${fromAccountId} to ${resolvedToAccount.accountId}`,
     );
 
@@ -140,8 +140,8 @@ export class TokenTransferNftCommand extends BaseTransactionCommand<
     normalisedParams: TransferNftNormalizedParams,
     buildTransactionResult: TransferNftBuildTransactionResult,
   ): Promise<TransferNftSignTransactionResult> {
-    const { api, logger } = args;
-    logger.debug(
+    const { api } = args;
+    api.logger.debug(
       `Using key ${normalisedParams.signerKeyRefId} for signing transaction`,
     );
     const transaction = await api.txSign.sign(

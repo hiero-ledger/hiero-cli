@@ -14,11 +14,11 @@ import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
 
 export class BatchListCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    const batchState = new ZustandBatchStateHelper(api.state, logger);
+    const batchState = new ZustandBatchStateHelper(api.state, api.logger);
 
-    logger.info('Listing all batches...');
+    api.logger.info('Listing all batches...');
 
     const batches = batchState.listBatches();
 
