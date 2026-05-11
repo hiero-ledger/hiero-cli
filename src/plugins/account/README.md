@@ -77,9 +77,11 @@ src/plugins/account/
 │       └── index.ts
 ├── utils/
 │   ├── account-address.ts  # EVM address derivation helpers
-│   ├── balance-helpers.ts  # Balance retrieval utilities
 │   └── account-validation.ts
-├── zustand-state-helper.ts  # State management helper
+├── services/
+│   ├── account-state.service.ts
+│   ├── account-cleanup.service.ts
+│   └── account-balance.service.ts
 ├── __tests__/unit/          # Unit tests
 └── index.ts                # Plugin exports
 ```
@@ -263,6 +265,9 @@ The plugin uses the Core API services:
 - `api.mirror` - Mirror node queries
 - `api.receipt` - Transaction receipt retrieval (used by `AccountCreateBatchStateHook`)
 - `api.logger` - Logging
+
+Plugin-specific reusable logic that depends on Core API services lives in `services/`.
+The `utils/` directory contains pure functions only.
 
 ## 📤 Output Formatting
 

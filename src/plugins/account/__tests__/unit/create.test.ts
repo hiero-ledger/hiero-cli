@@ -20,15 +20,15 @@ import { KeyAlgorithm } from '@/core/shared/constants';
 import { AliasType } from '@/core/types/shared.types';
 import { AccountCreateOutputSchema } from '@/plugins/account/commands/create';
 import { accountCreate } from '@/plugins/account/commands/create/handler';
-import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
+import { AccountStateServiceImpl } from '@/plugins/account/services/account-state.service';
 
 import { makeApiMocksForAccountCreate } from './helpers/mocks';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandAccountStateHelper: jest.fn(),
+jest.mock('../../services/account-state.service', () => ({
+  AccountStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = ZustandAccountStateHelper as jest.Mock;
+const MockedHelper = AccountStateServiceImpl as jest.Mock;
 
 describe('account plugin - create command (ADR-003)', () => {
   beforeEach(() => {

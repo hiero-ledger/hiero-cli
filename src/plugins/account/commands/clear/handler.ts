@@ -1,24 +1,24 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
+import type { AccountStateService } from '@/plugins/account/services/account-state.service.interface';
 import type { AccountClearOutput } from './output';
 
 import { AliasType } from '@/core/types/shared.types';
-import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
+import { AccountStateServiceImpl } from '@/plugins/account/services/account-state.service';
 
 export class AccountClearCommand implements Command {
+  constructor(private readonly accountState: AccountStateService) {}
+
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
-
-    const accountState = new ZustandAccountStateHelper(api.state, api.logger);
-
     api.logger.info('Clearing all accounts...');
 
-    const accounts = accountState.listAccounts();
+    const accounts = this.accountState.listAccounts();
     const count = accounts.length;
 
     api.alias.clear(AliasType.Account);
 
-    accountState.clearAccounts();
+    this.accountState.clearAccounts();
 
     const outputData: AccountClearOutput = {
       clearedCount: count,
@@ -29,4 +29,6 @@ export class AccountClearCommand implements Command {
 }
 
 export const accountClear = (args: CommandHandlerArgs) =>
-  new AccountClearCommand().execute(args);
+  new AccountClearCommand(
+    new AccountStateServiceImpl(args.api.state, args.api.logger),
+  ).execute(args);

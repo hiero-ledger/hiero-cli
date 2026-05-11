@@ -1,5 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
+import type { AccountBalanceService } from '@/plugins/account/services/account-balance.service.interface';
 import type { AccountBalanceOutput } from './output';
 
 import BigNumber from 'bignumber.js';
@@ -9,14 +10,13 @@ import { EntityIdSchema } from '@/core/schemas';
 import { HBAR_DECIMALS } from '@/core/shared/constants';
 import { AliasType } from '@/core/types/shared.types';
 import { normalizeBalance } from '@/core/utils/normalize-balance';
-import {
-  fetchAccountNftBalances,
-  fetchAccountTokenBalances,
-} from '@/plugins/account/utils/balance-helpers';
+import { AccountBalanceServiceImpl } from '@/plugins/account/services/account-balance.service';
 
 import { AccountBalanceInputSchema, TokenEntityType } from './input';
 
 export class AccountBalanceCommand implements Command {
+  constructor(private readonly accountBalance: AccountBalanceService) {}
+
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
 
@@ -99,16 +99,14 @@ export class AccountBalanceCommand implements Command {
         }
       }
 
-      outputData.tokenBalances = await fetchAccountTokenBalances(
-        api,
+      outputData.tokenBalances = await this.accountBalance.fetchTokenBalances(
         accountId,
         tokenId,
         raw,
         network,
       );
 
-      outputData.nftBalances = await fetchAccountNftBalances(
-        api,
+      outputData.nftBalances = await this.accountBalance.fetchNftBalances(
         accountId,
         tokenId,
         network,
@@ -120,4 +118,6 @@ export class AccountBalanceCommand implements Command {
 }
 
 export const accountBalance = (args: CommandHandlerArgs) =>
-  new AccountBalanceCommand().execute(args);
+  new AccountBalanceCommand(
+    new AccountBalanceServiceImpl(args.api.mirror, args.api.alias),
+  ).execute(args);

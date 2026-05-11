@@ -6,13 +6,13 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError } from '@/core';
 import { AccountClearOutputSchema } from '@/plugins/account/commands/clear';
 import { accountClear } from '@/plugins/account/commands/clear/handler';
-import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
+import { AccountStateServiceImpl } from '@/plugins/account/services/account-state.service';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandAccountStateHelper: jest.fn(),
+jest.mock('../../services/account-state.service', () => ({
+  AccountStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = ZustandAccountStateHelper as jest.Mock;
+const MockedHelper = AccountStateServiceImpl as jest.Mock;
 
 describe('account plugin - clear command (ADR-003)', () => {
   beforeEach(() => {

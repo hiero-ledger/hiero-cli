@@ -19,8 +19,8 @@ import {
   type AccountCreateNormalisedParams,
   AccountCreateNormalisedParamsSchema,
 } from '@/plugins/account/hooks/account-create-state/types';
+import { AccountStateServiceImpl } from '@/plugins/account/services/account-state.service';
 import { buildEvmAddressFromAccountId } from '@/plugins/account/utils/account-address';
-import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 export class AccountCreateStateHook implements Hook<PostOutputPreparationHookParams> {
   async execute(params: PostOutputPreparationHookParams): Promise<HookResult> {
@@ -186,7 +186,7 @@ export class AccountCreateStateHook implements Hook<PostOutputPreparationHookPar
       network: normalisedParams.network,
     };
     const accountKey = composeKey(normalisedParams.network, stateAccountId);
-    const accountState = new ZustandAccountStateHelper(api.state, api.logger);
+    const accountState = new AccountStateServiceImpl(api.state, api.logger);
     accountState.saveAccount(accountKey, accountData);
   }
 
