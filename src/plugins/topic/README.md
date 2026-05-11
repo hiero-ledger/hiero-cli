@@ -141,6 +141,8 @@ hcli topic list --network testnet
 
 Update an existing topic's fields. Requires admin key for most updates. Fields not provided remain unchanged. Pass `"null"` to clear memo, submit key, or auto-renew account.
 
+The topic does not need to be in local state. If it is not tracked, the command fetches current state from the mirror node and saves it after a successful update. When the admin key is not available in the key manager, provide it explicitly with `--admin-signing-key`.
+
 ```bash
 # Update memo
 hcli topic update --topic my-topic --memo "Updated description"
@@ -166,6 +168,10 @@ hcli topic update --topic my-topic \
 
 # Update expiration time
 hcli topic update --topic my-topic --expiration-time 2026-01-01T00:00:00Z
+
+# Update topic not in local state, providing admin key explicitly
+hcli topic update --topic 0.0.123456 --memo "updated" \
+  --admin-signing-key 0.0.100:302e...
 ```
 
 **Batch support:** `topic update` registers `batchify`. Pass `--batch <batch-name>` to queue the update; after `hcli batch execute`, `TopicUpdateBatchStateHook` reconciles local state.
