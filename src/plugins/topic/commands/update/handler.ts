@@ -5,6 +5,7 @@ import type {
   Credential,
   KeyManager,
 } from '@/core/services/kms/kms-types.interface';
+import type { TopicData } from '@/plugins/topic/schema';
 import type { TopicUpdateOutput } from './output';
 import type {
   UpdateTopicBuildTransactionResult,
@@ -14,15 +15,13 @@ import type {
 } from './types';
 
 import { BaseTransactionCommand } from '@/core/commands/command';
-import {
-  NotFoundError,
-  TransactionError,
-  ValidationError,
-} from '@/core/errors';
+import { TransactionError, ValidationError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { NULL_TOKEN } from '@/core/shared/constants';
+import { extractPublicKeysFromMirrorNodeKey } from '@/core/utils/extract-public-keys';
 import { composeKey } from '@/core/utils/key-composer';
 import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
+import { matchPublicKeysToKmsRefIds } from '@/core/utils/match-keys-to-kms';
 import { resolveFieldUpdate } from '@/core/utils/resolve-field-update';
 import { resolveTopicId } from '@/plugins/topic/utils/topicResolver';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
@@ -53,11 +52,6 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
     const stateKey = composeKey(network, topicId);
     const topicState = new ZustandTopicStateHelper(api.state, api.logger);
     const storedTopicData = topicState.loadTopic(stateKey);
-    if (!storedTopicData) {
-      throw new NotFoundError(
-        `Topic "${validArgs.topic}" not found in local state for network ${network}`,
-      );
-    }
 
     const topicInfo = await api.mirror.getTopicInfo(topicId);
 
@@ -122,18 +116,44 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
     const isExpirationOnlyUpdate = !hasAdminKey && hasOnlyExpirationTime;
 
     let currentAdminKeyRefIds: string[] = [];
+    let currentAdminKeyThreshold = 0;
     if (hasAdminKey && !isExpirationOnlyUpdate) {
-      const { keyRefIds } = await api.keyResolver.resolveSigningKeys({
-        mirrorRoleKey: topicInfo.admin_key,
-        explicitCredentials: [],
-        keyManager,
-        signingKeyLabels: ['topic:admin'],
-        emptyMirrorRoleKeyMessage: 'Topic has no admin key on the network',
-        insufficientKmsMatchesMessage:
-          'Not enough admin key(s) found in key manager for this topic.',
-        validationErrorOptions: { context: { topicId } },
-      });
+      const { keyRefIds, requiredSignatures } =
+        await api.keyResolver.resolveSigningKeys({
+          mirrorRoleKey: topicInfo.admin_key,
+          explicitCredentials: validArgs.adminSigningKey,
+          keyManager,
+          signingKeyLabels: ['topic:admin'],
+          emptyMirrorRoleKeyMessage: 'Topic has no admin key on the network',
+          insufficientKmsMatchesMessage:
+            'Not enough admin key(s) found in key manager for this topic. Provide --admin-signing-key.',
+          validationErrorOptions: { context: { topicId } },
+        });
       currentAdminKeyRefIds = keyRefIds;
+      currentAdminKeyThreshold = requiredSignatures;
+    }
+
+    let existingTopicData: TopicData;
+    if (storedTopicData) {
+      existingTopicData = storedTopicData;
+    } else {
+      const submitKeysExtracted = extractPublicKeysFromMirrorNodeKey(
+        topicInfo.submit_key,
+      );
+      const submitKeyRefIds = matchPublicKeysToKmsRefIds(
+        submitKeysExtracted.publicKeys,
+        (publicKey) => api.kms.findByPublicKey(publicKey),
+      );
+      existingTopicData = {
+        topicId,
+        network,
+        adminKeyRefIds: currentAdminKeyRefIds,
+        adminKeyThreshold: currentAdminKeyThreshold,
+        submitKeyRefIds,
+        submitKeyThreshold: submitKeysExtracted.threshold,
+        memo: topicInfo.memo || undefined,
+        createdAt: new Date().toISOString(),
+      };
     }
 
     api.logger.info(`Updating topic ${topicId} on ${network}`);
@@ -143,7 +163,7 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
       stateKey,
       network,
       keyManager,
-      existingTopicData: storedTopicData,
+      existingTopicData,
       memo,
       newAdminKeys,
       newSubmitKeys,
