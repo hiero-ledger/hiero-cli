@@ -23,7 +23,7 @@ export const SmartContractVerifyApiErrorResponseSchema: z.ZodType<SmartContractV
     error: z.string(),
   });
 
-export const CheckByAddressesResponseItemSchema = z.object({
+const CheckByAddressesResponseItemSchema = z.object({
   address: z.string(),
   status: z.string(),
   chainIds: z.array(z.string()).optional(),

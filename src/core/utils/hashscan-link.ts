@@ -21,7 +21,7 @@ export type HashscanEntityType =
 /**
  * Build Hashscan URL for a given entity
  */
-export function buildHashscanUrl(
+function buildHashscanUrl(
   network: SupportedNetwork,
   entityType: HashscanEntityType,
   entityId: string,
