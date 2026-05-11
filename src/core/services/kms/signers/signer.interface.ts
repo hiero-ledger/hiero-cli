@@ -1,3 +1,8 @@
+import type {
+  Eip712Domain,
+  Eip712TypedDataField,
+} from '@/core/types/shared.types';
+
 /**
  * KmsSignerService provides signing capabilities for transactions.
  *
@@ -14,6 +19,12 @@ export interface Signer {
    * @returns Signature bytes
    */
   sign(bytes: Uint8Array): Uint8Array;
+
+  signWithWallet(
+    domain: Eip712Domain,
+    types: Record<string, Eip712TypedDataField[]>,
+    message: Record<string, unknown>,
+  ): Promise<string>;
 
   /**
    * Returns the public key associated with this signer.

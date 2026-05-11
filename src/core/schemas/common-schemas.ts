@@ -8,6 +8,7 @@
  */
 import type { Credential } from '@/core/services/kms/kms-types.interface';
 
+import { existsSync, readFileSync } from 'fs';
 import { z } from 'zod';
 
 import { ValidationError } from '@/core/errors';
@@ -794,6 +795,61 @@ export const FilePathSchema = z
   .trim()
   .min(1, 'File path cannot be empty')
   .describe('Filesystem path (absolute or relative)');
+
+/**
+ * JSON Input Source Type
+ * Discriminates between inline JSON and a file-backed JSON value.
+ */
+export enum JsonInputType {
+  INLINE = 'INLINE',
+  FILE = 'FILE',
+}
+
+/**
+ * JSON Input Schema
+ * Accepts either an inline JSON string (starts with { or [) or a filesystem path
+ * to a JSON file. Transforms to { type, value } where value is the parsed object.
+ */
+export const JsonInputSchema = z
+  .string()
+  .trim()
+  .min(1, 'JSON input cannot be empty')
+  .transform((val): { type: JsonInputType; value: unknown } => {
+    const trimmed = val.trim();
+    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+      try {
+        return { type: JsonInputType.INLINE, value: JSON.parse(trimmed) };
+      } catch {
+        throw new ValidationError(
+          `Invalid inline JSON: ${trimmed.slice(0, 80)}`,
+        );
+      }
+    }
+    if (!existsSync(trimmed)) {
+      throw new ValidationError(`File not found: ${trimmed}`);
+    }
+    try {
+      return {
+        type: JsonInputType.FILE,
+        value: JSON.parse(readFileSync(trimmed, 'utf-8')),
+      };
+    } catch {
+      throw new ValidationError(`Could not parse JSON from file: ${trimmed}`);
+    }
+  })
+  .describe('Inline JSON string or path to a JSON file');
+
+/**
+ * EIP-712 Signature
+ * 0x-prefixed 65-byte ECDSA signature (r + s + v)
+ */
+export const Eip712SignatureSchema = z
+  .string()
+  .regex(
+    /^0x[0-9a-fA-F]{130}$/,
+    'Signature must be a 0x-prefixed 65-byte hex string',
+  )
+  .describe('EIP-712 signature (0x-prefixed 65-byte hex)');
 
 /**
  * Token Name
