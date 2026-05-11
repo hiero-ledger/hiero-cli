@@ -42,7 +42,6 @@ hiero-cli/
 │   │   │   ├── network/         # Network and operator management
 │   │   │   ├── output/          # Output formatting (human, JSON, YAML)
 │   │   │   ├── plugin-management/   # Plugin loading and management
-│   │   │   ├── process-exit/    # Process exit handling
 │   │   │   ├── receipt/         # Transaction receipt retrieval
 │   │   │   ├── schedule-transaction/ # ScheduleCreate/Sign/Delete builders
 │   │   │   ├── state/           # Zustand state storage

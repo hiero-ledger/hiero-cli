@@ -39,17 +39,11 @@ export const setDefaultOperatorForNetwork = async (
   await networkUse({
     args: useNetworkArgs,
     api: coreApi,
-    state: coreApi.state,
-    logger: coreApi.logger,
-    config: coreApi.config,
   });
 
   const getOperatorResult = await networkGetOperator({
     args: {},
     api: coreApi,
-    state: coreApi.state,
-    logger: coreApi.logger,
-    config: coreApi.config,
   });
   const getOperatorOutput =
     getOperatorResult.result as NetworkGetOperatorOutput;
@@ -60,9 +54,6 @@ export const setDefaultOperatorForNetwork = async (
     await networkSetOperator({
       args: setOperatorArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
   }
 };

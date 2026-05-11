@@ -5,7 +5,6 @@ import '@/core/utils/json-serialize';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
-import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { FileError, StateError } from '@/core/errors';
 import { HederaTokenType } from '@/core/shared/constants';
@@ -170,15 +169,11 @@ describe('tokenCreateFtFromFileHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           file: 'test',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       // Act
@@ -221,15 +216,11 @@ describe('tokenCreateFtFromFileHandler', () => {
 
       const { api } = createMockApi();
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           file: fullPath,
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       const result = await tokenCreateFtFromFile(args);
@@ -258,15 +249,11 @@ describe('tokenCreateFtFromFileHandler', () => {
 
       const { api } = createMockApi();
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           file: absolutePath,
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       const result = await tokenCreateFtFromFile(args);
@@ -347,15 +334,11 @@ describe('tokenCreateFtFromFileHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           file: 'test',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       // Act
@@ -471,15 +454,11 @@ describe('tokenCreateFtFromFileHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           file: 'test',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       // Act
@@ -508,15 +487,11 @@ describe('tokenCreateFtFromFileHandler', () => {
       mockPath.resolve.mockReturnValue('/resolved/path/to/token.test.json');
 
       const { api } = makeApiMocks({});
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           file: 'nonexistent',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       // Act & Assert
@@ -530,15 +505,11 @@ describe('tokenCreateFtFromFileHandler', () => {
       mockPath.resolve.mockReturnValue('/resolved/path/to/token.test.json');
 
       const { api } = makeApiMocks({});
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           file: 'test',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       // Act & Assert
@@ -552,15 +523,11 @@ describe('tokenCreateFtFromFileHandler', () => {
       mockPath.resolve.mockReturnValue('/resolved/path/to/token.test.json');
 
       const { api } = makeApiMocks({});
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           file: 'test',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       // Act & Assert
@@ -577,15 +544,11 @@ describe('tokenCreateFtFromFileHandler', () => {
       mockPath.resolve.mockReturnValue('/resolved/path/to/token.test.json');
 
       const { api } = makeApiMocks({});
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           file: 'test',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       // Act & Assert
@@ -602,15 +565,11 @@ describe('tokenCreateFtFromFileHandler', () => {
       mockPath.resolve.mockReturnValue('/resolved/path/to/token.test.json');
 
       const { api } = makeApiMocks({});
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           file: 'test',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       // Act & Assert
@@ -627,15 +586,11 @@ describe('tokenCreateFtFromFileHandler', () => {
       mockPath.resolve.mockReturnValue('/resolved/path/to/token.test.json');
 
       const { api } = makeApiMocks({});
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           file: 'test',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       // Act & Assert
@@ -652,15 +607,11 @@ describe('tokenCreateFtFromFileHandler', () => {
       mockPath.resolve.mockReturnValue('/resolved/path/to/token.test.json');
 
       const { api } = makeApiMocks({});
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           file: 'test',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       // Act & Assert
@@ -733,15 +684,11 @@ describe('tokenCreateFtFromFileHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           file: 'test',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       // Act & Assert
@@ -815,15 +762,11 @@ describe('tokenCreateFtFromFileHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           file: 'test',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       // Act
@@ -836,7 +779,7 @@ describe('tokenCreateFtFromFileHandler', () => {
       expect(output.name).toBe('TestToken');
 
       // Should continue despite association failure
-      expect(logger.warn).toHaveBeenCalledWith(
+      expect(api.logger.warn).toHaveBeenCalledWith(
         expect.stringContaining('⚠️  Failed to associate account 0.0.789012'),
       );
     });
@@ -856,8 +799,6 @@ describe('tokenCreateFtFromFileHandler', () => {
       mockFs.readFile.mockResolvedValue(JSON.stringify(validTokenFile));
       mockFs.access.mockResolvedValue(undefined);
       mockPath.resolve.mockReturnValue('/resolved/path/to/test.json');
-
-      const logger = makeLogger();
 
       const { api } = makeApiMocks({
         tokenTransactions: {
@@ -906,15 +847,13 @@ describe('tokenCreateFtFromFileHandler', () => {
           }),
         },
       });
+      const logger = makeLogger();
       api.logger = logger;
       const args: CommandHandlerArgs = {
         args: {
           file: 'test',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
       };
 
       // Act

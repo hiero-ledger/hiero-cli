@@ -1,9 +1,9 @@
 import type {
   BaseBuildTransactionResult,
+  BaseExecuteTransactionResult,
   BaseNormalizedParams,
   BaseSignTransactionResult,
   SupportedNetwork,
-  TransactionResult,
 } from '@/core';
 
 export interface BurnFtNormalizedParams extends BaseNormalizedParams {
@@ -17,6 +17,4 @@ export interface BurnFtBuildTransactionResult extends BaseBuildTransactionResult
 
 export interface BurnFtSignTransactionResult extends BaseSignTransactionResult {}
 
-export interface BurnFtExecuteTransactionResult {
-  transactionResult: TransactionResult;
-}
+export interface BurnFtExecuteTransactionResult extends BaseExecuteTransactionResult {}

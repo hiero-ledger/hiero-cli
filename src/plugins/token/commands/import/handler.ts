@@ -36,8 +36,8 @@ export class TokenImportCommand implements Command {
   }
 
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { api, logger } = args;
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const { api } = args;
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     const parsedArgs = TokenImportInputSchema.parse(args.args);
     const validArgs: ImportTokenNormalizedParams = {
       tokenId: parsedArgs.token,

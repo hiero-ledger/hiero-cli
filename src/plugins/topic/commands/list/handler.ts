@@ -9,15 +9,15 @@ import { TopicListInputSchema } from './input';
 
 export class TopicListCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    const topicState = new ZustandTopicStateHelper(api.state, logger);
+    const topicState = new ZustandTopicStateHelper(api.state, api.logger);
     const validArgs = TopicListInputSchema.parse(args.args);
     const normalisedParams: ListTopicsNormalisedParams = {
       networkFilter: validArgs.network,
     };
 
-    logger.info('Listing topics...');
+    api.logger.info('Listing topics...');
 
     let topics = topicState.listTopics();
 

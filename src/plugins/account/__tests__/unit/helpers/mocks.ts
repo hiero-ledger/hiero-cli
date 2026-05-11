@@ -18,13 +18,11 @@ import type { AccountData } from '@/plugins/account/schema';
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
   makeAliasMock as makeGlobalAliasMock,
-  makeConfigMock,
   makeIdentityResolutionServiceMock,
   makeKeyResolverMock,
   makeKmsMock as makeGlobalKmsMock,
   makeMirrorMock as makeGlobalMirrorMock,
   makeNetworkMock as makeGlobalNetworkMock,
-  makeStateMock,
   makeTxExecuteMock,
   makeTxSignMock,
 } from '@/__tests__/mocks/mocks';
@@ -219,6 +217,7 @@ export const makeArgs = (
   args: Record<string, unknown>,
 ): CommandHandlerArgs => ({
   api: {
+    logger,
     pluginManagement: {
       listPlugins: jest.fn().mockReturnValue([]),
       getPlugin: jest.fn(),
@@ -234,9 +233,6 @@ export const makeArgs = (
     } as PluginManagementService,
     ...api,
   } as CoreApi,
-  logger,
-  state: makeStateMock(),
-  config: makeConfigMock(),
   args,
   hooks: new Map(),
 });

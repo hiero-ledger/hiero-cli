@@ -18,7 +18,6 @@ import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 import {
   makeDeleteApiMocks,
   makeDeleteSuccessMocks,
-  makeLogger,
   mockZustandTokenStateHelper,
 } from './helpers/mocks';
 
@@ -40,9 +39,6 @@ const makeArgs = (
     ...argsOverrides,
   },
   api,
-  state: api.state,
-  config: api.config,
-  logger: makeLogger(),
 });
 
 describe('tokenDelete - network delete (stateOnly=false)', () => {
@@ -226,9 +222,6 @@ describe('tokenDelete - state-only (stateOnly=true)', () => {
       ...argsOverrides,
     },
     api,
-    state: api.state,
-    config: api.config,
-    logger: makeLogger(),
   });
 
   test('happy path - removes token from state, returns output without transactionId', async () => {

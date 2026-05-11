@@ -129,16 +129,12 @@ describe('createTokenHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           tokenName: 'TestToken',
           symbol: 'TEST',
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       // Act
@@ -186,16 +182,12 @@ describe('createTokenHandler', () => {
         Promise.reject(new Error('No operator set')),
       );
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           tokenName: 'TestToken',
           symbol: 'TEST',
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       // Act & Assert - Error is thrown before try-catch block in handler
@@ -205,7 +197,6 @@ describe('createTokenHandler', () => {
     test('throws ValidationError when autoRenewPeriod is set without autoRenewAccount', async () => {
       const { api } = makeApiMocks();
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           tokenName: 'TestToken',
@@ -213,9 +204,6 @@ describe('createTokenHandler', () => {
           autoRenewPeriod: '30d',
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenCreateFt(args)).rejects.toThrow(ValidationError);
@@ -262,7 +250,6 @@ describe('createTokenHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           tokenName: 'TestToken',
@@ -270,9 +257,6 @@ describe('createTokenHandler', () => {
           adminKey: ['test-admin-key'],
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       // Act & Assert
@@ -296,7 +280,6 @@ describe('createTokenHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           tokenName: 'TestToken',
@@ -304,9 +287,6 @@ describe('createTokenHandler', () => {
           adminKey: ['test-admin-key'],
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       // Act & Assert
@@ -314,7 +294,6 @@ describe('createTokenHandler', () => {
     });
     test('should handle initial supply limit exceeded', async () => {
       const { api } = makeApiMocks({});
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           tokenName: 'TestToken',
@@ -323,9 +302,6 @@ describe('createTokenHandler', () => {
           initialSupply: '250000000000000000000000000000',
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
       await expect(tokenCreateFt(args)).rejects.toThrow(
         'Maximum balance for token exceeded. Token balance cannot be greater than 9223372036854775807',
@@ -382,7 +358,6 @@ describe('createTokenHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           tokenName: 'TestToken',
@@ -390,16 +365,13 @@ describe('createTokenHandler', () => {
           adminKey: ['test-admin-key'],
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       // Act
       await tokenCreateFt(args);
 
       // Assert
-      expect(MockedHelper).toHaveBeenCalledWith(api.state, logger);
+      expect(MockedHelper).toHaveBeenCalledWith(api.state, api.logger);
       expect(mockSaveToken).toHaveBeenCalled();
     });
   });

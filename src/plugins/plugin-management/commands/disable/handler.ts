@@ -14,12 +14,12 @@ import { PluginManagementDisableInputSchema } from './input';
 
 export class PluginManagementDisableCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
     const validArgs = PluginManagementDisableInputSchema.parse(args.args);
     const name = validArgs.name;
 
-    logger.info('➖ Disabling plugin...');
+    api.logger.info('➖ Disabling plugin...');
 
     const result = api.pluginManagement.disablePlugin(name);
 

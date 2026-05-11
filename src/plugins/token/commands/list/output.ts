@@ -42,7 +42,7 @@ const TokenListItemSchema = z.object({
   treasuryId: EntityIdSchema,
   network: NetworkSchema,
   keys: TokenKeysSchema.optional(),
-  alias: z.string().describe('Token alias').optional(),
+  alias: z.string().describe('Local name (alias)').optional(),
   maxSupply: z.int().nonnegative().describe('Maximum supply for finite tokens'),
   associationCount: z
     .number()
@@ -101,7 +101,9 @@ export const TOKEN_LIST_TEMPLATE = `
 📝 Found {{totalCount}} token(s):
 
 {{#each tokens}}
-{{add1 @index}}. {{symbol}} ({{name}})
+{{add1 @index}}. Name (Alias): {{#if alias}}{{alias}}{{else}}-{{/if}}
+   Token Name: {{name}}
+   Symbol: {{symbol}}
    Token ID: {{hashscanLink tokenId "token" network}}
    Treasury: {{hashscanLink treasuryId "account" network}}
    Token Type: {{#if (eq tokenType "NonFungibleToken")}}NON FUNGIBLE TOKEN{{else}}FUNGIBLE TOKEN{{/if}}
@@ -113,9 +115,6 @@ export const TOKEN_LIST_TEMPLATE = `
 {{/if}}
 {{#if (gt associationCount 0)}}
    Associations: {{associationCount}}
-{{/if}}
-{{#if alias}}
-   Alias: {{alias}}
 {{/if}}
 {{#if keys}}
 {{#if keys.adminKey}}

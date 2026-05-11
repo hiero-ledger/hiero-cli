@@ -50,7 +50,7 @@ export class CreateContractCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<ContractCreateNormalisedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
     const validArgs = ContractCreateSchema.parse(args.args);
     const alias = validArgs.name;
@@ -95,7 +95,7 @@ export class CreateContractCommand extends BaseTransactionCommand<
     const adminKeyThreshold = validArgs.adminKeyThreshold ?? adminKeys.length;
 
     if (adminKeys.length === 0) {
-      logger.warn(
+      api.logger.warn(
         `Admin key not specified. Smart contract will lack admin key set`,
       );
     }
@@ -223,9 +223,11 @@ export class CreateContractCommand extends BaseTransactionCommand<
   ): Promise<ContractCreateExecuteTransactionResult> {
     const { api } = _args;
 
-    return api.txExecute.executeContractCreateFlow(
-      signTransactionResult.signedFlow,
-    );
+    return {
+      transactionResult: await api.txExecute.executeContractCreateFlow(
+        signTransactionResult.signedFlow,
+      ),
+    };
   }
 
   async outputPreparation(
@@ -235,21 +237,20 @@ export class CreateContractCommand extends BaseTransactionCommand<
     _signTransactionResult: ContractCreateSignTransactionResult,
     executeTransactionResult: ContractCreateExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { transactionResult } = executeTransactionResult;
+    const { api } = args;
 
-    if (!executeTransactionResult.contractId) {
+    if (!transactionResult.contractId) {
       throw new StateError('Transaction completed but no contractId returned', {
-        context: { transactionId: executeTransactionResult.transactionId },
+        context: { transactionId: transactionResult.transactionId },
       });
     }
 
-    const contractId = ContractId.fromString(
-      executeTransactionResult.contractId,
-    );
+    const contractId = ContractId.fromString(transactionResult.contractId);
     let verificationResult: ContractVerificationResult = { success: false };
 
     if (SupportedNetwork.LOCALNET === normalisedParams.network) {
-      logger.warn(
+      api.logger.warn(
         `Skipping contract verification as the selected network ${normalisedParams.network} is not supported `,
       );
     } else {
@@ -259,17 +260,17 @@ export class CreateContractCommand extends BaseTransactionCommand<
         contractEvmAddress: contractId.toEvmAddress(),
       });
       if (!verificationResult.success && verificationResult.errorMessage) {
-        logger.warn(
+        api.logger.warn(
           `Contract verification failed: ${verificationResult.errorMessage}`,
         );
       }
     }
 
     const contractEvmAddress = `0x${contractId.toEvmAddress()}`;
-    const contractState = new ZustandContractStateHelper(api.state, logger);
+    const contractState = new ZustandContractStateHelper(api.state, api.logger);
 
     const contractData = {
-      contractId: executeTransactionResult.contractId,
+      contractId: transactionResult.contractId,
       name: normalisedParams.alias,
       contractEvmAddress,
       adminKeyRefIds: normalisedParams.adminKeys.map((k) => k.keyRefId),
@@ -280,7 +281,7 @@ export class CreateContractCommand extends BaseTransactionCommand<
     };
     const contractKey = composeKey(
       normalisedParams.network,
-      executeTransactionResult.contractId,
+      transactionResult.contractId,
     );
     contractState.saveContract(contractKey, contractData);
 
@@ -289,20 +290,20 @@ export class CreateContractCommand extends BaseTransactionCommand<
         alias: normalisedParams.alias,
         type: AliasType.Contract,
         network: normalisedParams.network,
-        entityId: executeTransactionResult.contractId,
-        createdAt: executeTransactionResult.consensusTimestamp,
+        entityId: transactionResult.contractId,
+        createdAt: transactionResult.consensusTimestamp,
       });
     }
 
     const adminKeyCount = normalisedParams.adminKeys.length;
 
     const output: ContractCreateOutput = {
-      contractId: executeTransactionResult.contractId,
+      contractId: transactionResult.contractId,
       contractName: normalisedParams.contractName,
       contractEvmAddress,
       network: normalisedParams.network,
       name: normalisedParams.alias,
-      transactionId: executeTransactionResult.transactionId,
+      transactionId: transactionResult.transactionId,
       adminKeyPresent: adminKeyCount > 0,
       adminKeyThreshold: normalisedParams.adminKeyThreshold,
       adminKeyCount: adminKeyCount > 1 ? adminKeyCount : undefined,

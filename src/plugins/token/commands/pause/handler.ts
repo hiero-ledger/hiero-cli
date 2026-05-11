@@ -35,7 +35,7 @@ export class TokenPauseCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<PauseNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
     const validArgs = TokenPauseInputSchema.parse(args.args);
 
@@ -55,7 +55,7 @@ export class TokenPauseCommand extends BaseTransactionCommand<
 
     const tokenInfo = await api.mirror.getTokenInfo(tokenId);
 
-    logger.info(`Pausing token ${tokenId} on ${network}`);
+    api.logger.info(`Pausing token ${tokenId} on ${network}`);
 
     const { keyRefIds } = await api.keyResolver.resolveSigningKeys({
       mirrorRoleKey: tokenInfo.pause_key,
@@ -79,8 +79,8 @@ export class TokenPauseCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
     normalisedParams: PauseNormalizedParams,
   ): Promise<PauseBuildTransactionResult> {
-    const { api, logger } = args;
-    logger.debug('Building token pause transaction');
+    const { api } = args;
+    api.logger.debug('Building token pause transaction');
     const transaction = api.token.createPauseTransaction({
       tokenId: normalisedParams.tokenId,
     });
@@ -92,8 +92,8 @@ export class TokenPauseCommand extends BaseTransactionCommand<
     normalisedParams: PauseNormalizedParams,
     buildTransactionResult: PauseBuildTransactionResult,
   ): Promise<PauseSignTransactionResult> {
-    const { api, logger } = args;
-    logger.debug(
+    const { api } = args;
+    api.logger.debug(
       `Using ${normalisedParams.keyRefIds.length} key(s) for signing transaction`,
     );
     const signedTransaction = await api.txSign.sign(

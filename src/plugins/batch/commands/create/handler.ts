@@ -15,9 +15,9 @@ import { BatchCreateInputSchema } from './input';
 
 export class BatchCreateCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    const batchState = new ZustandBatchStateHelper(api.state, logger);
+    const batchState = new ZustandBatchStateHelper(api.state, api.logger);
     const validArgs = BatchCreateInputSchema.parse(args.args);
     const name = validArgs.name;
     const batchKey = validArgs.key;

@@ -1,10 +1,10 @@
 import type {
   BaseBuildTransactionResult,
+  BaseExecuteTransactionResult,
   BaseNormalizedParams,
   BaseSignTransactionResult,
   HederaTokenType,
   SupplyType,
-  TransactionResult,
 } from '@/core';
 import type {
   ResolvedAccountCredential,
@@ -59,9 +59,7 @@ export interface TokenCreateFtFromFileBuildTransactionResult extends BaseBuildTr
 
 export interface TokenCreateFtFromFileSignTransactionResult extends BaseSignTransactionResult {}
 
-export interface TokenCreateFtFromFileExecuteTransactionResult {
-  transactionResult: TransactionResult;
-}
+export interface TokenCreateFtFromFileExecuteTransactionResult extends BaseExecuteTransactionResult {}
 
 export interface TokenCreateFtFromFileAssociationOutput {
   accountId: string;

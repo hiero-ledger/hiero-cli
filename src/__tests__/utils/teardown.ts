@@ -20,9 +20,6 @@ export const returnFundsFromCreatedAccountsToMainAccount = async (
     const accountListResult = await accountList({
       args: {},
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const accountOutput = accountListResult.result as AccountListOutput;
     const accounts = accountOutput.accounts;
@@ -35,9 +32,6 @@ export const returnFundsFromCreatedAccountsToMainAccount = async (
       await accountImport({
         args: importAccountArgs,
         api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
       });
     } catch {
       // main-account may already exist
@@ -48,9 +42,6 @@ export const returnFundsFromCreatedAccountsToMainAccount = async (
         const viewAccountResult = await accountView({
           args: { account: account.name },
           api: coreApi,
-          state: coreApi.state,
-          logger: coreApi.logger,
-          config: coreApi.config,
         });
         const viewAccountOutput = viewAccountResult.result as AccountViewOutput;
         const args: Record<string, unknown> = {
@@ -61,9 +52,6 @@ export const returnFundsFromCreatedAccountsToMainAccount = async (
         await hbarTransfer({
           args,
           api: coreApi,
-          state: coreApi.state,
-          logger: coreApi.logger,
-          config: coreApi.config,
         });
       } catch {
         // skip accounts that cannot be viewed or transferred

@@ -39,9 +39,9 @@ export class TokenAirdropFtCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<TokenAirdropFtNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     const validArgs = TokenAirdropFtInputSchema.parse(args.args);
 
     const {
@@ -121,8 +121,8 @@ export class TokenAirdropFtCommand extends BaseTransactionCommand<
     const { accountId: fromAccountId, keyRefId: signerKeyRefId } =
       resolvedFromAccount;
 
-    logger.info(`🔑 Using from account: ${fromAccountId}`);
-    logger.info(
+    api.logger.info(`🔑 Using from account: ${fromAccountId}`);
+    api.logger.info(
       `Airdropping ${tokenId} to ${resolvedRecipients.length} recipient(s)`,
     );
 
@@ -140,8 +140,8 @@ export class TokenAirdropFtCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
     normalisedParams: TokenAirdropFtNormalizedParams,
   ): Promise<TokenAirdropFtBuildTransactionResult> {
-    const { api, logger } = args;
-    logger.debug('Building airdrop transaction body');
+    const { api } = args;
+    api.logger.debug('Building airdrop transaction body');
 
     const transaction = api.token.createAirdropFtTransaction({
       tokenId: normalisedParams.tokenId,
@@ -160,8 +160,10 @@ export class TokenAirdropFtCommand extends BaseTransactionCommand<
     normalisedParams: TokenAirdropFtNormalizedParams,
     buildTransactionResult: TokenAirdropFtBuildTransactionResult,
   ): Promise<TokenAirdropFtSignTransactionResult> {
-    const { api, logger } = args;
-    logger.debug(`Using key ${normalisedParams.signerKeyRefId} for signing`);
+    const { api } = args;
+    api.logger.debug(
+      `Using key ${normalisedParams.signerKeyRefId} for signing`,
+    );
 
     const transaction = await api.txSign.sign(
       buildTransactionResult.transaction,

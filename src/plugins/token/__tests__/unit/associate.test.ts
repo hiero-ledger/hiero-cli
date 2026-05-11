@@ -14,11 +14,7 @@ import {
   TokenAssociateOutputSchema,
 } from '@/plugins/token/commands/associate';
 
-import {
-  makeApiMocks,
-  makeLogger,
-  makeTransactionResult,
-} from './helpers/mocks';
+import { makeApiMocks, makeTransactionResult } from './helpers/mocks';
 
 describe('tokenAssociateHandler', () => {
   describe('success scenarios', () => {
@@ -48,7 +44,6 @@ describe('tokenAssociateHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: '0.0.123456',
@@ -56,9 +51,6 @@ describe('tokenAssociateHandler', () => {
             '0.0.789012:3333333333333333333333333333333333333333333333333333333333333333',
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       const result = await tokenAssociate(args);
@@ -110,16 +102,12 @@ describe('tokenAssociateHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: '0.0.123456',
           account: 'alice',
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       const result = await tokenAssociate(args);
@@ -166,16 +154,12 @@ describe('tokenAssociateHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: tokenId,
           account: `${accountId}:3333333333333333333333333333333333333333333333333333333333333333`,
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenAssociate(args)).rejects.toThrow(ValidationError);
@@ -206,16 +190,12 @@ describe('tokenAssociateHandler', () => {
         txExecute: { execute: txExecuteExecute },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: tokenId,
           account: `${accountId}:3333333333333333333333333333333333333333333333333333333333333333`,
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenAssociate(args)).rejects.toThrow(ValidationError);
@@ -253,7 +233,6 @@ describe('tokenAssociateHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: '0.0.123456',
@@ -261,9 +240,6 @@ describe('tokenAssociateHandler', () => {
             '0.0.789012:3333333333333333333333333333333333333333333333333333333333333333',
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenAssociate(args)).rejects.toThrow(TransactionError);
@@ -291,7 +267,6 @@ describe('tokenAssociateHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: '0.0.123456',
@@ -299,9 +274,6 @@ describe('tokenAssociateHandler', () => {
             '0.0.789012:3333333333333333333333333333333333333333333333333333333333333333',
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenAssociate(args)).rejects.toThrow('Service unavailable');
@@ -332,7 +304,6 @@ describe('tokenAssociateHandler', () => {
         },
       });
 
-      const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           token: '0.0.123456',
@@ -340,9 +311,6 @@ describe('tokenAssociateHandler', () => {
             '0.0.789012:3333333333333333333333333333333333333333333333333333333333333333',
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenAssociate(args)).rejects.toThrow('Signing failed');

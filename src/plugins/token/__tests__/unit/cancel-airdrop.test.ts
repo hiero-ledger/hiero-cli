@@ -2,7 +2,6 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 
 import '@/core/utils/json-serialize';
 
-import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { TransactionError } from '@/core/errors';
 import {
@@ -11,7 +10,7 @@ import {
 } from '@/plugins/token/commands/cancel-airdrop';
 
 import { mockTransactionResults } from './helpers/fixtures';
-import { makeApiMocks, makeLogger } from './helpers/mocks';
+import { makeApiMocks } from './helpers/mocks';
 
 describe('tokenCancelAirdrop', () => {
   const mockCancelTransaction = { test: 'cancel-airdrop-transaction' };
@@ -50,9 +49,6 @@ describe('tokenCancelAirdrop', () => {
           from: '0.0.100:2222222222222222222222222222222222222222222222222222222222222222',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger: makeLogger(),
       };
 
       const result = await tokenCancelAirdrop(args);
@@ -101,9 +97,6 @@ describe('tokenCancelAirdrop', () => {
           from: '0.0.100:2222222222222222222222222222222222222222222222222222222222222222',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger: makeLogger(),
       };
 
       const result = await tokenCancelAirdrop(args);
@@ -141,9 +134,6 @@ describe('tokenCancelAirdrop', () => {
           receiver: '0.0.200',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger: makeLogger(),
       };
 
       const result = await tokenCancelAirdrop(args);
@@ -182,9 +172,6 @@ describe('tokenCancelAirdrop', () => {
           receiver: '0.0.200',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger: makeLogger(),
       };
 
       const result = await tokenCancelAirdrop(args);
@@ -225,9 +212,6 @@ describe('tokenCancelAirdrop', () => {
           receiver: 'alice',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger: makeLogger(),
       };
 
       const result = await tokenCancelAirdrop(args);
@@ -252,9 +236,6 @@ describe('tokenCancelAirdrop', () => {
           receiver: '0.0.200',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger: makeLogger(),
       };
 
       await expect(tokenCancelAirdrop(args)).rejects.toThrow(
@@ -273,9 +254,6 @@ describe('tokenCancelAirdrop', () => {
           receiver: 'nonexistent-alias',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger: makeLogger(),
       };
 
       await expect(tokenCancelAirdrop(args)).rejects.toThrow(
@@ -305,9 +283,6 @@ describe('tokenCancelAirdrop', () => {
           receiver: '0.0.200',
         },
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger: makeLogger(),
       };
 
       await expect(tokenCancelAirdrop(args)).rejects.toThrow(TransactionError);

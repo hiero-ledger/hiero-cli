@@ -1,9 +1,9 @@
 import type {
   BaseBuildTransactionResult,
+  BaseExecuteTransactionResult,
   BaseNormalizedParams,
   BaseSignTransactionResult,
   SupportedNetwork,
-  TransactionResult,
 } from '@/core';
 
 export interface UpdateNftMetadataNormalizedParams extends BaseNormalizedParams {
@@ -17,6 +17,4 @@ export interface UpdateNftMetadataBuildTransactionResult extends BaseBuildTransa
 
 export interface UpdateNftMetadataSignTransactionResult extends BaseSignTransactionResult {}
 
-export interface UpdateNftMetadataExecuteTransactionResult {
-  transactionResult: TransactionResult;
-}
+export interface UpdateNftMetadataExecuteTransactionResult extends BaseExecuteTransactionResult {}

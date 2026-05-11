@@ -1,10 +1,11 @@
 import type { ContractUpdateTransaction, Transaction } from '@hiero-ledger/sdk';
-import type { BaseNormalizedParams, KeyAlgorithm } from '@/core';
-import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
 import type {
-  SupportedNetwork,
-  TransactionResult,
-} from '@/core/types/shared.types';
+  BaseExecuteTransactionResult,
+  BaseNormalizedParams,
+  KeyAlgorithm,
+} from '@/core';
+import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { ContractData } from '@/plugins/contract/schema';
 import type { ContractUpdateInput } from './input';
 
@@ -49,4 +50,4 @@ export interface ContractUpdateSignTransactionResult {
   signedTransaction: Transaction;
 }
 
-export type ContractUpdateExecuteTransactionResult = TransactionResult;
+export interface ContractUpdateExecuteTransactionResult extends BaseExecuteTransactionResult {}

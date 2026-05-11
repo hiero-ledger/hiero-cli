@@ -48,7 +48,7 @@ export class TokenUpdateCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<TokenUpdateNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
     const validArgs = TokenUpdateInputSchema.parse(args.args);
 
     const network = api.network.getCurrentNetwork();
@@ -152,7 +152,7 @@ export class TokenUpdateCommand extends BaseTransactionCommand<
       ? new TextEncoder().encode(validArgs.metadata)
       : undefined;
 
-    logger.info(`Updating token ${tokenId} on ${network}`);
+    api.logger.info(`Updating token ${tokenId} on ${network}`);
 
     return {
       tokenId,
@@ -287,7 +287,7 @@ export class TokenUpdateCommand extends BaseTransactionCommand<
       );
     }
 
-    return result;
+    return { transactionResult: result };
   }
 
   async outputPreparation(
@@ -297,8 +297,9 @@ export class TokenUpdateCommand extends BaseTransactionCommand<
     _signTransactionResult: TokenUpdateSignTransactionResult,
     executeTransactionResult: TokenUpdateExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { api, logger } = args;
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const { transactionResult } = executeTransactionResult;
+    const { api } = args;
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     const tokenInfo = normalisedParams.tokenInfo;
 
     const updatedFields = this.buildUpdatedFields(normalisedParams);
@@ -312,12 +313,12 @@ export class TokenUpdateCommand extends BaseTransactionCommand<
     );
 
     tokenState.saveToken(normalisedParams.stateKey, tokenData);
-    logger.info('Token data saved to state');
+    api.logger.info('Token data saved to state');
 
     const outputData: TokenUpdateOutput = {
       tokenId: normalisedParams.tokenId,
       network: normalisedParams.network,
-      transactionId: executeTransactionResult.transactionId ?? '',
+      transactionId: transactionResult.transactionId ?? '',
       updatedFields,
     };
 

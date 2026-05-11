@@ -42,9 +42,6 @@ describe('Transfer Token Integration Tests', () => {
     const createAccountResult = await accountCreate({
       args: createAccountArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
 
     const createAccountOutput =
@@ -61,9 +58,6 @@ describe('Transfer Token Integration Tests', () => {
     const viewAccountResult = await accountView({
       args: viewAccountArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const viewAccountOutput = viewAccountResult.result as AccountViewOutput;
     expect(viewAccountOutput.accountId).toBe(createAccountOutput.accountId);
@@ -81,9 +75,6 @@ describe('Transfer Token Integration Tests', () => {
     const createTokenResult = await tokenCreateFt({
       args: createTokenArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const createTokenOutput = createTokenResult.result as TokenCreateFtOutput;
     expect(createTokenOutput.network).toBe(network);
@@ -104,9 +95,6 @@ describe('Transfer Token Integration Tests', () => {
     const associateTokenResult = await tokenAssociate({
       args: associateTokenArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const associateTokenOutput =
       associateTokenResult.result as TokenAssociateOutput;
@@ -124,9 +112,6 @@ describe('Transfer Token Integration Tests', () => {
     const transferTokenResult = await tokenTransferFt({
       args: transferTokenArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const transferTokenOutput =
       transferTokenResult.result as TokenTransferFtOutput;
@@ -145,9 +130,6 @@ describe('Transfer Token Integration Tests', () => {
     const accountBalanceResult = await accountBalance({
       args: accountBalanceArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const accountBalanceOutput =
       accountBalanceResult.result as AccountBalanceOutput;

@@ -1,8 +1,6 @@
 import type { Transaction } from '@hiero-ledger/sdk';
-import type {
-  SupportedNetwork,
-  TransactionResult,
-} from '@/core/types/shared.types';
+import type { BaseExecuteTransactionResult } from '@/core';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { TopicData } from '@/plugins/topic/schema';
 
 export interface DeleteTopicNormalisedParams {
@@ -22,4 +20,4 @@ export interface DeleteTopicSignTransactionResult {
   signedTransaction: Transaction;
 }
 
-export type DeleteTopicExecuteTransactionResult = TransactionResult;
+export interface DeleteTopicExecuteTransactionResult extends BaseExecuteTransactionResult {}

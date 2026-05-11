@@ -11,7 +11,7 @@ import { TopicFindMessageInputSchema } from './input';
 
 export class TopicFindMessageCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
     const validParams = TopicFindMessageInputSchema.parse(args.args);
     const currentNetwork = api.network.getCurrentNetwork();
@@ -27,7 +27,7 @@ export class TopicFindMessageCommand implements Command {
       currentNetwork,
     };
 
-    logger.info(`Finding messages in topic: ${normalisedParams.topicId}`);
+    api.logger.info(`Finding messages in topic: ${normalisedParams.topicId}`);
 
     const apiFilters = buildApiFilters(validParams);
     const messages = await fetchFilteredMessages(

@@ -1424,6 +1424,7 @@ hcli token update --token mytoken-alias --token-name "Batched Rename" --batch my
 ### Token List
 
 List all tokens (FT and NFT) stored in state for all networks.
+Human output labels the local token alias as `Name (Alias)` and the on-chain token name as `Token Name`.
 
 ```bash
 hcli token list

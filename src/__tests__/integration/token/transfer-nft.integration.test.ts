@@ -45,9 +45,6 @@ describe('Transfer NFT Integration Tests', () => {
       const createSourceAccountResult = await accountCreate({
         args: createSourceAccountArgs,
         api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
       });
 
       const createSourceAccountOutput =
@@ -69,9 +66,6 @@ describe('Transfer NFT Integration Tests', () => {
       const createDestinationAccountResult = await accountCreate({
         args: createDestinationAccountArgs,
         api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
       });
 
       const createDestinationAccountOutput =
@@ -97,9 +91,6 @@ describe('Transfer NFT Integration Tests', () => {
       const createNftResult = await tokenCreateNft({
         args: createNftArgs,
         api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
       });
       const createNftOutput = createNftResult.result as TokenCreateNftOutput;
       expect(createNftOutput.network).toBe(network);
@@ -121,9 +112,6 @@ describe('Transfer NFT Integration Tests', () => {
       const mintNftResult = await tokenMintNft({
         args: mintNftArgs,
         api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
       });
       const mintNftOutput = mintNftResult.result as TokenMintNftOutput;
       expect(mintNftOutput.tokenId).toBe(createNftOutput.tokenId);
@@ -140,9 +128,6 @@ describe('Transfer NFT Integration Tests', () => {
       const associateTokenResult = await tokenAssociate({
         args: associateTokenArgs,
         api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
       });
       const associateTokenOutput =
         associateTokenResult.result as TokenAssociateOutput;
@@ -160,9 +145,6 @@ describe('Transfer NFT Integration Tests', () => {
       const viewTokenBeforeTransferResult = await tokenView({
         args: viewTokenBeforeTransferArgs,
         api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
       });
       const viewTokenBeforeTransferOutput =
         viewTokenBeforeTransferResult.result as TokenViewOutput;
@@ -188,9 +170,6 @@ describe('Transfer NFT Integration Tests', () => {
       const transferNftResult = await tokenTransferNft({
         args: transferNftArgs,
         api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
       });
       const transferNftOutput =
         transferNftResult.result as TokenTransferNftOutput;
@@ -214,9 +193,6 @@ describe('Transfer NFT Integration Tests', () => {
       const viewTokenAfterTransferResult = await tokenView({
         args: viewTokenAfterTransferArgs,
         api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
       });
       const viewTokenAfterTransferOutput =
         viewTokenAfterTransferResult.result as TokenViewOutput;
@@ -246,9 +222,6 @@ describe('Transfer NFT Integration Tests', () => {
       const createAccountResult = await accountCreate({
         args: createAccountArgs,
         api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
       });
 
       const createAccountOutput =
@@ -272,9 +245,6 @@ describe('Transfer NFT Integration Tests', () => {
       const createNftResult = await tokenCreateNft({
         args: createNftArgs,
         api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
       });
       const createNftOutput = createNftResult.result as TokenCreateNftOutput;
 
@@ -288,9 +258,6 @@ describe('Transfer NFT Integration Tests', () => {
       const mintNftResult = await tokenMintNft({
         args: mintNftArgs,
         api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
       });
       const mintNftOutput = mintNftResult.result as TokenMintNftOutput;
 
@@ -305,9 +272,6 @@ describe('Transfer NFT Integration Tests', () => {
       await accountCreate({
         args: createAnotherAccountArgs,
         api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
       });
 
       await delay(5000);
@@ -322,9 +286,6 @@ describe('Transfer NFT Integration Tests', () => {
         tokenTransferNft({
           args: transferNftArgs,
           api: coreApi,
-          state: coreApi.state,
-          logger: coreApi.logger,
-          config: coreApi.config,
         }),
       ).rejects.toThrow('NFT not owned by sender');
     }, 90000);
@@ -341,9 +302,6 @@ describe('Transfer NFT Integration Tests', () => {
         tokenTransferNft({
           args: transferNftArgs,
           api: coreApi,
-          state: coreApi.state,
-          logger: coreApi.logger,
-          config: coreApi.config,
         }),
       ).rejects.toThrow();
     });

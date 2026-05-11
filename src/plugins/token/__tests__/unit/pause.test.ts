@@ -16,7 +16,6 @@ import {
 
 import { mockAccountIds, mockTransactionResults } from './helpers/fixtures';
 import {
-  makeLogger,
   makePauseSuccessMocks,
   MOCK_ALIAS_TOKEN_ENTITY_ID,
   MOCK_PAUSE_KEY_REF_ID,
@@ -35,9 +34,6 @@ const makeArgs = (
     ...argsOverrides,
   },
   api,
-  state: api.state,
-  config: api.config,
-  logger: makeLogger(),
 });
 
 describe('tokenPause', () => {

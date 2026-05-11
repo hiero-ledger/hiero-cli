@@ -30,9 +30,6 @@ describe('Delete Topic Integration Tests', () => {
       const createTopicResult = await topicCreate({
         args: createTopicArgs,
         api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
       });
 
       const createTopicOutput = createTopicResult.result as TopicCreateOutput;
@@ -45,9 +42,6 @@ describe('Delete Topic Integration Tests', () => {
       const listTopicResult = await topicList({
         args: listTopicArgs,
         api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
       });
       const listTopicOutput = listTopicResult.result as TopicListOutput;
       const topicBeforeDelete = listTopicOutput.topics.find(
@@ -63,9 +57,6 @@ describe('Delete Topic Integration Tests', () => {
       const deleteTopicResult = await topicDelete({
         args: deleteTopicArgs,
         api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
       });
       const deleteTopicOutput = deleteTopicResult.result as TopicDeleteOutput;
       expect(deleteTopicOutput.deletedTopic.name).toBe('topic-to-be-deleted');
@@ -77,9 +68,6 @@ describe('Delete Topic Integration Tests', () => {
       const listAfterDeleteResult = await topicList({
         args: listTopicArgs,
         api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
       });
       const listAfterDeleteOutput =
         listAfterDeleteResult.result as TopicListOutput;
@@ -96,9 +84,6 @@ describe('Delete Topic Integration Tests', () => {
       const createTopicResult = await topicCreate({
         args: createTopicArgs,
         api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
       });
 
       const createTopicOutput = createTopicResult.result as TopicCreateOutput;
@@ -111,9 +96,6 @@ describe('Delete Topic Integration Tests', () => {
       const deleteTopicResult = await topicDelete({
         args: deleteTopicArgs,
         api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
       });
       const deleteTopicOutput = deleteTopicResult.result as TopicDeleteOutput;
       expect(deleteTopicOutput.deletedTopic.topicId).toBe(
@@ -127,9 +109,6 @@ describe('Delete Topic Integration Tests', () => {
       const listAfterDeleteResult = await topicList({
         args: listTopicArgs,
         api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
       });
       const listAfterDeleteOutput =
         listAfterDeleteResult.result as TopicListOutput;
@@ -149,9 +128,6 @@ describe('Delete Topic Integration Tests', () => {
             stateOnly: true,
           },
           api: coreApi,
-          state: coreApi.state,
-          logger: coreApi.logger,
-          config: coreApi.config,
         }),
       ).rejects.toThrow(NotFoundError);
     });
@@ -166,9 +142,6 @@ describe('Delete Topic Integration Tests', () => {
             ],
           },
           api: coreApi,
-          state: coreApi.state,
-          logger: coreApi.logger,
-          config: coreApi.config,
         }),
       ).rejects.toThrow(`Topic ${MOCK_NONEXISTENT_ENTITY_ID} not found`);
     });

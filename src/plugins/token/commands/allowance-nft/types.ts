@@ -1,9 +1,9 @@
 import type {
   BaseBuildTransactionResult,
+  BaseExecuteTransactionResult,
   BaseNormalizedParams,
   BaseSignTransactionResult,
   SupportedNetwork,
-  TransactionResult,
 } from '@/core';
 
 export interface AllowanceNftNormalizedParams extends BaseNormalizedParams {
@@ -20,6 +20,4 @@ export interface AllowanceNftBuildTransactionResult extends BaseBuildTransaction
 
 export interface AllowanceNftSignTransactionResult extends BaseSignTransactionResult {}
 
-export interface AllowanceNftExecuteTransactionResult {
-  transactionResult: TransactionResult;
-}
+export interface AllowanceNftExecuteTransactionResult extends BaseExecuteTransactionResult {}

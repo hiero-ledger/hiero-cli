@@ -1,9 +1,9 @@
 import type {
   BaseBuildTransactionResult,
+  BaseExecuteTransactionResult,
   BaseNormalizedParams,
   BaseSignTransactionResult,
   SupportedNetwork,
-  TransactionResult,
 } from '@/core';
 
 export interface RevokeKycNormalizedParams extends BaseNormalizedParams {
@@ -16,6 +16,4 @@ export interface RevokeKycBuildTransactionResult extends BaseBuildTransactionRes
 
 export interface RevokeKycSignTransactionResult extends BaseSignTransactionResult {}
 
-export interface RevokeKycExecuteTransactionResult {
-  transactionResult: TransactionResult;
-}
+export interface RevokeKycExecuteTransactionResult extends BaseExecuteTransactionResult {}

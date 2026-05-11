@@ -38,9 +38,9 @@ export class HbarAllowanceCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<AllowanceNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    logger.info('[HBAR] Allowance command invoked');
+    api.logger.info('[HBAR] Allowance command invoked');
 
     const validArgs = HbarAllowanceInputSchema.parse(args.args);
     const keyManager =
@@ -67,7 +67,7 @@ export class HbarAllowanceCommand extends BaseTransactionCommand<
       );
     }
 
-    logger.info(
+    api.logger.info(
       `[HBAR] Approving ${amountTinybar} tinybars for spender ${resolvedSpender.accountId}`,
     );
 
@@ -126,7 +126,7 @@ export class HbarAllowanceCommand extends BaseTransactionCommand<
       );
     }
 
-    return result;
+    return { transactionResult: result };
   }
 
   async outputPreparation(
@@ -136,17 +136,18 @@ export class HbarAllowanceCommand extends BaseTransactionCommand<
     _signResult: AllowanceSignTransactionResult,
     executeResult: AllowanceExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { logger } = args;
+    const { transactionResult } = executeResult;
+    const { api } = args;
 
-    logger.info(
-      `[HBAR] Allowance approved successfully, txId=${executeResult.transactionId}`,
+    api.logger.info(
+      `[HBAR] Allowance approved successfully, txId=${transactionResult.transactionId}`,
     );
 
     const outputData: HbarAllowanceOutput = {
       ownerAccountId: normalizedParams.ownerAccountId,
       spenderAccountId: normalizedParams.spenderAccountId,
       amountTinybar: normalizedParams.amountTinybar,
-      transactionId: executeResult.transactionId || '',
+      transactionId: transactionResult.transactionId || '',
       network: normalizedParams.network,
     };
 

@@ -1,4 +1,4 @@
-import type { CoreApi, Logger } from '@/core';
+import type { CoreApi } from '@/core';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
 import type { BatchDataItem } from '@/core/types/shared.types';
@@ -20,7 +20,7 @@ export class TokenUpdateStateHook implements Hook<PostOutputPreparationHookParam
       return Promise.resolve({ breakFlow: false });
     }
     const batchData = parsed.data.batchData;
-    const { api, logger } = params.args;
+    const { api } = params.args;
 
     if (!batchData.success) {
       return Promise.resolve({ breakFlow: false });
@@ -29,35 +29,31 @@ export class TokenUpdateStateHook implements Hook<PostOutputPreparationHookParam
     for (const batchDataItem of [...batchData.transactions].filter(
       (item) => item.command === TOKEN_UPDATE_COMMAND_NAME,
     )) {
-      this.updateTokenState(api, logger, batchDataItem);
+      this.updateTokenState(api, batchDataItem);
     }
 
     return Promise.resolve({ breakFlow: false });
   }
 
-  private updateTokenState(
-    api: CoreApi,
-    logger: Logger,
-    batchDataItem: BatchDataItem,
-  ): void {
+  private updateTokenState(api: CoreApi, batchDataItem: BatchDataItem): void {
     const parseResult = TokenUpdateNormalisedParamsSchema.safeParse(
       batchDataItem.normalizedParams,
     );
 
     if (!parseResult.success) {
-      logger.warn(
+      api.logger.warn(
         'There was a problem with parsing data schema. The saving will not be done',
       );
       return;
     }
 
     const p = parseResult.data;
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     const existing = tokenState.getToken(p.stateKey);
 
     const tokenData = buildUpdatedTokenData(p, p.tokenInfo, existing);
 
     tokenState.saveToken(p.stateKey, tokenData);
-    logger.info(`   Token update state saved for ${p.tokenId}`);
+    api.logger.info(`   Token update state saved for ${p.tokenId}`);
   }
 }

@@ -405,9 +405,6 @@ export class PluginManager {
         _: commandArgs,
       },
       api: this.coreApi,
-      state: this.coreApi.state,
-      config: this.coreApi.config,
-      logger: this.logger,
       hooks: phaseHooks,
     };
 

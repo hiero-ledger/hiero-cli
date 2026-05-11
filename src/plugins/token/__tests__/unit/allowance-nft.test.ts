@@ -23,7 +23,6 @@ import {
 
 import {
   makeApiMocks,
-  makeLogger,
   makeTransactionResult,
   MOCK_NFT_COLLECTION_ENTITY_ID,
 } from './helpers/mocks';
@@ -90,7 +89,6 @@ describe('tokenAllowanceNft', () => {
   describe('success scenarios', () => {
     test('approve specific serials with account-id:key format', async () => {
       const { api, allowance } = makeAllowanceSuccessMocks();
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -100,9 +98,6 @@ describe('tokenAllowanceNft', () => {
           serials: '1,2,3',
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       const result = await tokenAllowanceNft(args);
@@ -128,7 +123,6 @@ describe('tokenAllowanceNft', () => {
 
     test('approve all serials with all-serials flag', async () => {
       const { api, allowance } = makeAllowanceSuccessMocks();
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -138,9 +132,6 @@ describe('tokenAllowanceNft', () => {
           allSerials: true,
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       const result = await tokenAllowanceNft(args);
@@ -163,7 +154,6 @@ describe('tokenAllowanceNft', () => {
     test('owner defaults to operator when not provided', async () => {
       const operatorId = MOCK_OPERATOR_ACCOUNT_ID;
       const { api, allowance } = makeAllowanceSuccessMocks();
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -172,9 +162,6 @@ describe('tokenAllowanceNft', () => {
           serials: '5',
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       const result = await tokenAllowanceNft(args);
@@ -194,7 +181,6 @@ describe('tokenAllowanceNft', () => {
 
     test('resolve token and spender by alias', async () => {
       const { api, allowance } = makeAllowanceSuccessMocks();
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -204,9 +190,6 @@ describe('tokenAllowanceNft', () => {
           serials: '10',
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       const result = await tokenAllowanceNft(args);
@@ -232,7 +215,6 @@ describe('tokenAllowanceNft', () => {
       (api.mirror.getTokenInfo as jest.Mock).mockResolvedValue({
         type: 'FUNGIBLE_COMMON',
       });
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -241,9 +223,6 @@ describe('tokenAllowanceNft', () => {
           serials: '1',
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenAllowanceNft(args)).rejects.toThrow(ValidationError);
@@ -252,7 +231,6 @@ describe('tokenAllowanceNft', () => {
     test('throws NotFoundError when spender account not found', async () => {
       const { api } = makeAllowanceSuccessMocks();
       (api.alias.resolve as jest.Mock).mockReturnValue(null);
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -262,9 +240,6 @@ describe('tokenAllowanceNft', () => {
           serials: '1',
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenAllowanceNft(args)).rejects.toThrow(NotFoundError);
@@ -275,7 +250,6 @@ describe('tokenAllowanceNft', () => {
       (api.txExecute.execute as jest.Mock).mockResolvedValue(
         makeTransactionResult({ success: false, transactionId: '' }),
       );
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -285,9 +259,6 @@ describe('tokenAllowanceNft', () => {
           serials: '1',
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenAllowanceNft(args)).rejects.toThrow(TransactionError);
@@ -295,7 +266,6 @@ describe('tokenAllowanceNft', () => {
 
     test('throws ZodError when neither serials nor all-serials specified', async () => {
       const { api } = makeAllowanceSuccessMocks();
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -303,9 +273,6 @@ describe('tokenAllowanceNft', () => {
           spender: MOCK_ACCOUNT_ID_ALT,
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenAllowanceNft(args)).rejects.toThrow(
@@ -315,7 +282,6 @@ describe('tokenAllowanceNft', () => {
 
     test('throws ZodError when both serials and all-serials specified', async () => {
       const { api } = makeAllowanceSuccessMocks();
-      const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
@@ -325,9 +291,6 @@ describe('tokenAllowanceNft', () => {
           allSerials: true,
         },
         api,
-        state: api.state,
-        config: api.config,
-        logger,
       };
 
       await expect(tokenAllowanceNft(args)).rejects.toThrow(

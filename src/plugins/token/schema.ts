@@ -20,7 +20,10 @@ import {
   TokenSymbolSchema,
   TokenTypeSchema,
 } from '@/core/schemas';
-import { HederaTokenType } from '@/core/shared/constants';
+import {
+  HederaTokenType,
+  ZOD_CUSTOM_ISSUE_CODE,
+} from '@/core/shared/constants';
 import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 import { CustomFeeType, FixedFeeUnitType } from '@/core/types/token.types';
 import { applyKeyThresholdSuperRefine } from '@/core/utils/key-threshold-input-schema';
@@ -58,7 +61,7 @@ export const TokenFileFractionalFeeSchema = z
   .superRefine((data, ctx) => {
     if (data.numerator > data.denominator) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: ZOD_CUSTOM_ISSUE_CODE,
         message:
           'Numerator must be less than or equal to denominator (fee cannot exceed 100%)',
         path: ['numerator'],
@@ -70,7 +73,7 @@ export const TokenFileFractionalFeeSchema = z
       data.min > data.max
     ) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: ZOD_CUSTOM_ISSUE_CODE,
         message: 'Min must be less than or equal to max',
         path: ['min'],
       });
@@ -245,17 +248,17 @@ function validateFileSupplyTypeAndMaxSupply<
 
   if (isFinite && !args.maxSupply) {
     ctx.addIssue({
+      code: ZOD_CUSTOM_ISSUE_CODE,
       message: 'maxSupply is required when supplyType is finite',
-      code: z.ZodIssueCode.custom,
       path: ['maxSupply'],
     });
   }
 
   if (!isFinite && args.maxSupply) {
     ctx.addIssue({
+      code: ZOD_CUSTOM_ISSUE_CODE,
       message:
         'maxSupply should not be provided when supplyType is infinite, set supplyType to finite to specify maxSupply',
-      code: z.ZodIssueCode.custom,
       path: ['maxSupply'],
     });
   }

@@ -495,7 +495,7 @@ export const makeTokenCreateCommandArgs = (params: {
   logger: Logger;
   args?: Record<string, string | number | boolean | undefined>;
 }) => {
-  const api = params.api as unknown as CoreApi;
+  const api = { ...params.api, logger: params.logger } as unknown as CoreApi;
   return {
     args: {
       tokenName: 'TestToken',
@@ -508,9 +508,6 @@ export const makeTokenCreateCommandArgs = (params: {
       ...params.args,
     },
     api,
-    state: api.state,
-    config: api.config,
-    logger: params.logger,
   };
 };
 
@@ -522,7 +519,7 @@ export const makeNftCreateCommandArgs = (params: {
   logger: Logger;
   args?: Record<string, unknown>;
 }) => {
-  const api = params.api as unknown as CoreApi;
+  const api = { ...params.api, logger: params.logger } as unknown as CoreApi;
   return {
     args: {
       tokenName: 'TestToken',
@@ -534,9 +531,6 @@ export const makeNftCreateCommandArgs = (params: {
       ...params.args,
     },
     api,
-    state: api.state,
-    config: api.config,
-    logger: params.logger,
   };
 };
 
@@ -882,10 +876,7 @@ export const makeMintFtCommandArgs = (params: {
       supplyKey: ['test-supply-key'],
       ...params.args,
     },
-    api: params.api,
-    state: params.api.state,
-    config: params.api.config,
-    logger: params.logger,
+    api: { ...params.api, logger: params.logger } as CoreApi,
   };
 };
 
@@ -904,10 +895,7 @@ export const makeBurnFtCommandArgs = (params: {
       supplyKey: [],
       ...params.args,
     },
-    api: params.api,
-    state: params.api.state,
-    config: params.api.config,
-    logger: params.logger,
+    api: { ...params.api, logger: params.logger } as CoreApi,
   };
 };
 
@@ -926,10 +914,7 @@ export const makeBurnNftCommandArgs = (params: {
       supplyKey: [],
       ...params.args,
     },
-    api: params.api,
-    state: params.api.state,
-    config: params.api.config,
-    logger: params.logger,
+    api: { ...params.api, logger: params.logger } as CoreApi,
   };
 };
 
@@ -956,10 +941,7 @@ export const makeTokenMintNftCommandArgs = (params: {
       supplyKey: ['test-supply-key'],
       ...params.args,
     },
-    api: params.api,
-    state: params.api.state,
-    config: params.api.config,
-    logger: params.logger,
+    api: { ...params.api, logger: params.logger } as CoreApi,
   };
 };
 
@@ -979,10 +961,7 @@ export const makeUpdateNftMetadataCommandArgs = (params: {
       metadataKey: [],
       ...params.args,
     },
-    api: params.api,
-    state: params.api.state,
-    config: params.api.config,
-    logger: params.logger,
+    api: { ...params.api, logger: params.logger } as CoreApi,
   };
 };
 
@@ -1111,16 +1090,13 @@ export const makeCreateNftFromFileCommandArgs = (params: {
   args?: Record<string, string | number | boolean | undefined>;
   hooks?: Map<HookPhase, Hook>;
 }) => {
-  const api = params.api as unknown as CoreApi;
+  const api = { ...params.api, logger: params.logger } as unknown as CoreApi;
   return {
     args: {
       file: 'test.json',
       ...params.args,
     },
     api,
-    state: api.state,
-    config: api.config,
-    logger: params.logger,
     hooks: params.hooks ?? new Map(),
   };
 };

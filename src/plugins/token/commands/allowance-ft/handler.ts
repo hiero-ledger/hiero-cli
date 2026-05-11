@@ -37,7 +37,7 @@ export class TokenAllowanceFtCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<TokenAllowanceFtNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
     const validArgs = TokenAllowanceFtInputSchema.parse(args.args);
 
     const keyManager =
@@ -54,7 +54,7 @@ export class TokenAllowanceFtCommand extends BaseTransactionCommand<
     }
     const tokenId = resolvedToken.tokenId;
 
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     let tokenDecimals = 0;
     if (!isRawUnits(validArgs.amount)) {
       const tokenInfoStorage = tokenState.getToken(tokenId);
@@ -89,7 +89,7 @@ export class TokenAllowanceFtCommand extends BaseTransactionCommand<
       );
     }
 
-    logger.info(
+    api.logger.info(
       `Approving ${rawAmount.toString()} tokens of ${tokenId} for spender ${resolvedSpender.accountId}`,
     );
 

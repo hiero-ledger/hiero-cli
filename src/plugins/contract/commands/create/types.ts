@@ -1,11 +1,9 @@
 import type { ContractCreateFlow } from '@hiero-ledger/sdk';
+import type { BaseExecuteTransactionResult } from '@/core';
 import type { CompilationResult } from '@/core/services/contract-compiler/types';
 import type { ContractCreateFlowResult } from '@/core/services/contract-transaction/types';
 import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
-import type {
-  SupportedNetwork,
-  TransactionResult,
-} from '@/core/types/shared.types';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 
 export interface ContractCreateNormalisedParams {
   alias: string;
@@ -41,4 +39,4 @@ export interface ContractCreateSignTransactionResult {
   signedFlow: ContractCreateFlow;
 }
 
-export type ContractCreateExecuteTransactionResult = TransactionResult;
+export interface ContractCreateExecuteTransactionResult extends BaseExecuteTransactionResult {}

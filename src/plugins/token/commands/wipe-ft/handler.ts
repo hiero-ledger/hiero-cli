@@ -43,9 +43,9 @@ export class TokenWipeFtCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<WipeFtNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     const validArgs = TokenWipeFtInputSchema.parse(args.args);
 
     const keyManager =
@@ -104,7 +104,7 @@ export class TokenWipeFtCommand extends BaseTransactionCommand<
 
     const currentTotalSupply = BigInt(tokenInfo.total_supply || '0');
 
-    logger.info(
+    api.logger.info(
       `Wiping ${rawAmount.toString()} tokens from account ${accountId}. Current supply: ${currentTotalSupply.toString()}`,
     );
 
@@ -122,8 +122,8 @@ export class TokenWipeFtCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
     normalisedParams: WipeFtNormalizedParams,
   ): Promise<WipeFtBuildTransactionResult> {
-    const { api, logger } = args;
-    logger.debug('Building FT wipe transaction body');
+    const { api } = args;
+    api.logger.debug('Building FT wipe transaction body');
     const transaction = api.token.createWipeFtTransaction({
       tokenId: normalisedParams.tokenId,
       accountId: normalisedParams.accountId,
@@ -137,8 +137,8 @@ export class TokenWipeFtCommand extends BaseTransactionCommand<
     normalisedParams: WipeFtNormalizedParams,
     buildTransactionResult: WipeFtBuildTransactionResult,
   ): Promise<WipeFtSignTransactionResult> {
-    const { api, logger } = args;
-    logger.debug(
+    const { api } = args;
+    api.logger.debug(
       `Using ${normalisedParams.keyRefIds.length} key(s) for signing transaction`,
     );
     const signedTransaction = await api.txSign.sign(

@@ -13,7 +13,7 @@ import {
   TokenFreezeOutputSchema,
 } from '@/plugins/token/commands/freeze';
 
-import { makeFreezeSuccessMocks, makeLogger } from './helpers/mocks';
+import { makeFreezeSuccessMocks } from './helpers/mocks';
 
 const FREEZE_KEY_ARG = `ed25519:private:${'a'.repeat(64)}`;
 
@@ -29,9 +29,6 @@ const makeArgs = (
     ...argsOverrides,
   },
   api,
-  state: api.state,
-  config: api.config,
-  logger: makeLogger(),
 });
 
 describe('tokenFreeze', () => {

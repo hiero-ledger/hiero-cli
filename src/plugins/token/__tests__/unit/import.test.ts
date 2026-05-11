@@ -8,7 +8,6 @@ import {
   makeLogger,
   makeMirrorMock,
   makeNetworkMock,
-  makeStateMock,
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { createMockTokenInfo } from '@/core/services/mirrornode/__tests__/unit/mocks';
@@ -65,7 +64,6 @@ describe('token plugin - import command (ADR-007)', () => {
       network: networkMock as NetworkService,
       alias,
       logger,
-      state: makeStateMock(),
     };
 
     const args = makeArgs(api, logger, {
@@ -135,7 +133,6 @@ describe('token plugin - import command (ADR-007)', () => {
       network: networkMock as NetworkService,
       alias,
       logger,
-      state: makeStateMock(),
     };
 
     const args = makeArgs(api, logger, {
@@ -190,7 +187,6 @@ describe('token plugin - import command (ADR-007)', () => {
       network: makeNetworkMock(SupportedNetwork.TESTNET) as NetworkService,
       alias: makeAliasMock(),
       logger,
-      state: makeStateMock(),
     };
 
     const args = makeArgs(api, logger, {
@@ -227,7 +223,6 @@ describe('token plugin - import command (ADR-007)', () => {
       network: makeNetworkMock(SupportedNetwork.TESTNET) as NetworkService,
       alias: makeAliasMock(),
       logger,
-      state: makeStateMock(),
     };
 
     const args = makeArgs(api, logger, {
@@ -260,7 +255,6 @@ describe('token plugin - import command (ADR-007)', () => {
       network: makeNetworkMock(SupportedNetwork.TESTNET) as NetworkService,
       alias: makeAliasMock(),
       logger,
-      state: makeStateMock(),
     };
 
     const args = makeArgs(api, logger, {

@@ -37,9 +37,9 @@ export class TokenBurnNftCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<BurnNftNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
 
     const validArgs = TokenBurnNftInputSchema.parse(args.args);
 
@@ -62,7 +62,7 @@ export class TokenBurnNftCommand extends BaseTransactionCommand<
 
     const tokenId = resolvedToken.tokenId;
 
-    logger.info(`Burning NFT serials for token: ${tokenId}`);
+    api.logger.info(`Burning NFT serials for token: ${tokenId}`);
 
     const tokenInfo = await api.mirror.getTokenInfo(tokenId);
 
@@ -94,7 +94,7 @@ export class TokenBurnNftCommand extends BaseTransactionCommand<
     const serialNumbers = validArgs.serials;
     const currentTotalSupply = BigInt(tokenInfo.total_supply || '0');
 
-    logger.info(
+    api.logger.info(
       `Burning ${serialNumbers.length} NFT serial(s). Current supply: ${currentTotalSupply.toString()}, after burn: ${(currentTotalSupply - BigInt(serialNumbers.length)).toString()}`,
     );
 
@@ -111,8 +111,8 @@ export class TokenBurnNftCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
     normalisedParams: BurnNftNormalizedParams,
   ): Promise<BurnNftBuildTransactionResult> {
-    const { api, logger } = args;
-    logger.debug('Building NFT burn transaction body');
+    const { api } = args;
+    api.logger.debug('Building NFT burn transaction body');
     const transaction = api.token.createBurnNftTransaction({
       tokenId: normalisedParams.tokenId,
       serialNumbers: normalisedParams.serialNumbers,
@@ -125,8 +125,8 @@ export class TokenBurnNftCommand extends BaseTransactionCommand<
     normalisedParams: BurnNftNormalizedParams,
     buildTransactionResult: BurnNftBuildTransactionResult,
   ): Promise<BurnNftSignTransactionResult> {
-    const { api, logger } = args;
-    logger.debug(
+    const { api } = args;
+    api.logger.debug(
       `Using ${normalisedParams.keyRefIds.length} key(s) for signing transaction`,
     );
     const transaction = await api.txSign.sign(

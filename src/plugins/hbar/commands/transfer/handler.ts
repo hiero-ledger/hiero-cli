@@ -38,9 +38,9 @@ export class HbarTransferCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<TransferNormalisedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    logger.info('[HBAR] Transfer command invoked');
+    api.logger.info('[HBAR] Transfer command invoked');
 
     const validArgs = HbarTransferInputSchema.parse(args.args);
 
@@ -85,9 +85,9 @@ export class HbarTransferCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
     normalisedParams: TransferNormalisedParams,
   ): Promise<TransferBuildTransactionResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    logger.info(
+    api.logger.info(
       `[HBAR] Transferring ${normalisedParams.amount.toString()} tinybars from ${normalisedParams.fromAccount.accountId} to ${normalisedParams.destination}`,
     );
 
@@ -134,7 +134,7 @@ export class HbarTransferCommand extends BaseTransactionCommand<
       );
     }
 
-    return result;
+    return { transactionResult: result };
   }
 
   async outputPreparation(
@@ -144,21 +144,22 @@ export class HbarTransferCommand extends BaseTransactionCommand<
     _signTransactionResult: TransferSignTransactionResult,
     executeTransactionResult: TransferExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { logger } = args;
+    const { transactionResult } = executeTransactionResult;
+    const { api } = args;
 
-    logger.info(
-      `[HBAR] Transfer submitted successfully, txId=${executeTransactionResult.transactionId}`,
+    api.logger.info(
+      `[HBAR] Transfer submitted successfully, txId=${transactionResult.transactionId}`,
     );
 
     const outputData: HbarTransferOutput = {
-      transactionId: executeTransactionResult.transactionId || '',
+      transactionId: transactionResult.transactionId || '',
       fromAccountId: normalisedParams.fromAccount.accountId,
       toAccountId: normalisedParams.destination,
       amountTinybar: normalisedParams.amount,
       network: normalisedParams.currentNetwork,
       ...(normalisedParams.memo && { memo: normalisedParams.memo }),
-      ...(executeTransactionResult.receipt?.status && {
-        status: executeTransactionResult.receipt.status.status,
+      ...(transactionResult.receipt?.status && {
+        status: transactionResult.receipt.status.status,
       }),
     };
 

@@ -35,7 +35,7 @@ export class TokenFreezeCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<FreezeNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
     const validArgs = TokenFreezeInputSchema.parse(args.args);
 
@@ -61,7 +61,7 @@ export class TokenFreezeCommand extends BaseTransactionCommand<
       network,
     });
 
-    logger.info(
+    api.logger.info(
       `Freezing account ${accountId} for token ${tokenId} on ${network}`,
     );
 
@@ -88,8 +88,8 @@ export class TokenFreezeCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
     normalisedParams: FreezeNormalizedParams,
   ): Promise<FreezeBuildTransactionResult> {
-    const { api, logger } = args;
-    logger.debug('Building token freeze transaction');
+    const { api } = args;
+    api.logger.debug('Building token freeze transaction');
     const transaction = api.token.createFreezeTransaction({
       tokenId: normalisedParams.tokenId,
       accountId: normalisedParams.accountId,
@@ -102,8 +102,8 @@ export class TokenFreezeCommand extends BaseTransactionCommand<
     normalisedParams: FreezeNormalizedParams,
     buildTransactionResult: FreezeBuildTransactionResult,
   ): Promise<FreezeSignTransactionResult> {
-    const { api, logger } = args;
-    logger.debug(
+    const { api } = args;
+    api.logger.debug(
       `Using ${normalisedParams.keyRefIds.length} key(s) for signing transaction`,
     );
     const signedTransaction = await api.txSign.sign(

@@ -33,7 +33,7 @@ export class TokenDissociateCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<DissociateNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
     const validArgs = TokenDissociateInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ??
@@ -55,9 +55,9 @@ export class TokenDissociateCommand extends BaseTransactionCommand<
       ['token:dissociate'],
     );
 
-    logger.info(`🔑 Using account: ${account.accountId}`);
-    logger.info('🔑 Will sign with account key');
-    logger.info(
+    api.logger.info(`🔑 Using account: ${account.accountId}`);
+    api.logger.info('🔑 Will sign with account key');
+    api.logger.info(
       `Dissociating token ${tokenId} from account ${account.accountId}`,
     );
 
@@ -101,8 +101,8 @@ export class TokenDissociateCommand extends BaseTransactionCommand<
     normalisedParams: DissociateNormalizedParams,
     buildTransactionResult: DissociateBuildTransactionResult,
   ): Promise<DissociateSignTransactionResult> {
-    const { api, logger } = args;
-    logger.debug(
+    const { api } = args;
+    api.logger.debug(
       `Using key ${normalisedParams.account.keyRefId} for signing transaction`,
     );
     const signedTransaction = await api.txSign.sign(
@@ -144,14 +144,14 @@ export class TokenDissociateCommand extends BaseTransactionCommand<
     _signTransactionResult: DissociateSignTransactionResult,
     executeTransactionResult: DissociateExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { api, logger } = args;
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const { api } = args;
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     removeAssociationFromState(
       tokenState,
       normalisedParams.tokenId,
       normalisedParams.account.accountId,
       normalisedParams.network,
-      logger,
+      api.logger,
     );
 
     const outputData: TokenDissociateOutput = {

@@ -43,9 +43,6 @@ describeSuite('Import Topic Integration Tests', () => {
     const createTopicResult = await topicCreate({
       args: createTopicArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
 
     const createTopicOutput = createTopicResult.result as TopicCreateOutput;
@@ -58,9 +55,6 @@ describeSuite('Import Topic Integration Tests', () => {
     await topicDelete({
       args: deleteTopicArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
 
     await delay(5000);
@@ -74,9 +68,6 @@ describeSuite('Import Topic Integration Tests', () => {
     await topicDelete({
       args: deleteTopicArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
   });
 
@@ -87,9 +78,6 @@ describeSuite('Import Topic Integration Tests', () => {
     const importTopicResult = await topicImport({
       args: importTopicArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
 
     const importTopicOutput = importTopicResult.result as TopicImportOutput;
@@ -102,9 +90,6 @@ describeSuite('Import Topic Integration Tests', () => {
     const listTopicResult = await topicList({
       args: listTopicArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const listTopicOutput = listTopicResult.result as TopicListOutput;
     const topic = listTopicOutput.topics.find((t) => t.topicId === topicId);
@@ -127,9 +112,6 @@ describeSuite('Import Topic Integration Tests', () => {
     const importTopicResult = await topicImport({
       args: importTopicArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
 
     const importTopicOutput = importTopicResult.result as TopicImportOutput;
@@ -143,9 +125,6 @@ describeSuite('Import Topic Integration Tests', () => {
     const listTopicResult = await topicList({
       args: listTopicArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const listTopicOutput = listTopicResult.result as TopicListOutput;
     const topic = listTopicOutput.topics.find((t) => t.topicId === topicId);

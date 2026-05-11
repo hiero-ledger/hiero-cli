@@ -111,7 +111,7 @@ export class SwapExecuteCommand extends BaseTransactionCommand<
     const helper = new SwapStateHelper(api.state);
     helper.deleteSwap(normalisedParams.name);
 
-    return result;
+    return { transactionResult: result };
   }
 
   async outputPreparation(
@@ -121,11 +121,12 @@ export class SwapExecuteCommand extends BaseTransactionCommand<
     _signTransactionResult: SwapExecuteSignTransactionResult,
     executeTransactionResult: SwapExecuteExecuteTransactionResult,
   ): Promise<CommandResult> {
+    const { transactionResult } = executeTransactionResult;
     const transfers: SwapTransferSummary[] =
       normalisedParams.swap.transfers.map((t) => this.buildSummary(t));
 
     const output: SwapExecuteOutput = {
-      transactionId: executeTransactionResult.transactionId ?? '',
+      transactionId: transactionResult.transactionId ?? '',
       network: normalisedParams.network,
       swapName: normalisedParams.name,
       transferCount: normalisedParams.swap.transfers.length,

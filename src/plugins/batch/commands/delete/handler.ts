@@ -14,9 +14,9 @@ import { BatchDeleteInputSchema } from './input';
 
 export class BatchDeleteCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    const batchState = new ZustandBatchStateHelper(api.state, logger);
+    const batchState = new ZustandBatchStateHelper(api.state, api.logger);
     const validArgs = BatchDeleteInputSchema.parse(args.args);
     const name = validArgs.name;
     const order = validArgs.order;
@@ -45,7 +45,9 @@ export class BatchDeleteCommand implements Command {
       batch.transactions.splice(transactionIndex, 1);
       batchState.saveBatch(key, batch);
 
-      logger.info(`Removed transaction at order ${order} from batch '${name}'`);
+      api.logger.info(
+        `Removed transaction at order ${order} from batch '${name}'`,
+      );
 
       const outputData: BatchDeleteOutput = {
         name,
@@ -56,7 +58,7 @@ export class BatchDeleteCommand implements Command {
 
     // Delete whole batch
     batchState.deleteBatch(key);
-    logger.info(`Deleted batch '${name}'`);
+    api.logger.info(`Deleted batch '${name}'`);
 
     const outputData: BatchDeleteOutput = {
       name,

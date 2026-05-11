@@ -39,12 +39,12 @@ export class AccountUpdateCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<UpdateNormalisedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
     const validArgs = AccountUpdateInputSchema.parse(args.args);
     const network = api.network.getCurrentNetwork();
     const accountRef = validArgs.account;
-    const accountState = new ZustandAccountStateHelper(api.state, logger);
+    const accountState = new ZustandAccountStateHelper(api.state, api.logger);
 
     const isEntityId = EntityIdSchema.safeParse(accountRef).success;
     let accountStateKey: string;
@@ -181,7 +181,11 @@ export class AccountUpdateCommand extends BaseTransactionCommand<
     signTransactionResult: UpdateSignTransactionResult,
   ): Promise<UpdateExecuteTransactionResult> {
     const { api } = args;
-    return api.txExecute.execute(signTransactionResult.signedTransaction);
+    return {
+      transactionResult: await api.txExecute.execute(
+        signTransactionResult.signedTransaction,
+      ),
+    };
   }
 
   async outputPreparation(
@@ -191,16 +195,17 @@ export class AccountUpdateCommand extends BaseTransactionCommand<
     _signTransactionResult: UpdateSignTransactionResult,
     executeTransactionResult: UpdateExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { transactionResult } = executeTransactionResult;
+    const { api } = args;
 
-    if (!executeTransactionResult.success) {
+    if (!transactionResult.success) {
       throw new TransactionError(
-        `Failed to update account (txId: ${executeTransactionResult.transactionId})`,
+        `Failed to update account (txId: ${transactionResult.transactionId})`,
         false,
       );
     }
 
-    const accountState = new ZustandAccountStateHelper(api.state, logger);
+    const accountState = new ZustandAccountStateHelper(api.state, api.logger);
     const existingAccount = accountState.getAccount(
       normalisedParams.accountStateKey,
     );
@@ -243,7 +248,7 @@ export class AccountUpdateCommand extends BaseTransactionCommand<
     const outputData: AccountUpdateOutput = {
       accountId: normalisedParams.accountId,
       network: normalisedParams.network,
-      transactionId: executeTransactionResult.transactionId ?? '',
+      transactionId: transactionResult.transactionId ?? '',
       updatedFields: normalisedParams.updatedFields,
     };
 

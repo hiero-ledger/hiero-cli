@@ -211,6 +211,7 @@ interface CommandOutputSpec {
       "tokenId": "0.0.67890",
       "name": "My Token",
       "symbol": "MTK",
+      "alias": "my-token",
       "balance": "1000",
       "balanceDisplay": "10.00",
       "decimals": 2
@@ -222,6 +223,7 @@ interface CommandOutputSpec {
         "tokenId": "0.0.99999",
         "name": "My NFT",
         "symbol": "MNFT",
+        "alias": "my-nft",
         "serialNumbers": [1, 2, 5],
         "count": 3
       }
@@ -232,7 +234,7 @@ interface CommandOutputSpec {
 }
 ```
 
-`hbarOnly: true` omits `tokenBalances` and `nftBalances`. `tokenOnly: true` omits `hbarBalance`. `raw: true` returns raw tinybar / base-unit values without `hbarBalanceDisplay` / `balanceDisplay`. `truncated: true` means there are more than 100 NFTs — only the first 100 are shown.
+`hbarOnly: true` omits `tokenBalances` and `nftBalances`. `tokenOnly: true` omits `hbarBalance`. `raw: true` returns raw tinybar / base-unit values without `hbarBalanceDisplay` / `balanceDisplay`. `truncated: true` means there are more than 100 NFTs — only the first 100 are shown. Human output labels local token aliases as `Name (Alias)`.
 
 #### `account list`
 
@@ -253,6 +255,8 @@ interface CommandOutputSpec {
   "totalCount": 1
 }
 ```
+
+`accounts[].name` is the local name/alias. Human output labels it as `Name (Alias)`.
 
 #### `account view`
 
@@ -731,6 +735,8 @@ Lists all tokens from all networks stored in state.
 }
 ```
 
+`tokens[].name` is the on-chain token name. `tokens[].alias` is the local name/alias and human output labels it as `Name (Alias)`.
+
 #### `token view`
 
 **Output**:
@@ -1083,6 +1089,8 @@ The command handles both fungible and non-fungible tokens. Expiration time can b
   }
 }
 ```
+
+`topics[].name` is the local name/alias. Human output labels it as `Name (Alias)`.
 
 #### `topic delete`
 
