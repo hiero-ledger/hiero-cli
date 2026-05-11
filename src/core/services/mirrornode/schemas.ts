@@ -1,6 +1,11 @@
 import { z } from 'zod';
 
 import {
+  HtsBaseUnitSchema,
+  TinybarSchema,
+} from '@/core/schemas/common-schemas';
+
+import {
   type AccountAPIBalance,
   type AccountAPIKey,
   type AccountAPIResponse,
@@ -13,13 +18,20 @@ import {
   type ContractInfo,
   type ExchangeRateResponse,
   type GetAccountsAPIResponse,
+  type HbarAllowanceInfo,
+  type HbarAllowancesResponse,
   MirrorNodeKeyType,
+  type MirrorNodePagedLinks,
   MirrorNodeTokenType,
+  type NftAllowanceInfo,
+  type NftAllowancesResponse,
   type NftInfo,
   type ScheduleInfo,
   type ScheduleSignatureInfo,
   type TokenAirdropItem,
   type TokenAirdropsResponse,
+  type TokenAllowanceInfo,
+  type TokenAllowancesResponse,
   type TokenBalanceInfo,
   type TokenBalancesResponse,
   type TokenInfo,
@@ -174,6 +186,57 @@ export const TokenBalancesResponseSchema: z.ZodType<TokenBalancesResponse> =
         next: z.string().nullable().optional(),
       })
       .optional(),
+  });
+
+const mirrorNodePagedLinksSchema: z.ZodType<MirrorNodePagedLinks> = z.object({
+  next: z.string().nullable().optional(),
+});
+
+const mirrorNodeIntegerAmountSchema = z.union([
+  z.string(),
+  z.bigint(),
+  z.number().int().safe(),
+]);
+
+export const HbarAllowanceInfoSchema: z.ZodType<HbarAllowanceInfo> = z.object({
+  owner: z.string(),
+  spender: z.string(),
+  amount: mirrorNodeIntegerAmountSchema.pipe(TinybarSchema),
+});
+
+export const TokenAllowanceInfoSchema: z.ZodType<TokenAllowanceInfo> = z.object(
+  {
+    owner: z.string(),
+    spender: z.string(),
+    token_id: z.string(),
+    amount: mirrorNodeIntegerAmountSchema.pipe(HtsBaseUnitSchema),
+  },
+);
+
+export const NftAllowanceInfoSchema: z.ZodType<NftAllowanceInfo> = z.object({
+  owner: z.string(),
+  spender: z.string(),
+  token_id: z.string(),
+  serial_number: z.number().nullable().optional(),
+  approved_for_all: z.boolean().nullable().optional(),
+});
+
+export const HbarAllowancesResponseSchema: z.ZodType<HbarAllowancesResponse> =
+  z.object({
+    allowances: z.array(HbarAllowanceInfoSchema),
+    links: mirrorNodePagedLinksSchema.optional(),
+  });
+
+export const TokenAllowancesResponseSchema: z.ZodType<TokenAllowancesResponse> =
+  z.object({
+    allowances: z.array(TokenAllowanceInfoSchema),
+    links: mirrorNodePagedLinksSchema.optional(),
+  });
+
+export const NftAllowancesResponseSchema: z.ZodType<NftAllowancesResponse> =
+  z.object({
+    allowances: z.array(NftAllowanceInfoSchema),
+    links: mirrorNodePagedLinksSchema.optional(),
   });
 
 const TokenAirdropItemSchema: z.ZodType<TokenAirdropItem> = z.object({

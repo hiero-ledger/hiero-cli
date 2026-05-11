@@ -12,9 +12,13 @@ import type {
   GetAccountsAPIResponse,
   GetAccountsQueryParams,
   GetAccountsResponse,
+  HbarAllowancesResponse,
+  MirrorNodePageParams,
+  NftAllowancesResponse,
   NftInfo,
   ScheduleInfo,
   TokenAirdropsResponse,
+  TokenAllowancesResponse,
   TokenBalancesResponse,
   TokenInfo,
   TopicInfo,
@@ -32,7 +36,11 @@ import {
   NetworkError,
   NotFoundError,
 } from '@/core/errors';
-import { KeyAlgorithm } from '@/core/shared/constants';
+import {
+  ALLOWANCE_LIST_PAGE_SIZE,
+  KeyAlgorithm,
+  MIRROR_NODE_MAX_PAGES,
+} from '@/core/shared/constants';
 import { parseWithSchema } from '@/core/shared/validation/parse-with-schema.zod';
 import { handleMirrorNodeErrorResponse } from '@/core/utils/handle-mirror-node-error-response';
 
@@ -43,9 +51,12 @@ import {
   ContractInfoSchema,
   ExchangeRateResponseSchema,
   GetAccountsAPIResponseSchema,
+  HbarAllowancesResponseSchema,
+  NftAllowancesResponseSchema,
   NftInfoSchema,
   ScheduleInfoSchema,
   TokenAirdropsResponseSchema,
+  TokenAllowancesResponseSchema,
   TokenBalancesResponseSchema,
   TokenInfoSchema,
   TopicInfoSchema,
@@ -54,6 +65,15 @@ import {
   TransactionDetailsResponseSchema,
 } from './schemas';
 import { MirrorNodeKeyType, NetworkToBaseUrl } from './types';
+
+type AllowanceType = 'crypto' | 'tokens' | 'nfts';
+
+interface AllowancePage<T> {
+  allowances: T[];
+  links?: {
+    next?: string | null;
+  };
+}
 
 export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeService {
   private static readonly API_PATH = '/api/v1';
@@ -74,6 +94,69 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
 
   private getApiBaseUrl(): string {
     return `${this.getBaseUrl()}${HederaMirrornodeServiceDefaultImpl.API_PATH}`;
+  }
+
+  private buildAccountAllowanceUrl(
+    accountId: string,
+    allowanceType: AllowanceType,
+    params?: MirrorNodePageParams,
+  ): string {
+    const query = new URLSearchParams();
+    if (params?.limit !== undefined) query.set('limit', String(params.limit));
+    if (params?.cursor !== undefined) query.set('cursor', params.cursor);
+    const queryString = query.toString();
+    const querySuffix = queryString ? `?${queryString}` : '';
+    return `${this.getApiBaseUrl()}/accounts/${accountId}/allowances/${allowanceType}${querySuffix}`;
+  }
+
+  private extractCursor(next: string | null | undefined): string | undefined {
+    if (!next) return undefined;
+    const url = new URL(next, this.getBaseUrl());
+    return url.searchParams.get('cursor') ?? undefined;
+  }
+
+  private async getAllAccountAllowances<T>(
+    accountId: string,
+    allowanceType: AllowanceType,
+    fetchPage: (params: MirrorNodePageParams) => Promise<AllowancePage<T>>,
+  ): Promise<AllowancePage<T>> {
+    const allowances: T[] = [];
+    const seenCursors = new Set<string>();
+    let cursor: string | undefined;
+
+    for (let page = 0; page < MIRROR_NODE_MAX_PAGES; page += 1) {
+      const response = await fetchPage({
+        limit: ALLOWANCE_LIST_PAGE_SIZE,
+        cursor,
+      });
+      allowances.push(...response.allowances);
+
+      const nextCursor = this.extractCursor(response.links?.next);
+      if (nextCursor === undefined) {
+        return { allowances, links: { next: null } };
+      }
+      if (seenCursors.has(nextCursor)) {
+        throw new NetworkError(
+          'Mirror Node allowance pagination loop detected',
+          {
+            context: { accountId, allowanceType, cursor: nextCursor },
+            recoverable: true,
+          },
+        );
+      }
+
+      seenCursors.add(nextCursor);
+      cursor = nextCursor;
+    }
+
+    throw new NetworkError('Mirror Node allowance pagination limit exceeded', {
+      context: {
+        accountId,
+        allowanceType,
+        maxPages: MIRROR_NODE_MAX_PAGES,
+      },
+      recoverable: true,
+    });
   }
 
   async getAccountOrThrow(accountId: string): Promise<AccountResponse> {
@@ -160,6 +243,127 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         { cause: error, recoverable: true },
       );
     }
+  }
+
+  async getHbarAllowances(
+    accountId: string,
+    params?: MirrorNodePageParams,
+  ): Promise<HbarAllowancesResponse> {
+    const url = this.buildAccountAllowanceUrl(accountId, 'crypto', params);
+    try {
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        await handleMirrorNodeErrorResponse(
+          response,
+          `Failed to fetch HBAR allowances for an account ${accountId}`,
+          true,
+          `Account ${accountId} not found`,
+        );
+      }
+
+      return parseWithSchema(
+        HbarAllowancesResponseSchema,
+        await response.json(),
+        `Mirror Node GET /accounts/${accountId}/allowances/crypto`,
+      );
+    } catch (error) {
+      if (error instanceof CliError) throw error;
+      throw new NetworkError(
+        `Failed to fetch HBAR allowances for ${accountId}`,
+        {
+          cause: error,
+          recoverable: true,
+        },
+      );
+    }
+  }
+
+  async getAllHbarAllowances(
+    accountId: string,
+  ): Promise<HbarAllowancesResponse> {
+    return this.getAllAccountAllowances(accountId, 'crypto', (params) =>
+      this.getHbarAllowances(accountId, params),
+    );
+  }
+
+  async getTokenAllowances(
+    accountId: string,
+    params?: MirrorNodePageParams,
+  ): Promise<TokenAllowancesResponse> {
+    const url = this.buildAccountAllowanceUrl(accountId, 'tokens', params);
+    try {
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        await handleMirrorNodeErrorResponse(
+          response,
+          `Failed to fetch token allowances for an account ${accountId}`,
+          true,
+          `Account ${accountId} not found`,
+        );
+      }
+
+      return parseWithSchema(
+        TokenAllowancesResponseSchema,
+        await response.json(),
+        `Mirror Node GET /accounts/${accountId}/allowances/tokens`,
+      );
+    } catch (error) {
+      if (error instanceof CliError) throw error;
+      throw new NetworkError(
+        `Failed to fetch token allowances for ${accountId}`,
+        { cause: error, recoverable: true },
+      );
+    }
+  }
+
+  async getAllTokenAllowances(
+    accountId: string,
+  ): Promise<TokenAllowancesResponse> {
+    return this.getAllAccountAllowances(accountId, 'tokens', (params) =>
+      this.getTokenAllowances(accountId, params),
+    );
+  }
+
+  async getNftAllowances(
+    accountId: string,
+    params?: MirrorNodePageParams,
+  ): Promise<NftAllowancesResponse> {
+    const url = this.buildAccountAllowanceUrl(accountId, 'nfts', params);
+    try {
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        await handleMirrorNodeErrorResponse(
+          response,
+          `Failed to fetch NFT allowances for an account ${accountId}`,
+          true,
+          `Account ${accountId} not found`,
+        );
+      }
+
+      return parseWithSchema(
+        NftAllowancesResponseSchema,
+        await response.json(),
+        `Mirror Node GET /accounts/${accountId}/allowances/nfts`,
+      );
+    } catch (error) {
+      if (error instanceof CliError) throw error;
+      throw new NetworkError(
+        `Failed to fetch NFT allowances for ${accountId}`,
+        {
+          cause: error,
+          recoverable: true,
+        },
+      );
+    }
+  }
+
+  async getAllNftAllowances(accountId: string): Promise<NftAllowancesResponse> {
+    return this.getAllAccountAllowances(accountId, 'nfts', (params) =>
+      this.getNftAllowances(accountId, params),
+    );
   }
 
   async getAccounts(

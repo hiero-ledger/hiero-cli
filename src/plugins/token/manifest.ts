@@ -28,10 +28,20 @@ import {
   TokenAllowanceFtOutputSchema,
 } from './commands/allowance-ft';
 import {
+  TOKEN_ALLOWANCE_FT_LIST_TEMPLATE,
+  tokenAllowanceFtList,
+  TokenAllowanceFtListOutputSchema,
+} from './commands/allowance-ft-list';
+import {
   TOKEN_ALLOWANCE_NFT_TEMPLATE,
   tokenAllowanceNft,
   TokenAllowanceNftOutputSchema,
 } from './commands/allowance-nft';
+import {
+  TOKEN_ALLOWANCE_NFT_LIST_TEMPLATE,
+  tokenAllowanceNftList,
+  TokenAllowanceNftListOutputSchema,
+} from './commands/allowance-nft-list';
 import {
   TOKEN_ASSOCIATE_TEMPLATE,
   tokenAssociate,
@@ -1395,6 +1405,52 @@ export const tokenPluginManifest: PluginManifest = {
       },
     },
     {
+      name: 'allowance-ft-list',
+      summary: 'List fungible token allowances',
+      description:
+        'List fungible token allowances granted by an owner account using Mirror Node data',
+      options: [
+        {
+          name: 'account',
+          short: 'a',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Owner account ID or alias to query',
+        },
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Optional token ID or alias filter',
+        },
+        {
+          name: 'spender',
+          short: 's',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Optional spender account ID or alias filter',
+        },
+        {
+          name: 'show-all',
+          type: OptionType.BOOLEAN,
+          required: false,
+          description: 'Fetch all pages instead of the first page',
+        },
+        {
+          name: 'raw',
+          type: OptionType.BOOLEAN,
+          required: false,
+          description: 'Skip token metadata enrichment',
+        },
+      ],
+      handler: tokenAllowanceFtList,
+      output: {
+        schema: TokenAllowanceFtListOutputSchema,
+        humanTemplate: TOKEN_ALLOWANCE_FT_LIST_TEMPLATE,
+      },
+    },
+    {
       name: 'list',
       summary: 'List all tokens',
       description:
@@ -2016,6 +2072,52 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: TokenAllowanceNftOutputSchema,
         humanTemplate: TOKEN_ALLOWANCE_NFT_TEMPLATE,
+      },
+    },
+    {
+      name: 'allowance-nft-list',
+      summary: 'List NFT allowances',
+      description:
+        'List NFT allowances granted by an owner account using Mirror Node data',
+      options: [
+        {
+          name: 'account',
+          short: 'a',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Owner account ID or alias to query',
+        },
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Optional NFT token ID or alias filter',
+        },
+        {
+          name: 'spender',
+          short: 's',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Optional spender account ID or alias filter',
+        },
+        {
+          name: 'show-all',
+          type: OptionType.BOOLEAN,
+          required: false,
+          description: 'Fetch all pages instead of the first page',
+        },
+        {
+          name: 'raw',
+          type: OptionType.BOOLEAN,
+          required: false,
+          description: 'Skip token metadata enrichment',
+        },
+      ],
+      handler: tokenAllowanceNftList,
+      output: {
+        schema: TokenAllowanceNftListOutputSchema,
+        humanTemplate: TOKEN_ALLOWANCE_NFT_LIST_TEMPLATE,
       },
     },
     {

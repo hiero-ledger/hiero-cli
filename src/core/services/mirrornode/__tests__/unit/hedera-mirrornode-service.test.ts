@@ -8,7 +8,7 @@ import {
   createMockContractInfo,
   makeNetworkMock,
 } from '@/__tests__/mocks/mocks';
-import { NetworkError, NotFoundError } from '@/core/errors';
+import { NetworkError, NotFoundError, ValidationError } from '@/core/errors';
 import { HederaMirrornodeServiceDefaultImpl } from '@/core/services/mirrornode/hedera-mirrornode-service';
 import {
   AccountBalanceOperator,
@@ -392,6 +392,216 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
 
       expect(error).toBeInstanceOf(NetworkError);
       expect(error.context?.apiMessages).toEqual(['Invalid account id']);
+    });
+  });
+
+  describe('allowance endpoints', () => {
+    it('should fetch HBAR allowances with correct URL', async () => {
+      const { service } = setupService();
+      const mockResponse = {
+        allowances: [
+          {
+            owner: TEST_ACCOUNT_ID,
+            spender: '0.0.5678',
+            amount: 100000000,
+          },
+        ],
+        links: { next: null },
+      };
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockResponse),
+      });
+
+      const result = await service.getHbarAllowances(TEST_ACCOUNT_ID);
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${TESTNET_API_URL}/accounts/${TEST_ACCOUNT_ID}/allowances/crypto`,
+      );
+      expect(result.allowances).toHaveLength(1);
+      expect(result.allowances[0].amount).toBe(100000000n);
+    });
+
+    it('should fetch token allowances with pagination params', async () => {
+      const { service } = setupService();
+      const mockResponse = {
+        allowances: [
+          {
+            owner: TEST_ACCOUNT_ID,
+            spender: '0.0.5678',
+            token_id: TEST_TOKEN_ID,
+            amount: '1000',
+          },
+        ],
+        links: { next: '/api/v1/accounts/0.0.1234/allowances/tokens?cursor=2' },
+      };
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockResponse),
+      });
+
+      const result = await service.getTokenAllowances(TEST_ACCOUNT_ID, {
+        limit: 100,
+        cursor: 'abc123',
+      });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${TESTNET_API_URL}/accounts/${TEST_ACCOUNT_ID}/allowances/tokens?limit=100&cursor=abc123`,
+      );
+      expect(result.links?.next).toBe(
+        '/api/v1/accounts/0.0.1234/allowances/tokens?cursor=2',
+      );
+      expect(result.allowances[0].amount).toBe(1000n);
+    });
+
+    it('should reject unsafe numeric allowance amounts', async () => {
+      const { service } = setupService();
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          allowances: [
+            {
+              owner: TEST_ACCOUNT_ID,
+              spender: '0.0.5678',
+              amount: Number.MAX_SAFE_INTEGER + 1,
+            },
+          ],
+          links: { next: null },
+        }),
+      });
+
+      await expect(service.getHbarAllowances(TEST_ACCOUNT_ID)).rejects.toThrow(
+        ValidationError,
+      );
+    });
+
+    it('should fetch all HBAR allowance pages', async () => {
+      const { service } = setupService();
+      (global.fetch as jest.Mock)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: jest.fn().mockResolvedValue({
+            allowances: [
+              { owner: TEST_ACCOUNT_ID, spender: '0.0.5678', amount: '1' },
+            ],
+            links: {
+              next: '/api/v1/accounts/0.0.1234/allowances/crypto?cursor=page2',
+            },
+          }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: jest.fn().mockResolvedValue({
+            allowances: [
+              { owner: TEST_ACCOUNT_ID, spender: '0.0.9999', amount: 2 },
+            ],
+            links: { next: null },
+          }),
+        });
+
+      const result = await service.getAllHbarAllowances(TEST_ACCOUNT_ID);
+
+      expect(result.allowances.map((allowance) => allowance.amount)).toEqual([
+        1n,
+        2n,
+      ]);
+      expect(global.fetch).toHaveBeenNthCalledWith(
+        1,
+        `${TESTNET_API_URL}/accounts/${TEST_ACCOUNT_ID}/allowances/crypto?limit=100`,
+      );
+      expect(global.fetch).toHaveBeenNthCalledWith(
+        2,
+        `${TESTNET_API_URL}/accounts/${TEST_ACCOUNT_ID}/allowances/crypto?limit=100&cursor=page2`,
+      );
+    });
+
+    it('should throw NetworkError on repeated allowance cursor', async () => {
+      const { service } = setupService();
+      (global.fetch as jest.Mock)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: jest.fn().mockResolvedValue({
+            allowances: [],
+            links: {
+              next: '/api/v1/accounts/0.0.1234/allowances/tokens?cursor=page2',
+            },
+          }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: jest.fn().mockResolvedValue({
+            allowances: [],
+            links: {
+              next: '/api/v1/accounts/0.0.1234/allowances/tokens?cursor=page2',
+            },
+          }),
+        });
+
+      await expect(
+        service.getAllTokenAllowances(TEST_ACCOUNT_ID),
+      ).rejects.toThrow(NetworkError);
+    });
+
+    it('should throw NetworkError when allowance pagination limit is exceeded', async () => {
+      const { service } = setupService();
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockImplementation(() =>
+          Promise.resolve({
+            allowances: [],
+            links: {
+              next: `/api/v1/accounts/0.0.1234/allowances/nfts?cursor=${String(
+                (global.fetch as jest.Mock).mock.calls.length,
+              )}`,
+            },
+          }),
+        ),
+      });
+
+      await expect(
+        service.getAllNftAllowances(TEST_ACCOUNT_ID),
+      ).rejects.toThrow(NetworkError);
+      expect(global.fetch).toHaveBeenCalledTimes(100);
+    });
+
+    it('should fetch NFT allowances and parse all-serial approval', async () => {
+      const { service } = setupService();
+      const mockResponse = {
+        allowances: [
+          {
+            owner: TEST_ACCOUNT_ID,
+            spender: '0.0.5678',
+            token_id: TEST_TOKEN_ID,
+            serial_number: null,
+            approved_for_all: true,
+          },
+        ],
+        links: { next: null },
+      };
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockResponse),
+      });
+
+      const result = await service.getNftAllowances(TEST_ACCOUNT_ID);
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${TESTNET_API_URL}/accounts/${TEST_ACCOUNT_ID}/allowances/nfts`,
+      );
+      expect(result.allowances[0].approved_for_all).toBe(true);
+    });
+
+    it('should throw NotFoundError for allowance HTTP 404', async () => {
+      const { service } = setupService();
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: false,
+        status: 404,
+        statusText: 'Not Found',
+      });
+
+      await expect(service.getHbarAllowances(TEST_ACCOUNT_ID)).rejects.toThrow(
+        NotFoundError,
+      );
     });
   });
 

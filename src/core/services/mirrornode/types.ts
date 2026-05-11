@@ -70,6 +70,53 @@ export interface TokenBalancesResponse {
   };
 }
 
+export interface MirrorNodePageParams {
+  limit?: number;
+  cursor?: string;
+}
+
+export type MirrorNodeAllowanceAmount = bigint;
+
+export interface HbarAllowanceInfo {
+  owner: string;
+  spender: string;
+  amount: MirrorNodeAllowanceAmount;
+}
+
+export interface TokenAllowanceInfo {
+  owner: string;
+  spender: string;
+  token_id: string;
+  amount: MirrorNodeAllowanceAmount;
+}
+
+export interface NftAllowanceInfo {
+  owner: string;
+  spender: string;
+  token_id: string;
+  serial_number?: number | null;
+  approved_for_all?: boolean | null;
+}
+
+export interface MirrorNodePagedLinks {
+  next?: string | null;
+}
+
+export interface HbarAllowancesResponse {
+  allowances: HbarAllowanceInfo[];
+  links?: MirrorNodePagedLinks;
+}
+
+export interface TokenAllowancesResponse {
+  allowances: TokenAllowanceInfo[];
+  links?: MirrorNodePagedLinks;
+}
+
+export interface NftAllowancesResponse {
+  allowances: NftAllowanceInfo[];
+  links?: MirrorNodePagedLinks;
+}
+
 export type MirrorNodeKey = {
   _type: string;
   key: string;
