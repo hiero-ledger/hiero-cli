@@ -1,6 +1,7 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
+import type { SwapStateService } from '@/plugins/swap/services/swap-state.service.interface';
 
 import {
   MOCK_ACCOUNT_ID_ALT,
@@ -91,4 +92,18 @@ export const makeSwapApiMocks = (
   }),
   mirrorMock: makeMirrorMock(),
   identityResolutionMock: makeIdentityResolutionServiceMock(),
+});
+
+export const makeSwapStateServiceMock = (
+  overrides: Partial<jest.Mocked<SwapStateService>> = {},
+): jest.Mocked<SwapStateService> => ({
+  getSwap: jest.fn(),
+  getSwapOrThrow: jest.fn(),
+  saveSwap: jest.fn(),
+  deleteSwap: jest.fn(),
+  listSwaps: jest.fn().mockReturnValue([]),
+  exists: jest.fn().mockReturnValue(false),
+  assertCanAdd: jest.fn(),
+  addTransfer: jest.fn(),
+  ...overrides,
 });

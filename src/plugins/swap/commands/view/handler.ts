@@ -1,23 +1,23 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { SwapTransfer } from '@/plugins/swap/schema';
+import type { SwapStateService } from '@/plugins/swap/services/swap-state.service.interface';
 import type { SwapViewOutput } from './output';
 
 import { HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION } from '@/core/shared/constants';
 import { SwapTransferType } from '@/plugins/swap/schema';
-import { SwapStateHelper } from '@/plugins/swap/state-helper';
+import { SwapStateServiceImpl } from '@/plugins/swap/services/swap-state.service';
 
 import { SwapViewInputSchema } from './input';
 
 export class SwapViewCommand implements Command {
-  async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { api } = args;
+  constructor(private readonly swapState: SwapStateService) {}
 
+  async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const validArgs = SwapViewInputSchema.parse(args.args);
     const { name } = validArgs;
 
-    const helper = new SwapStateHelper(api.state);
-    const swap = helper.getSwapOrThrow(name);
+    const swap = this.swapState.getSwapOrThrow(name);
 
     const output: SwapViewOutput = {
       name,
@@ -40,7 +40,8 @@ export class SwapViewCommand implements Command {
 export async function swapView(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new SwapViewCommand().execute(args);
+  const swapState = new SwapStateServiceImpl(args.api.state);
+  return new SwapViewCommand(swapState).execute(args);
 }
 
 function buildDetail(t: SwapTransfer): string {

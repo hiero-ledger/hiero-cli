@@ -4,16 +4,16 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError } from '@/core/errors';
 import { swapDelete } from '@/plugins/swap/commands/delete/handler';
 import { SwapDeleteOutputSchema } from '@/plugins/swap/commands/delete/output';
-import { SwapStateHelper } from '@/plugins/swap/state-helper';
+import { SwapStateServiceImpl } from '@/plugins/swap/services/swap-state.service';
 
 import { SWAP_NAME } from './helpers/fixtures';
 import { makeArgs, makeLogger, makeSwapApiMocks } from './helpers/mocks';
 
-jest.mock('../../state-helper', () => ({
-  SwapStateHelper: jest.fn(),
+jest.mock('../../services/swap-state.service', () => ({
+  SwapStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = SwapStateHelper as jest.Mock;
+const MockedSwapStateService = SwapStateServiceImpl as jest.Mock;
 
 describe('swap plugin - delete command', () => {
   beforeEach(() => {
@@ -23,7 +23,7 @@ describe('swap plugin - delete command', () => {
   test('deletes an existing swap successfully', async () => {
     const logger = makeLogger();
     const deleteSwapMock = jest.fn();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       exists: jest.fn().mockReturnValue(true),
       deleteSwap: deleteSwapMock,
     }));
@@ -43,7 +43,7 @@ describe('swap plugin - delete command', () => {
   test('verifies the swap exists before deleting', async () => {
     const logger = makeLogger();
     const existsMock = jest.fn().mockReturnValue(true);
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       exists: existsMock,
       deleteSwap: jest.fn(),
     }));
@@ -59,7 +59,7 @@ describe('swap plugin - delete command', () => {
 
   test('throws NotFoundError when swap does not exist', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       exists: jest.fn().mockReturnValue(false),
       deleteSwap: jest.fn(),
     }));
@@ -74,7 +74,7 @@ describe('swap plugin - delete command', () => {
   test('does not attempt delete when swap is not found', async () => {
     const logger = makeLogger();
     const deleteSwapMock = jest.fn();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       exists: jest.fn().mockReturnValue(false),
       deleteSwap: deleteSwapMock,
     }));

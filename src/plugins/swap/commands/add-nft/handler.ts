@@ -1,6 +1,7 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { SwapStateService } from '@/plugins/swap/services/swap-state.service.interface';
 import type { SwapAddNftOutput } from './output';
 
 import { ValidationError } from '@/core/errors';
@@ -8,11 +9,13 @@ import { ConfigOptionKey } from '@/core/services/config/config-service.interface
 import { HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION } from '@/core/shared/constants';
 import { AliasType } from '@/core/types/shared.types';
 import { SwapTransferType } from '@/plugins/swap/schema';
-import { SwapStateHelper } from '@/plugins/swap/state-helper';
+import { SwapStateServiceImpl } from '@/plugins/swap/services/swap-state.service';
 
 import { SwapAddNftInputSchema } from './input';
 
 export class SwapAddNftCommand implements Command {
+  constructor(private readonly swapState: SwapStateService) {}
+
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
 
@@ -24,9 +27,8 @@ export class SwapAddNftCommand implements Command {
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
-    const helper = new SwapStateHelper(api.state);
 
-    helper.assertCanAdd(name, serials.length);
+    this.swapState.assertCanAdd(name, serials.length);
 
     const { entityIdOrEvmAddress: tokenId } =
       api.identityResolution.resolveReferenceToEntityOrEvmAddress({
@@ -54,7 +56,7 @@ export class SwapAddNftCommand implements Command {
     }
     const toDestination = toResolved.accountId;
 
-    const updated = helper.addTransfer(name, {
+    const updated = this.swapState.addTransfer(name, {
       type: SwapTransferType.NFT,
       from: {
         accountId: fromResolved.accountId,
@@ -82,5 +84,6 @@ export class SwapAddNftCommand implements Command {
 export async function swapAddNft(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new SwapAddNftCommand().execute(args);
+  const swapState = new SwapStateServiceImpl(args.api.state);
+  return new SwapAddNftCommand(swapState).execute(args);
 }

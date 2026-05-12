@@ -12,7 +12,7 @@ import { HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION } from '@/core/shared/const
 import { swapAddNft } from '@/plugins/swap/commands/add-nft/handler';
 import { SwapAddNftOutputSchema } from '@/plugins/swap/commands/add-nft/output';
 import { SwapTransferType } from '@/plugins/swap/schema';
-import { SwapStateHelper } from '@/plugins/swap/state-helper';
+import { SwapStateServiceImpl } from '@/plugins/swap/services/swap-state.service';
 
 import {
   FROM_ACCOUNT_INPUT,
@@ -29,11 +29,11 @@ import {
   makeSwapApiMocks,
 } from './helpers/mocks';
 
-jest.mock('../../state-helper', () => ({
-  SwapStateHelper: jest.fn(),
+jest.mock('../../services/swap-state.service', () => ({
+  SwapStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = SwapStateHelper as jest.Mock;
+const MockedSwapStateService = SwapStateServiceImpl as jest.Mock;
 
 describe('swap plugin - add-nft command', () => {
   let resolveAccountCredentialsMock: jest.Mock;
@@ -57,7 +57,7 @@ describe('swap plugin - add-nft command', () => {
       ...mockEmptySwap,
       transfers: [{}],
     });
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       assertCanAdd: jest.fn(),
       addTransfer: addTransferMock,
     }));
@@ -104,7 +104,7 @@ describe('swap plugin - add-nft command', () => {
   test('checks capacity against number of serials, not transfers', async () => {
     const logger = makeLogger();
     const assertCanAddMock = jest.fn();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       assertCanAdd: assertCanAddMock,
       addTransfer: jest
         .fn()
@@ -138,7 +138,7 @@ describe('swap plugin - add-nft command', () => {
 
   test('resolves token identifier via identity resolution before storing', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       assertCanAdd: jest.fn(),
       addTransfer: jest
         .fn()
@@ -181,7 +181,7 @@ describe('swap plugin - add-nft command', () => {
 
   test('throws ValidationError when not enough transfer slots remain for all serials', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       assertCanAdd: jest.fn().mockImplementation(() => {
         throw new ValidationError(
           'Cannot add 3 transfer(s): not enough slots remaining',
@@ -211,7 +211,7 @@ describe('swap plugin - add-nft command', () => {
 
   test('throws NotFoundError when swap does not exist', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       assertCanAdd: jest.fn().mockImplementation(() => {
         throw new NotFoundError(`Swap "${SWAP_NAME}" not found.`);
       }),

@@ -1,14 +1,14 @@
 import type { StateService } from '@/core/services/state/state-service.interface';
-import type { SwapEntry, SwapTransfer } from './schema';
+import type { SwapEntry, SwapTransfer } from '@/plugins/swap/schema';
+import type { SwapStateService } from '@/plugins/swap/services/swap-state.service.interface';
 
 import { NotFoundError, ValidationError } from '@/core/errors';
 import { HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION } from '@/core/shared/constants';
-
-import { SwapEntrySchema } from './schema';
+import { SwapEntrySchema } from '@/plugins/swap/schema';
 
 export const SWAP_STATE_NAMESPACE = 'swap';
 
-export class SwapStateHelper {
+export class SwapStateServiceImpl implements SwapStateService {
   constructor(private readonly state: StateService) {}
 
   getSwap(name: string): SwapEntry | undefined {
