@@ -9,7 +9,7 @@ import { SwapStateServiceImpl } from '@/plugins/swap/services/swap-state.service
 export class SwapListCommand implements Command {
   constructor(private readonly swapState: SwapStateService) {}
 
-  async execute(args: CommandHandlerArgs): Promise<CommandResult> {
+  async execute(_args: CommandHandlerArgs): Promise<CommandResult> {
     const swaps = this.swapState.listSwaps();
 
     const output: SwapListOutput = {
