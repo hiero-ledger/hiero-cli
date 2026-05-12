@@ -70,12 +70,16 @@ hcli schedule create --name my-schedule --admin-key alice --payer-account alice
 hcli schedule create --name my-schedule --memo "proposal vote" --expiration "2026-12-31T23:59:59.000+01:00"
 
 hcli schedule create --name my-schedule --wait-for-expiry --key-manager local_encrypted
+
+# Multi-key admin (threshold key): 2-of-3
+hcli schedule create --name my-schedule --admin-key alice --admin-key bob --admin-key carol --admin-key-threshold 2
 ```
 
 **Parameters:**
 
 - `--name` / `-n`: Name of the schedule (local alias) — **Required**
-- `--admin-key` / `-a`: Admin key for the schedule on chain (optional)
+- `--admin-key` / `-a`: Admin key for the schedule on chain (optional). Repeat the flag for multiple keys (e.g. `-a alice -a bob`)
+- `--admin-key-threshold` / `-t`: M-of-N signing threshold for admin keys; required only when multiple admin keys are provided
 - `--payer-account` / `-p`: Payer account for the scheduled transaction; must resolve to an account with a private key; defaults to operator if omitted
 - `--memo` / `-m`: Public schedule memo (max 100 bytes)
 - `--expiration` / `-e`: Expiration time (ISO 8601; max 62 days from now)
@@ -151,8 +155,11 @@ Commands that register the `scheduled` hook (alongside `batchify` where applicab
 ### Example Workflow
 
 ```bash
-# 1. Register schedule options in local state
+# 1. Register schedule options in local state (single admin key)
 hcli schedule create --name team-vote --admin-key alice --expiration "2026-06-01T12:00:00.000+02:00"
+
+# Or with a 2-of-3 threshold admin key
+hcli schedule create --name team-vote --admin-key alice --admin-key bob --admin-key carol --admin-key-threshold 2 --expiration "2026-06-01T12:00:00.000+02:00"
 
 # 2. Run a command with --scheduled: inner tx becomes a ScheduleCreate, not an immediate execution
 hcli token transfer-ft --token MYTOKEN --from alice --to bob --amount 10 --scheduled team-vote
@@ -188,7 +195,9 @@ The plugin uses Core API services such as:
 
 Schedule entries live under the namespace `schedule-transactions` (see `SCHEDULE_NAMESPACE` in `schema.ts`). Each entry is keyed by **network + schedule name** and validated with `ScheduledTransactionDataSchema`.
 
-Relevant fields include: name, optional `scheduledId`, network, key manager, admin/payer references, memo, expiration (ISO string with offset where used), `waitForExpiry`, `scheduled` / `executed` flags, and optional `normalizedParams` from the command that produced the scheduled transaction.
+Relevant fields include: name, optional `scheduledId`, network, key manager, `adminKeyRefIds` (array of key references), `adminPublicKeys` (array of public key strings), optional `adminKeyThreshold` (M-of-N threshold), payer references, memo, expiration (ISO string with offset where used), `waitForExpiry`, `scheduled` / `executed` flags, and optional `normalizedParams` from the command that produced the scheduled transaction.
+
+When a single admin key is stored, both arrays contain exactly one element and `adminKeyThreshold` is omitted. When multiple keys are stored, the `scheduled` hook builds a `ThresholdKey` (if threshold is set) or a `KeyList` and includes all `adminKeyRefIds` in the signing step.
 
 ## Hook Architecture
 
