@@ -7,7 +7,6 @@ import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type { Signer } from '@/core/services/kms/signers/signer.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
-import type { StateService } from '@/core/services/state/state-service.interface';
 
 import { SupportedNetwork } from '@/core/types/shared.types';
 
@@ -100,9 +99,6 @@ export const makeCommandArgs = (params: {
 }): CommandHandlerArgs => ({
   args: { ...(params.args ?? {}) },
   api: params.api,
-  state: {} as unknown as StateService,
-  config: params.api.config,
-  logger: params.logger ?? makeLogger(),
   hooks: new Map(),
 });
 
