@@ -98,9 +98,6 @@ export const TOKEN_LIST_TEMPLATE = `
 {{#if (eq supplyType "FINITE")}}
    Max Supply: {{maxSupply}}
 {{/if}}
-{{#if (gt associationCount 0)}}
-   Associations: {{associationCount}}
-{{/if}}
 {{#if keys}}
 {{#if keys.adminKey}}
    Admin Key: {{keys.adminKey}}
