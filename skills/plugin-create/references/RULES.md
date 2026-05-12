@@ -25,7 +25,10 @@ src/plugins/{plugin-name}/
 ├── hooks/                  # Only if plugin defines its own hooks
 │   └── {hook-name}/
 │       └── index.ts
-├── utils/                  # Only if shared helpers exist across commands
+├── services/               # Only if plugin has reusable logic that depends on Core services
+│   ├── {name}.service.interface.ts
+│   └── {name}.service.ts
+├── utils/                  # Pure functions only — no dependency injection
 ├── manifest.ts             # Plugin definition
 ├── index.ts                # Public exports
 ├── schema.ts               # Zod state schema (only if plugin persists data)
@@ -35,7 +38,8 @@ src/plugins/{plugin-name}/
 Rules:
 
 - `types.ts` is optional - only add it if the handler has complex intermediate types (e.g., `NormalisedParams`, `BuildResult`)
-- `utils/` is optional - only add it if 2+ commands share the same helper logic
+- `utils/` is optional - only add it if 2+ commands share the same **pure** helper logic (no Core service dependencies)
+- `services/` is optional - only add it if 2+ commands share logic that **depends on Core services** (see section 13)
 - `hooks/` is optional - only add it if the plugin _defines_ new hooks (not just uses existing ones)
 - `schema.ts` is optional - only add it if the plugin persists data to state
 - `constants.ts` is optional - only add it if there are plugin-scoped constants used in 2+ files
@@ -44,18 +48,22 @@ Rules:
 
 ## 2. Naming Conventions
 
-| Item                    | Convention                              | Example                          |
-| ----------------------- | --------------------------------------- | -------------------------------- |
-| Plugin directory        | `kebab-case`                            | `token-rewards`                  |
-| Plugin name (manifest)  | `kebab-case`                            | `token-rewards`                  |
-| Command name (manifest) | `kebab-case`                            | `create`, `list-all`             |
-| Manifest export         | `{PascalCase}PluginManifest`            | `TokenRewardsPluginManifest`     |
-| Input schema export     | `{PluginName}{CommandName}InputSchema`  | `TokenRewardsCreateInputSchema`  |
-| Output schema export    | `{PluginName}{CommandName}OutputSchema` | `TokenRewardsCreateOutputSchema` |
-| Handler class           | `{PluginName}{CommandName}Command`      | `TokenRewardsCreateCommand`      |
-| Handler function        | `{camelCase}{CommandName}`              | `tokenRewardsCreate`             |
-| Template constant       | `{SCREAMING_SNAKE}_TEMPLATE`            | `TOKEN_REWARDS_CREATE_TEMPLATE`  |
-| State schema export     | `{PascalCase}DataSchema`                | `TokenRewardsDataSchema`         |
+| Item                    | Convention                              | Example                                    |
+| ----------------------- | --------------------------------------- | ------------------------------------------ |
+| Plugin directory        | `kebab-case`                            | `token-rewards`                            |
+| Plugin name (manifest)  | `kebab-case`                            | `token-rewards`                            |
+| Command name (manifest) | `kebab-case`                            | `create`, `list-all`                       |
+| Manifest export         | `{PascalCase}PluginManifest`            | `TokenRewardsPluginManifest`               |
+| Input schema export     | `{PluginName}{CommandName}InputSchema`  | `TokenRewardsCreateInputSchema`            |
+| Output schema export    | `{PluginName}{CommandName}OutputSchema` | `TokenRewardsCreateOutputSchema`           |
+| Handler class           | `{PluginName}{CommandName}Command`      | `TokenRewardsCreateCommand`                |
+| Handler function        | `{camelCase}{CommandName}`              | `tokenRewardsCreate`                       |
+| Template constant       | `{SCREAMING_SNAKE}_TEMPLATE`            | `TOKEN_REWARDS_CREATE_TEMPLATE`            |
+| State schema export     | `{PascalCase}DataSchema`                | `TokenRewardsDataSchema`                   |
+| Service interface       | `{PascalCase}Service`                   | `TokenRewardsStateService`                 |
+| Service implementation  | `{PascalCase}ServiceImpl`               | `TokenRewardsStateServiceImpl`             |
+| Service interface file  | `{kebab-case}.service.interface.ts`     | `token-rewards-state.service.interface.ts` |
+| Service impl file       | `{kebab-case}.service.ts`               | `token-rewards-state.service.ts`           |
 
 ---
 
@@ -89,6 +97,22 @@ export async function myPluginList(
 Use for: commands that submit Hedera transactions.
 
 ```typescript
+// types.ts
+import type {
+  BaseBuildTransactionResult,
+  BaseExecuteTransactionResult,
+  BaseNormalizedParams,
+  BaseSignTransactionResult,
+} from '@/core';
+
+export interface CreateNormalisedParams extends BaseNormalizedParams {
+  // add command-specific fields
+}
+
+export interface CreateBuildResult extends BaseBuildTransactionResult {}
+export interface CreateSignResult extends BaseSignTransactionResult {}
+export interface CreateExecuteResult extends BaseExecuteTransactionResult {}
+
 // handler.ts
 export class MyPluginCreateCommand extends BaseTransactionCommand<
   CreateNormalisedParams,
@@ -351,7 +375,6 @@ Contains `make*` factory functions that return typed Jest mocks. Always include 
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
-import type { StateService } from '@/core/services/state/state-service.interface';
 
 // Base logger mock — reused across all command mocks
 export const makeLogger = (): jest.Mocked<Logger> => ({
@@ -363,25 +386,24 @@ export const makeLogger = (): jest.Mocked<Logger> => ({
 });
 
 // Plugin-specific API mock — add only the api sub-services this plugin uses
+// Include logger, state, and config since they are now part of CoreApi
 export const makeApiMock = (
   overrides?: Partial<jest.Mocked<CoreApi>>,
 ): jest.Mocked<CoreApi> =>
   ({
+    logger: makeLogger(),
     // add plugin-specific services here, e.g. api.token, api.account
     ...overrides,
   }) as unknown as jest.Mocked<CoreApi>;
 
 // Generic CommandHandlerArgs factory — used by every command test
+// Note: state, logger, and config are accessed via args.api.* — not top-level fields
 export const makeCommandArgs = (params: {
   api: jest.Mocked<CoreApi>;
-  logger?: jest.Mocked<Logger>;
   args?: Record<string, unknown>;
 }): CommandHandlerArgs => ({
   args: { ...(params.args ?? {}) },
   api: params.api,
-  state: {} as unknown as StateService,
-  config: params.api.config,
-  logger: params.logger ?? makeLogger(),
   hooks: new Map(),
 });
 ```
@@ -391,12 +413,10 @@ Beyond the base factories, add one `make{Plugin}{Command}Args` factory per comma
 ```typescript
 export const makeMyPluginCreateArgs = (params: {
   api: jest.Mocked<CoreApi>;
-  logger?: jest.Mocked<Logger>;
   args?: Partial<{ name: string /* ...command options */ }>;
 }): CommandHandlerArgs =>
   makeCommandArgs({
     api: params.api,
-    logger: params.logger,
     args: {
       name: 'my-resource', // sensible default
       ...params.args,
@@ -470,22 +490,20 @@ Rules:
 Each command gets its own test file. Minimum required coverage per command:
 
 ```typescript
-import { makeLogger, makeApiMock, makeMyPluginCreateArgs } from './helpers/mocks';
+import { makeApiMock, makeMyPluginCreateArgs } from './helpers/mocks';
 import { validMyPluginCreateInput, invalidMyPluginCreateInputMissingName } from './helpers/fixtures';
 
 describe('MyPlugin create command', () => {
   let api: jest.Mocked<CoreApi>;
-  let logger: jest.Mocked<Logger>;
 
   beforeEach(() => {
     api = makeApiMock();
-    logger = makeLogger();
   });
 
   it('returns expected output on valid input', async () => {
     // arrange
     api.someService.someMethod.mockResolvedValue({ ... });
-    const args = makeMyPluginCreateArgs({ api, logger });
+    const args = makeMyPluginCreateArgs({ api });
 
     // act
     const result = await myPluginCreate(args);
@@ -495,7 +513,7 @@ describe('MyPlugin create command', () => {
   });
 
   it('throws ValidationError when name is missing', async () => {
-    const args = makeMyPluginCreateArgs({ api, logger, args: { name: undefined } });
+    const args = makeMyPluginCreateArgs({ api, args: { name: undefined } });
     await expect(myPluginCreate(args)).rejects.toThrow(ValidationError);
   });
 });
@@ -503,7 +521,114 @@ describe('MyPlugin create command', () => {
 
 Rules:
 
-- Use `beforeEach` to reset mocks — never share mock state between tests
+- Use `beforeEach` to reset mocks — never share mock state between tests; recreate `api = makeApiMock()` there
 - Arrange / Act / Assert structure in every `it` block (comments optional but order mandatory)
 - Import test data from fixtures, never hardcode strings inline in test assertions
 - One `describe` block per command file, named `'{PluginName} {command} command'`
+- `logger` is no longer a separate variable — it is part of `api` (`api.logger`)
+
+---
+
+## 13. Plugin Services Pattern
+
+Plugin-internal logic that is **reused across 2+ commands and depends on Core services** belongs in a plugin service — a class with an interface under `plugins/{name}/services/`.
+
+**Decision rule:**
+
+| Logic                                    | Location                  |
+| ---------------------------------------- | ------------------------- |
+| Reused across commands + needs Core      | `services/` (new section) |
+| Reused across commands + pure (no Core)  | `utils/`                  |
+| Single command only + needs Core         | inline via `args.api.X`   |
+
+### File layout
+
+```
+plugins/{name}/services/
+├── {thing}.service.interface.ts   # interface only
+└── {thing}.service.ts             # implementation
+```
+
+### Interface
+
+```typescript
+// token-state.service.interface.ts
+export interface TokenStateService {
+  getToken(name: string, network: string): TokenData;
+  saveToken(key: string, data: TokenData): void;
+}
+```
+
+### Implementation
+
+```typescript
+// token-state.service.ts
+import type { Logger } from '@/core/services/logger/logger-service.interface';
+import type { StateService } from '@/core/services/state/state-service.interface';
+
+export class TokenStateServiceImpl implements TokenStateService {
+  constructor(
+    private readonly state: StateService,
+    private readonly logger: Logger,
+  ) {}
+
+  getToken(name: string, network: string): TokenData {
+    // IMPLEMENT
+  }
+
+  saveToken(key: string, data: TokenData): void {
+    // IMPLEMENT
+  }
+}
+```
+
+Rules:
+
+- Constructor accepts **only concrete Core services** — never `CoreApi` directly
+- All constructor parameters are declared `private readonly`
+- Interface lives in a separate `*.service.interface.ts` file
+- Never pass a service as a method parameter if it belongs in the constructor
+
+### Wiring in the wrapper function
+
+The wrapper function (the exported `async function` in `handler.ts`) is the **only place** where `args.api` is consumed to construct plugin services:
+
+```typescript
+export class MyPluginDoSomethingCommand extends BaseTransactionCommand<...> {
+  constructor(
+    private readonly myState: MyPluginStateService,
+  ) { super('my-plugin_do-something'); }
+
+  async normalizeParams(args: CommandHandlerArgs): Promise<...> {
+    const data = this.myState.get(...);
+    // IMPLEMENT
+  }
+  // buildTransaction / signTransaction / executeTransaction use args.api directly
+}
+
+export async function myPluginDoSomething(args: CommandHandlerArgs): Promise<CommandResult> {
+  const { api } = args;
+  const myState = new MyPluginStateServiceImpl(api.state, api.logger);
+  return new MyPluginDoSomethingCommand(myState).execute(args);
+}
+```
+
+**Mental model:** `this.X` → plugin service; `args.api.X` → Core service.
+
+### Testing plugin services
+
+Test each service class in isolation. Mock only the constructor dependencies — not the entire `CoreApi`:
+
+```typescript
+describe('MyPluginStateService', () => {
+  it('returns stored token data', () => {
+    const state = makeStateMock({ listData: [mockMyPluginData] });
+    const logger = makeLogger();
+    const service = new MyPluginStateServiceImpl(state, logger);
+
+    const result = service.get('my-resource', 'testnet');
+
+    expect(result).toEqual(mockMyPluginData);
+  });
+});
+```
