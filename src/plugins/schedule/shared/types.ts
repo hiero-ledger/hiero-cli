@@ -11,7 +11,7 @@ export interface ResolvedSchedule {
   executed: boolean;
   adminPublicKey?: string;
   adminKeyType?: KeyAlgorithm;
-  adminKeyRefId?: string;
+  adminKeyRefIds?: string[];
 }
 
 export interface ScheduleHelperResolveParams {

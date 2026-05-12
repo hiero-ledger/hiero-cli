@@ -8,7 +8,6 @@ import type {
 
 import {
   AccountId,
-  PublicKey,
   ScheduleCreateTransaction,
   ScheduleDeleteTransaction,
   ScheduleSignTransaction,
@@ -36,7 +35,7 @@ export class ScheduleTransactionServiceImpl implements ScheduleTransactionServic
     }
 
     if (params.adminKey) {
-      tx = tx.setAdminKey(PublicKey.fromString(params.adminKey));
+      tx = tx.setAdminKey(params.adminKey);
     }
 
     if (params.scheduleMemo) {
