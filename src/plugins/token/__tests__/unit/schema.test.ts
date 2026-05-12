@@ -319,7 +319,8 @@ describe('Token Schema Validation', () => {
 
   describe('FungibleTokenFileSchema customFees max limit', () => {
     const baseToken = {
-      name: 'Test Token',
+      name: 'test-token',
+      tokenName: 'Test Token',
       symbol: 'TST',
       decimals: 8,
       supplyType: 'infinite',

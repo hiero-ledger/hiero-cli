@@ -12,6 +12,7 @@ import type {
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { StateError } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
@@ -40,17 +41,17 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<TokenCreateNftFromFileNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
     const validArgs = TokenCreateNftFromFileInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ??
-      api.config.getOption<KeyManager>('default_key_manager');
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
-    logger.info(`Creating NFT token from file: ${validArgs.file}`);
+    api.logger.info(`Creating NFT token from file: ${validArgs.file}`);
 
     const tokenDefinition = await readAndValidateNftTokenFile(
       validArgs.file,
-      logger,
+      api.logger,
     );
     const network = api.network.getCurrentNetwork();
     api.alias.availableOrThrow(tokenDefinition.name, network);
@@ -68,7 +69,7 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
       api.keyResolver,
       'token:admin',
     );
-    logger.info(`Resolved ${adminKeys.length} admin key(s) for signing`);
+    api.logger.info(`Resolved ${adminKeys.length} admin key(s) for signing`);
 
     const supplyKeys = await resolveOptionalKeys(
       tokenDefinition.supplyKey,
@@ -76,7 +77,7 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
       api.keyResolver,
       'token:supply',
     );
-    logger.info(`Resolved ${supplyKeys.length} supply key(s)`);
+    api.logger.info(`Resolved ${supplyKeys.length} supply key(s)`);
 
     const wipeKeys = await resolveOptionalKeys(
       tokenDefinition.wipeKey,
@@ -119,7 +120,7 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
       filename: validArgs.file,
       keyManager,
       alias: tokenDefinition.name,
-      name: tokenDefinition.name,
+      name: tokenDefinition.tokenName,
       symbol: tokenDefinition.symbol,
       supplyType: tokenDefinition.supplyType.toUpperCase() as SupplyType,
       maxSupply: tokenDefinition.maxSupply,
@@ -200,12 +201,12 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
     normalisedParams: TokenCreateNftFromFileNormalizedParams,
     buildTransactionResult: TokenCreateNftFromFileBuildTransactionResult,
   ): Promise<TokenCreateNftFromFileSignTransactionResult> {
-    const { api, logger } = args;
+    const { api } = args;
     const signingKeys = [
       ...normalisedParams.adminKeys.map((k) => k.keyRefId),
       normalisedParams.treasury.keyRefId,
     ];
-    logger.info(
+    api.logger.info(
       `🔑 Signing transaction with admin and treasury keys (${signingKeys.length} keys)`,
     );
     const transaction = await api.txSign.sign(
@@ -242,8 +243,8 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
     _signTransactionResult: TokenCreateNftFromFileSignTransactionResult,
     executeTransactionResult: TokenCreateNftFromFileExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { api, logger } = args;
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const { api } = args;
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     const result = executeTransactionResult.transactionResult;
     const tokenData = buildNftTokenDataFromFile(result, normalisedParams);
 
@@ -252,14 +253,13 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
       tokenId,
       normalisedParams.associations,
       api,
-      logger,
       normalisedParams.keyManager,
     );
     tokenData.associations = successfulAssociations;
 
     const key = composeKey(normalisedParams.network, tokenId);
     tokenState.saveToken(key, tokenData);
-    logger.info('   Token data saved to state');
+    api.logger.info('   Token data saved to state');
 
     if (normalisedParams.alias && result.tokenId) {
       api.alias.register({
@@ -269,7 +269,7 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
         entityId: tokenId,
         createdAt: result.consensusTimestamp,
       });
-      logger.info(`   Name registered: ${normalisedParams.alias}`);
+      api.logger.info(`   Name registered: ${normalisedParams.alias}`);
     }
 
     const associations: TokenCreateNftFromFileAssociationOutput[] =

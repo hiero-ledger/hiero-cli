@@ -1,4 +1,4 @@
-import type { CoreApi, Logger } from '@/core';
+import type { CoreApi } from '@/core';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
 import type { BatchDataItem } from '@/core/types/shared.types';
@@ -21,7 +21,7 @@ export class TokenDeleteStateHook implements Hook<PostOutputPreparationHookParam
       return Promise.resolve({ breakFlow: false });
     }
     const batchData = parsed.data.batchData;
-    const { api, logger } = params.args;
+    const { api } = params.args;
 
     if (!batchData.success) {
       return Promise.resolve({ breakFlow: false });
@@ -30,28 +30,26 @@ export class TokenDeleteStateHook implements Hook<PostOutputPreparationHookParam
     for (const batchDataItem of [...batchData.transactions].filter(
       (item) => item.command === TOKEN_DELETE_COMMAND_NAME,
     )) {
-      this.cleanupState(api, logger, batchDataItem);
+      this.cleanupState(api, batchDataItem);
     }
 
     return Promise.resolve({ breakFlow: false });
   }
 
-  private cleanupState(
-    api: CoreApi,
-    logger: Logger,
-    batchDataItem: BatchDataItem,
-  ): void {
+  private cleanupState(api: CoreApi, batchDataItem: BatchDataItem): void {
     const parseResult = DeleteNormalizedParamsSchema.safeParse(
       batchDataItem.normalizedParams,
     );
 
     if (!parseResult.success) {
-      logger.warn('Problem parsing delete batch data. State cleanup skipped.');
+      api.logger.warn(
+        'Problem parsing delete batch data. State cleanup skipped.',
+      );
       return;
     }
 
     const { network, tokenId } = parseResult.data;
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     const key = composeKey(network, tokenId);
     const tokenInState = tokenState.getToken(key);
 
@@ -66,6 +64,6 @@ export class TokenDeleteStateHook implements Hook<PostOutputPreparationHookParam
     }
 
     tokenState.removeToken(key);
-    logger.debug(`Cleaned up state for deleted token ${tokenId}`);
+    api.logger.debug(`Cleaned up state for deleted token ${tokenId}`);
   }
 }

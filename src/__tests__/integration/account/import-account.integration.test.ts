@@ -43,9 +43,6 @@ describe('Import Account Integration Tests', () => {
       const importAccountResult = await accountImport({
         args: importAccountArgs,
         api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
       });
 
       const importAccountOutput =
@@ -62,9 +59,6 @@ describe('Import Account Integration Tests', () => {
       const viewAccountResult = await accountView({
         args: viewAccountArgs,
         api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
       });
       const viewAccountOutput = viewAccountResult.result as AccountViewOutput;
       expect(viewAccountOutput.accountId).toBe(importAccountOutput.accountId);

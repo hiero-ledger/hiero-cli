@@ -39,8 +39,8 @@ describe('account plugin - clear command (ADR-003)', () => {
       api: {
         state: makeStateMock(),
         alias,
+        logger,
       } as unknown as CoreApi,
-      logger,
       args: {},
     };
 
@@ -73,8 +73,8 @@ describe('account plugin - clear command (ADR-003)', () => {
       api: {
         state: makeStateMock(),
         alias,
+        logger,
       } as unknown as CoreApi,
-      logger,
       args: {},
     };
 

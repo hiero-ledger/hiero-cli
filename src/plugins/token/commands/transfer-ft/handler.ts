@@ -10,12 +10,14 @@ import type {
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { NotFoundError, TransactionError } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
+import { FtTransferEntry } from '@/core/services/transfer';
+import { isRawUnits } from '@/core/utils/amount-helpers';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import {
   resolveDestinationAccountParameter,
   resolveTokenParameter,
 } from '@/plugins/token/resolver-helper';
-import { isRawUnits } from '@/plugins/token/utils/token-amount-helpers';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { TokenTransferFtInputSchema } from './input';
@@ -35,9 +37,9 @@ export class TokenTransferFtCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<TokenTransferFtNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
 
     const validArgs = TokenTransferFtInputSchema.parse(args.args);
 
@@ -47,7 +49,8 @@ export class TokenTransferFtCommand extends BaseTransactionCommand<
     const keyManagerArg = validArgs.keyManager;
 
     const keyManager =
-      keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
+      keyManagerArg ||
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
 
@@ -87,8 +90,8 @@ export class TokenTransferFtCommand extends BaseTransactionCommand<
     const { accountId: fromAccountId, keyRefId: signerKeyRefId } =
       resolvedFromAccount;
 
-    logger.info(`🔑 Using from account: ${fromAccountId}`);
-    logger.info(`🔑 Will sign with from account key`);
+    api.logger.info(`🔑 Using from account: ${fromAccountId}`);
+    api.logger.info(`🔑 Will sign with from account key`);
 
     const resolvedToAccount = resolveDestinationAccountParameter(
       to,
@@ -104,7 +107,7 @@ export class TokenTransferFtCommand extends BaseTransactionCommand<
 
     const toAccountId = resolvedToAccount.accountId;
 
-    logger.info(
+    api.logger.info(
       `Transferring ${rawAmount.toString()} tokens of ${tokenId} from ${fromAccountId} to ${toAccountId}`,
     );
 
@@ -123,14 +126,16 @@ export class TokenTransferFtCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
     normalisedParams: TokenTransferFtNormalizedParams,
   ): Promise<TokenTransferFtBuildTransactionResult> {
-    const { api, logger } = args;
-    logger.debug('Building transfer transaction body');
-    const transaction = api.token.createTransferTransaction({
-      tokenId: normalisedParams.tokenId,
-      fromAccountId: normalisedParams.fromAccountId,
-      toAccountId: normalisedParams.toAccountId,
-      amount: normalisedParams.rawAmount,
-    });
+    const { api } = args;
+    api.logger.debug('Building transfer transaction body');
+    const transaction = api.transfer.buildTransferTransaction([
+      new FtTransferEntry(
+        normalisedParams.fromAccountId,
+        normalisedParams.toAccountId,
+        normalisedParams.tokenId,
+        normalisedParams.rawAmount,
+      ),
+    ]);
     return {
       transaction,
     };
@@ -141,9 +146,9 @@ export class TokenTransferFtCommand extends BaseTransactionCommand<
     normalisedParams: TokenTransferFtNormalizedParams,
     buildTransactionResult: TokenTransferFtBuildTransactionResult,
   ): Promise<TokenTransferFtSignTransactionResult> {
-    const { api, logger } = args;
+    const { api } = args;
     const signerKeyRefId = normalisedParams.signerKeyRefId;
-    logger.debug(`Using key ${signerKeyRefId} for signing transaction`);
+    api.logger.debug(`Using key ${signerKeyRefId} for signing transaction`);
     const transaction = await api.txSign.sign(
       buildTransactionResult.transaction,
       [signerKeyRefId],

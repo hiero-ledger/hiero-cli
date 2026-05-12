@@ -69,18 +69,17 @@ export class ScheduleSignCommand extends BaseTransactionCommand<
     }
 
     const mirrorScheduleInfo = await api.mirror.getScheduled(scheduleId);
-    const { keyRefIds } =
-      await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
-        mirrorRoleKey: mirrorScheduleInfo.admin_key,
-        explicitCredentials: [],
-        keyManager,
-        resolveSigningKeyLabels: ['schedule:signer'],
-        emptyMirrorRoleKeyMessage:
-          'Schedule has no admin key on the network. Provide --key to specify the signing key.',
-        insufficientKmsMatchesMessage:
-          'No matching signer key found in key manager for this schedule. Provide --key.',
-        validationErrorOptions: { context: { scheduleId } },
-      });
+    const { keyRefIds } = await api.keyResolver.resolveSigningKeys({
+      mirrorRoleKey: mirrorScheduleInfo.admin_key,
+      explicitCredentials: [],
+      keyManager,
+      signingKeyLabels: ['schedule:signer'],
+      emptyMirrorRoleKeyMessage:
+        'Schedule has no admin key on the network. Provide --key to specify the signing key.',
+      insufficientKmsMatchesMessage:
+        'No matching signer key found in key manager for this schedule. Provide --key.',
+      validationErrorOptions: { context: { scheduleId } },
+    });
     return keyRefIds;
   }
 

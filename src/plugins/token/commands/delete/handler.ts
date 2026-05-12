@@ -15,6 +15,7 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
@@ -46,7 +47,7 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
     validArgs: TokenDeleteInput,
   ): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
     if (validArgs.adminKey.length > 0) {
       throw new ValidationError(
@@ -55,7 +56,7 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
     }
 
     const network = api.network.getCurrentNetwork();
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
 
     const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
     if (!resolvedToken) {
@@ -103,13 +104,13 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<TokenDeleteNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
     const validArgs = TokenDeleteInputSchema.parse(args.args);
 
     const keyManager =
       validArgs.keyManager ||
-      api.config.getOption<KeyManager>('default_key_manager');
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
 
@@ -123,22 +124,21 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
 
     const tokenInfo = await api.mirror.getTokenInfo(tokenId);
 
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     const stateKey = composeKey(network, tokenId);
     const tokenInState = tokenState.getToken(stateKey);
 
-    const { keyRefIds } =
-      await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
-        mirrorRoleKey: tokenInfo.admin_key,
-        explicitCredentials: validArgs.adminKey,
-        keyManager,
-        resolveSigningKeyLabels: ['token:admin'],
-        emptyMirrorRoleKeyMessage:
-          'Token has no admin key (immutable token cannot be deleted)',
-        insufficientKmsMatchesMessage:
-          'Not enough admin key(s) found in key manager for this token. Provide --admin-key.',
-        validationErrorOptions: { context: { tokenId } },
-      });
+    const { keyRefIds } = await api.keyResolver.resolveSigningKeys({
+      mirrorRoleKey: tokenInfo.admin_key,
+      explicitCredentials: validArgs.adminKey,
+      keyManager,
+      signingKeyLabels: ['token:admin'],
+      emptyMirrorRoleKeyMessage:
+        'Token has no admin key (immutable token cannot be deleted)',
+      insufficientKmsMatchesMessage:
+        'Not enough admin key(s) found in key manager for this token. Provide --admin-key.',
+      validationErrorOptions: { context: { tokenId } },
+    });
 
     const tokenName = tokenInState?.name ?? tokenInfo.name;
 
@@ -154,8 +154,8 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
     normalisedParams: TokenDeleteNormalizedParams,
   ): Promise<TokenDeleteBuildTransactionResult> {
-    const { logger } = args;
-    logger.debug('Building token delete transaction');
+    const { api } = args;
+    api.logger.debug('Building token delete transaction');
     const transaction = args.api.token.createDeleteTransaction({
       tokenId: normalisedParams.tokenId,
     });
@@ -167,8 +167,8 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
     normalisedParams: TokenDeleteNormalizedParams,
     buildTransactionResult: TokenDeleteBuildTransactionResult,
   ): Promise<TokenDeleteSignTransactionResult> {
-    const { api, logger } = args;
-    logger.debug(
+    const { api } = args;
+    api.logger.debug(
       `Using ${normalisedParams.keyRefIds.length} key(s) for signing transaction`,
     );
     const signedTransaction = await api.txSign.sign(
@@ -196,7 +196,7 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
       );
     }
 
-    return result;
+    return { transactionResult: result };
   }
 
   async outputPreparation(
@@ -206,10 +206,11 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
     _signTransactionResult: TokenDeleteSignTransactionResult,
     executeTransactionResult: TokenDeleteExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { transactionResult } = executeTransactionResult;
+    const { api } = args;
     const { network, tokenId, tokenName } = normalisedParams;
 
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     const key = composeKey(network, tokenId);
     const tokenInState = tokenState.getToken(key);
 
@@ -229,7 +230,7 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
     }
 
     const outputData: TokenDeleteOutput = {
-      transactionId: executeTransactionResult.transactionId,
+      transactionId: transactionResult.transactionId,
       deletedToken: { name: tokenName, tokenId },
       network,
     };

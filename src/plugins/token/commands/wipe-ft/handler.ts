@@ -17,9 +17,9 @@ import {
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { HederaTokenType } from '@/core/shared/constants';
+import { isRawUnits } from '@/core/utils/amount-helpers';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
-import { isRawUnits } from '@/plugins/token/utils/token-amount-helpers';
 import {
   isCannotWipeTreasuryError,
   isNoWipeKeyError,
@@ -43,9 +43,9 @@ export class TokenWipeFtCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<WipeFtNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     const validArgs = TokenWipeFtInputSchema.parse(args.args);
 
     const keyManager =
@@ -83,17 +83,16 @@ export class TokenWipeFtCommand extends BaseTransactionCommand<
       network,
     });
 
-    const { keyRefIds } =
-      await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
-        mirrorRoleKey: tokenInfo.wipe_key,
-        explicitCredentials: validArgs.wipeKey,
-        keyManager,
-        resolveSigningKeyLabels: ['token:wipe'],
-        emptyMirrorRoleKeyMessage: 'Token has no wipe key',
-        insufficientKmsMatchesMessage:
-          'Not enough wipe key(s) found in key manager for this token. Provide --wipe-key.',
-        validationErrorOptions: { context: { tokenId } },
-      });
+    const { keyRefIds } = await api.keyResolver.resolveSigningKeys({
+      mirrorRoleKey: tokenInfo.wipe_key,
+      explicitCredentials: validArgs.wipeKey,
+      keyManager,
+      signingKeyLabels: ['token:wipe'],
+      emptyMirrorRoleKeyMessage: 'Token has no wipe key',
+      insufficientKmsMatchesMessage:
+        'Not enough wipe key(s) found in key manager for this token. Provide --wipe-key.',
+      validationErrorOptions: { context: { tokenId } },
+    });
 
     const rawUnits = isRawUnits(validArgs.amount);
     const tokenDecimals = rawUnits ? 0 : parseInt(tokenInfo.decimals);
@@ -105,7 +104,7 @@ export class TokenWipeFtCommand extends BaseTransactionCommand<
 
     const currentTotalSupply = BigInt(tokenInfo.total_supply || '0');
 
-    logger.info(
+    api.logger.info(
       `Wiping ${rawAmount.toString()} tokens from account ${accountId}. Current supply: ${currentTotalSupply.toString()}`,
     );
 
@@ -123,8 +122,8 @@ export class TokenWipeFtCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
     normalisedParams: WipeFtNormalizedParams,
   ): Promise<WipeFtBuildTransactionResult> {
-    const { api, logger } = args;
-    logger.debug('Building FT wipe transaction body');
+    const { api } = args;
+    api.logger.debug('Building FT wipe transaction body');
     const transaction = api.token.createWipeFtTransaction({
       tokenId: normalisedParams.tokenId,
       accountId: normalisedParams.accountId,
@@ -138,8 +137,8 @@ export class TokenWipeFtCommand extends BaseTransactionCommand<
     normalisedParams: WipeFtNormalizedParams,
     buildTransactionResult: WipeFtBuildTransactionResult,
   ): Promise<WipeFtSignTransactionResult> {
-    const { api, logger } = args;
-    logger.debug(
+    const { api } = args;
+    api.logger.debug(
       `Using ${normalisedParams.keyRefIds.length} key(s) for signing transaction`,
     );
     const signedTransaction = await api.txSign.sign(

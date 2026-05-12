@@ -1,9 +1,9 @@
 import type {
   BaseBuildTransactionResult,
+  BaseExecuteTransactionResult,
   BaseNormalizedParams,
   BaseSignTransactionResult,
   SupportedNetwork,
-  TransactionResult,
 } from '@/core';
 
 export interface AirdropNftRecipient {
@@ -23,6 +23,4 @@ export interface TokenAirdropNftBuildTransactionResult extends BaseBuildTransact
 
 export interface TokenAirdropNftSignTransactionResult extends BaseSignTransactionResult {}
 
-export interface TokenAirdropNftExecuteTransactionResult {
-  transactionResult: TransactionResult;
-}
+export interface TokenAirdropNftExecuteTransactionResult extends BaseExecuteTransactionResult {}

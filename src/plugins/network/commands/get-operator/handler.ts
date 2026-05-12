@@ -32,10 +32,10 @@ const normalizeParams = (
 
 export class NetworkGetOperatorCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { logger, api } = args;
+    const { api } = args;
     const normalisedParams = normalizeParams(args);
 
-    logger.info(
+    api.logger.info(
       `Getting operator for network: ${normalisedParams.targetNetwork}`,
     );
 

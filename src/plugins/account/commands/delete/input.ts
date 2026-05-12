@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { AccountReferenceSchema, KeySchema } from '@/core/schemas';
+import { ZOD_CUSTOM_ISSUE_CODE } from '@/core/shared/constants';
 
 export const AccountDeleteInputSchema = z
   .object({
@@ -18,7 +19,7 @@ export const AccountDeleteInputSchema = z
   .superRefine((data, ctx) => {
     if (data.stateOnly && data.transferId !== undefined) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: ZOD_CUSTOM_ISSUE_CODE,
         message:
           'transfer-id cannot be used with --state-only (no transfer happens on the network)',
         path: ['transferId'],
@@ -26,7 +27,7 @@ export const AccountDeleteInputSchema = z
     }
     if (!data.stateOnly && data.transferId === undefined) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: ZOD_CUSTOM_ISSUE_CODE,
         message:
           'transfer-id is required when deleting on Hedera (use --state-only to remove only from local state)',
         path: ['transferId'],
@@ -39,11 +40,7 @@ export const AccountDeleteInputSchema = z
         ? 'With --state-only, account must be a valid Hedera account ID or local alias'
         : (accountParsed.error.issues[0]?.message ??
           'Invalid account key format');
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message,
-        path: ['account'],
-      });
+      ctx.addIssue({ code: ZOD_CUSTOM_ISSUE_CODE, message, path: ['account'] });
     }
   });
 

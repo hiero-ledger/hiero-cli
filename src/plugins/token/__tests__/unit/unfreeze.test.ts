@@ -13,7 +13,7 @@ import {
   TokenUnfreezeOutputSchema,
 } from '@/plugins/token/commands/unfreeze';
 
-import { makeLogger, makeUnfreezeSuccessMocks } from './helpers/mocks';
+import { makeUnfreezeSuccessMocks } from './helpers/mocks';
 
 const FREEZE_KEY_ARG = `ed25519:private:${'a'.repeat(64)}`;
 
@@ -29,9 +29,6 @@ const makeArgs = (
     ...argsOverrides,
   },
   api,
-  state: api.state,
-  config: api.config,
-  logger: makeLogger(),
 });
 
 describe('tokenUnfreeze', () => {
@@ -102,9 +99,9 @@ describe('tokenUnfreeze', () => {
       const { api } = makeUnfreezeSuccessMocks({
         tokenInfo: { freeze_key: null },
       });
-      (
-        api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey as jest.Mock
-      ).mockRejectedValue(new ValidationError('Token has no freeze key'));
+      (api.keyResolver.resolveSigningKeys as jest.Mock).mockRejectedValue(
+        new ValidationError('Token has no freeze key'),
+      );
       const args = makeArgs(api);
 
       await expect(tokenUnfreeze(args)).rejects.toThrow(ValidationError);

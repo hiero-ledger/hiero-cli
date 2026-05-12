@@ -60,9 +60,6 @@ describe('Delete Account Integration Tests', () => {
       const importAccountResult = await accountImport({
         args: importAccountArgs,
         api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
       });
 
       const importAccountOutput =
@@ -76,9 +73,6 @@ describe('Delete Account Integration Tests', () => {
       const deleteAccountResult = await accountDelete({
         args: deleteAccountArgs,
         api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
       });
       const deleteAccountOutput =
         deleteAccountResult.result as AccountDeleteOutput;
@@ -90,9 +84,6 @@ describe('Delete Account Integration Tests', () => {
         accountView({
           args: { account: 'account-state-only-delete' },
           api: coreApi,
-          state: coreApi.state,
-          logger: coreApi.logger,
-          config: coreApi.config,
         }),
       ).rejects.toThrow(
         'Account not found with ID or alias: account-state-only-delete',
@@ -101,9 +92,6 @@ describe('Delete Account Integration Tests', () => {
       const viewById = await accountView({
         args: { account: accountId },
         api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
       });
       const viewByIdOutput = viewById.result as AccountViewOutput;
       expect(viewByIdOutput.accountId).toBe(accountId);
@@ -123,9 +111,6 @@ describe('Delete Account Integration Tests', () => {
             'auto-associations': 10,
           },
           api: coreApi,
-          state: coreApi.state,
-          logger: coreApi.logger,
-          config: coreApi.config,
         });
         const victimAccountId = (
           createVictimResult.result as AccountCreateOutput
@@ -139,9 +124,6 @@ describe('Delete Account Integration Tests', () => {
             'auto-associations': 10,
           },
           api: coreApi,
-          state: coreApi.state,
-          logger: coreApi.logger,
-          config: coreApi.config,
         });
         const beneficiaryAccountId = (
           createBeneficiaryResult.result as AccountCreateOutput
@@ -156,9 +138,6 @@ describe('Delete Account Integration Tests', () => {
             'hbar-only': true,
           },
           api: coreApi,
-          state: coreApi.state,
-          logger: coreApi.logger,
-          config: coreApi.config,
         });
         const beneficiaryBefore = tinybarsFromBalanceResult(
           balanceBeneficiaryBeforeResult.result as AccountBalanceOutput,
@@ -170,9 +149,6 @@ describe('Delete Account Integration Tests', () => {
             transferId: beneficiaryAccountId,
           },
           api: coreApi,
-          state: coreApi.state,
-          logger: coreApi.logger,
-          config: coreApi.config,
         });
 
         const deleteAccountOutput =
@@ -192,9 +168,6 @@ describe('Delete Account Integration Tests', () => {
             'hbar-only': true,
           },
           api: coreApi,
-          state: coreApi.state,
-          logger: coreApi.logger,
-          config: coreApi.config,
         });
         const beneficiaryAfter = tinybarsFromBalanceResult(
           balanceBeneficiaryAfterResult.result as AccountBalanceOutput,
@@ -206,9 +179,6 @@ describe('Delete Account Integration Tests', () => {
           accountView({
             args: { account: 'account-network-delete' },
             api: coreApi,
-            state: coreApi.state,
-            logger: coreApi.logger,
-            config: coreApi.config,
           }),
         ).rejects.toThrow();
       },

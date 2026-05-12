@@ -1,5 +1,6 @@
 {
   "name": "nft-aliases-example",
+  "tokenName": "NFT Aliases Example",
   "symbol": "NAL",
   "supplyType": "infinite",
   "treasuryKey": "treasuryAccount",

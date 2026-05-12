@@ -1,5 +1,6 @@
 {
   "name": "token-fractional-receiver",
+  "tokenName": "Token Fractional Fee Receiver",
   "symbol": "FFRECV",
   "decimals": 8,
   "supplyType": "finite",

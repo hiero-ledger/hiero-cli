@@ -9,7 +9,7 @@ import {
   TokenPendingAirdropsOutputSchema,
 } from '@/plugins/token/commands/pending-airdrops';
 
-import { makeApiMocks, makeLogger } from './helpers/mocks';
+import { makeApiMocks } from './helpers/mocks';
 
 const SENDER_ID = '0.0.9999';
 const TOKEN_ID_FT = '0.0.2000';
@@ -73,9 +73,6 @@ const makeArgs = (
     ...args,
   },
   api,
-  state: api.state,
-  config: api.config,
-  logger: makeLogger(),
 });
 
 describe('tokenPendingAirdrops', () => {

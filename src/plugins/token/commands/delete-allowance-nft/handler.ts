@@ -39,7 +39,7 @@ export class TokenDeleteAllowanceNftCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<DeleteAllowanceNftNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
     const validArgs = TokenDeleteAllowanceNftInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ??
@@ -84,8 +84,8 @@ export class TokenDeleteAllowanceNftCommand extends BaseTransactionCommand<
       spenderAccountId = resolvedSpender.accountId;
     }
 
-    logger.info(`🔑 Using owner account: ${resolvedOwner.accountId}`);
-    logger.info(
+    api.logger.info(`🔑 Using owner account: ${resolvedOwner.accountId}`);
+    api.logger.info(
       validArgs.allSerials
         ? `Revoking all-serials blanket approval of ${tokenId} for spender ${spenderAccountId}`
         : `Deleting allowance for serials [${validArgs.serials?.join(', ')}] of ${tokenId}`,
@@ -116,7 +116,7 @@ export class TokenDeleteAllowanceNftCommand extends BaseTransactionCommand<
           false,
         );
       }
-      const transaction = api.token.createNftAllowanceDeleteTransaction({
+      const transaction = api.allowance.buildNftAllowanceDelete({
         tokenId: normalisedParams.tokenId,
         ownerAccountId: normalisedParams.ownerAccountId,
         spenderAccountId: normalisedParams.spenderAccountId,
@@ -132,7 +132,7 @@ export class TokenDeleteAllowanceNftCommand extends BaseTransactionCommand<
       );
     }
 
-    const transaction = api.token.createNftAllowanceDeleteTransaction({
+    const transaction = api.allowance.buildNftAllowanceDelete({
       tokenId: normalisedParams.tokenId,
       ownerAccountId: normalisedParams.ownerAccountId,
       serialNumbers: normalisedParams.serials,
@@ -145,8 +145,8 @@ export class TokenDeleteAllowanceNftCommand extends BaseTransactionCommand<
     normalisedParams: DeleteAllowanceNftNormalizedParams,
     buildTransactionResult: DeleteAllowanceNftBuildTransactionResult,
   ): Promise<DeleteAllowanceNftSignTransactionResult> {
-    const { api, logger } = args;
-    logger.debug(
+    const { api } = args;
+    api.logger.debug(
       `Using key ${normalisedParams.signerKeyRefId} for signing transaction`,
     );
     const signedTransaction = await api.txSign.sign(
@@ -190,7 +190,9 @@ export class TokenDeleteAllowanceNftCommand extends BaseTransactionCommand<
       tokenId: normalisedParams.tokenId,
       ownerAccountId: normalisedParams.ownerAccountId,
       spenderAccountId: normalisedParams.spenderAccountId,
-      serials: normalisedParams.allSerials ? null : normalisedParams.serials,
+      serials: normalisedParams.allSerials
+        ? null
+        : (normalisedParams.serials ?? null),
       allSerials: normalisedParams.allSerials,
       network: normalisedParams.network,
     };

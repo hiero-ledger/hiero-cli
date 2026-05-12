@@ -35,9 +35,6 @@ describe('HBAR Transfer Account Integration Tests', () => {
     const createAccountResult = await accountCreate({
       args: createAccountArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
 
     const createAccountOutput =
@@ -56,9 +53,6 @@ describe('HBAR Transfer Account Integration Tests', () => {
     const transferHbarResult = await hbarTransfer({
       args: transferAccountArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const transferHbarOutput = transferHbarResult.result as HbarTransferOutput;
     expect(transferHbarOutput.status).toBe('success');
@@ -76,9 +70,6 @@ describe('HBAR Transfer Account Integration Tests', () => {
     const viewAccountResult = await accountView({
       args: viewAccountArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const viewAccountOutput = viewAccountResult.result as AccountViewOutput;
     expect(viewAccountOutput.accountId).toBe(createAccountOutput.accountId);
@@ -100,9 +91,6 @@ describe('HBAR Transfer Account Integration Tests', () => {
     const accountFromResult = await accountCreate({
       args: accountFromArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
 
     const accountFromOutput = accountFromResult.result as AccountCreateOutput;
@@ -119,9 +107,6 @@ describe('HBAR Transfer Account Integration Tests', () => {
     const accountToResult = await accountCreate({
       args: accountToArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
 
     const accountToOutput = accountToResult.result as AccountCreateOutput;
@@ -139,9 +124,6 @@ describe('HBAR Transfer Account Integration Tests', () => {
     const transferHbarResult = await hbarTransfer({
       args: transferAccountArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const transferHbarOutput = transferHbarResult.result as HbarTransferOutput;
     expect(transferHbarOutput.status).toBe('success');
@@ -158,9 +140,6 @@ describe('HBAR Transfer Account Integration Tests', () => {
     const viewAccountFromResult = await accountView({
       args: viewAccountFromArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const viewAccountFromOutput =
       viewAccountFromResult.result as AccountViewOutput;
@@ -173,9 +152,6 @@ describe('HBAR Transfer Account Integration Tests', () => {
     const viewAccountToResult = await accountView({
       args: viewAccountToArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const viewAccountToOutput = viewAccountToResult.result as AccountViewOutput;
     expect(viewAccountToOutput.accountId).toBe(accountToOutput.accountId);

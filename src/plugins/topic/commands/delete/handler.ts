@@ -47,9 +47,9 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
   private async executeStateOnlyDelete(
     args: CommandHandlerArgs,
   ): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
     const params = await this.resolveStateTopicForDelete(args);
-    const topicHelper = new TopicHelper(api.alias, api.state, logger);
+    const topicHelper = new TopicHelper(api.alias, api.state, api.logger);
     const removedAliases = topicHelper.removeTopicFromLocalState(
       params.topicToDelete,
       params.network,
@@ -71,8 +71,8 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
   private async resolveStateTopicForDelete(
     args: CommandHandlerArgs,
   ): Promise<DeleteTopicNormalisedParams> {
-    const { api, logger } = args;
-    const topicState = new ZustandTopicStateHelper(api.state, logger);
+    const { api } = args;
+    const topicState = new ZustandTopicStateHelper(api.state, api.logger);
     const validArgs = TopicDeleteInputSchema.parse(args.args);
     const topicRef = validArgs.topic;
     const isEntityId = EntityIdSchema.safeParse(topicRef).success;
@@ -136,12 +136,12 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<DeleteTopicNormalisedParams> {
-    const { api, logger } = args;
+    const { api } = args;
     const validArgs = TopicDeleteInputSchema.parse(args.args);
     const network = api.network.getCurrentNetwork();
     const topicRef = validArgs.topic;
     const isEntityId = EntityIdSchema.safeParse(topicRef).success;
-    const topicState = new ZustandTopicStateHelper(api.state, logger);
+    const topicState = new ZustandTopicStateHelper(api.state, api.logger);
     const keyManager =
       validArgs.keyManager ||
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
@@ -159,11 +159,11 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
     }
 
     const { keyRefIds: signingKeyRefIds, requiredSignatures } =
-      await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
+      await api.keyResolver.resolveSigningKeys({
         mirrorRoleKey: topicInfo.admin_key,
         explicitCredentials: validArgs.adminKey,
         keyManager,
-        resolveSigningKeyLabels: ['topic:admin'],
+        signingKeyLabels: ['topic:admin'],
         emptyMirrorRoleKeyMessage:
           'Topic has no admin key on the network; it cannot be deleted with TopicDeleteTransaction.',
         insufficientKmsMatchesMessage:
@@ -242,7 +242,11 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
     signTransactionResult: DeleteTopicSignTransactionResult,
   ): Promise<DeleteTopicExecuteTransactionResult> {
     const { api } = args;
-    return api.txExecute.execute(signTransactionResult.signedTransaction);
+    return {
+      transactionResult: await api.txExecute.execute(
+        signTransactionResult.signedTransaction,
+      ),
+    };
   }
 
   async outputPreparation(
@@ -252,22 +256,23 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
     _signTransactionResult: DeleteTopicSignTransactionResult,
     executeTransactionResult: DeleteTopicExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { transactionResult } = executeTransactionResult;
+    const { api } = args;
 
-    if (!executeTransactionResult.success) {
+    if (!transactionResult.success) {
       throw new TransactionError(
-        `Failed to delete topic (txId: ${executeTransactionResult.transactionId})`,
+        `Failed to delete topic (txId: ${transactionResult.transactionId})`,
         false,
         {
           context: {
-            transactionId: executeTransactionResult.transactionId,
+            transactionId: transactionResult.transactionId,
             network: normalisedParams.network,
           },
         },
       );
     }
 
-    const topicHelper = new TopicHelper(api.alias, api.state, logger);
+    const topicHelper = new TopicHelper(api.alias, api.state, api.logger);
     const removedAliases = topicHelper.removeTopicFromLocalState(
       normalisedParams.topicToDelete,
       normalisedParams.network,
@@ -280,7 +285,7 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
       },
       removedAliases,
       network: normalisedParams.network,
-      transactionId: executeTransactionResult.transactionId,
+      transactionId: transactionResult.transactionId,
       stateOnly: false,
     };
 

@@ -35,4 +35,5 @@ export {
   tokenTransferFt,
 } from './commands/transfer-ft';
 export { tokenTransferNft } from './commands/transfer-nft';
+export { TOKEN_UPDATE_COMMAND_NAME, tokenUpdate } from './commands/update';
 export { tokenView } from './commands/view';

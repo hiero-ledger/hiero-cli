@@ -16,9 +16,9 @@ import { ScheduleCreateInputSchema } from './input';
 
 export class ScheduleCreateCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    const scheduleState = new ZustandScheduleStateHelper(api.state, logger);
+    const scheduleState = new ZustandScheduleStateHelper(api.state, api.logger);
     const validArgs = ScheduleCreateInputSchema.parse(args.args);
     const name = validArgs.name;
     const network = api.network.getCurrentNetwork();

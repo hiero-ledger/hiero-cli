@@ -10,6 +10,7 @@ import type {
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { TransactionError } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
@@ -32,7 +33,7 @@ export class TopicCreateCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<CreateTopicNormalisedParams> {
-    const { api, logger } = args;
+    const { api } = args;
     const validArgs = TopicCreateInputSchema.parse(args.args);
 
     const memo = validArgs.memo;
@@ -45,10 +46,11 @@ export class TopicCreateCommand extends BaseTransactionCommand<
     api.alias.availableOrThrow(alias, network);
 
     const keyManager =
-      keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
+      keyManagerArg ||
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     if (memo) {
-      logger.info(`Creating topic with memo: ${memo}`);
+      api.logger.info(`Creating topic with memo: ${memo}`);
     }
 
     const adminKeys = await Promise.all(
@@ -147,7 +149,7 @@ export class TopicCreateCommand extends BaseTransactionCommand<
       );
     }
 
-    return result;
+    return { transactionResult: result };
   }
 
   async outputPreparation(
@@ -157,12 +159,13 @@ export class TopicCreateCommand extends BaseTransactionCommand<
     _signTransactionResult: CreateTopicSignTransactionResult,
     executeTransactionResult: CreateTopicExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { api, logger } = args;
-    const topicState = new ZustandTopicStateHelper(api.state, logger);
-    const topicId = executeTransactionResult.topicId;
+    const { transactionResult } = executeTransactionResult;
+    const { api } = args;
+    const topicState = new ZustandTopicStateHelper(api.state, api.logger);
+    const topicId = transactionResult.topicId;
     if (!topicId) {
       throw new TransactionError(
-        `Failed to create topic (txId: ${executeTransactionResult.transactionId})`,
+        `Failed to create topic (txId: ${transactionResult.transactionId})`,
         false,
       );
     }
@@ -179,7 +182,7 @@ export class TopicCreateCommand extends BaseTransactionCommand<
       adminKeyThreshold: normalisedParams.adminKeyThreshold,
       submitKeyThreshold: normalisedParams.submitKeyThreshold,
       network: normalisedParams.network,
-      createdAt: executeTransactionResult.consensusTimestamp,
+      createdAt: transactionResult.consensusTimestamp,
     };
 
     if (normalisedParams.alias) {
@@ -188,7 +191,7 @@ export class TopicCreateCommand extends BaseTransactionCommand<
         type: AliasType.Topic,
         network: normalisedParams.network,
         entityId: topicId,
-        createdAt: executeTransactionResult.consensusTimestamp,
+        createdAt: transactionResult.consensusTimestamp,
       });
     }
 
@@ -206,7 +209,7 @@ export class TopicCreateCommand extends BaseTransactionCommand<
       adminKeyCount: adminKeyCount > 1 ? adminKeyCount : undefined,
       submitKeyThreshold: normalisedParams.submitKeyThreshold,
       submitKeyCount: submitKeyCount > 1 ? submitKeyCount : undefined,
-      transactionId: executeTransactionResult.transactionId || '',
+      transactionId: transactionResult.transactionId || '',
       createdAt: topicData.createdAt,
     };
 

@@ -10,13 +10,13 @@ import { AccountViewInputSchema } from './input';
 
 export class AccountViewCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
     const validArgs = AccountViewInputSchema.parse(args.args);
 
     const accountIdOrNameOrAlias = validArgs.account;
 
-    logger.info(`Viewing account details: ${accountIdOrNameOrAlias}`);
+    api.logger.info(`Viewing account details: ${accountIdOrNameOrAlias}`);
 
     let accountId = accountIdOrNameOrAlias;
 
@@ -28,7 +28,7 @@ export class AccountViewCommand implements Command {
     );
     if (account && account.entityId) {
       accountId = account.entityId;
-      logger.info(`Found account in state: ${account.alias}`);
+      api.logger.info(`Found account in state: ${account.alias}`);
     } else {
       const accountIdParseResult = EntityIdSchema.safeParse(
         accountIdOrNameOrAlias,

@@ -18,7 +18,7 @@ import { AccountBalanceInputSchema, TokenEntityType } from './input';
 
 export class AccountBalanceCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
     const validArgs = AccountBalanceInputSchema.parse(args.args);
 
@@ -28,7 +28,7 @@ export class AccountBalanceCommand implements Command {
     const tokenOnly = !!token;
     const raw = validArgs.raw;
 
-    logger.info(`Getting balance for account: ${accountIdOrNameOrAlias}`);
+    api.logger.info(`Getting balance for account: ${accountIdOrNameOrAlias}`);
 
     const network = api.network.getCurrentNetwork();
     let accountId = accountIdOrNameOrAlias;
@@ -40,7 +40,9 @@ export class AccountBalanceCommand implements Command {
     );
     if (account && account.entityId) {
       accountId = account.entityId;
-      logger.info(`Found account in state: ${account.alias} -> ${accountId}`);
+      api.logger.info(
+        `Found account in state: ${account.alias} -> ${accountId}`,
+      );
     } else {
       const accountIdParseResult = EntityIdSchema.safeParse(
         accountIdOrNameOrAlias,

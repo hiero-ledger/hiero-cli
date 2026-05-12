@@ -14,12 +14,12 @@ import { PluginManagementRemoveInputSchema } from './input';
 
 export class PluginManagementRemoveCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
     const validArgs = PluginManagementRemoveInputSchema.parse(args.args);
     const name = validArgs.name;
 
-    logger.info('🗑️ Removing plugin from state...');
+    api.logger.info('🗑️ Removing plugin from state...');
 
     const result = api.pluginManagement.removePlugin(name);
 

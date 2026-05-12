@@ -10,7 +10,7 @@ import {
   MemoSchema,
   NodeIdSchema,
 } from '@/core/schemas';
-import { NULL_TOKEN } from '@/core/shared/constants';
+import { NULL_TOKEN, ZOD_CUSTOM_ISSUE_CODE } from '@/core/shared/constants';
 
 const UPDATE_FIELDS = [
   'key',
@@ -73,7 +73,7 @@ export const AccountUpdateInputSchema = z
 
     if (stakedAccountSet && stakedNodeSet) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: ZOD_CUSTOM_ISSUE_CODE,
         message: 'Cannot specify both --staked-account-id and --staked-node-id',
         path: ['stakedNodeId'],
       });
@@ -84,7 +84,7 @@ export const AccountUpdateInputSchema = z
     );
     if (!hasUpdateField) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: ZOD_CUSTOM_ISSUE_CODE,
         message:
           'At least one field to update must be provided (key, memo, max-auto-associations, staked-account-id, staked-node-id, decline-staking-reward, auto-renew-period, receiver-signature-required)',
         path: [],

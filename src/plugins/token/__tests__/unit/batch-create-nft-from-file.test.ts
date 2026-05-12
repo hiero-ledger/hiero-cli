@@ -5,7 +5,6 @@ import {
   createBatchExecuteParams,
   makeArgs,
   makeLogger,
-  makeStateMock,
 } from '@/__tests__/mocks/mocks';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
@@ -103,7 +102,6 @@ describe('token plugin - batch-create-nft-from-file hook', () => {
     const api = {
       receipt: { getReceipt: jest.fn() },
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
-      state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
 
@@ -135,7 +133,6 @@ describe('token plugin - batch-create-nft-from-file hook', () => {
     const api = {
       receipt: { getReceipt: jest.fn() },
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
-      state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
 
@@ -168,7 +165,6 @@ describe('token plugin - batch-create-nft-from-file hook', () => {
     const api = {
       receipt: { getReceipt: jest.fn() },
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
-      state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
 
@@ -205,7 +201,6 @@ describe('token plugin - batch-create-nft-from-file hook', () => {
     const api = {
       receipt: { getReceipt: getReceiptMock },
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
-      state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
 
@@ -246,7 +241,6 @@ describe('token plugin - batch-create-nft-from-file hook', () => {
         register: registerMock,
         exists: jest.fn().mockReturnValue(false),
       },
-      state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
 
@@ -314,7 +308,6 @@ describe('token plugin - batch-create-nft-from-file hook', () => {
         register: registerMock,
         exists: jest.fn().mockReturnValue(false),
       },
-      state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
 
@@ -375,7 +368,6 @@ describe('token plugin - batch-create-nft-from-file hook', () => {
     const api = {
       receipt: { getReceipt: getReceiptMock },
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(true) },
-      state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
 

@@ -1,10 +1,8 @@
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
-import type { ConfigService } from '@/core/services/config/config-service.interface';
-import type { StateService } from '@/core/services/state/state-service.interface';
 
 import '@/core/utils/json-serialize';
 
-import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
+import { FtTransferEntry } from '@/core/services/transfer';
 import { HederaTokenType } from '@/core/shared/constants';
 import { AliasType, SupplyType } from '@/core/types/shared.types';
 import { tokenAssociate } from '@/plugins/token/commands/associate';
@@ -17,11 +15,7 @@ import {
   mockKeys,
   mockTransactionResults,
 } from './helpers/fixtures';
-import {
-  makeApiMocks,
-  makeLogger,
-  mockZustandTokenStateHelper,
-} from './helpers/mocks';
+import { makeApiMocks, mockZustandTokenStateHelper } from './helpers/mocks';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTokenStateHelper: jest.fn(),
@@ -53,7 +47,7 @@ describe('Token Lifecycle Integration', () => {
       const mockAssociationTransaction = { type: 'association' };
       const mockTransferTransaction = { type: 'transfer' };
 
-      const { api, tokenTransactions: tokenTransactions } = makeApiMocks({
+      const { api, tokenTransactions, transfer } = makeApiMocks({
         tokenTransactions: {
           createTokenTransaction: jest
             .fn()
@@ -61,7 +55,9 @@ describe('Token Lifecycle Integration', () => {
           createTokenAssociationTransaction: jest
             .fn()
             .mockReturnValue(mockAssociationTransaction),
-          createTransferTransaction: jest
+        },
+        transfer: {
+          buildTransferTransaction: jest
             .fn()
             .mockReturnValue(mockTransferTransaction),
         },
@@ -100,8 +96,6 @@ describe('Token Lifecycle Integration', () => {
         },
       });
 
-      const logger = makeLogger();
-
       // Step 1: Create Token
       const createArgs: CommandHandlerArgs = {
         args: {
@@ -115,9 +109,6 @@ describe('Token Lifecycle Integration', () => {
           adminKey: ['admin-key'],
         },
         api,
-        logger,
-        state: makeStateMock() as StateService,
-        config: makeConfigMock() as ConfigService,
       };
 
       const createResult = await tokenCreateFt(createArgs);
@@ -130,9 +121,6 @@ describe('Token Lifecycle Integration', () => {
           account: `${userAccountId}:${userKey}`,
         },
         api,
-        logger,
-        state: makeStateMock() as StateService,
-        config: makeConfigMock() as ConfigService,
       };
 
       const associateResult = await tokenAssociate(associateArgs);
@@ -147,9 +135,6 @@ describe('Token Lifecycle Integration', () => {
           amount: '100',
         },
         api,
-        logger,
-        state: makeStateMock() as StateService,
-        config: makeConfigMock() as ConfigService,
       };
 
       const transferResult = await tokenTransferFt(transferArgs);
@@ -187,18 +172,20 @@ describe('Token Lifecycle Integration', () => {
         accountId: userAccountId,
       });
 
-      expect(tokenTransactions.createTransferTransaction).toHaveBeenCalledWith({
-        tokenId: token,
-        fromAccountId: _treasuryAccountId,
-        toAccountId: userAccountId,
-        amount: 10000n,
-      });
+      expect(transfer.buildTransferTransaction).toHaveBeenCalledWith([
+        new FtTransferEntry(
+          mockAccountIds.treasury,
+          mockAccountIds.association,
+          token,
+          10000n,
+        ),
+      ]);
 
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalled();
       expect(
         tokenTransactions.createTokenAssociationTransaction,
       ).toHaveBeenCalled();
-      expect(tokenTransactions.createTransferTransaction).toHaveBeenCalled();
+      expect(transfer.buildTransferTransaction).toHaveBeenCalled();
     });
 
     test('should handle partial failure in lifecycle', async () => {
@@ -255,8 +242,6 @@ describe('Token Lifecycle Integration', () => {
         },
       });
 
-      const logger = makeLogger();
-
       // Step 1: Create Token (success)
       const createArgs: CommandHandlerArgs = {
         args: {
@@ -266,9 +251,6 @@ describe('Token Lifecycle Integration', () => {
           adminKey: ['admin-key'],
         },
         api,
-        logger,
-        state: makeStateMock() as StateService,
-        config: makeConfigMock() as ConfigService,
       };
 
       const createResult = await tokenCreateFt(createArgs);
@@ -281,9 +263,6 @@ describe('Token Lifecycle Integration', () => {
           account: `${userAccountId}:${userKey}`,
         },
         api,
-        logger,
-        state: makeStateMock() as StateService,
-        config: makeConfigMock() as ConfigService,
       };
 
       const associateResult = await tokenAssociate(associateArgs);
@@ -360,8 +339,6 @@ describe('Token Lifecycle Integration', () => {
         },
       });
 
-      const logger = makeLogger();
-
       // Step 1: Create Token
       const createArgs: CommandHandlerArgs = {
         args: {
@@ -371,9 +348,6 @@ describe('Token Lifecycle Integration', () => {
           adminKey: ['admin-key'],
         },
         api,
-        logger,
-        state: makeStateMock() as StateService,
-        config: makeConfigMock() as ConfigService,
       };
 
       const createResult = await tokenCreateFt(createArgs);
@@ -386,9 +360,6 @@ describe('Token Lifecycle Integration', () => {
           account: `${userAccountId1}:${userKey1}`,
         },
         api,
-        logger,
-        state: makeStateMock() as StateService,
-        config: makeConfigMock() as ConfigService,
       };
 
       const associateResult1 = await tokenAssociate(associateArgs1);
@@ -401,9 +372,6 @@ describe('Token Lifecycle Integration', () => {
           account: `${userAccountId2}:${userKey2}`,
         },
         api,
-        logger,
-        state: makeStateMock() as StateService,
-        config: makeConfigMock() as ConfigService,
       };
 
       const associateResult2 = await tokenAssociate(associateArgs2);
@@ -447,8 +415,6 @@ describe('Token Lifecycle Integration', () => {
         },
       });
 
-      const logger = makeLogger();
-
       // Create token - this will throw because execute returns no tokenId
       const createArgs: CommandHandlerArgs = {
         args: {
@@ -458,9 +424,6 @@ describe('Token Lifecycle Integration', () => {
           adminKey: ['admin-key'],
         },
         api,
-        logger,
-        state: makeStateMock() as StateService,
-        config: makeConfigMock() as ConfigService,
       };
 
       await expect(tokenCreateFt(createArgs)).rejects.toThrow();
@@ -471,15 +434,12 @@ describe('Token Lifecycle Integration', () => {
           account: `${userAccountId}:5555555555555555555555555555555555555555555555555555555555555555`,
         },
         api,
-        logger,
-        state: makeStateMock() as StateService,
-        config: makeConfigMock() as ConfigService,
       };
 
       const associateResult = await tokenAssociate(associateArgs);
       expect(associateResult.result).toBeDefined();
 
-      expect(MockedHelper).toHaveBeenCalledWith(api.state, logger);
+      expect(MockedHelper).toHaveBeenCalledWith(api.state, api.logger);
     });
   });
 });

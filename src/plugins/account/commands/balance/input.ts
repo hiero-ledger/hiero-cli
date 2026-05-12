@@ -29,12 +29,12 @@ const TokenEntityReferenceSchema = EntityReferenceSchema.optional()
       return;
     }
   })
-  .describe('Optional specific token to query (ID or name)');
+  .describe('Optional specific token to query (ID or local name/alias)');
 
 export const AccountBalanceInputSchema = z
   .object({
     account: AccountReferenceSchema.describe(
-      'Account identifier (ID, EVM address, or name)',
+      'Account identifier (ID, EVM address, or local name/alias)',
     ),
     hbarOnly: z
       .boolean()

@@ -3,6 +3,14 @@ import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
 
 import { KeyList, PublicKey } from '@hiero-ledger/sdk';
 
+export function toNullableHederaKey(
+  keys: ResolvedPublicKey[] | null,
+  threshold: number | undefined,
+): Key | null | undefined {
+  if (keys === null) return null;
+  return toHederaKey(keys, threshold ?? keys.length);
+}
+
 export function toHederaKey(
   keys: ResolvedPublicKey[],
   threshold?: number,

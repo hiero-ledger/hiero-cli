@@ -1,6 +1,6 @@
 {
   "name": "@hiero-ledger/hiero-cli",
-  "version": "0.13.0",
+  "version": "1.0.0",
   "description": "CLI tool to manage and setup developer environments for Hiero-Ledger.",
   "main": "hiero-cli.js",
   "target": "esnext",
@@ -92,6 +92,7 @@
     "dotenv": "17.2.4",
     "eslint": "9.39.2",
     "eslint-config-prettier": "10.1.8",
+    "eslint-import-resolver-typescript": "4.4.4",
     "eslint-plugin-import": "2.32.0",
     "eslint-plugin-no-relative-import-paths": "1.6.1",
     "eslint-plugin-prettier": "5.5.5",

@@ -1,5 +1,6 @@
 {
   "name": "token-full-example",
+  "tokenName": "Token Full Example",
   "symbol": "TFE",
   "decimals": 8,
   "supplyType": "finite",

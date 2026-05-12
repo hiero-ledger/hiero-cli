@@ -7,6 +7,7 @@ import {
   KeySchema,
   NftSerialNumbersSchema,
 } from '@/core/schemas';
+import { ZOD_CUSTOM_ISSUE_CODE } from '@/core/shared/constants';
 
 export const TokenDeleteAllowanceNftInputSchema = z
   .object({
@@ -33,25 +34,25 @@ export const TokenDeleteAllowanceNftInputSchema = z
   .superRefine((data, ctx) => {
     if (!data.serials && !data.allSerials) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: ZOD_CUSTOM_ISSUE_CODE,
         message: 'Either --serials or --all-serials must be specified',
       });
     }
     if (data.serials && data.allSerials) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: ZOD_CUSTOM_ISSUE_CODE,
         message: '--serials and --all-serials are mutually exclusive',
       });
     }
     if (data.allSerials && !data.spender) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: ZOD_CUSTOM_ISSUE_CODE,
         message: '--spender is required when using --all-serials',
       });
     }
     if (data.serials && data.spender) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: ZOD_CUSTOM_ISSUE_CODE,
         message:
           '--spender is not used with --serials (allowance is deleted for all spenders)',
       });

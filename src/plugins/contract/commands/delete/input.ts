@@ -6,6 +6,7 @@ import {
   KeyManagerTypeSchema,
   KeySchema,
 } from '@/core/schemas';
+import { ZOD_CUSTOM_ISSUE_CODE } from '@/core/shared/constants';
 
 export const ContractDeleteInputSchema = z
   .object({
@@ -41,7 +42,7 @@ export const ContractDeleteInputSchema = z
       data.transferContractId === undefined
     ) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: ZOD_CUSTOM_ISSUE_CODE,
         message:
           'When deleting on Hedera, pass --transfer-id (-t) or --transfer-contract-id (-r) (required unless --state-only)',
         path: ['transferId'],
@@ -52,7 +53,7 @@ export const ContractDeleteInputSchema = z
       (data.transferId !== undefined || data.transferContractId !== undefined)
     ) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: ZOD_CUSTOM_ISSUE_CODE,
         message:
           'Do not use --transfer-id or --transfer-contract-id with --state-only',
         path: ['transferId'],
@@ -63,14 +64,14 @@ export const ContractDeleteInputSchema = z
       data.transferContractId !== undefined
     ) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: ZOD_CUSTOM_ISSUE_CODE,
         message: 'Use either transfer-id or transfer-contract-id, not both',
         path: ['transferContractId'],
       });
     }
     if (data.stateOnly && data.adminKey.length > 0) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: ZOD_CUSTOM_ISSUE_CODE,
         message: 'admin-key cannot be used with --state-only',
         path: ['adminKey'],
       });

@@ -15,6 +15,7 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import {
   resolveDestinationAccountParameter,
@@ -40,7 +41,7 @@ export class TokenAirdropNftCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<TokenAirdropNftNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
     const validArgs = TokenAirdropNftInputSchema.parse(args.args);
 
     const {
@@ -59,7 +60,8 @@ export class TokenAirdropNftCommand extends BaseTransactionCommand<
     }
 
     const keyManager =
-      keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
+      keyManagerArg ||
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
 
@@ -115,8 +117,8 @@ export class TokenAirdropNftCommand extends BaseTransactionCommand<
     const { accountId: fromAccountId, keyRefId: signerKeyRefId } =
       resolvedFromAccount;
 
-    logger.info(`🔑 Using from account: ${fromAccountId}`);
-    logger.info(
+    api.logger.info(`🔑 Using from account: ${fromAccountId}`);
+    api.logger.info(
       `Airdropping NFT ${tokenId} to ${recipients.length} recipient(s)`,
     );
 
@@ -134,8 +136,8 @@ export class TokenAirdropNftCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
     normalisedParams: TokenAirdropNftNormalizedParams,
   ): Promise<TokenAirdropNftBuildTransactionResult> {
-    const { api, logger } = args;
-    logger.debug('Building NFT airdrop transaction body');
+    const { api } = args;
+    api.logger.debug('Building NFT airdrop transaction body');
     const transaction = api.token.createAirdropNftTransaction({
       tokenId: normalisedParams.tokenId,
       senderAccountId: normalisedParams.fromAccountId,
@@ -152,8 +154,10 @@ export class TokenAirdropNftCommand extends BaseTransactionCommand<
     normalisedParams: TokenAirdropNftNormalizedParams,
     buildTransactionResult: TokenAirdropNftBuildTransactionResult,
   ): Promise<TokenAirdropNftSignTransactionResult> {
-    const { api, logger } = args;
-    logger.debug(`Using key ${normalisedParams.signerKeyRefId} for signing`);
+    const { api } = args;
+    api.logger.debug(
+      `Using key ${normalisedParams.signerKeyRefId} for signing`,
+    );
     const transaction = await api.txSign.sign(
       buildTransactionResult.transaction,
       [normalisedParams.signerKeyRefId],

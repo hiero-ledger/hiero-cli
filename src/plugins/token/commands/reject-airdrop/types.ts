@@ -1,9 +1,9 @@
 import type {
   BaseBuildTransactionResult,
+  BaseExecuteTransactionResult,
   BaseNormalizedParams,
   BaseSignTransactionResult,
   SupportedNetwork,
-  TransactionResult,
 } from '@/core';
 import type {
   AirdropTokenType,
@@ -30,6 +30,4 @@ export interface TokenRejectAirdropBuildTransactionResult extends BaseBuildTrans
 
 export interface TokenRejectAirdropSignTransactionResult extends BaseSignTransactionResult {}
 
-export interface TokenRejectAirdropExecuteTransactionResult {
-  transactionResult: TransactionResult;
-}
+export interface TokenRejectAirdropExecuteTransactionResult extends BaseExecuteTransactionResult {}

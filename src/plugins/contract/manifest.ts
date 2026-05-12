@@ -26,6 +26,11 @@ import {
   ContractImportOutputSchema,
   IMPORT_CONTRACT_TEMPLATE,
 } from './commands/import';
+import {
+  CONTRACT_UPDATE_TEMPLATE,
+  contractUpdate,
+  ContractUpdateOutputSchema,
+} from './commands/update';
 
 export const contractPluginManifest: PluginManifest = {
   name: 'contract',
@@ -287,6 +292,122 @@ export const contractPluginManifest: PluginManifest = {
       },
       requireConfirmation:
         'Are you sure you want to delete contract {{contract}}? This cannot be undone.',
+    },
+    {
+      name: 'update',
+      summary: 'Update smart contract',
+      description:
+        'Update smart contract properties on the Hedera network such as admin key, memo, auto-renew settings, staking configuration, and token associations.',
+      options: [
+        {
+          name: 'contract',
+          short: 'c',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Contract ID (0.0.xxx) or alias of the contract to update',
+        },
+        {
+          name: 'admin-key',
+          short: 'K',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'Current contract admin credential(s) used to sign the update. Pass multiple times for multiple keys. Each value may be: account ID with private key in {accountId}:{private_key} format; account public key in {ed25519|ecdsa}:public:{public-key} format; account private key in {ed25519|ecdsa}:private:{private-key} format; account ID; account name/alias; or account key reference.',
+        },
+        {
+          name: 'new-admin-key',
+          short: 'a',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'New admin key for the contract. Requires its private key in KMS to co-sign the update.',
+        },
+        {
+          name: 'new-admin-key-threshold',
+          short: 'A',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of admin keys required to sign the update transaction (only when multiple --admin-key values are set).',
+        },
+        {
+          name: 'memo',
+          short: 'm',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Contract memo (max 100 characters). Pass "null" or "" to clear.',
+        },
+        {
+          name: 'auto-renew-period',
+          short: 'r',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Auto-renew period: integer seconds, or with suffix s/m/h/d (e.g. 500, 500s, 50m, 2h, 30d)',
+        },
+        {
+          name: 'auto-renew-account-id',
+          short: 'R',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Account ID (0.0.xxx) that will pay for auto-renewal. Pass "null" to clear.',
+        },
+        {
+          name: 'max-automatic-token-associations',
+          short: 't',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'Maximum number of automatic token associations (-1 for unlimited, 0 to disable)',
+        },
+        {
+          name: 'staked-account-id',
+          short: 's',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Account ID (0.0.xxx) to stake this contract to. Mutually exclusive with --staked-node-id.',
+        },
+        {
+          name: 'staked-node-id',
+          short: 'o',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'Node ID to stake this contract to. Mutually exclusive with --staked-account-id.',
+        },
+        {
+          name: 'decline-staking-reward',
+          short: 'D',
+          type: OptionType.BOOLEAN,
+          required: false,
+          description: 'Whether to decline staking rewards for this contract',
+        },
+        {
+          name: 'expiration-time',
+          short: 'e',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Expiration time as ISO datetime string (e.g. 2025-12-31T00:00:00Z)',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: contractUpdate,
+      output: {
+        schema: ContractUpdateOutputSchema,
+        humanTemplate: CONTRACT_UPDATE_TEMPLATE,
+      },
     },
   ],
 };

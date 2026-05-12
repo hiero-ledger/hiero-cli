@@ -14,6 +14,8 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { NftAllowanceEntry } from '@/core/services/allowance';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import {
   resolveDestinationAccountParameter,
@@ -37,11 +39,11 @@ export class TokenAllowanceNftCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<AllowanceNftNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
     const validArgs = TokenAllowanceNftInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ??
-      api.config.getOption<KeyManager>('default_key_manager');
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
     const network = api.network.getCurrentNetwork();
 
     const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
@@ -80,9 +82,9 @@ export class TokenAllowanceNftCommand extends BaseTransactionCommand<
       );
     }
 
-    logger.info(`🔑 Using owner account: ${resolvedOwner.accountId}`);
-    logger.info(`🔑 Approving spender: ${resolvedSpender.accountId}`);
-    logger.info(
+    api.logger.info(`🔑 Using owner account: ${resolvedOwner.accountId}`);
+    api.logger.info(`🔑 Approving spender: ${resolvedSpender.accountId}`);
+    api.logger.info(
       validArgs.allSerials
         ? `Approving all serials of ${tokenId} for ${resolvedSpender.accountId}`
         : `Approving serials [${validArgs.serials?.join(', ')}] of ${tokenId} for ${resolvedSpender.accountId}`,
@@ -105,21 +107,17 @@ export class TokenAllowanceNftCommand extends BaseTransactionCommand<
     normalisedParams: AllowanceNftNormalizedParams,
   ): Promise<AllowanceNftBuildTransactionResult> {
     const { api } = args;
-    const transaction = api.token.createNftAllowanceApproveTransaction(
-      normalisedParams.allSerials
-        ? {
-            tokenId: normalisedParams.tokenId,
-            ownerAccountId: normalisedParams.ownerAccountId,
-            spenderAccountId: normalisedParams.spenderAccountId,
-            allSerials: true,
-          }
-        : {
-            tokenId: normalisedParams.tokenId,
-            ownerAccountId: normalisedParams.ownerAccountId,
-            spenderAccountId: normalisedParams.spenderAccountId,
-            serialNumbers: normalisedParams.serials!,
-          },
-    );
+    const transaction = api.allowance.buildAllowanceApprove([
+      new NftAllowanceEntry(
+        normalisedParams.ownerAccountId,
+        normalisedParams.spenderAccountId,
+        normalisedParams.tokenId,
+        normalisedParams.allSerials
+          ? undefined
+          : (normalisedParams.serials ?? undefined),
+        normalisedParams.allSerials ? true : undefined,
+      ),
+    ]);
     return { transaction };
   }
 
@@ -128,8 +126,8 @@ export class TokenAllowanceNftCommand extends BaseTransactionCommand<
     normalisedParams: AllowanceNftNormalizedParams,
     buildTransactionResult: AllowanceNftBuildTransactionResult,
   ): Promise<AllowanceNftSignTransactionResult> {
-    const { api, logger } = args;
-    logger.debug(
+    const { api } = args;
+    api.logger.debug(
       `Using key ${normalisedParams.signerKeyRefId} for signing transaction`,
     );
     const signedTransaction = await api.txSign.sign(
@@ -170,7 +168,9 @@ export class TokenAllowanceNftCommand extends BaseTransactionCommand<
       tokenId: normalisedParams.tokenId,
       ownerAccountId: normalisedParams.ownerAccountId,
       spenderAccountId: normalisedParams.spenderAccountId,
-      serials: normalisedParams.allSerials ? null : normalisedParams.serials,
+      serials: normalisedParams.allSerials
+        ? null
+        : (normalisedParams.serials ?? null),
       allSerials: normalisedParams.allSerials,
       network: normalisedParams.network,
     };

@@ -35,7 +35,7 @@ export class TokenUnfreezeCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<UnfreezeNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
     const validArgs = TokenUnfreezeInputSchema.parse(args.args);
 
@@ -61,21 +61,20 @@ export class TokenUnfreezeCommand extends BaseTransactionCommand<
       network,
     });
 
-    logger.info(
+    api.logger.info(
       `Unfreezing account ${accountId} for token ${tokenId} on ${network}`,
     );
 
-    const { keyRefIds } =
-      await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
-        mirrorRoleKey: tokenInfo.freeze_key,
-        explicitCredentials: validArgs.freezeKey,
-        keyManager,
-        resolveSigningKeyLabels: ['token:freeze'],
-        emptyMirrorRoleKeyMessage: 'Token has no freeze key',
-        insufficientKmsMatchesMessage:
-          'Not enough freeze key(s) found in key manager for this token. Provide --freeze-key.',
-        validationErrorOptions: { context: { tokenId } },
-      });
+    const { keyRefIds } = await api.keyResolver.resolveSigningKeys({
+      mirrorRoleKey: tokenInfo.freeze_key,
+      explicitCredentials: validArgs.freezeKey,
+      keyManager,
+      signingKeyLabels: ['token:freeze'],
+      emptyMirrorRoleKeyMessage: 'Token has no freeze key',
+      insufficientKmsMatchesMessage:
+        'Not enough freeze key(s) found in key manager for this token. Provide --freeze-key.',
+      validationErrorOptions: { context: { tokenId } },
+    });
 
     return {
       network,
@@ -89,8 +88,8 @@ export class TokenUnfreezeCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
     normalisedParams: UnfreezeNormalizedParams,
   ): Promise<UnfreezeBuildTransactionResult> {
-    const { api, logger } = args;
-    logger.debug('Building token unfreeze transaction');
+    const { api } = args;
+    api.logger.debug('Building token unfreeze transaction');
     const transaction = api.token.createUnfreezeTransaction({
       tokenId: normalisedParams.tokenId,
       accountId: normalisedParams.accountId,
@@ -103,8 +102,8 @@ export class TokenUnfreezeCommand extends BaseTransactionCommand<
     normalisedParams: UnfreezeNormalizedParams,
     buildTransactionResult: UnfreezeBuildTransactionResult,
   ): Promise<UnfreezeSignTransactionResult> {
-    const { api, logger } = args;
-    logger.debug(
+    const { api } = args;
+    api.logger.debug(
       `Using ${normalisedParams.keyRefIds.length} key(s) for signing transaction`,
     );
     const signedTransaction = await api.txSign.sign(

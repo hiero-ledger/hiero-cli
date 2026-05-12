@@ -17,6 +17,7 @@ import type {
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { StateError, ValidationError } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
@@ -44,17 +45,17 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<TokenCreateFtFromFileNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
     const validArgs = TokenCreateFtFromFileInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ??
-      api.config.getOption<KeyManager>('default_key_manager');
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
-    logger.info(`Creating fungible token from file: ${validArgs.file}`);
+    api.logger.info(`Creating fungible token from file: ${validArgs.file}`);
 
     const tokenDefinition = await readAndValidateTokenFile(
       validArgs.file,
-      logger,
+      api.logger,
     );
     const network = api.network.getCurrentNetwork();
     api.alias.availableOrThrow(tokenDefinition.name, network);
@@ -99,7 +100,7 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
       autoRenewAccountCredential !== undefined
     ) {
       if (expirationTime !== undefined) {
-        logger.warn(
+        api.logger.warn(
           'expirationTime is ignored because autoRenewPeriod is set; auto-renew period takes precedence over fixed expiration.',
         );
       }
@@ -110,7 +111,7 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
       filename: validArgs.file,
       keyManager,
       alias: tokenDefinition.name,
-      name: tokenDefinition.name,
+      name: tokenDefinition.tokenName,
       symbol: tokenDefinition.symbol,
       decimals: tokenDefinition.decimals,
       initialSupply: tokenDefinition.initialSupply,
@@ -212,12 +213,12 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
     normalisedParams: TokenCreateFtFromFileNormalizedParams,
     buildTransactionResult: TokenCreateFtFromFileBuildTransactionResult,
   ): Promise<TokenCreateFtFromFileSignTransactionResult> {
-    const { api, logger } = args;
+    const { api } = args;
     const signingKeys = [
       normalisedParams.treasury.keyRefId,
       ...normalisedParams.adminKeys.map((k) => k.keyRefId),
     ];
-    logger.info(
+    api.logger.info(
       `🔑 Signing token create with treasury${normalisedParams.adminKeys.length > 0 ? ' and admin' : ''} (${signingKeys.length} key(s))`,
     );
     const transaction = await api.txSign.sign(
@@ -257,8 +258,8 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
     _signTransactionResult: TokenCreateFtFromFileSignTransactionResult,
     executeTransactionResult: TokenCreateFtFromFileExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { api, logger } = args;
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const { api } = args;
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     const result = executeTransactionResult.transactionResult;
     const tokenData = buildTokenDataFromFile(result, normalisedParams);
 
@@ -267,14 +268,13 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
       tokenId,
       normalisedParams.associations,
       api,
-      logger,
       normalisedParams.keyManager,
     );
     tokenData.associations = successfulAssociations;
 
     const key = composeKey(normalisedParams.network, tokenId);
     tokenState.saveToken(key, tokenData);
-    logger.info('   Token data saved to state');
+    api.logger.info('   Token data saved to state');
 
     if (normalisedParams.alias && result.tokenId) {
       api.alias.register({
@@ -284,7 +284,7 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
         entityId: tokenId,
         createdAt: result.consensusTimestamp,
       });
-      logger.info(`   Name registered: ${normalisedParams.alias}`);
+      api.logger.info(`   Name registered: ${normalisedParams.alias}`);
     }
 
     const associations: TokenCreateFtFromFileAssociationOutput[] =

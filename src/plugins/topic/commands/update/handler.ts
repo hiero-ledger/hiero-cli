@@ -44,14 +44,14 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<UpdateTopicNormalisedParams> {
-    const { api, logger } = args;
+    const { api } = args;
     const validArgs = TopicUpdateInputSchema.parse(args.args);
 
     const network = api.network.getCurrentNetwork();
     const topicId = resolveTopicId(validArgs.topic, api.alias, network);
 
     const stateKey = composeKey(network, topicId);
-    const topicState = new ZustandTopicStateHelper(api.state, logger);
+    const topicState = new ZustandTopicStateHelper(api.state, api.logger);
     const storedTopicData = topicState.loadTopic(stateKey);
     if (!storedTopicData) {
       throw new NotFoundError(
@@ -123,20 +123,20 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
 
     let currentAdminKeyRefIds: string[] = [];
     if (hasAdminKey && !isExpirationOnlyUpdate) {
-      const { keyRefIds } =
-        await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
-          mirrorRoleKey: topicInfo.admin_key,
-          explicitCredentials: [],
-          keyManager,
-          emptyMirrorRoleKeyMessage: 'Topic has no admin key on the network',
-          insufficientKmsMatchesMessage:
-            'Not enough admin key(s) found in key manager for this topic.',
-          validationErrorOptions: { context: { topicId } },
-        });
+      const { keyRefIds } = await api.keyResolver.resolveSigningKeys({
+        mirrorRoleKey: topicInfo.admin_key,
+        explicitCredentials: [],
+        keyManager,
+        signingKeyLabels: ['topic:admin'],
+        emptyMirrorRoleKeyMessage: 'Topic has no admin key on the network',
+        insufficientKmsMatchesMessage:
+          'Not enough admin key(s) found in key manager for this topic.',
+        validationErrorOptions: { context: { topicId } },
+      });
       currentAdminKeyRefIds = keyRefIds;
     }
 
-    logger.info(`Updating topic ${topicId} on ${network}`);
+    api.logger.info(`Updating topic ${topicId} on ${network}`);
 
     return {
       topicId,
@@ -254,7 +254,7 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
       );
     }
 
-    return result;
+    return { transactionResult: result };
   }
 
   async outputPreparation(
@@ -264,8 +264,9 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
     _signTransactionResult: UpdateTopicSignTransactionResult,
     executeTransactionResult: UpdateTopicExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { api, logger } = args;
-    const topicState = new ZustandTopicStateHelper(api.state, logger);
+    const { transactionResult } = executeTransactionResult;
+    const { api } = args;
+    const topicState = new ZustandTopicStateHelper(api.state, api.logger);
     const existing = normalisedParams.existingTopicData;
 
     const updatedFields: string[] = [];
@@ -374,7 +375,7 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
       autoRenewAccount: updatedAutoRenewAccount,
       autoRenewPeriod: updatedAutoRenewPeriod,
       expirationTime: updatedExpirationTime,
-      transactionId: executeTransactionResult.transactionId || '',
+      transactionId: transactionResult.transactionId || '',
     };
 
     return { result: outputData };

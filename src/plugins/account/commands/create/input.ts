@@ -8,6 +8,7 @@ import {
   KeySchema,
   KeyTypeSchema,
 } from '@/core/schemas';
+import { ZOD_CUSTOM_ISSUE_CODE } from '@/core/shared/constants';
 
 export const AccountCreateInputSchema = z
   .object({
@@ -41,7 +42,7 @@ export const AccountCreateInputSchema = z
   .superRefine((data, ctx) => {
     if (data.key !== undefined && data.keyType !== undefined) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: ZOD_CUSTOM_ISSUE_CODE,
         message: 'Cannot specify both --key and --key-type',
         path: ['keyType'],
       });

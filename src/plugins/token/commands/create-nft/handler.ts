@@ -10,6 +10,7 @@ import type {
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { StateError } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { AliasType, SupplyType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
@@ -38,11 +39,11 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<TokenCreateNftNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
     const validArgs = TokenCreateNftInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ??
-      api.config.getOption<KeyManager>('default_key_manager');
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
     const maxSupply = validArgs.maxSupply
       ? processTokenBalanceInput(validArgs.maxSupply, 0)
       : undefined;
@@ -120,20 +121,22 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
     let finalMaxSupply: bigint | undefined;
     if (validArgs.supplyType === SupplyType.FINITE) {
       finalMaxSupply = determineFiniteMaxSupply(maxSupply, 0n);
-      logger.info(`Max supply: ${finalMaxSupply}`);
+      api.logger.info(`Max supply: ${finalMaxSupply}`);
     } else if (maxSupply !== undefined) {
-      logger.warn(
+      api.logger.warn(
         'Max supply specified for INFINITE supply type - ignoring max supply parameter',
       );
     }
 
-    logger.info(`Creating NFT: ${validArgs.tokenName} (${validArgs.symbol})`);
-    logger.debug('=== NFT PARAMS DEBUG ===');
-    logger.debug(`Treasury ID: ${treasury.keyRefId}`);
-    logger.debug(`Admin Keys count: ${admin.length}`);
-    logger.debug(`Supply Keys count: ${supply.length}`);
-    logger.debug(`Use Custom Treasury: ${String(Boolean(treasury))}`);
-    logger.debug('=========================');
+    api.logger.info(
+      `Creating NFT: ${validArgs.tokenName} (${validArgs.symbol})`,
+    );
+    api.logger.debug('=== NFT PARAMS DEBUG ===');
+    api.logger.debug(`Treasury ID: ${treasury.keyRefId}`);
+    api.logger.debug(`Admin Keys count: ${admin.length}`);
+    api.logger.debug(`Supply Keys count: ${supply.length}`);
+    api.logger.debug(`Use Custom Treasury: ${String(Boolean(treasury))}`);
+    api.logger.debug('=========================');
 
     return {
       name: validArgs.tokenName,
@@ -285,8 +288,8 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
     _signTransactionResult: TokenCreateNftSignTransactionResult,
     executeTransactionResult: TokenCreateNftExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { api, logger } = args;
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const { api } = args;
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     const result = executeTransactionResult.transactionResult;
     const tokenId = result.tokenId ?? '';
 
@@ -321,7 +324,7 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
 
     const key = composeKey(normalisedParams.network, tokenId);
     tokenState.saveToken(key, tokenData);
-    logger.info('   Non-fungible token data saved to state');
+    api.logger.info('   Non-fungible token data saved to state');
 
     if (normalisedParams.alias) {
       api.alias.register({
@@ -331,7 +334,7 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
         entityId: tokenId,
         createdAt: result.consensusTimestamp,
       });
-      logger.info(`   Name registered: ${normalisedParams.alias}`);
+      api.logger.info(`   Name registered: ${normalisedParams.alias}`);
     }
 
     const outputData: TokenCreateNftOutput = {

@@ -37,7 +37,7 @@ export class TokenClaimAirdropCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<TokenClaimAirdropNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
     const validArgs = TokenClaimAirdropInputSchema.parse(args.args);
 
     const network = api.network.getCurrentNetwork();
@@ -48,7 +48,7 @@ export class TokenClaimAirdropCommand extends BaseTransactionCommand<
         network,
       });
 
-    logger.info(`Fetching pending airdrops for ${receiverAccountId}...`);
+    api.logger.info(`Fetching pending airdrops for ${receiverAccountId}...`);
     const response = await api.mirror.getPendingAirdrops(receiverAccountId);
     const allAirdrops = response.airdrops;
 
@@ -61,7 +61,7 @@ export class TokenClaimAirdropCommand extends BaseTransactionCommand<
     ];
     const tokenInfoMap = await this.fetchTokenInfoMap(
       api.mirror,
-      logger,
+      api.logger,
       uniqueTokenIds,
     );
 
@@ -93,7 +93,7 @@ export class TokenClaimAirdropCommand extends BaseTransactionCommand<
       throw new ValidationError(`Failed to resolve signing account for claim`);
     }
 
-    logger.info(
+    api.logger.info(
       `Claiming ${claimItems.length} airdrop(s) for ${receiverAccountId}`,
     );
 
@@ -111,8 +111,8 @@ export class TokenClaimAirdropCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
     normalizedParams: TokenClaimAirdropNormalizedParams,
   ): Promise<TokenClaimAirdropBuildTransactionResult> {
-    const { api, logger } = args;
-    logger.debug('Building claim airdrop transaction body');
+    const { api } = args;
+    api.logger.debug('Building claim airdrop transaction body');
 
     const transaction = api.token.createClaimAirdropTransaction({
       items: normalizedParams.claimItems,
@@ -126,8 +126,10 @@ export class TokenClaimAirdropCommand extends BaseTransactionCommand<
     normalizedParams: TokenClaimAirdropNormalizedParams,
     buildResult: TokenClaimAirdropBuildTransactionResult,
   ): Promise<TokenClaimAirdropSignTransactionResult> {
-    const { api, logger } = args;
-    logger.debug(`Using key ${normalizedParams.signerKeyRefId} for signing`);
+    const { api } = args;
+    api.logger.debug(
+      `Using key ${normalizedParams.signerKeyRefId} for signing`,
+    );
 
     const signedTransaction = await api.txSign.sign(buildResult.transaction, [
       normalizedParams.signerKeyRefId,

@@ -1,5 +1,6 @@
 {
   "name": "token-keys-example",
+  "tokenName": "Token Keys Example",
   "symbol": "TRK",
   "decimals": 10,
   "supplyType": "infinite",

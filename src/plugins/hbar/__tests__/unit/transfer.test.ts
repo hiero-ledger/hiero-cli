@@ -5,6 +5,7 @@ import { ZodError } from 'zod';
 import { makeArgs } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { StateError, ValidationError } from '@/core/errors';
+import { HbarTransferEntry } from '@/core/services/transfer';
 import {
   hbarTransfer,
   HbarTransferOutputSchema,
@@ -28,10 +29,10 @@ describe('hbar plugin - transfer command (unit)', () => {
   });
 
   test('transfers HBAR successfully when all params provided', async () => {
-    const { api, logger, hbar, txExecute } = setupTransferTest({
+    const { api, logger, transfer, txExecute } = setupTransferTest({
       transferImpl: jest
         .fn()
-        .mockResolvedValue(mockTransferTransactionResults.empty),
+        .mockReturnValue(mockTransferTransactionResults.empty.transaction),
       signAndExecuteImpl: jest
         .fn()
         .mockResolvedValue(mockTransactionResults.success),
@@ -52,12 +53,16 @@ describe('hbar plugin - transfer command (unit)', () => {
     );
     expect(output.toAccountId).toBe(mockAccountIds.receiver);
 
-    expect(hbar.transferTinybar).toHaveBeenCalledWith({
-      amount: mockParsedBalances.large,
-      from: mockAccountIds.sender,
-      to: mockAccountIds.receiver,
-      memo: 'test-transfer',
-    });
+    expect(transfer.buildTransferTransaction).toHaveBeenCalledWith(
+      [
+        new HbarTransferEntry(
+          mockAccountIds.sender,
+          mockAccountIds.receiver,
+          mockParsedBalances.large,
+        ),
+      ],
+      'test-transfer',
+    );
     expect(txExecute.execute).toHaveBeenCalled();
     expect(logger.info).toHaveBeenCalledWith('[HBAR] Transfer command invoked');
     expect(logger.info).toHaveBeenCalledWith(
@@ -103,7 +108,7 @@ describe('hbar plugin - transfer command (unit)', () => {
     const { api, logger } = setupTransferTest({
       transferImpl: jest
         .fn()
-        .mockResolvedValue(mockTransferTransactionResults.empty),
+        .mockReturnValue(mockTransferTransactionResults.empty.transaction),
       signAndExecuteImpl: jest
         .fn()
         .mockResolvedValue(mockTransactionResults.successGeneric),
@@ -146,11 +151,11 @@ describe('hbar plugin - transfer command (unit)', () => {
     await expect(hbarTransfer(args)).rejects.toThrow(ValidationError);
   });
 
-  test('returns failure when transferTinybar fails', async () => {
+  test('returns failure when buildTransferTransaction fails', async () => {
     const { api, logger } = setupTransferTest({
-      transferImpl: jest
-        .fn()
-        .mockRejectedValue(new Error('Network connection failed')),
+      transferImpl: jest.fn().mockImplementation(() => {
+        throw new Error('Network connection failed');
+      }),
     });
 
     const args = makeArgs(api, logger, {
@@ -178,10 +183,10 @@ describe('hbar plugin - transfer command (unit)', () => {
   });
 
   test('uses default credentials as from when not provided', async () => {
-    const { api, logger, hbar } = setupTransferTest({
+    const { api, logger, transfer } = setupTransferTest({
       transferImpl: jest
         .fn()
-        .mockResolvedValue(mockTransferTransactionResults.empty),
+        .mockReturnValue(mockTransferTransactionResults.empty.transaction),
       signAndExecuteImpl: jest
         .fn()
         .mockResolvedValue(mockTransactionResults.successDefault),
@@ -199,12 +204,16 @@ describe('hbar plugin - transfer command (unit)', () => {
 
     expect(output).toBeDefined();
 
-    expect(hbar.transferTinybar).toHaveBeenCalledWith({
-      amount: mockParsedBalances.medium,
-      from: mockAccountIds.default,
-      to: mockAccountIds.receiver,
-      memo: undefined,
-    });
+    expect(transfer.buildTransferTransaction).toHaveBeenCalledWith(
+      [
+        new HbarTransferEntry(
+          mockAccountIds.default,
+          mockAccountIds.receiver,
+          mockParsedBalances.medium,
+        ),
+      ],
+      undefined,
+    );
     expect(logger.info).toHaveBeenCalledWith(
       `[HBAR] Transfer submitted successfully, txId=${mockTransactionResults.successDefault.transactionId}`,
     );

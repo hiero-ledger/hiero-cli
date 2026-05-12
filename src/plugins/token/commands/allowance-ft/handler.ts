@@ -10,12 +10,14 @@ import type {
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { NotFoundError, TransactionError } from '@/core/errors';
+import { FtAllowanceEntry } from '@/core/services/allowance';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
+import { isRawUnits } from '@/core/utils/amount-helpers';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import {
   resolveDestinationAccountParameter,
   resolveTokenParameter,
 } from '@/plugins/token/resolver-helper';
-import { isRawUnits } from '@/plugins/token/utils/token-amount-helpers';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { TokenAllowanceFtInputSchema } from './input';
@@ -35,12 +37,12 @@ export class TokenAllowanceFtCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<TokenAllowanceFtNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
     const validArgs = TokenAllowanceFtInputSchema.parse(args.args);
 
     const keyManager =
       validArgs.keyManager ??
-      api.config.getOption<KeyManager>('default_key_manager');
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
 
@@ -52,7 +54,7 @@ export class TokenAllowanceFtCommand extends BaseTransactionCommand<
     }
     const tokenId = resolvedToken.tokenId;
 
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     let tokenDecimals = 0;
     if (!isRawUnits(validArgs.amount)) {
       const tokenInfoStorage = tokenState.getToken(tokenId);
@@ -87,7 +89,7 @@ export class TokenAllowanceFtCommand extends BaseTransactionCommand<
       );
     }
 
-    logger.info(
+    api.logger.info(
       `Approving ${rawAmount.toString()} tokens of ${tokenId} for spender ${resolvedSpender.accountId}`,
     );
 
@@ -107,12 +109,14 @@ export class TokenAllowanceFtCommand extends BaseTransactionCommand<
     normalisedParams: TokenAllowanceFtNormalizedParams,
   ): Promise<TokenAllowanceFtBuildTransactionResult> {
     const { api } = args;
-    const transaction = api.token.createFungibleTokenAllowanceTransaction({
-      tokenId: normalisedParams.tokenId,
-      ownerAccountId: normalisedParams.ownerAccountId,
-      spenderAccountId: normalisedParams.spenderAccountId,
-      amount: normalisedParams.rawAmount,
-    });
+    const transaction = api.allowance.buildAllowanceApprove([
+      new FtAllowanceEntry(
+        normalisedParams.ownerAccountId,
+        normalisedParams.spenderAccountId,
+        normalisedParams.tokenId,
+        normalisedParams.rawAmount,
+      ),
+    ]);
     return { transaction };
   }
 

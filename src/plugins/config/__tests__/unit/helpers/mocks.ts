@@ -6,7 +6,6 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { IdentityResolutionService } from '@/core/services/identity-resolution/identity-resolution-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
-import type { StateService } from '@/core/services/state/state-service.interface';
 
 export const makeLogger = (): jest.Mocked<Logger> => ({
   info: jest.fn(),
@@ -52,8 +51,5 @@ export const makeCommandArgs = (params: {
     ...(params.args || {}),
   },
   api: params.api,
-  state: {} as unknown as StateService,
-  config: params.api.config,
-  logger: params.logger || makeLogger(),
   hooks: new Map(),
 });

@@ -11,15 +11,15 @@ import { AccountListInputSchema } from './input';
 
 export class AccountListCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    const accountState = new ZustandAccountStateHelper(api.state, logger);
+    const accountState = new ZustandAccountStateHelper(api.state, api.logger);
 
     const validArgs = AccountListInputSchema.parse(args.args);
 
     const showPrivateKeys = validArgs.private;
 
-    logger.info('Listing all accounts...');
+    api.logger.info('Listing all accounts...');
 
     const accounts = accountState.listAccounts();
 

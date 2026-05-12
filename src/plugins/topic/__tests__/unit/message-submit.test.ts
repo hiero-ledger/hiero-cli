@@ -171,7 +171,7 @@ describe('topic plugin - message-submit command', () => {
     const kms = makeKmsMock();
     const keyResolverMock = {
       ...makeKeyResolverMock({ network: networkMock, alias, kms }),
-      resolveSigningKeyRefIdsFromMirrorRoleKey: jest.fn().mockResolvedValue({
+      resolveSigningKeys: jest.fn().mockResolvedValue({
         keyRefIds: [MOCK_TOPIC_SUBMIT_KEY_REF_ID],
         requiredSignatures: 1,
       }),

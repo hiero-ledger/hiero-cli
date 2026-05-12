@@ -2,7 +2,7 @@ import type {
   ContractExecuteTransaction,
   Transaction,
 } from '@hiero-ledger/sdk';
-import type { SupportedNetwork, TransactionResult } from '@/core';
+import type { BaseExecuteTransactionResult, SupportedNetwork } from '@/core';
 
 export interface ContractErc20ApproveNormalizedParams {
   contractId: string;
@@ -20,6 +20,4 @@ export interface ContractErc20ApproveSignTransactionResult {
   signedTransaction: Transaction;
 }
 
-export interface ContractErc20ApproveExecuteTransactionResult {
-  transactionResult: TransactionResult;
-}
+export interface ContractErc20ApproveExecuteTransactionResult extends BaseExecuteTransactionResult {}

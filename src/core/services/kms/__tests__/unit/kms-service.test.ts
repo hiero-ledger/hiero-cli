@@ -15,6 +15,7 @@ import { AccountId, Client, PrivateKey, PublicKey } from '@hiero-ledger/sdk';
 
 import { makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
 import { ConfigurationError, NotFoundError } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { KmsServiceImpl } from '@/core/services/kms/kms-service';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
@@ -112,7 +113,7 @@ const setupService = (options?: { ed25519Enabled?: boolean }) => {
   const state = makeStateMock() as StateService;
   const configService = {
     getOption: jest.fn((name: string) => {
-      if (name === 'ed25519_support_enabled') {
+      if (name === (ConfigOptionKey.ed25519_support_enabled as string)) {
         return options?.ed25519Enabled ?? false;
       }
       return undefined;

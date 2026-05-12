@@ -38,32 +38,31 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
     keyManager: KeyManager,
     topicId: string,
   ): Promise<string[]> {
-    const { api, logger } = args;
+    const { api } = args;
 
     if (!topicInfo.submit_key) {
-      logger.info(`Submitting to public topic (no submit key required)`);
+      api.logger.info(`Submitting to public topic (no submit key required)`);
       return [];
     }
 
-    const { keyRefIds } =
-      await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
-        mirrorRoleKey: topicInfo.submit_key,
-        explicitCredentials: signerArgs,
-        keyManager,
-        resolveSigningKeyLabels: ['topic:submit'],
-        emptyMirrorRoleKeyMessage: 'Topic has no submit key on the network',
-        insufficientKmsMatchesMessage:
-          'Not enough submit key(s) found in key manager for this topic. Provide --signer.',
-        validationErrorOptions: { context: { topicId } },
-      });
-    logger.info(`Using ${keyRefIds.length} signer(s) for submit key`);
+    const { keyRefIds } = await api.keyResolver.resolveSigningKeys({
+      mirrorRoleKey: topicInfo.submit_key,
+      explicitCredentials: signerArgs,
+      keyManager,
+      signingKeyLabels: ['topic:submit'],
+      emptyMirrorRoleKeyMessage: 'Topic has no submit key on the network',
+      insufficientKmsMatchesMessage:
+        'Not enough submit key(s) found in key manager for this topic. Provide --signer.',
+      validationErrorOptions: { context: { topicId } },
+    });
+    api.logger.info(`Using ${keyRefIds.length} signer(s) for submit key`);
     return keyRefIds;
   }
 
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<SubmitMessageNormalisedParams> {
-    const { api, logger } = args;
+    const { api } = args;
     const validArgs = TopicSubmitMessageInputSchema.parse(args.args);
 
     const topicIdOrAlias = validArgs.topic;
@@ -84,7 +83,7 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
     if (topicAliasResult?.entityId) {
       topicId = topicAliasResult.entityId;
     }
-    logger.info(`Submitting message to topic: ${topicId}`);
+    api.logger.info(`Submitting message to topic: ${topicId}`);
 
     const topicInfo = await api.mirror.getTopicInfo(topicId);
     const signerKeyRefIds = await this.resolveSubmitSigners(
@@ -154,7 +153,7 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
       );
     }
 
-    return txResult;
+    return { transactionResult: txResult };
   }
 
   async outputPreparation(
@@ -164,11 +163,12 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
     _signTransactionResult: SubmitMessageSignTransactionResult,
     executeTransactionResult: SubmitMessageExecuteTransactionResult,
   ): Promise<CommandResult> {
+    const { transactionResult } = executeTransactionResult;
     const outputData: TopicSubmitMessageOutput = {
       topicId: normalisedParams.topicId,
       message: normalisedParams.message,
-      sequenceNumber: executeTransactionResult.topicSequenceNumber ?? 0,
-      transactionId: executeTransactionResult.transactionId || '',
+      sequenceNumber: transactionResult.topicSequenceNumber ?? 0,
+      transactionId: transactionResult.transactionId || '',
       submittedAt: new Date().toISOString(),
       network: normalisedParams.currentNetwork,
     };

@@ -10,6 +10,7 @@ import type {
 } from './types';
 
 import { ValidationError } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { ERROR_MESSAGES } from '@/plugins/network/error-messages';
 
 import { NetworkSetOperatorInputSchema } from './input';
@@ -22,7 +23,7 @@ const normalizeParams = (
 
   const keyManager =
     validArgs.keyManager ||
-    api.config.getOption<KeyManager>('default_key_manager');
+    api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
   const targetNetwork =
     (validArgs.network as SupportedNetwork) || api.network.getCurrentNetwork();
@@ -43,7 +44,7 @@ const normalizeParams = (
 
 export class NetworkSetOperatorCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { logger, api } = args;
+    const { api } = args;
     const normalisedParams = normalizeParams(args);
     const operator = await api.keyResolver.resolveAccountCredentials(
       normalisedParams.operatorArg,
@@ -57,11 +58,11 @@ export class NetworkSetOperatorCommand implements Command {
     };
 
     if (executeContext.existingOperator) {
-      logger.info(
+      api.logger.info(
         `Overwriting existing operator for ${normalisedParams.targetNetwork}: ${executeContext.existingOperator.accountId} -> ${executeContext.operator.accountId}`,
       );
     } else {
-      logger.info(
+      api.logger.info(
         `Setting new operator for network ${normalisedParams.targetNetwork}`,
       );
     }

@@ -37,9 +37,6 @@ describe('Mint NFT Integration Tests', () => {
     const createAccountResult = await accountCreate({
       args: createAccountArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
 
     const createAccountOutput =
@@ -56,9 +53,6 @@ describe('Mint NFT Integration Tests', () => {
     const viewAccountResult = await accountView({
       args: viewAccountArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const viewAccountOutput = viewAccountResult.result as AccountViewOutput;
     expect(viewAccountOutput.accountId).toBe(createAccountOutput.accountId);
@@ -79,9 +73,6 @@ describe('Mint NFT Integration Tests', () => {
     const createNftResult = await tokenCreateNft({
       args: createNftArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const createNftOutput = createNftResult.result as TokenCreateNftOutput;
     expect(createNftOutput.network).toBe(network);
@@ -101,9 +92,6 @@ describe('Mint NFT Integration Tests', () => {
     const mintNftResult = await tokenMintNft({
       args: mintNftArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const mintNftOutput = mintNftResult.result as TokenMintNftOutput;
     expect(mintNftOutput.tokenId).toBe(createNftOutput.tokenId);
@@ -120,9 +108,6 @@ describe('Mint NFT Integration Tests', () => {
     const viewTokenResult = await tokenView({
       args: viewTokenArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const viewTokenOutput = viewTokenResult.result as TokenViewOutput;
     expect(viewTokenOutput.tokenId).toBe(createNftOutput.tokenId);

@@ -115,8 +115,8 @@ export class DeleteContractCommand extends BaseTransactionCommand<
     stateKey: string;
     contractRef: string;
   } {
-    const { api, logger } = args;
-    const contractState = new ZustandContractStateHelper(api.state, logger);
+    const { api } = args;
+    const contractState = new ZustandContractStateHelper(api.state, api.logger);
     const validArgs = parsedInput ?? ContractDeleteInputSchema.parse(args.args);
     const contractRef = validArgs.contract;
     const network = api.network.getCurrentNetwork();
@@ -146,8 +146,8 @@ export class DeleteContractCommand extends BaseTransactionCommand<
     contractRef: string;
     mirrorContractInfo: ContractInfo | null;
   }> {
-    const { api, logger } = args;
-    const contractState = new ZustandContractStateHelper(api.state, logger);
+    const { api } = args;
+    const contractState = new ZustandContractStateHelper(api.state, api.logger);
     const validArgs = parsedInput ?? ContractDeleteInputSchema.parse(args.args);
     const contractRef = validArgs.contract;
     const network = api.network.getCurrentNetwork();
@@ -186,7 +186,7 @@ export class DeleteContractCommand extends BaseTransactionCommand<
       memo: contractInfo.memo || undefined,
     };
 
-    logger.info(
+    api.logger.info(
       `Contract not in local state; using mirror info for ${contractToDelete.contractId}`,
     );
 
@@ -277,11 +277,11 @@ export class DeleteContractCommand extends BaseTransactionCommand<
     }
 
     const { keyRefIds: signingKeyRefIds, requiredSignatures } =
-      await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
+      await api.keyResolver.resolveSigningKeys({
         mirrorRoleKey: contractInfo.admin_key,
         explicitCredentials: validArgs.adminKey,
         keyManager,
-        resolveSigningKeyLabels: ['contract:admin'],
+        signingKeyLabels: ['contract:admin'],
         emptyMirrorRoleKeyMessage:
           'This contract has no admin key on Hedera. On-network deletion is not possible. You can remove it from local CLI state only using --state-only flag.',
         insufficientKmsMatchesMessage:
@@ -371,7 +371,11 @@ export class DeleteContractCommand extends BaseTransactionCommand<
     signTransactionResult: ContractDeleteSignTransactionResult,
   ): Promise<ContractDeleteExecuteTransactionResult> {
     const { api } = args;
-    return api.txExecute.execute(signTransactionResult.signedTransaction);
+    return {
+      transactionResult: await api.txExecute.execute(
+        signTransactionResult.signedTransaction,
+      ),
+    };
   }
 
   async outputPreparation(
@@ -381,15 +385,16 @@ export class DeleteContractCommand extends BaseTransactionCommand<
     _signTransactionResult: ContractDeleteSignTransactionResult,
     executeTransactionResult: ContractDeleteExecuteTransactionResult,
   ): Promise<CommandResult> {
+    const { transactionResult } = executeTransactionResult;
     const { api } = args;
 
-    if (!executeTransactionResult.success) {
+    if (!transactionResult.success) {
       throw new TransactionError(
-        `Failed to delete contract (txId: ${executeTransactionResult.transactionId})`,
+        `Failed to delete contract (txId: ${transactionResult.transactionId})`,
         false,
         {
           context: {
-            transactionId: executeTransactionResult.transactionId,
+            transactionId: transactionResult.transactionId,
             network: normalisedParams.network,
           },
         },
@@ -409,7 +414,7 @@ export class DeleteContractCommand extends BaseTransactionCommand<
       },
       removedAliases,
       network: normalisedParams.network,
-      transactionId: executeTransactionResult.transactionId,
+      transactionId: transactionResult.transactionId,
       stateOnly: false,
     };
 

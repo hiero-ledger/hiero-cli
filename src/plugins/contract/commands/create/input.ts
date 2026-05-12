@@ -15,6 +15,7 @@ import {
   OptionalDefaultEmptyKeyListSchema,
   SolidityCompilerVersion,
 } from '@/core/schemas';
+import { ZOD_CUSTOM_ISSUE_CODE } from '@/core/shared/constants';
 import { applyKeyThresholdSuperRefine } from '@/core/utils/key-threshold-input-schema';
 import { DefaultTemplateSchema } from '@/plugins/contract/utils/contract-file-helpers';
 
@@ -89,7 +90,7 @@ export const ContractCreateSchema = contractCreateInputObjectSchema
 
     if (data.stakedAccountId !== undefined && data.stakedNodeId !== undefined) {
       context.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: ZOD_CUSTOM_ISSUE_CODE,
         message: 'Cannot specify both --staked-account-id and --staked-node-id',
         path: ['stakedNodeId'],
       });

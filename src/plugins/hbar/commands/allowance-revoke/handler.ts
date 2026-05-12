@@ -10,6 +10,7 @@ import type {
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { NotFoundError, TransactionError } from '@/core/errors';
+import { HbarAllowanceEntry } from '@/core/services/allowance';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 
 import { HbarAllowanceRevokeInputSchema } from './input';
@@ -35,9 +36,9 @@ export class HbarAllowanceRevokeCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<AllowanceRevokeNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    logger.info('[HBAR] Allowance revoke command invoked');
+    api.logger.info('[HBAR] Allowance revoke command invoked');
 
     const validArgs = HbarAllowanceRevokeInputSchema.parse(args.args);
     const keyManager =
@@ -63,7 +64,7 @@ export class HbarAllowanceRevokeCommand extends BaseTransactionCommand<
       );
     }
 
-    logger.info(
+    api.logger.info(
       `[HBAR] Revoking allowance for spender ${resolvedSpender.accountId}`,
     );
 
@@ -81,13 +82,15 @@ export class HbarAllowanceRevokeCommand extends BaseTransactionCommand<
   ): Promise<AllowanceRevokeBuildTransactionResult> {
     const { api } = args;
 
-    const result = api.hbar.createHbarAllowanceTransaction({
-      ownerAccountId: normalizedParams.ownerAccountId,
-      spenderAccountId: normalizedParams.spenderAccountId,
-      amountTinybar: 0n,
-    });
+    const transaction = api.allowance.buildAllowanceApprove([
+      new HbarAllowanceEntry(
+        normalizedParams.ownerAccountId,
+        normalizedParams.spenderAccountId,
+        0n,
+      ),
+    ]);
 
-    return { transaction: result.transaction };
+    return { transaction };
   }
 
   async signTransaction(
@@ -119,7 +122,7 @@ export class HbarAllowanceRevokeCommand extends BaseTransactionCommand<
       );
     }
 
-    return result;
+    return { transactionResult: result };
   }
 
   async outputPreparation(
@@ -129,17 +132,18 @@ export class HbarAllowanceRevokeCommand extends BaseTransactionCommand<
     _signResult: AllowanceRevokeSignTransactionResult,
     executeResult: AllowanceRevokeExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { logger } = args;
+    const { transactionResult } = executeResult;
+    const { api } = args;
 
-    logger.info(
-      `[HBAR] Allowance revoked successfully, txId=${executeResult.transactionId}`,
+    api.logger.info(
+      `[HBAR] Allowance revoked successfully, txId=${transactionResult.transactionId}`,
     );
 
     const outputData: HbarAllowanceRevokeOutput = {
       ownerAccountId: normalizedParams.ownerAccountId,
       spenderAccountId: normalizedParams.spenderAccountId,
       amountTinybar: 0n,
-      transactionId: executeResult.transactionId || '',
+      transactionId: transactionResult.transactionId || '',
       network: normalizedParams.network,
     };
 

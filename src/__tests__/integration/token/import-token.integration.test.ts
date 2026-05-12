@@ -42,9 +42,6 @@ describe('Import Token Integration Tests', () => {
     const createTokenResult = await tokenCreateFt({
       args: createTokenArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
 
     const createTokenOutput = createTokenResult.result as TokenCreateFtOutput;
@@ -61,9 +58,6 @@ describe('Import Token Integration Tests', () => {
     await tokenDelete({
       args: { token: tokenId, stateOnly: true },
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
   });
 
@@ -71,9 +65,6 @@ describe('Import Token Integration Tests', () => {
     await tokenDelete({
       args: { token: tokenId },
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
   });
 
@@ -84,9 +75,6 @@ describe('Import Token Integration Tests', () => {
     const importTokenResult = await tokenImport({
       args: importTokenArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
 
     const importTokenOutput = importTokenResult.result as TokenImportOutput;
@@ -99,9 +87,6 @@ describe('Import Token Integration Tests', () => {
     const listTokenResult = await tokenList({
       args: listTokenArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const listTokenOutput = listTokenResult.result as TokenListOutput;
     const token = listTokenOutput.tokens.find((t) => t.tokenId === tokenId);
@@ -119,9 +104,6 @@ describe('Import Token Integration Tests', () => {
     const importTokenResult = await tokenImport({
       args: importTokenArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
 
     const importTokenOutput = importTokenResult.result as TokenImportOutput;
@@ -134,9 +116,6 @@ describe('Import Token Integration Tests', () => {
     const listTokenResult = await tokenList({
       args: listTokenArgs,
       api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
     });
     const listTokenOutput = listTokenResult.result as TokenListOutput;
     const token = listTokenOutput.tokens.find((t) => t.tokenId === tokenId);

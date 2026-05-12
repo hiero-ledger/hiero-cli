@@ -1,6 +1,6 @@
 import type { CoreApi, TransactionResult } from '@/core';
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
-import type { ResolveSigningKeyRefIdsFromMirrorRoleKeyResult } from '@/core/services/key-resolver/types';
+import type { SigningKeysResult } from '@/core/services/key-resolver/types';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 
 import {
@@ -359,14 +359,11 @@ describe('topic plugin - delete command (ADR-007)', () => {
       alias.list = jest.fn().mockReturnValue([]);
       const network = makeNetworkMock(SupportedNetwork.TESTNET);
 
-      const keyResolver: Pick<
-        KeyResolverService,
-        'resolveSigningKeyRefIdsFromMirrorRoleKey'
-      > = {
-        resolveSigningKeyRefIdsFromMirrorRoleKey: jest.fn().mockResolvedValue({
+      const keyResolver: Pick<KeyResolverService, 'resolveSigningKeys'> = {
+        resolveSigningKeys: jest.fn().mockResolvedValue({
           keyRefIds: [MOCK_TOPIC_ADMIN_KEY_REF_ID],
           requiredSignatures: 1,
-        } satisfies ResolveSigningKeyRefIdsFromMirrorRoleKeyResult),
+        } satisfies SigningKeysResult),
       };
 
       const api: Partial<CoreApi> = {
@@ -471,14 +468,11 @@ describe('topic plugin - delete command (ADR-007)', () => {
       alias.list = jest.fn().mockReturnValue([]);
       const network = makeNetworkMock(SupportedNetwork.TESTNET);
 
-      const keyResolver: Pick<
-        KeyResolverService,
-        'resolveSigningKeyRefIdsFromMirrorRoleKey'
-      > = {
-        resolveSigningKeyRefIdsFromMirrorRoleKey: jest.fn().mockResolvedValue({
+      const keyResolver: Pick<KeyResolverService, 'resolveSigningKeys'> = {
+        resolveSigningKeys: jest.fn().mockResolvedValue({
           keyRefIds: [MOCK_TOPIC_ADMIN_KEY_REF_ID],
           requiredSignatures: 1,
-        } satisfies ResolveSigningKeyRefIdsFromMirrorRoleKeyResult),
+        } satisfies SigningKeysResult),
       };
 
       const api: Partial<CoreApi> = {
@@ -533,14 +527,11 @@ describe('topic plugin - delete command (ADR-007)', () => {
       alias.list = jest.fn().mockReturnValue([]);
       const network = makeNetworkMock(SupportedNetwork.TESTNET);
 
-      const keyResolver: Pick<
-        KeyResolverService,
-        'resolveSigningKeyRefIdsFromMirrorRoleKey'
-      > = {
-        resolveSigningKeyRefIdsFromMirrorRoleKey: jest.fn().mockResolvedValue({
+      const keyResolver: Pick<KeyResolverService, 'resolveSigningKeys'> = {
+        resolveSigningKeys: jest.fn().mockResolvedValue({
           keyRefIds: [MOCK_TOPIC_CLI_ADMIN_KEY_REF_ID],
           requiredSignatures: 1,
-        } satisfies ResolveSigningKeyRefIdsFromMirrorRoleKeyResult),
+        } satisfies SigningKeysResult),
       };
 
       const api: Partial<CoreApi> = {
@@ -570,9 +561,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
       expect(deleteTopicTxMock).toHaveBeenCalledWith({
         topicId: MOCK_HEDERA_ENTITY_ID_1,
       });
-      expect(
-        keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey,
-      ).toHaveBeenCalled();
+      expect(keyResolver.resolveSigningKeys).toHaveBeenCalled();
       expect(deleteTopicStateMock).toHaveBeenCalledWith(
         `${SupportedNetwork.TESTNET}:${MOCK_HEDERA_ENTITY_ID_1}`,
       );

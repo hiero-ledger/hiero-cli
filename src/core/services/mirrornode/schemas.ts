@@ -71,12 +71,12 @@ export const TokenInfoSchema: z.ZodType<TokenInfo> = z.object({
 
 const mirrorNodeKeyTypeSchema = z.enum(MirrorNodeKeyType);
 
-export const AccountAPIBalanceSchema: z.ZodType<AccountAPIBalance> = z.object({
+const AccountAPIBalanceSchema: z.ZodType<AccountAPIBalance> = z.object({
   balance: z.number(),
   timestamp: z.string(),
 });
 
-export const AccountAPIKeySchema: z.ZodType<AccountAPIKey> = z.object({
+const AccountAPIKeySchema: z.ZodType<AccountAPIKey> = z.object({
   _type: mirrorNodeKeyTypeSchema,
   key: z.string(),
 });
@@ -101,14 +101,14 @@ const accountListItemTokenBalanceSchema: z.ZodType<AccountListItemTokenBalance> 
     balance: z.number(),
   });
 
-export const AccountListItemBalanceSchema: z.ZodType<AccountListItemBalance> =
+const AccountListItemBalanceSchema: z.ZodType<AccountListItemBalance> =
   z.object({
     timestamp: z.string(),
     balance: z.number(),
     tokens: z.array(accountListItemTokenBalanceSchema).optional(),
   });
 
-export const AccountListItemAPIResponseSchema: z.ZodType<AccountListItemAPIResponse> =
+const AccountListItemAPIResponseSchema: z.ZodType<AccountListItemAPIResponse> =
   z.object({
     account: z.string(),
     alias: z.string().nullable().optional(),
@@ -160,7 +160,7 @@ export const TopicMessagesAPIResponseSchema: z.ZodType<TopicMessagesAPIResponse>
       .optional(),
   });
 
-export const TokenBalanceInfoSchema: z.ZodType<TokenBalanceInfo> = z.object({
+const TokenBalanceInfoSchema: z.ZodType<TokenBalanceInfo> = z.object({
   token_id: z.string(),
   balance: z.number(),
   decimals: z.number().optional(),
@@ -198,7 +198,7 @@ export const TokenAirdropsResponseSchema: z.ZodType<TokenAirdropsResponse> =
 
 const nullableStringKey = z.union([z.string(), z.null()]).optional();
 
-export const AccountNftInfoSchema: z.ZodType<AccountNftInfo> = z.object({
+const AccountNftInfoSchema: z.ZodType<AccountNftInfo> = z.object({
   token_id: z.string(),
   serial_number: z.number(),
   account_id: z.union([z.string(), z.null()]),
@@ -310,39 +310,37 @@ const transactionAssessedCustomFeeItemSchema: z.ZodType<TransactionAssessedCusto
     effective_payer_account_ids: z.array(z.string()).optional(),
   });
 
-export const TransactionDetailItemSchema: z.ZodType<TransactionDetailItem> =
-  z.object({
-    transaction_id: z.string(),
-    consensus_timestamp: z.string(),
-    entity_id: z.string().nullable().optional(),
-    valid_start_timestamp: z.string(),
-    charged_tx_fee: z.number(),
-    memo_base64: z.union([z.string(), z.null()]).optional(),
-    result: z.string(),
-    transaction_hash: z.string(),
-    name: z.string(),
-    node: z.string().nullable().optional(),
-    scheduled: z.boolean(),
-    transfers: z.array(transactionTransferItemSchema),
-    token_transfers: z.array(transactionTokenTransferItemSchema).optional(),
-    nft_transfers: z.array(transactionNftTransferItemSchema).optional(),
-    assessed_custom_fees: z
-      .array(transactionAssessedCustomFeeItemSchema)
-      .optional(),
-  });
+const TransactionDetailItemSchema: z.ZodType<TransactionDetailItem> = z.object({
+  transaction_id: z.string(),
+  consensus_timestamp: z.string(),
+  entity_id: z.string().nullable().optional(),
+  valid_start_timestamp: z.string(),
+  charged_tx_fee: z.number(),
+  memo_base64: z.union([z.string(), z.null()]).optional(),
+  result: z.string(),
+  transaction_hash: z.string(),
+  name: z.string(),
+  node: z.string().nullable().optional(),
+  scheduled: z.boolean(),
+  transfers: z.array(transactionTransferItemSchema),
+  token_transfers: z.array(transactionTokenTransferItemSchema).optional(),
+  nft_transfers: z.array(transactionNftTransferItemSchema).optional(),
+  assessed_custom_fees: z
+    .array(transactionAssessedCustomFeeItemSchema)
+    .optional(),
+});
 
 export const TransactionDetailsResponseSchema: z.ZodType<TransactionDetailsResponse> =
   z.object({
     transactions: z.array(TransactionDetailItemSchema),
   });
 
-export const ScheduleSignatureInfoSchema: z.ZodType<ScheduleSignatureInfo> =
-  z.object({
-    consensus_timestamp: z.string(),
-    public_key_prefix: z.string().optional(),
-    signature: z.string().optional(),
-    type: z.string().optional(),
-  });
+const ScheduleSignatureInfoSchema: z.ZodType<ScheduleSignatureInfo> = z.object({
+  consensus_timestamp: z.string(),
+  public_key_prefix: z.string().optional(),
+  signature: z.string().optional(),
+  type: z.string().optional(),
+});
 
 export const ScheduleInfoSchema: z.ZodType<ScheduleInfo> = z.object({
   admin_key: optionalKeyRef,

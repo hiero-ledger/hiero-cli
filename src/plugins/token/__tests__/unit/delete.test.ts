@@ -18,7 +18,6 @@ import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 import {
   makeDeleteApiMocks,
   makeDeleteSuccessMocks,
-  makeLogger,
   mockZustandTokenStateHelper,
 } from './helpers/mocks';
 
@@ -40,9 +39,6 @@ const makeArgs = (
     ...argsOverrides,
   },
   api,
-  state: api.state,
-  config: api.config,
-  logger: makeLogger(),
 });
 
 describe('tokenDelete - network delete (stateOnly=false)', () => {
@@ -148,9 +144,7 @@ describe('tokenDelete - network delete (stateOnly=false)', () => {
       const output = assertOutput(result.result, TokenDeleteOutputSchema);
       expect(output.transactionId).toBeDefined();
       expect(output.deletedToken.tokenId).toBe('0.0.123456');
-      expect(
-        api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey,
-      ).toHaveBeenCalledWith(
+      expect(api.keyResolver.resolveSigningKeys).toHaveBeenCalledWith(
         expect.objectContaining({ explicitCredentials: [] }),
       );
     });
@@ -168,9 +162,7 @@ describe('tokenDelete - network delete (stateOnly=false)', () => {
       const { api } = makeDeleteSuccessMocks({
         tokenInfo: { admin_key: null },
       });
-      (
-        api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey as jest.Mock
-      ).mockRejectedValue(
+      (api.keyResolver.resolveSigningKeys as jest.Mock).mockRejectedValue(
         new ValidationError(
           'Token has no admin key (immutable token cannot be deleted)',
         ),
@@ -194,9 +186,7 @@ describe('tokenDelete - network delete (stateOnly=false)', () => {
 
     test('throws ValidationError when admin-key not provided and not in KMS', async () => {
       const { api } = makeDeleteSuccessMocks();
-      (
-        api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey as jest.Mock
-      ).mockRejectedValue(
+      (api.keyResolver.resolveSigningKeys as jest.Mock).mockRejectedValue(
         new ValidationError(
           'Not enough admin key(s) found in key manager for this token. Provide --admin-key.',
         ),
@@ -232,9 +222,6 @@ describe('tokenDelete - state-only (stateOnly=true)', () => {
       ...argsOverrides,
     },
     api,
-    state: api.state,
-    config: api.config,
-    logger: makeLogger(),
   });
 
   test('happy path - removes token from state, returns output without transactionId', async () => {

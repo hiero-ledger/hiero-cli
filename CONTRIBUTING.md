@@ -1,74 +1,162 @@
-## Contributing
+# Contributing to Hiero CLI
 
-### Development Setup
+We welcome contributions from everyone. This guide covers everything you need to start contributing effectively.
 
-Install dependencies:
+## Code of Conduct
 
-```
+Be respectful and constructive in all interactions. We do not tolerate harassment, discriminatory language, or bad-faith contributions. Violations may result in removal from the project.
+
+## Ways to Contribute
+
+- **Report a bug** — open an issue with steps to reproduce
+- **Request a feature** — open an issue describing the use case
+- **Fix a bug or implement a feature** — open an issue first, then a PR
+- **Improve documentation** — PRs welcome without a prior issue
+
+## Issue Guidelines
+
+**Open an issue before submitting a PR** for any bug fix or feature. This ensures alignment before you invest time writing code. Small fixes (typos, docs) may skip this step.
+
+When reporting a bug, include:
+
+- Hiero CLI version (`hcli --version`)
+- Node.js version (`node --version`)
+- OS and shell
+- Exact command run and full error output
+- Steps to reproduce
+
+When requesting a feature, describe the use case — not just the desired behavior.
+
+Search existing issues before opening a new one.
+
+## Development Setup
+
+**Prerequisites:** Node.js `>=18.0.0`, npm
+
+```sh
+git clone https://github.com/hiero-ledger/hiero-cli.git
+cd hiero-cli
 npm install
-```
-
-Run a build:
-
-```
 npm run build
 ```
 
-### Running Tests
+Copy `.env.test.sample` to `.env.test` and fill in your Hedera testnet credentials if you plan to run integration tests.
 
-- Unit tests are executed with:
+For a full local development environment, see [Manual Setup (For Developers)](./README.md#manual-setup-for-developers) in the root README.
 
-  ```sh
-  npm run test:unit
-  ```
+## Project Structure
 
-- Jest is configured via `jest.unit.config.js` to run all `*.test.ts` files under `**/__tests__/**`.
-- Each plugin keeps its own test suite under its `__tests__/` directory (for example, `src/plugins/account/__tests__/unit/`).
-- Coverage reports are written to `coverage/unit/`.
+| Path                             | Role                                                         |
+| -------------------------------- | ------------------------------------------------------------ |
+| `src/hiero-cli.ts`               | CLI entry point — bootstraps Commander and registers plugins |
+| `src/core/`                      | Core API — services, errors, types exported as public API    |
+| `src/core/index.ts`              | Core public exports                                          |
+| `src/plugins/`                   | Built-in plugins (one directory per plugin)                  |
+| `src/plugins/{name}/manifest.ts` | Plugin declaration — registers commands and hooks            |
+| `src/plugins/{name}/schema.ts`   | Zod schemas for command options and state                    |
+| `src/plugins/{name}/index.ts`    | Plugin entry point — exports manifest and output schemas     |
+| `src/plugins/{name}/commands/`   | Individual command handlers                                  |
+| `src/plugins/{name}/hooks/`      | State lifecycle hooks (pre/post command)                     |
+| `src/plugins/{name}/__tests__/`  | Unit tests for the plugin                                    |
 
-### Code Style & Tooling
+## Working on Plugins
 
-- Use ESLint to catch common issues:
+Most feature work lives under `src/plugins/`. See [`PLUGIN_ARCHITECTURE_GUIDE.md`](./PLUGIN_ARCHITECTURE_GUIDE.md) for the full guide on creating and extending plugins.
 
-  ```sh
-  npm run lint
-  ```
+When modifying a plugin:
 
-- Automatically fix lint issues where possible:
+- Update `README.md` inside the plugin directory to reflect behavioral changes
+- Add or update tests under `__tests__/unit/`
+- Keep `schema.ts` as the single source of truth for option types
 
-  ```sh
-  npm run lint:fix
-  ```
+## Forbidden Patterns
 
-- Enforce consistent formatting with Prettier:
+- **No `any`** — use `unknown`, `never`, or a precise type; cast with `as` only as a last resort
+- **No hardcoded credentials or network addresses** — use constants or config
+- **No silent error swallowing** — always propagate or surface errors explicitly
 
-  ```sh
-  npm run format:check
-  npm run format
-  ```
+## Commit Convention
 
-Please run linting and formatting checks before opening a PR.
+Format: `feat({issue}): {short_description}`
 
-### Working on Plugins
+Example:
 
-Most feature work lives in the built‑in plugins under `src/plugins/` (for example, `src/plugins/account`, `src/plugins/token`, etc.).
+```
+feat(1662): add kyc grant/revoke commands
+```
 
-- Follow the structure and patterns described in [`PLUGIN_ARCHITECTURE_GUIDE.md`](./PLUGIN_ARCHITECTURE_GUIDE.md).
-- When you change a plugin’s behaviour or commands, update that plugin’s `README.md` to match and other documentation files if needed.
-- Add or update tests under the plugin’s `__tests__/` directory to cover new or changed behaviour.
+Breaking changes go in the footer:
 
-### State & Configuration (High Level)
+```
+feat(1662): replace state file format
 
-The CLI stores per‑plugin state as JSON files under the user‑specific `.hiero-cli/state/` directory (see the main `README.md` for details). For an up‑to‑date description of configuration and state behavior, refer to the **Configuration & State Storage** section in the root [`README.md`](./README.md#configuration--state-storage).
+BREAKING CHANGE: existing .hiero-cli/state/ files must be migrated
+```
 
-### Commit Guidelines
+## Branch Naming
 
-- Keep patches focused; unrelated formatting churn makes review harder.
-- Prefer small, composable utility helpers when test logic starts repeating (e.g., temp file creation, logger control).
-- Run the full unit suite before opening a PR.
-- When you change behaviour, add or update tests to cover the new logic.
-- Keep documentation in sync with code changes (for example, plugin `README.md` files or relevant docs under `docs/`).
+```
+feat/{issue}-{task_name}
+```
 
-### Questions / Improvements
+Example: `feat/1662-kyc-grant-revoke`
 
-Open an issue or PR if you see an opportunity to simplify the test setup, improve state handling, or extend configuration validation.
+## Pull Request Workflow
+
+1. Fork the repository and create your branch from `main`
+2. Make your changes — keep the PR focused on a single concern
+3. Run the pre-PR checklist below
+4. Open a PR against `main` with a clear description:
+   - What problem does this solve?
+   - Link to the related issue
+   - Notable implementation decisions (if any)
+5. Address reviewer feedback; mark conversations resolved as you go
+6. A maintainer will merge once approved
+
+## Pre-PR Checklist
+
+Before opening a PR, run:
+
+- [ ] `npm run build` — project compiles without errors
+- [ ] `npm run test:unit` — all unit tests pass
+- [ ] `npm run lint` — no lint errors
+- [ ] `npm run format:check` — code is formatted correctly
+
+If any command fails, fix it before submitting.
+
+## Running Tests
+
+Unit tests (no network required):
+
+```sh
+npm run test:unit
+```
+
+Jest is configured via `jest.unit.config.js`. Each plugin keeps its tests under `src/plugins/{name}/__tests__/unit/`. Coverage reports are written to `coverage/unit/`.
+
+Integration tests require a Hedera account configured in `.env.test`:
+
+```sh
+npm run test:integration
+```
+
+`.env.test` must define the following variables:
+
+| Variable       | Description                              | Example    |
+| -------------- | ---------------------------------------- | ---------- |
+| `OPERATOR_ID`  | Account ID of the operator               | `0.0.1234` |
+| `OPERATOR_KEY` | DER-encoded private key of the operator  | `302e...`  |
+| `NETWORK`      | Target network (`testnet` or `localnet`) | `testnet`  |
+
+Copy `.env.test.sample` as a starting point. For `localnet`, spin up a local Hedera node and point the CLI at it — see [Manual Setup (For Developers)](./README.md#manual-setup-for-developers) for details.
+
+## Code Style & Tooling
+
+```sh
+npm run lint        # check for lint errors
+npm run lint:fix    # auto-fix where possible
+npm run format      # apply Prettier formatting
+npm run format:check
+```
+
+Run linting and formatting before every PR. The CI pipeline will block PRs that fail either check.

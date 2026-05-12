@@ -18,10 +18,10 @@ import {
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { SupportedNetwork } from '@/core';
 import { AliasType } from '@/core/types/shared.types';
+import { makeApiMocks } from '@/plugins/contract/__tests__/unit/helpers/mocks';
 import { ContractImportOutputSchema } from '@/plugins/contract/commands/import';
 import { contractImport } from '@/plugins/contract/commands/import/handler';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
-import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
 
 jest.mock('@/plugins/contract/zustand-state-helper', () => ({
   ZustandContractStateHelper: jest.fn(),

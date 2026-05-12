@@ -1,9 +1,9 @@
 import type {
   BaseBuildTransactionResult,
+  BaseExecuteTransactionResult,
   BaseNormalizedParams,
   BaseSignTransactionResult,
   SupportedNetwork,
-  TransactionResult,
 } from '@/core';
 
 export interface TokenDeleteNormalizedParams extends BaseNormalizedParams {
@@ -16,4 +16,4 @@ export interface TokenDeleteBuildTransactionResult extends BaseBuildTransactionR
 
 export interface TokenDeleteSignTransactionResult extends BaseSignTransactionResult {}
 
-export type TokenDeleteExecuteTransactionResult = TransactionResult;
+export interface TokenDeleteExecuteTransactionResult extends BaseExecuteTransactionResult {}

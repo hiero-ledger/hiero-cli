@@ -11,6 +11,7 @@ import type {
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { StateError, TransactionError } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { HBAR_DECIMALS, KeyAlgorithm } from '@/core/shared/constants';
 import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
@@ -36,7 +37,7 @@ export class AccountCreateCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<CreateNormalisedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
     const validArgs = AccountCreateInputSchema.parse(args.args);
 
@@ -50,7 +51,8 @@ export class AccountCreateCommand extends BaseTransactionCommand<
     api.alias.availableOrThrow(alias, network);
 
     const keyManager =
-      keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
+      keyManagerArg ||
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const operator = api.network.getCurrentOperatorOrThrow();
     const payer = api.network.getPayer();
@@ -65,7 +67,7 @@ export class AccountCreateCommand extends BaseTransactionCommand<
       balanceCheckAccountId,
     );
 
-    logger.info(`Creating account with name: ${alias}`);
+    api.logger.info(`Creating account with name: ${alias}`);
 
     let keyRefId: string;
     let publicKey: string;
@@ -140,7 +142,11 @@ export class AccountCreateCommand extends BaseTransactionCommand<
     signTransactionResult: CreateSignTransactionResult,
   ): Promise<CreateExecuteTransactionResult> {
     const { api } = args;
-    return api.txExecute.execute(signTransactionResult.signedTransaction);
+    return {
+      transactionResult: await api.txExecute.execute(
+        signTransactionResult.signedTransaction,
+      ),
+    };
   }
 
   async outputPreparation(
@@ -150,23 +156,24 @@ export class AccountCreateCommand extends BaseTransactionCommand<
     _signTransactionResult: CreateSignTransactionResult,
     executeTransactionResult: CreateExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { transactionResult } = executeTransactionResult;
+    const { api } = args;
 
-    if (!executeTransactionResult.success) {
+    if (!transactionResult.success) {
       throw new TransactionError(
-        `Failed to create account (txId: ${executeTransactionResult.transactionId})`,
+        `Failed to create account (txId: ${transactionResult.transactionId})`,
         false,
       );
     }
 
-    if (!executeTransactionResult.accountId) {
+    if (!transactionResult.accountId) {
       throw new StateError(
         'Transaction completed but did not return an account ID, unable to derive addresses',
       );
     }
 
     const evmAddress = buildEvmAddressFromAccountId(
-      executeTransactionResult.accountId,
+      transactionResult.accountId,
     );
 
     if (normalisedParams.alias) {
@@ -174,17 +181,17 @@ export class AccountCreateCommand extends BaseTransactionCommand<
         alias: normalisedParams.alias,
         type: AliasType.Account,
         network: normalisedParams.network,
-        entityId: executeTransactionResult.accountId,
+        entityId: transactionResult.accountId,
         evmAddress,
         publicKey: normalisedParams.publicKey,
         keyRefId: normalisedParams.keyRefId,
-        createdAt: executeTransactionResult.consensusTimestamp,
+        createdAt: transactionResult.consensusTimestamp,
       });
     }
 
     const accountData: AccountData = {
       name: normalisedParams.name,
-      accountId: executeTransactionResult.accountId,
+      accountId: transactionResult.accountId,
       type: normalisedParams.keyType,
       publicKey: buildTransactionResult.publicKey,
       evmAddress,
@@ -193,9 +200,9 @@ export class AccountCreateCommand extends BaseTransactionCommand<
     };
     const accountKey = composeKey(
       normalisedParams.network,
-      executeTransactionResult.accountId,
+      transactionResult.accountId,
     );
-    const accountState = new ZustandAccountStateHelper(api.state, logger);
+    const accountState = new ZustandAccountStateHelper(api.state, api.logger);
     accountState.saveAccount(accountKey, accountData);
 
     const outputData: AccountCreateOutput = {
@@ -203,7 +210,7 @@ export class AccountCreateCommand extends BaseTransactionCommand<
       name: accountData.name,
       type: accountData.type,
       network: accountData.network,
-      transactionId: executeTransactionResult.transactionId || '',
+      transactionId: transactionResult.transactionId || '',
       evmAddress,
       publicKey: accountData.publicKey,
     };

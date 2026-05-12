@@ -5,6 +5,7 @@ import type { AccountData } from '@/plugins/account/schema';
 import type { AccountImportOutput } from './output';
 
 import { StateError } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { buildAccountEvmAddress } from '@/plugins/account/utils/account-address';
@@ -14,9 +15,9 @@ import { AccountImportInputSchema } from './input';
 
 export class AccountImportCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    const accountState = new ZustandAccountStateHelper(api.state, logger);
+    const accountState = new ZustandAccountStateHelper(api.state, api.logger);
 
     const validArgs = AccountImportInputSchema.parse(args.args);
 
@@ -25,7 +26,8 @@ export class AccountImportCommand implements Command {
     const network = api.network.getCurrentNetwork();
 
     const keyManager =
-      keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
+      keyManagerArg ||
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const resolved = await api.keyResolver.resolveAccountCredentials(
       validArgs.key,
@@ -44,7 +46,7 @@ export class AccountImportCommand implements Command {
 
     const accountInfo = await api.mirror.getAccountOrThrow(accountId);
 
-    logger.info(`Importing account: ${accountKey} (${accountId})`);
+    api.logger.info(`Importing account: ${accountKey} (${accountId})`);
 
     const evmAddress = buildAccountEvmAddress({
       accountId,

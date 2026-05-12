@@ -33,13 +33,13 @@ export class BatchifyAddTransactionHook implements Hook<
   ): Promise<HookResult> {
     const { args, commandName, normalisedParams, signTransactionResult } =
       params;
-    const { api, logger } = args;
-    const batchState = new ZustandBatchStateHelper(api.state, logger);
+    const { api } = args;
+    const batchState = new ZustandBatchStateHelper(api.state, api.logger);
     const validArgs = BatchifyInputSchema.parse(args.args);
     const batchName = validArgs.batch;
     const network = api.network.getCurrentNetwork();
     if (!batchName) {
-      logger.debug(
+      api.logger.debug(
         'No parameter "batch" found. Transaction will not be added to batch.',
       );
       return Promise.resolve({ breakFlow: false });
@@ -75,7 +75,7 @@ export class BatchifyAddTransactionHook implements Hook<
     });
     batchState.saveBatch(key, batch);
 
-    logger.info(
+    api.logger.info(
       `Transaction added to batch '${batchName}' at position ${nextOrder}`,
     );
 

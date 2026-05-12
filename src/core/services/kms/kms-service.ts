@@ -21,6 +21,7 @@ import {
   NotFoundError,
   ValidationError,
 } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { createClient } from '@/core/utils/client-init';
 
@@ -92,7 +93,7 @@ export class KmsServiceImpl implements KmsService {
     // Check if ED25519 support is enabled when using ED25519 key type
     if (keyType === KeyAlgorithm.ED25519) {
       const ed25519SupportEnabled = this.configService.getOption<boolean>(
-        'ed25519_support_enabled',
+        ConfigOptionKey.ed25519_support_enabled,
       );
       if (!ed25519SupportEnabled) {
         throw new ConfigurationError(
@@ -130,7 +131,7 @@ export class KmsServiceImpl implements KmsService {
     // Check if ED25519 support is enabled when using ED25519 key type
     if (keyType === KeyAlgorithm.ED25519) {
       const ed25519SupportEnabled = this.configService.getOption<boolean>(
-        'ed25519_support_enabled',
+        ConfigOptionKey.ed25519_support_enabled,
       );
       if (!ed25519SupportEnabled) {
         throw new ConfigurationError(
@@ -175,7 +176,7 @@ export class KmsServiceImpl implements KmsService {
     // Check if ED25519 support is enabled when using ED25519 key type
     if (keyType === KeyAlgorithm.ED25519) {
       const ed25519SupportEnabled = this.configService.getOption<boolean>(
-        'ed25519_support_enabled',
+        ConfigOptionKey.ed25519_support_enabled,
       );
       if (!ed25519SupportEnabled) {
         throw new ConfigurationError(

@@ -5,6 +5,7 @@ import * as clack from '@clack/prompts';
 
 import { ConfigurationError } from '@/core/errors';
 import { EntityIdSchema, PrivateKeyDefinitionSchema } from '@/core/schemas';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
@@ -123,8 +124,8 @@ function saveGlobalConfiguration(
   keyManager: KeyManager,
   ed25519Support: boolean,
 ): void {
-  api.config.setOption('ed25519_support_enabled', ed25519Support);
-  api.config.setOption('default_key_manager', keyManager);
+  api.config.setOption(ConfigOptionKey.ed25519_support_enabled, ed25519Support);
+  api.config.setOption(ConfigOptionKey.default_key_manager, keyManager);
 }
 
 async function importOperatorKey(
@@ -135,7 +136,7 @@ async function importOperatorKey(
 ): Promise<string> {
   const account = await api.mirror.getAccountOrThrow(accountId);
   const finalKeyManager =
-    keyManager ?? api.config.getOption('default_key_manager');
+    keyManager ?? api.config.getOption(ConfigOptionKey.default_key_manager);
 
   const { keyRefId } = api.kms.importAndValidatePrivateKey(
     account.keyAlgorithm,

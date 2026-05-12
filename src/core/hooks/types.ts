@@ -1,8 +1,6 @@
 import type { CommandResult } from '@/core';
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 
-export type { HookResult } from '@/core/hooks/hook.interface';
-
 export type HookPhase =
   | 'preParamsNormalization'
   | 'preBuildTransaction'

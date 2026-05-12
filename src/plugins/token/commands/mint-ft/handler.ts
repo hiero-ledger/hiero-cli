@@ -14,10 +14,11 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
+import { isRawUnits } from '@/core/utils/amount-helpers';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
-import { isRawUnits } from '@/plugins/token/utils/token-amount-helpers';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { TokenMintFtInputSchema } from './input';
@@ -37,9 +38,9 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<MintFtNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
 
     const validArgs = TokenMintFtInputSchema.parse(args.args);
 
@@ -48,7 +49,8 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
     const keyManagerArg = validArgs.keyManager;
 
     const keyManager =
-      keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
+      keyManagerArg ||
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
 
@@ -62,7 +64,7 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
 
     const tokenId = resolvedToken.tokenId;
 
-    logger.info(`Minting tokens for token: ${tokenId}`);
+    api.logger.info(`Minting tokens for token: ${tokenId}`);
 
     const tokenInfo = await api.mirror.getTokenInfo(tokenId);
 
@@ -74,17 +76,16 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
       });
     }
 
-    const { keyRefIds } =
-      await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
-        mirrorRoleKey: tokenInfo.supply_key,
-        explicitCredentials: validArgs.supplyKey,
-        keyManager,
-        resolveSigningKeyLabels: ['token:supply'],
-        emptyMirrorRoleKeyMessage: 'Token has no supply key',
-        insufficientKmsMatchesMessage:
-          'Not enough supply key(s) found in key manager for this token. Provide --supply-key.',
-        validationErrorOptions: { context: { tokenId } },
-      });
+    const { keyRefIds } = await api.keyResolver.resolveSigningKeys({
+      mirrorRoleKey: tokenInfo.supply_key,
+      explicitCredentials: validArgs.supplyKey,
+      keyManager,
+      signingKeyLabels: ['token:supply'],
+      emptyMirrorRoleKeyMessage: 'Token has no supply key',
+      insufficientKmsMatchesMessage:
+        'Not enough supply key(s) found in key manager for this token. Provide --supply-key.',
+      validationErrorOptions: { context: { tokenId } },
+    });
 
     const rawUnits = isRawUnits(userAmountInput);
     const tokenDecimals = rawUnits ? 0 : parseInt(tokenInfo.decimals);
@@ -104,7 +105,7 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
           context: { tokenId, rawAmount, totalSupply, maxSupply },
         });
       }
-      logger.info(
+      api.logger.info(
         `Token has finite supply. Current: ${totalSupply.toString()}, Max: ${maxSupply.toString()}, After mint: ${newTotalSupply.toString()}`,
       );
     }
@@ -120,8 +121,8 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
     normalisedParams: MintFtNormalizedParams,
   ): Promise<MintFtBuildTransactionResult> {
-    const { api, logger } = args;
-    logger.debug('Building mint transaction body');
+    const { api } = args;
+    api.logger.debug('Building mint transaction body');
     const transaction = api.token.createMintTransaction({
       tokenId: normalisedParams.tokenId,
       amount: normalisedParams.rawAmount,
@@ -136,8 +137,8 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
     normalisedParams: MintFtNormalizedParams,
     buildTransactionResult: MintFtBuildTransactionResult,
   ): Promise<MintFtSignTransactionResult> {
-    const { api, logger } = args;
-    logger.debug(
+    const { api } = args;
+    api.logger.debug(
       `Using ${normalisedParams.keyRefIds.length} key(s) for signing transaction`,
     );
     const transaction = await api.txSign.sign(

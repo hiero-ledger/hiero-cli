@@ -33,7 +33,7 @@ export class TokenRejectAirdropCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<TokenRejectAirdropNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
     const {
       owner,
       token: tokenId,
@@ -54,7 +54,7 @@ export class TokenRejectAirdropCommand extends BaseTransactionCommand<
         network,
       });
 
-    logger.info(`Fetching token info for ${tokenId}...`);
+    api.logger.info(`Fetching token info for ${tokenId}...`);
     const tokenInfo = await api.mirror.getTokenInfo(tokenId);
     const isNft = tokenInfo.type === MirrorNodeTokenType.NON_FUNGIBLE_UNIQUE;
 
@@ -98,7 +98,7 @@ export class TokenRejectAirdropCommand extends BaseTransactionCommand<
 
     const { keyRefId: signerKeyRefId } = resolvedAccount;
 
-    logger.info(`Rejecting token ${tokenId} for ${ownerAccountId}`);
+    api.logger.info(`Rejecting token ${tokenId} for ${ownerAccountId}`);
 
     return {
       network,
@@ -114,8 +114,8 @@ export class TokenRejectAirdropCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
     normalisedParams: TokenRejectAirdropNormalizedParams,
   ): Promise<TokenRejectAirdropBuildTransactionResult> {
-    const { api, logger } = args;
-    logger.debug('Building reject transaction body');
+    const { api } = args;
+    api.logger.debug('Building reject transaction body');
 
     const transaction = api.token.createRejectAirdropTransaction({
       ownerAccountId: normalisedParams.ownerAccountId,
@@ -130,8 +130,10 @@ export class TokenRejectAirdropCommand extends BaseTransactionCommand<
     normalisedParams: TokenRejectAirdropNormalizedParams,
     buildTransactionResult: TokenRejectAirdropBuildTransactionResult,
   ): Promise<TokenRejectAirdropSignTransactionResult> {
-    const { api, logger } = args;
-    logger.debug(`Using key ${normalisedParams.signerKeyRefId} for signing`);
+    const { api } = args;
+    api.logger.debug(
+      `Using key ${normalisedParams.signerKeyRefId} for signing`,
+    );
 
     const signedTransaction = await api.txSign.sign(
       buildTransactionResult.transaction,

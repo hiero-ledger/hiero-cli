@@ -35,7 +35,7 @@ export class TokenUnpauseCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<UnpauseNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
     const validArgs = TokenUnpauseInputSchema.parse(args.args);
 
@@ -55,19 +55,18 @@ export class TokenUnpauseCommand extends BaseTransactionCommand<
 
     const tokenInfo = await api.mirror.getTokenInfo(tokenId);
 
-    logger.info(`Unpausing token ${tokenId} on ${network}`);
+    api.logger.info(`Unpausing token ${tokenId} on ${network}`);
 
-    const { keyRefIds } =
-      await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
-        mirrorRoleKey: tokenInfo.pause_key,
-        explicitCredentials: validArgs.pauseKey,
-        keyManager,
-        resolveSigningKeyLabels: ['token:pause'],
-        emptyMirrorRoleKeyMessage: 'Token has no pause key',
-        insufficientKmsMatchesMessage:
-          'Not enough pause key(s) found in key manager for this token. Provide --pause-key.',
-        validationErrorOptions: { context: { tokenId } },
-      });
+    const { keyRefIds } = await api.keyResolver.resolveSigningKeys({
+      mirrorRoleKey: tokenInfo.pause_key,
+      explicitCredentials: validArgs.pauseKey,
+      keyManager,
+      signingKeyLabels: ['token:pause'],
+      emptyMirrorRoleKeyMessage: 'Token has no pause key',
+      insufficientKmsMatchesMessage:
+        'Not enough pause key(s) found in key manager for this token. Provide --pause-key.',
+      validationErrorOptions: { context: { tokenId } },
+    });
 
     return {
       network,
@@ -80,8 +79,8 @@ export class TokenUnpauseCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
     normalisedParams: UnpauseNormalizedParams,
   ): Promise<UnpauseBuildTransactionResult> {
-    const { api, logger } = args;
-    logger.debug('Building token unpause transaction');
+    const { api } = args;
+    api.logger.debug('Building token unpause transaction');
     const transaction = api.token.createUnpauseTransaction({
       tokenId: normalisedParams.tokenId,
     });
@@ -93,8 +92,8 @@ export class TokenUnpauseCommand extends BaseTransactionCommand<
     normalisedParams: UnpauseNormalizedParams,
     buildTransactionResult: UnpauseBuildTransactionResult,
   ): Promise<UnpauseSignTransactionResult> {
-    const { api, logger } = args;
-    logger.debug(
+    const { api } = args;
+    api.logger.debug(
       `Using ${normalisedParams.keyRefIds.length} key(s) for signing transaction`,
     );
     const signedTransaction = await api.txSign.sign(

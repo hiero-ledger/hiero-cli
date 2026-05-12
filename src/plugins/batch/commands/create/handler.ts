@@ -7,6 +7,7 @@ import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { BatchCreateOutput } from './output';
 
 import { ValidationError } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
 
@@ -14,9 +15,9 @@ import { BatchCreateInputSchema } from './input';
 
 export class BatchCreateCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    const batchState = new ZustandBatchStateHelper(api.state, logger);
+    const batchState = new ZustandBatchStateHelper(api.state, api.logger);
     const validArgs = BatchCreateInputSchema.parse(args.args);
     const name = validArgs.name;
     const batchKey = validArgs.key;
@@ -29,7 +30,7 @@ export class BatchCreateCommand implements Command {
 
     const keyManager =
       validArgs.keyManager ||
-      api.config.getOption<KeyManager>('default_key_manager');
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const resolved = await api.keyResolver.resolveSigningKey(
       batchKey,

@@ -172,12 +172,16 @@ hcli account import \
 
 ### Account Balance
 
+Token and NFT rows label local token aliases as `Name (Alias)` in human output.
+
 ```bash
 hcli account balance --account myaccount
 hcli account balance --account 0.0.123456 --hbar-only
 ```
 
 ### Account List
+
+Human output labels the stored local account name as `Name (Alias)`.
 
 ```bash
 hcli account list

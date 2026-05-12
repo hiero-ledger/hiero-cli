@@ -107,8 +107,8 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
     stateKey: string;
     accountRef: string;
   }> {
-    const { api, logger } = args;
-    const accountState = new ZustandAccountStateHelper(api.state, logger);
+    const { api } = args;
+    const accountState = new ZustandAccountStateHelper(api.state, api.logger);
     const { stateKey, accountRef, network } =
       await this.resolveEntityIdFromAccountRef(args);
 
@@ -139,7 +139,7 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<DeleteNormalisedParams> {
-    const { api, logger } = args;
+    const { api } = args;
     const validArgs = AccountDeleteInputSchema.parse(args.args);
     const credential = KeySchema.parse(validArgs.account);
     const keyManager = api.config.getOption<KeyManager>(
@@ -159,7 +159,7 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
     }
     const network = api.network.getCurrentNetwork();
     const stateKey = composeKey(network, resolvedCredential.accountId);
-    const accountState = new ZustandAccountStateHelper(api.state, logger);
+    const accountState = new ZustandAccountStateHelper(api.state, api.logger);
     const localAccount = accountState.getAccount(stateKey);
 
     const transferAccountId = this.resolveTransferAccountId(
@@ -224,7 +224,11 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
     signTransactionResult: DeleteSignTransactionResult,
   ): Promise<DeleteExecuteTransactionResult> {
     const { api } = args;
-    return api.txExecute.execute(signTransactionResult.signedTransaction);
+    return {
+      transactionResult: await api.txExecute.execute(
+        signTransactionResult.signedTransaction,
+      ),
+    };
   }
 
   async outputPreparation(
@@ -234,15 +238,16 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
     _signTransactionResult: DeleteSignTransactionResult,
     executeTransactionResult: DeleteExecuteTransactionResult,
   ): Promise<CommandResult> {
+    const { transactionResult } = executeTransactionResult;
     const { api } = args;
 
-    if (!executeTransactionResult.success) {
+    if (!transactionResult.success) {
       throw new TransactionError(
-        `Failed to delete account (txId: ${executeTransactionResult.transactionId})`,
+        `Failed to delete account (txId: ${transactionResult.transactionId})`,
         false,
         {
           context: {
-            transactionId: executeTransactionResult.transactionId,
+            transactionId: transactionResult.transactionId,
             network: normalisedParams.network,
           },
         },
@@ -272,7 +277,7 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
       },
       removedAliases,
       network: normalisedParams.network,
-      transactionId: executeTransactionResult.transactionId,
+      transactionId: transactionResult.transactionId,
       stateOnly: false,
     };
 

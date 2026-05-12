@@ -14,6 +14,7 @@ import {
   TokenNameSchema,
   TokenSymbolSchema,
 } from '@/core/schemas';
+import { ZOD_CUSTOM_ISSUE_CODE } from '@/core/shared/constants';
 import { validateSupplyTypeAndMaxSupply } from '@/core/shared/validation/validate-supply.zod';
 import { SupplyType } from '@/core/types/shared.types';
 import { applyKeyThresholdSuperRefine } from '@/core/utils/key-threshold-input-schema';
@@ -114,7 +115,7 @@ export const TokenCreateNftInputSchema = z
   .superRefine((data, ctx) => {
     if (data.freezeDefault !== undefined && data.freezeKey.length === 0) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: ZOD_CUSTOM_ISSUE_CODE,
         message: 'freezeDefault requires freezeKey to be set',
         path: ['freezeDefault'],
       });

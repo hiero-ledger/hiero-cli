@@ -30,6 +30,7 @@ export const MOCK_CONTRACT_ID = '0.0.1234';
 export const MOCK_CONTRACT_ID_UNKNOWN = '0.0.9999';
 export const MOCK_ACCOUNT_ID = '0.0.5678';
 export const MOCK_ACCOUNT_ID_ALT = '0.0.5679';
+export const MOCK_OPERATOR_ACCOUNT_ID = '0.0.100000';
 export const MOCK_TOPIC_ID = '0.0.7777';
 
 export const MOCK_HEDERA_ENTITY_ID_1 = '0.0.1111';

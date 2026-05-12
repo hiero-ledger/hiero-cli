@@ -1,5 +1,6 @@
 {
   "name": "token-aliases-example",
+  "tokenName": "Token Aliases Example",
   "symbol": "TAL",
   "decimals": 10,
   "supplyType": "infinite",

@@ -22,6 +22,7 @@ export const mockAccountIds = {
   treasury: '0.0.123456',
   operator: '0.0.100000',
   association: '0.0.789012',
+  sender: '0.0.345678',
   collector: '0.0.999999',
   receiver: '0.0.555555',
 };
@@ -92,6 +93,7 @@ export const mockCredentials = {
  */
 export const validTokenFile = {
   name: 'TestToken',
+  tokenName: 'TestToken',
   symbol: 'TEST',
   decimals: 2,
   supplyType: 'finite' as const,
@@ -125,6 +127,7 @@ export const infiniteSupplyTokenFile = {
  * Invalid Token File - Missing Name
  */
 export const invalidTokenFileMissingName = {
+  tokenName: 'TestToken',
   symbol: 'TEST',
   decimals: 2,
   supplyType: 'finite' as const,
@@ -492,7 +495,7 @@ export const makeTokenCreateCommandArgs = (params: {
   logger: Logger;
   args?: Record<string, string | number | boolean | undefined>;
 }) => {
-  const api = params.api as unknown as CoreApi;
+  const api = { ...params.api, logger: params.logger } as unknown as CoreApi;
   return {
     args: {
       tokenName: 'TestToken',
@@ -505,9 +508,6 @@ export const makeTokenCreateCommandArgs = (params: {
       ...params.args,
     },
     api,
-    state: api.state,
-    config: api.config,
-    logger: params.logger,
   };
 };
 
@@ -519,7 +519,7 @@ export const makeNftCreateCommandArgs = (params: {
   logger: Logger;
   args?: Record<string, unknown>;
 }) => {
-  const api = params.api as unknown as CoreApi;
+  const api = { ...params.api, logger: params.logger } as unknown as CoreApi;
   return {
     args: {
       tokenName: 'TestToken',
@@ -531,9 +531,6 @@ export const makeNftCreateCommandArgs = (params: {
       ...params.args,
     },
     api,
-    state: api.state,
-    config: api.config,
-    logger: params.logger,
   };
 };
 
@@ -879,10 +876,7 @@ export const makeMintFtCommandArgs = (params: {
       supplyKey: ['test-supply-key'],
       ...params.args,
     },
-    api: params.api,
-    state: params.api.state,
-    config: params.api.config,
-    logger: params.logger,
+    api: { ...params.api, logger: params.logger } as CoreApi,
   };
 };
 
@@ -901,10 +895,7 @@ export const makeBurnFtCommandArgs = (params: {
       supplyKey: [],
       ...params.args,
     },
-    api: params.api,
-    state: params.api.state,
-    config: params.api.config,
-    logger: params.logger,
+    api: { ...params.api, logger: params.logger } as CoreApi,
   };
 };
 
@@ -923,10 +914,7 @@ export const makeBurnNftCommandArgs = (params: {
       supplyKey: [],
       ...params.args,
     },
-    api: params.api,
-    state: params.api.state,
-    config: params.api.config,
-    logger: params.logger,
+    api: { ...params.api, logger: params.logger } as CoreApi,
   };
 };
 
@@ -953,10 +941,7 @@ export const makeTokenMintNftCommandArgs = (params: {
       supplyKey: ['test-supply-key'],
       ...params.args,
     },
-    api: params.api,
-    state: params.api.state,
-    config: params.api.config,
-    logger: params.logger,
+    api: { ...params.api, logger: params.logger } as CoreApi,
   };
 };
 
@@ -976,10 +961,7 @@ export const makeUpdateNftMetadataCommandArgs = (params: {
       metadataKey: [],
       ...params.args,
     },
-    api: params.api,
-    state: params.api.state,
-    config: params.api.config,
-    logger: params.logger,
+    api: { ...params.api, logger: params.logger } as CoreApi,
   };
 };
 
@@ -988,6 +970,7 @@ export const makeUpdateNftMetadataCommandArgs = (params: {
  */
 export const validNftTokenFile = {
   name: 'TestNFT',
+  tokenName: 'TestNFT',
   symbol: 'TNFT',
   supplyType: 'finite',
   maxSupply: 1000,
@@ -1003,6 +986,7 @@ export const validNftTokenFile = {
  */
 export const infiniteSupplyNftFile = {
   name: 'TestNFT',
+  tokenName: 'TestNFT',
   symbol: 'TNFT',
   supplyType: 'infinite',
   treasuryKey: `${mockAccountIds.treasury}:${mockKeys.treasury}`,
@@ -1016,6 +1000,7 @@ export const infiniteSupplyNftFile = {
  */
 export const invalidNftFileMissingSupplyKey = {
   name: 'TestNFT',
+  tokenName: 'TestNFT',
   symbol: 'TNFT',
   supplyType: 'infinite',
   treasuryKey: `${mockAccountIds.treasury}:${mockKeys.treasury}`,
@@ -1028,6 +1013,7 @@ export const invalidNftFileMissingSupplyKey = {
  */
 export const invalidNftFileFiniteWithoutMaxSupply = {
   name: 'TestNFT',
+  tokenName: 'TestNFT',
   symbol: 'TNFT',
   supplyType: 'finite',
   // maxSupply missing - should fail validation
@@ -1041,6 +1027,7 @@ export const invalidNftFileFiniteWithoutMaxSupply = {
  */
 export const invalidNftFileInfiniteWithMaxSupply = {
   name: 'TestNFT',
+  tokenName: 'TestNFT',
   symbol: 'TNFT',
   supplyType: 'infinite',
   maxSupply: 1000,
@@ -1053,6 +1040,7 @@ export const invalidNftFileInfiniteWithMaxSupply = {
  * Invalid NFT Token File - Missing Name
  */
 export const invalidNftFileWithoutName = {
+  tokenName: 'TestNFT',
   symbol: 'TNFT',
   supplyType: 'finite',
   treasuryKey: '0.0.123456:treasury-key',
@@ -1102,16 +1090,13 @@ export const makeCreateNftFromFileCommandArgs = (params: {
   args?: Record<string, string | number | boolean | undefined>;
   hooks?: Map<HookPhase, Hook>;
 }) => {
-  const api = params.api as unknown as CoreApi;
+  const api = { ...params.api, logger: params.logger } as unknown as CoreApi;
   return {
     args: {
       file: 'test.json',
       ...params.args,
     },
     api,
-    state: api.state,
-    config: api.config,
-    logger: params.logger,
     hooks: params.hooks ?? new Map(),
   };
 };

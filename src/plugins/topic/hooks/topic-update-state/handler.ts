@@ -1,4 +1,4 @@
-import type { CoreApi, Logger } from '@/core';
+import type { CoreApi } from '@/core';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
 import type { BatchDataItem } from '@/core/types/shared.types';
@@ -20,7 +20,7 @@ export class TopicUpdateStateHook implements Hook<PostOutputPreparationHookParam
       return Promise.resolve({ breakFlow: false });
     }
     const batchData = parsed.data.batchData;
-    const { api, logger } = params.args;
+    const { api } = params.args;
 
     if (!batchData.success) {
       return Promise.resolve({ breakFlow: false });
@@ -29,23 +29,19 @@ export class TopicUpdateStateHook implements Hook<PostOutputPreparationHookParam
     for (const batchDataItem of [...batchData.transactions].filter(
       (item) => item.command === TOPIC_UPDATE_COMMAND_NAME,
     )) {
-      this.updateTopicState(api, logger, batchDataItem);
+      this.updateTopicState(api, batchDataItem);
     }
 
     return Promise.resolve({ breakFlow: false });
   }
 
-  private updateTopicState(
-    api: CoreApi,
-    logger: Logger,
-    batchDataItem: BatchDataItem,
-  ): void {
+  private updateTopicState(api: CoreApi, batchDataItem: BatchDataItem): void {
     const parseResult = TopicUpdateNormalisedParamsSchema.safeParse(
       batchDataItem.normalizedParams,
     );
 
     if (!parseResult.success) {
-      logger.warn(
+      api.logger.warn(
         `There was a problem with parsing data schema. The saving will not be done`,
       );
       return;
@@ -109,7 +105,7 @@ export class TopicUpdateStateHook implements Hook<PostOutputPreparationHookParam
     };
 
     const stateKey = composeKey(p.network, p.topicId);
-    const topicState = new ZustandTopicStateHelper(api.state, logger);
+    const topicState = new ZustandTopicStateHelper(api.state, api.logger);
     topicState.saveTopic(stateKey, updatedTopicData);
   }
 }

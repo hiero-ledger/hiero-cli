@@ -10,6 +10,8 @@ import type {
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { TransactionError, ValidationError } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
+import { HbarTransferEntry } from '@/core/services/transfer';
 import { HBAR_DECIMALS } from '@/core/shared/constants';
 import { processBalanceInput } from '@/core/utils/process-balance-input';
 
@@ -36,9 +38,9 @@ export class HbarTransferCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<TransferNormalisedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    logger.info('[HBAR] Transfer command invoked');
+    api.logger.info('[HBAR] Transfer command invoked');
 
     const validArgs = HbarTransferInputSchema.parse(args.args);
 
@@ -49,7 +51,7 @@ export class HbarTransferCommand extends BaseTransactionCommand<
     const providedKeyManager = validArgs.keyManager;
     const keyManager =
       providedKeyManager ||
-      api.config.getOption<KeyManager>('default_key_manager');
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const amount = processBalanceInput(validArgs.amount, HBAR_DECIMALS);
     const currentNetwork = api.network.getCurrentNetwork();
@@ -83,20 +85,24 @@ export class HbarTransferCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
     normalisedParams: TransferNormalisedParams,
   ): Promise<TransferBuildTransactionResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    logger.info(
+    api.logger.info(
       `[HBAR] Transferring ${normalisedParams.amount.toString()} tinybars from ${normalisedParams.fromAccount.accountId} to ${normalisedParams.destination}`,
     );
 
-    const transferResult = await api.hbar.transferTinybar({
-      amount: normalisedParams.amount,
-      from: normalisedParams.fromAccount.accountId,
-      to: normalisedParams.destination,
-      memo: normalisedParams.memo,
-    });
+    const transaction = api.transfer.buildTransferTransaction(
+      [
+        new HbarTransferEntry(
+          normalisedParams.fromAccount.accountId,
+          normalisedParams.destination,
+          normalisedParams.amount,
+        ),
+      ],
+      normalisedParams.memo,
+    );
 
-    return { transaction: transferResult.transaction };
+    return { transaction };
   }
 
   async signTransaction(
@@ -128,7 +134,7 @@ export class HbarTransferCommand extends BaseTransactionCommand<
       );
     }
 
-    return result;
+    return { transactionResult: result };
   }
 
   async outputPreparation(
@@ -138,21 +144,22 @@ export class HbarTransferCommand extends BaseTransactionCommand<
     _signTransactionResult: TransferSignTransactionResult,
     executeTransactionResult: TransferExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { logger } = args;
+    const { transactionResult } = executeTransactionResult;
+    const { api } = args;
 
-    logger.info(
-      `[HBAR] Transfer submitted successfully, txId=${executeTransactionResult.transactionId}`,
+    api.logger.info(
+      `[HBAR] Transfer submitted successfully, txId=${transactionResult.transactionId}`,
     );
 
     const outputData: HbarTransferOutput = {
-      transactionId: executeTransactionResult.transactionId || '',
+      transactionId: transactionResult.transactionId || '',
       fromAccountId: normalisedParams.fromAccount.accountId,
       toAccountId: normalisedParams.destination,
       amountTinybar: normalisedParams.amount,
       network: normalisedParams.currentNetwork,
       ...(normalisedParams.memo && { memo: normalisedParams.memo }),
-      ...(executeTransactionResult.receipt?.status && {
-        status: executeTransactionResult.receipt.status.status,
+      ...(transactionResult.receipt?.status && {
+        status: transactionResult.receipt.status.status,
       }),
     };
 

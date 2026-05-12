@@ -1,5 +1,6 @@
-import { z } from 'zod';
+import type { z } from 'zod';
 
+import { ZOD_CUSTOM_ISSUE_CODE } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 
 type MinimalSupplyArgs = {
@@ -16,7 +17,7 @@ export function validateSupplyTypeAndMaxSupply<Args extends MinimalSupplyArgs>(
   if (isFinite && !args.maxSupply) {
     ctx.addIssue({
       message: 'Max supply is required when supply type is FINITE',
-      code: z.ZodIssueCode.custom,
+      code: ZOD_CUSTOM_ISSUE_CODE,
       path: ['maxSupply', 'supplyType'],
     });
   }
@@ -25,7 +26,7 @@ export function validateSupplyTypeAndMaxSupply<Args extends MinimalSupplyArgs>(
     ctx.addIssue({
       message:
         'Max supply should not be provided when supply type is INFINITE, set supply type to FINITE to specify max supply',
-      code: z.ZodIssueCode.custom,
+      code: ZOD_CUSTOM_ISSUE_CODE,
       path: ['supplyType', 'maxSupply'],
     });
   }

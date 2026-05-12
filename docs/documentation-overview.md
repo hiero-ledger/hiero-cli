@@ -26,6 +26,7 @@ hiero-cli/
 │   │   ├── services/            # Service implementations
 │   │   │   ├── account/         # Account transaction creation
 │   │   │   ├── alias/           # Alias resolution and registration
+│   │   │   ├── allowance/       # Allowance approve/delete transaction builders
 │   │   │   ├── batch/           # Batch transaction service (HIP-551)
 │   │   │   ├── config/          # CLI configuration
 │   │   │   ├── contract-compiler/    # Solidity compilation
@@ -33,7 +34,6 @@ hiero-cli/
 │   │   │   ├── contract-transaction/   # Contract transaction building
 │   │   │   ├── contract-verifier/   # Contract verification
 │   │   │   ├── error-boundary/      # Error handling and output
-│   │   │   ├── hbar/            # HBAR transfer transactions
 │   │   │   ├── identity-resolution/ # Identity resolution
 │   │   │   ├── key-resolver/    # Key and account credential resolution
 │   │   │   ├── kms/             # Key management (local, encrypted)
@@ -42,11 +42,12 @@ hiero-cli/
 │   │   │   ├── network/         # Network and operator management
 │   │   │   ├── output/          # Output formatting (human, JSON, YAML)
 │   │   │   ├── plugin-management/   # Plugin loading and management
-│   │   │   ├── process-exit/    # Process exit handling
 │   │   │   ├── receipt/         # Transaction receipt retrieval
+│   │   │   ├── schedule-transaction/ # ScheduleCreate/Sign/Delete builders
 │   │   │   ├── state/           # Zustand state storage
 │   │   │   ├── token/           # Token transaction creation
 │   │   │   ├── topic/           # Topic transaction creation
+│   │   │   ├── transfer/         # TransferTransaction builders (HBAR, FT, NFT)
 │   │   │   ├── tx-execute/      # Transaction execution
 │   │   │   └── tx-sign/         # Transaction signing
 │   │   ├── shared/              # Shared config, constants, validation
@@ -63,7 +64,9 @@ hiero-cli/
 │   │   ├── hbar/               # HBAR transfer plugin
 │   │   ├── network/            # Network selection and operator management
 │   │   ├── plugin-management/  # Plugin management plugin
+│   │   ├── schedule/           # Scheduled transaction plugin (create, sign, delete, verify)
 │   │   ├── token/              # Fungible and non-fungible token management plugin
+│   │   ├── swap/               # Multi-party HBAR/token swap plugin
 │   │   ├── topic/              # Topic (HCS) management plugin
 │   │   └── test/               # Test plugin (development/testing)
 │   └── hiero-cli.ts           # Main CLI entry point

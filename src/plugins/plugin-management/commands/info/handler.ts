@@ -20,12 +20,12 @@ import { PluginManagementInfoInputSchema } from './input';
 
 export class PluginManagementInfoCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
     const validArgs = PluginManagementInfoInputSchema.parse(args.args);
     const name = validArgs.name;
 
-    logger.info(`ℹ️  Getting plugin information: ${name}`);
+    api.logger.info(`ℹ️  Getting plugin information: ${name}`);
 
     const pluginManagement = api.pluginManagement;
     const entry: PluginStateEntry | undefined =
@@ -41,7 +41,9 @@ export class PluginManagementInfoCommand implements Command {
       entry.path ?? path.resolve(__dirname, '../../../../plugins', entry.name);
     const manifestPath = path.resolve(basePath, 'manifest.js');
 
-    logger.info(`🔍 Loading plugin manifest for info from: ${manifestPath}`);
+    api.logger.info(
+      `🔍 Loading plugin manifest for info from: ${manifestPath}`,
+    );
 
     const manifest = await loadPluginManifest(manifestPath);
 

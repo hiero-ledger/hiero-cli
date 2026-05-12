@@ -14,6 +14,7 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { HederaTokenType } from '@/core/shared/constants';
 import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
@@ -36,9 +37,9 @@ export class TokenBurnNftCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<BurnNftNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
 
     const validArgs = TokenBurnNftInputSchema.parse(args.args);
 
@@ -46,7 +47,8 @@ export class TokenBurnNftCommand extends BaseTransactionCommand<
     const keyManagerArg = validArgs.keyManager;
 
     const keyManager =
-      keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
+      keyManagerArg ||
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
 
@@ -60,7 +62,7 @@ export class TokenBurnNftCommand extends BaseTransactionCommand<
 
     const tokenId = resolvedToken.tokenId;
 
-    logger.info(`Burning NFT serials for token: ${tokenId}`);
+    api.logger.info(`Burning NFT serials for token: ${tokenId}`);
 
     const tokenInfo = await api.mirror.getTokenInfo(tokenId);
 
@@ -78,22 +80,21 @@ export class TokenBurnNftCommand extends BaseTransactionCommand<
       });
     }
 
-    const { keyRefIds } =
-      await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
-        mirrorRoleKey: tokenInfo.supply_key,
-        explicitCredentials: validArgs.supplyKey,
-        keyManager,
-        resolveSigningKeyLabels: ['token:supply'],
-        emptyMirrorRoleKeyMessage: 'Token has no supply key',
-        insufficientKmsMatchesMessage:
-          'Not enough supply key(s) found in key manager for this token. Provide --supply-key.',
-        validationErrorOptions: { context: { tokenId } },
-      });
+    const { keyRefIds } = await api.keyResolver.resolveSigningKeys({
+      mirrorRoleKey: tokenInfo.supply_key,
+      explicitCredentials: validArgs.supplyKey,
+      keyManager,
+      signingKeyLabels: ['token:supply'],
+      emptyMirrorRoleKeyMessage: 'Token has no supply key',
+      insufficientKmsMatchesMessage:
+        'Not enough supply key(s) found in key manager for this token. Provide --supply-key.',
+      validationErrorOptions: { context: { tokenId } },
+    });
 
     const serialNumbers = validArgs.serials;
     const currentTotalSupply = BigInt(tokenInfo.total_supply || '0');
 
-    logger.info(
+    api.logger.info(
       `Burning ${serialNumbers.length} NFT serial(s). Current supply: ${currentTotalSupply.toString()}, after burn: ${(currentTotalSupply - BigInt(serialNumbers.length)).toString()}`,
     );
 
@@ -110,8 +111,8 @@ export class TokenBurnNftCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
     normalisedParams: BurnNftNormalizedParams,
   ): Promise<BurnNftBuildTransactionResult> {
-    const { api, logger } = args;
-    logger.debug('Building NFT burn transaction body');
+    const { api } = args;
+    api.logger.debug('Building NFT burn transaction body');
     const transaction = api.token.createBurnNftTransaction({
       tokenId: normalisedParams.tokenId,
       serialNumbers: normalisedParams.serialNumbers,
@@ -124,8 +125,8 @@ export class TokenBurnNftCommand extends BaseTransactionCommand<
     normalisedParams: BurnNftNormalizedParams,
     buildTransactionResult: BurnNftBuildTransactionResult,
   ): Promise<BurnNftSignTransactionResult> {
-    const { api, logger } = args;
-    logger.debug(
+    const { api } = args;
+    api.logger.debug(
       `Using ${normalisedParams.keyRefIds.length} key(s) for signing transaction`,
     );
     const transaction = await api.txSign.sign(

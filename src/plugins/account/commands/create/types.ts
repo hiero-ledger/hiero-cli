@@ -4,14 +4,12 @@ import type {
 } from '@hiero-ledger/sdk';
 import type {
   BaseBuildTransactionResult,
+  BaseExecuteTransactionResult,
   BaseNormalizedParams,
   BaseSignTransactionResult,
 } from '@/core';
 import type { KeyAlgorithm } from '@/core/shared/constants';
-import type {
-  SupportedNetwork,
-  TransactionResult,
-} from '@/core/types/shared.types';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 
 export interface CreateNormalisedParams extends BaseNormalizedParams {
   balance: bigint;
@@ -33,4 +31,4 @@ export interface CreateSignTransactionResult extends BaseSignTransactionResult {
   signedTransaction: HederaTransaction;
 }
 
-export type CreateExecuteTransactionResult = TransactionResult;
+export interface CreateExecuteTransactionResult extends BaseExecuteTransactionResult {}

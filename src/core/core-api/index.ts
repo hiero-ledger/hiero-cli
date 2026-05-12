@@ -12,12 +12,13 @@ export { CoreApiImplementation, createCoreApi } from './core-api';
 // Service interfaces
 export type { AccountService } from '../services/account/account-transaction-service.interface';
 export type { AliasService } from '../services/alias/alias-service.interface';
+export type { AllowanceService } from '../services/allowance/allowance-service.interface';
 export type { ConfigService } from '../services/config/config-service.interface';
-export type { HbarService } from '../services/hbar/hbar-service.interface';
 export type { KmsService } from '../services/kms/kms-service.interface';
 export type { Logger } from '../services/logger/logger-service.interface';
 export type { NetworkService } from '../services/network/network-service.interface';
 export type { StateService as GenericStateService } from '../services/state/state-service.interface';
+export type { TransferService } from '../services/transfer/transfer-service.interface';
 export type { TxExecuteService } from '../services/tx-execute/tx-execute-service.interface';
 export type { TxSignService } from '../services/tx-sign/tx-sign-service.interface';
 

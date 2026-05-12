@@ -8,9 +8,9 @@ import type { PluginManagementListOutput } from './output';
 
 export class PluginManagementListCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    logger.info('📋 Getting plugin list...');
+    api.logger.info('📋 Getting plugin list...');
 
     const entries = api.pluginManagement.listPlugins();
 

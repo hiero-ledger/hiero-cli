@@ -8,11 +8,11 @@ import { CredentialsRemoveInputSchema } from './input';
 
 export class CredentialsRemoveCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { logger, api } = args;
+    const { api } = args;
 
     const { id } = CredentialsRemoveInputSchema.parse(args.args);
 
-    logger.info(`🗑️  Removing credentials for id: ${id}`);
+    api.logger.info(`🗑️  Removing credentials for id: ${id}`);
 
     const publicKey = api.kms.get(id)?.publicKey;
     if (!publicKey) {

@@ -34,7 +34,7 @@ export class TokenAssociateCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<AssociateNormalizedParams> {
-    const { api, logger } = args;
+    const { api } = args;
     const validArgs = TokenAssociateInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ??
@@ -56,9 +56,9 @@ export class TokenAssociateCommand extends BaseTransactionCommand<
       ['token:associate'],
     );
 
-    logger.info(`🔑 Using account: ${account.accountId}`);
-    logger.info('🔑 Will sign with account key');
-    logger.info(
+    api.logger.info(`🔑 Using account: ${account.accountId}`);
+    api.logger.info('🔑 Will sign with account key');
+    api.logger.info(
       `Associating token ${tokenId} with account ${account.accountId}`,
     );
 
@@ -102,8 +102,8 @@ export class TokenAssociateCommand extends BaseTransactionCommand<
     normalisedParams: AssociateNormalizedParams,
     buildTransactionResult: AssociateBuildTransactionResult,
   ): Promise<AssociateSignTransactionResult> {
-    const { api, logger } = args;
-    logger.debug(
+    const { api } = args;
+    api.logger.debug(
       `Using key ${normalisedParams.account.keyRefId} for signing transaction`,
     );
     const signedTransaction = await api.txSign.sign(

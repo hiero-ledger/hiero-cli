@@ -10,19 +10,19 @@ import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-hel
 
 export class ListContractsCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
-    const contractState = new ZustandContractStateHelper(api.state, logger);
+    const contractState = new ZustandContractStateHelper(api.state, api.logger);
 
-    logger.info('Listing contracts...');
+    api.logger.info('Listing contracts...');
 
     const contracts = contractState.listContracts();
-    logger.debug(
+    api.logger.debug(
       `[CONTRACT LIST] Retrieved ${contracts.length} contracts from state`,
     );
 
     contracts.forEach((contract, index) => {
-      logger.debug(
+      api.logger.debug(
         `[CONTRACT LIST]   ${index + 1}. ${contract.name ?? contract.contractId} - ${contract.contractId} on ${contract.network}`,
       );
     });

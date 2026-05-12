@@ -90,7 +90,7 @@ for ((i=1; i<=ACCOUNTS_NUMBER; i++)); do
     run_hcli token create-ft \
       -n "$token_name" \
       -T "$hedera_token_name" \
-      -s "TT" \
+      -Y "TT" \
       -t "$account" \
       -i 300 \
       -a "$account"

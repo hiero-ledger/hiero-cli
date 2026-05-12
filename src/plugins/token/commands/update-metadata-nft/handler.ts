@@ -39,8 +39,8 @@ export class TokenUpdateNftMetadataCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<UpdateNftMetadataNormalizedParams> {
-    const { api, logger } = args;
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const { api } = args;
+    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     const validArgs = TokenUpdateNftMetadataInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ||
@@ -55,7 +55,7 @@ export class TokenUpdateNftMetadataCommand extends BaseTransactionCommand<
     }
 
     const tokenId = resolvedToken.tokenId;
-    logger.info(`Updating NFT metadata for token: ${tokenId}`);
+    api.logger.info(`Updating NFT metadata for token: ${tokenId}`);
 
     const metadataBytes = new TextEncoder().encode(validArgs.metadata);
     if (metadataBytes.length > MAX_NFT_METADATA_BYTES) {
@@ -79,17 +79,16 @@ export class TokenUpdateNftMetadataCommand extends BaseTransactionCommand<
       });
     }
 
-    const { keyRefIds } =
-      await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
-        mirrorRoleKey: tokenInfo.metadata_key,
-        explicitCredentials: validArgs.metadataKey,
-        keyManager,
-        resolveSigningKeyLabels: ['token:metadata'],
-        emptyMirrorRoleKeyMessage: 'Token has no metadata key',
-        insufficientKmsMatchesMessage:
-          'Not enough metadata key(s) found in key manager for this token. Provide --metadata-key.',
-        validationErrorOptions: { context: { tokenId } },
-      });
+    const { keyRefIds } = await api.keyResolver.resolveSigningKeys({
+      mirrorRoleKey: tokenInfo.metadata_key,
+      explicitCredentials: validArgs.metadataKey,
+      keyManager,
+      signingKeyLabels: ['token:metadata'],
+      emptyMirrorRoleKeyMessage: 'Token has no metadata key',
+      insufficientKmsMatchesMessage:
+        'Not enough metadata key(s) found in key manager for this token. Provide --metadata-key.',
+      validationErrorOptions: { context: { tokenId } },
+    });
 
     return {
       network,
@@ -118,8 +117,8 @@ export class TokenUpdateNftMetadataCommand extends BaseTransactionCommand<
     normalisedParams: UpdateNftMetadataNormalizedParams,
     buildTransactionResult: UpdateNftMetadataBuildTransactionResult,
   ): Promise<UpdateNftMetadataSignTransactionResult> {
-    const { api, logger } = args;
-    logger.debug(
+    const { api } = args;
+    api.logger.debug(
       `Using ${normalisedParams.keyRefIds.length} key(s) for signing transaction`,
     );
     const transaction = await api.txSign.sign(

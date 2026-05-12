@@ -1,9 +1,9 @@
 import type {
   BaseBuildTransactionResult,
+  BaseExecuteTransactionResult,
   BaseNormalizedParams,
   BaseSignTransactionResult,
   SupportedNetwork,
-  TransactionResult,
 } from '@/core';
 
 export interface FreezeNormalizedParams extends BaseNormalizedParams {
@@ -16,6 +16,4 @@ export interface FreezeBuildTransactionResult extends BaseBuildTransactionResult
 
 export interface FreezeSignTransactionResult extends BaseSignTransactionResult {}
 
-export interface FreezeExecuteTransactionResult {
-  transactionResult: TransactionResult;
-}
+export interface FreezeExecuteTransactionResult extends BaseExecuteTransactionResult {}

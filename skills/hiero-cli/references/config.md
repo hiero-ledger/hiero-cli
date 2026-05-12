@@ -23,7 +23,7 @@ List all configuration options with their current values. No options.
 hcli config list
 ```
 
-**Output:** Array of `{ option, value, description }`
+**Output:** `{ totalCount, options: [{ name, type, value, allowedValues? }] }`
 
 ---
 
@@ -38,10 +38,10 @@ Get the value of a single configuration option.
 **Example:**
 
 ```
-hcli config get --option keyManager
+hcli config get --option default_key_manager
 ```
 
-**Output:** `{ option, value }`
+**Output:** `{ name, type, value, allowedValues? }`
 
 ---
 
@@ -57,8 +57,8 @@ Set the value of a configuration option.
 **Example:**
 
 ```
-hcli config set --option keyManager --value local_encrypted
-hcli config set --option confirmations --value false
+hcli config set --option default_key_manager --value local_encrypted
+hcli config set --option skip_confirmations --value true
 ```
 
-**Output:** `{ option, oldValue, newValue }`
+**Output:** `{ name, previousValue, newValue }`
