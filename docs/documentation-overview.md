@@ -68,6 +68,7 @@ hiero-cli/
 │   │   ├── token/              # Fungible and non-fungible token management plugin
 │   │   ├── swap/               # Multi-party HBAR/token swap plugin
 │   │   ├── topic/              # Topic (HCS) management plugin
+│   │   ├── eip712/             # EIP-712 typed data sign/verify plugin
 │   │   └── test/               # Test plugin (development/testing)
 │   └── hiero-cli.ts           # Main CLI entry point
 ├── docs/                       # Technical documentation
