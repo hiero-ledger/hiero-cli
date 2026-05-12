@@ -35,7 +35,6 @@ describe('Handler Output Validation - Token Plugin', () => {
     MockedHelper.mockClear();
     MockedHelper.mockImplementation(() => ({
       saveToken: jest.fn(),
-      addTokenAssociation: jest.fn(),
       getToken: jest.fn().mockReturnValue(null),
       listTokens: jest.fn().mockReturnValue([]),
       getTokensWithStats: jest.fn().mockReturnValue({
@@ -43,8 +42,6 @@ describe('Handler Output Validation - Token Plugin', () => {
         withKeys: 0,
         byNetwork: {},
         bySupplyType: {},
-        withAssociations: 0,
-        totalAssociations: 0,
       }),
     }));
   });
@@ -237,7 +234,6 @@ describe('Handler Output Validation - Token Plugin', () => {
             supplyType: SupplyType.INFINITE,
             tokenType: 'FungibleCommon',
             maxSupply: 0,
-            associationCount: 0,
             treasuryId: '0.0.111',
             network: 'testnet',
           },
@@ -247,8 +243,6 @@ describe('Handler Output Validation - Token Plugin', () => {
           withKeys: 0,
           byNetwork: { testnet: 1 },
           bySupplyType: { [SupplyType.INFINITE]: 1 },
-          withAssociations: 0,
-          totalAssociations: 0,
         }),
       }));
 

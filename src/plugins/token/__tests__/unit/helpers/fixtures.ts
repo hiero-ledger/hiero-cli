@@ -716,23 +716,6 @@ export const mockListTokens = {
       network: 'mainnet',
     }),
   ],
-  withAssociations: [
-    makeTokenData({
-      tokenId: '0.0.1111',
-      name: 'Token 1',
-      symbol: 'TK1',
-      network: 'testnet',
-      supplyType: SupplyType.INFINITE,
-    }),
-    makeTokenData({
-      tokenId: '0.0.2222',
-      name: 'Token 2',
-      symbol: 'TK2',
-      network: 'testnet',
-      supplyType: SupplyType.FINITE,
-      maxSupply: 1000000,
-    }),
-  ],
   finiteSupply: [
     makeTokenData({
       tokenId: '0.0.1111',
@@ -766,12 +749,6 @@ export const mockTokenStats = {
     total: 2,
     byNetwork: { testnet: 1, mainnet: 1 },
     bySupplyType: { [SupplyType.INFINITE]: 2 },
-    withKeys: 2,
-  }),
-  withAssociations: makeTokenStats({
-    total: 2,
-    byNetwork: { testnet: 2 },
-    bySupplyType: { [SupplyType.INFINITE]: 1, [SupplyType.FINITE]: 1 },
     withKeys: 2,
   }),
   finiteSupply: makeTokenStats({
