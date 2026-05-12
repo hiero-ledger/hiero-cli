@@ -104,10 +104,10 @@ Generate files in this order:
 
 1. Create the project directory
 2. Run `git init` inside it; create `.gitignore`
-3. `package.json` — use the template from RULES.md, substituting `{project-name}`, `{description}`, and the hiero-cli dependency value
-4. `tsconfig.base.json`, `tsconfig.json`, `tsconfig.test.json` — exact content from RULES.md
-5. `jest.config.js`, `jest.unit.config.js` — exact content from RULES.md
-6. `eslint.config.js` — exact content from RULES.md
+3. `package.json` — use the template from RULES.md §12, substituting `{project-name}`, `{description}`, and the hiero-cli dependency value; cross-check all `devDependencies` versions against `hiero-ledger/hiero-cli` `package.json`
+4. `tsconfig.base.json`, `tsconfig.json`, `tsconfig.test.json` — copy verbatim from `hiero-ledger/hiero-cli` (see RULES.md §12)
+5. `jest.config.js`, `jest.unit.config.js` — copy verbatim from `hiero-ledger/hiero-cli`
+6. `eslint.config.js` — copy verbatim from `hiero-ledger/hiero-cli`
 7. `README.md` — project name, one-line description, and the ready-to-run `hcli plugin-management add` command
 
 ### 4b. Plugin files
