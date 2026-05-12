@@ -11,13 +11,13 @@ import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { TOPIC_CREATE_COMMAND_NAME } from '@/plugins/topic/commands/create';
 import { TopicCreateStateHook } from '@/plugins/topic/hooks/topic-create-state';
-import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
+import { TopicStateServiceImpl } from '@/plugins/topic/services/topic-state.service';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandTopicStateHelper: jest.fn(),
+jest.mock('../../services/topic-state.service', () => ({
+  TopicStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = ZustandTopicStateHelper as jest.Mock;
+const MockedHelper = TopicStateServiceImpl as jest.Mock;
 
 const createTopicBatchDataItem = (
   overrides: Partial<BatchDataItem> = {},

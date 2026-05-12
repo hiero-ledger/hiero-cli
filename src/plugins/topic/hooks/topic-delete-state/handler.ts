@@ -1,12 +1,14 @@
-import type { CoreApi } from '@/core';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
+import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { BatchDataItem } from '@/core/types/shared.types';
+import type { TopicCleanupService } from '@/plugins/topic/services/topic-cleanup.service.interface';
 
 import { OrchestratorSource } from '@/core';
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
 import { TOPIC_DELETE_COMMAND_NAME } from '@/plugins/topic/commands/delete/handler';
-import { TopicHelper } from '@/plugins/topic/topic-helper';
+import { TopicCleanupServiceImpl } from '@/plugins/topic/services/topic-cleanup.service';
+import { TopicStateServiceImpl } from '@/plugins/topic/services/topic-state.service';
 
 import { TopicDeleteNormalisedParamsSchema } from './types';
 
@@ -19,27 +21,30 @@ export class TopicDeleteStateHook implements Hook<PostOutputPreparationHookParam
       return Promise.resolve({ breakFlow: false });
     }
     const batchData = parsed.data.batchData;
-    const { api } = params.args;
+    const { alias, logger, state } = params.args.api;
     if (!batchData.success) {
       return Promise.resolve({ breakFlow: false });
     }
+    const topicState = new TopicStateServiceImpl(state, logger);
+    const topicCleanup = new TopicCleanupServiceImpl(alias, topicState, logger);
+
     for (const batchDataItem of [...batchData.transactions].filter(
       (item) => item.command === TOPIC_DELETE_COMMAND_NAME,
     )) {
-      this.applyDeleteFromBatchItem(api, batchDataItem);
+      this.applyDeleteFromBatchItem(batchDataItem, { logger, topicCleanup });
     }
     return Promise.resolve({ breakFlow: false });
   }
 
   private applyDeleteFromBatchItem(
-    api: CoreApi,
     batchDataItem: BatchDataItem,
+    deps: { logger: Logger; topicCleanup: TopicCleanupService },
   ): void {
     const parseResult = TopicDeleteNormalisedParamsSchema.safeParse(
       batchDataItem.normalizedParams,
     );
     if (!parseResult.success) {
-      api.logger.warn(
+      deps.logger.warn(
         'Topic delete batch item skipped: normalized params did not match schema',
       );
       return;
@@ -48,8 +53,7 @@ export class TopicDeleteStateHook implements Hook<PostOutputPreparationHookParam
     if (normalised.stateOnly) {
       return;
     }
-    const topicHelper = new TopicHelper(api.alias, api.state, api.logger);
-    topicHelper.removeTopicFromLocalState(
+    deps.topicCleanup.removeTopicFromLocalState(
       normalised.topicToDelete,
       normalised.network,
     );

@@ -1,23 +1,25 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
+import type { TopicResolutionService } from '@/plugins/topic/services/topic-resolution.service.interface';
 import type { TopicFindMessageOutput } from './output';
 import type { FindMessageNormalisedParams } from './types';
 
+import { TopicResolutionServiceImpl } from '@/plugins/topic/services/topic-resolution.service';
 import { fetchFilteredMessages } from '@/plugins/topic/utils/message-helpers';
 import { buildApiFilters } from '@/plugins/topic/utils/messageFilters';
-import { resolveTopicId } from '@/plugins/topic/utils/topicResolver';
 
 import { TopicFindMessageInputSchema } from './input';
 
 export class TopicFindMessageCommand implements Command {
+  constructor(private readonly topicResolution: TopicResolutionService) {}
+
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
 
     const validParams = TopicFindMessageInputSchema.parse(args.args);
     const currentNetwork = api.network.getCurrentNetwork();
-    const topicId = resolveTopicId(
+    const topicId = this.topicResolution.resolveTopicId(
       validParams.topic,
-      api.alias,
       currentNetwork,
     );
 
@@ -50,5 +52,8 @@ export class TopicFindMessageCommand implements Command {
 export async function topicFindMessage(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TopicFindMessageCommand().execute(args);
+  const { alias } = args.api;
+  const topicResolution = new TopicResolutionServiceImpl(alias);
+
+  return new TopicFindMessageCommand(topicResolution).execute(args);
 }

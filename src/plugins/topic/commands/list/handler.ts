@@ -1,17 +1,19 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
+import type { TopicStateService } from '@/plugins/topic/services/topic-state.service.interface';
 import type { TopicListOutput } from './output';
 import type { ListTopicsNormalisedParams } from './types';
 
-import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
+import { TopicStateServiceImpl } from '@/plugins/topic/services/topic-state.service';
 
 import { TopicListInputSchema } from './input';
 
 export class TopicListCommand implements Command {
+  constructor(private readonly topicState: TopicStateService) {}
+
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
 
-    const topicState = new ZustandTopicStateHelper(api.state, api.logger);
     const validArgs = TopicListInputSchema.parse(args.args);
     const normalisedParams: ListTopicsNormalisedParams = {
       networkFilter: validArgs.network,
@@ -19,7 +21,7 @@ export class TopicListCommand implements Command {
 
     api.logger.info('Listing topics...');
 
-    let topics = topicState.listTopics();
+    let topics = this.topicState.listTopics();
 
     if (normalisedParams.networkFilter) {
       topics = topics.filter(
@@ -69,5 +71,8 @@ export class TopicListCommand implements Command {
 export async function topicList(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TopicListCommand().execute(args);
+  const { logger, state } = args.api;
+  const topicState = new TopicStateServiceImpl(state, logger);
+
+  return new TopicListCommand(topicState).execute(args);
 }

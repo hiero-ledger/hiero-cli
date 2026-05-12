@@ -12,13 +12,13 @@ import { SupportedNetwork } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { TOPIC_UPDATE_COMMAND_NAME } from '@/plugins/topic/commands/update/handler';
 import { TopicUpdateStateHook } from '@/plugins/topic/hooks/topic-update-state';
-import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
+import { TopicStateServiceImpl } from '@/plugins/topic/services/topic-state.service';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandTopicStateHelper: jest.fn(),
+jest.mock('../../services/topic-state.service', () => ({
+  TopicStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = ZustandTopicStateHelper as jest.Mock;
+const MockedHelper = TopicStateServiceImpl as jest.Mock;
 
 const existingTopicData = (): TopicData => ({
   name: 'stored-topic',

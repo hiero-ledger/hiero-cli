@@ -1,24 +1,30 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { TopicData } from '@/plugins/topic/schema';
+import type { TopicAliasService } from '@/plugins/topic/services/topic-alias.service.interface';
+import type { TopicStateService } from '@/plugins/topic/services/topic-state.service.interface';
 import type { TopicImportOutput } from './output';
 import type { ImportTopicNormalisedParams } from './types';
 
 import { ValidationError } from '@/core/errors';
-import { AliasType } from '@/core/types/shared.types';
 import { extractPublicKeysFromMirrorNodeKey } from '@/core/utils/extract-public-keys';
 import { hederaTimestampToIso } from '@/core/utils/hedera-timestamp';
 import { composeKey } from '@/core/utils/key-composer';
 import { matchPublicKeysToKmsRefIds } from '@/core/utils/match-keys-to-kms';
-import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
+import { TopicAliasServiceImpl } from '@/plugins/topic/services/topic-alias.service';
+import { TopicStateServiceImpl } from '@/plugins/topic/services/topic-state.service';
 
 import { TopicImportInputSchema } from './input';
 
 export class TopicImportCommand implements Command {
+  constructor(
+    private readonly topicState: TopicStateService,
+    private readonly topicAlias: TopicAliasService,
+  ) {}
+
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
 
-    const topicState = new ZustandTopicStateHelper(api.state, api.logger);
     const validArgs = TopicImportInputSchema.parse(args.args);
     const network = api.network.getCurrentNetwork();
 
@@ -29,7 +35,7 @@ export class TopicImportCommand implements Command {
     };
 
     if (normalisedParams.alias) {
-      api.alias.availableOrThrow(
+      this.topicAlias.assertTopicAliasAvailable(
         normalisedParams.alias,
         normalisedParams.network,
       );
@@ -40,18 +46,17 @@ export class TopicImportCommand implements Command {
 
     api.logger.info(`Importing topic: ${key} (${normalisedParams.topicId})`);
 
-    if (topicState.loadTopic(key)) {
+    if (this.topicState.loadTopic(key)) {
       throw new ValidationError(
         `Topic with ID '${normalisedParams.topicId}' already exists in state`,
       );
     }
 
     if (normalisedParams.alias) {
-      api.alias.register({
+      this.topicAlias.registerTopicAlias({
         alias: normalisedParams.alias,
-        type: AliasType.Topic,
         network: normalisedParams.network,
-        entityId: normalisedParams.topicId,
+        topicId: normalisedParams.topicId,
         createdAt: new Date().toISOString(),
       });
     }
@@ -89,7 +94,7 @@ export class TopicImportCommand implements Command {
       createdAt,
     };
 
-    topicState.saveTopic(key, topicData);
+    this.topicState.saveTopic(key, topicData);
 
     const result: TopicImportOutput = {
       topicId: normalisedParams.topicId,
@@ -107,5 +112,9 @@ export class TopicImportCommand implements Command {
 export async function topicImport(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TopicImportCommand().execute(args);
+  const { alias, logger, state } = args.api;
+  const topicState = new TopicStateServiceImpl(state, logger);
+  const topicAlias = new TopicAliasServiceImpl(alias, logger);
+
+  return new TopicImportCommand(topicState, topicAlias).execute(args);
 }
