@@ -1,8 +1,12 @@
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type {
-  AccountDeleteKmsCleanupInput,
-  AccountDeleteLocalStateInput,
-} from '@/plugins/account/commands/delete/types';
+
+export interface AccountDeleteLocalStateInput {
+  accountId: string;
+}
+
+export interface AccountDeleteKmsCleanupInput {
+  keyRefId: string;
+}
 
 export interface AccountCleanupService {
   removeAccountFromLocalState(

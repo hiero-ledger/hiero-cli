@@ -1,29 +1,14 @@
 import type { SupportedNetwork } from '@/core/types/shared.types';
+import type {
+  NftBalancesResult,
+  TokenBalanceWithMetadata,
+} from './account-balance.types';
 
-export interface TokenBalanceWithMetadata {
-  tokenId: string;
-  name?: string;
-  symbol?: string;
-  alias?: string;
-  balance: bigint;
-  balanceDisplay?: string;
-  decimals?: number;
-}
-
-export interface NftCollectionBalance {
-  tokenId: string;
-  name?: string;
-  symbol?: string;
-  alias?: string;
-  serialNumbers: number[];
-  count: number;
-}
-
-export interface NftBalancesResult {
-  collections: NftCollectionBalance[];
-  totalCount: number;
-  truncated: boolean;
-}
+export type {
+  NftBalancesResult,
+  NftCollectionBalance,
+  TokenBalanceWithMetadata,
+} from './account-balance.types';
 
 export interface AccountBalanceService {
   fetchTokenBalances(
