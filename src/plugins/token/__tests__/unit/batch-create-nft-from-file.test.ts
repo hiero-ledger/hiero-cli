@@ -10,19 +10,21 @@ import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 import { TOKEN_CREATE_NFT_FROM_FILE_COMMAND_NAME } from '@/plugins/token/commands/create-nft-from-file';
 import { TokenCreateNftFromFileStateHook } from '@/plugins/token/hooks/token-create-nft-from-file-state';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { mockAccountIds, validNftTokenFile } from './helpers/fixtures';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandTokenStateHelper: jest.fn(),
+jest.mock('../../services/token-state.service', () => ({
+  TokenStateServiceImpl: jest.fn(),
 }));
 
-jest.mock('../../utils/token-associations', () => ({
-  processTokenAssociations: jest.fn().mockResolvedValue([]),
+jest.mock('../../services/token-associations.service', () => ({
+  TokenAssociationsServiceImpl: jest.fn().mockImplementation(() => ({
+    processTokenAssociations: jest.fn().mockResolvedValue([]),
+  })),
 }));
 
-const MockedHelper = ZustandTokenStateHelper as jest.Mock;
+const MockedHelper = TokenStateServiceImpl as jest.Mock;
 
 const createFlatNormalizedParams = (
   overrides: Record<string, unknown> = {},

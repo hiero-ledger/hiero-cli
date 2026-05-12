@@ -6,8 +6,8 @@ import type { BatchDataItem } from '@/core/types/shared.types';
 import { OrchestratorSource } from '@/core';
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
 import { TOKEN_UPDATE_COMMAND_NAME } from '@/plugins/token/commands/update/handler';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 import { buildUpdatedTokenData } from '@/plugins/token/utils/token-data-builders';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { TokenUpdateNormalisedParamsSchema } from './types';
 
@@ -48,7 +48,7 @@ export class TokenUpdateStateHook implements Hook<PostOutputPreparationHookParam
     }
 
     const p = parseResult.data;
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
+    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
     const existing = tokenState.getToken(p.stateKey);
 
     const tokenData = buildUpdatedTokenData(p, p.tokenInfo, existing);

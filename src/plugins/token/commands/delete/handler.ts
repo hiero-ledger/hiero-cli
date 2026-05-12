@@ -16,10 +16,10 @@ import {
   ValidationError,
 } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
-import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
-import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenAliasServiceImpl } from '@/plugins/token/services/token-alias.service';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { TokenDeleteInputSchema } from './input';
 
@@ -56,9 +56,16 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
     }
 
     const network = api.network.getCurrentNetwork();
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
+    const tokenReferences = new TokenReferenceServiceImpl(
+      api.identityResolution,
+    );
+    const tokenAliases = new TokenAliasServiceImpl(api.alias);
+    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
 
-    const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
+    const resolvedToken = tokenReferences.resolveToken(
+      validArgs.token,
+      network,
+    );
     if (!resolvedToken) {
       throw new NotFoundError('Token not found', {
         context: { token: validArgs.token },
@@ -74,13 +81,13 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
       });
     }
 
-    const aliasesForToken = api.alias
-      .list({ network, type: AliasType.Token })
+    const aliasesForToken = tokenAliases
+      .list(network)
       .filter((rec) => rec.entityId === tokenId);
 
     const removedAliases: string[] = [];
     for (const rec of aliasesForToken) {
-      api.alias.remove(rec.alias, network);
+      tokenAliases.remove(rec.alias, network);
       removedAliases.push(`${rec.alias} (${network})`);
     }
 
@@ -113,8 +120,14 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
+    const tokenReferences = new TokenReferenceServiceImpl(
+      api.identityResolution,
+    );
 
-    const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
+    const resolvedToken = tokenReferences.resolveToken(
+      validArgs.token,
+      network,
+    );
     if (!resolvedToken) {
       throw new NotFoundError('Token not found', {
         context: { token: validArgs.token },
@@ -124,7 +137,7 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
 
     const tokenInfo = await api.mirror.getTokenInfo(tokenId);
 
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
+    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
     const stateKey = composeKey(network, tokenId);
     const tokenInState = tokenState.getToken(stateKey);
 
@@ -210,19 +223,20 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
     const { api } = args;
     const { network, tokenId, tokenName } = normalisedParams;
 
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
+    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
+    const tokenAliases = new TokenAliasServiceImpl(api.alias);
     const key = composeKey(network, tokenId);
     const tokenInState = tokenState.getToken(key);
 
     const removedAliases: string[] = [];
 
     if (tokenInState) {
-      const aliasesForToken = api.alias
-        .list({ network, type: AliasType.Token })
+      const aliasesForToken = tokenAliases
+        .list(network)
         .filter((rec) => rec.entityId === tokenId);
 
       for (const rec of aliasesForToken) {
-        api.alias.remove(rec.alias, network);
+        tokenAliases.remove(rec.alias, network);
         removedAliases.push(`${rec.alias} (${network})`);
       }
 

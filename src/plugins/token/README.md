@@ -166,10 +166,20 @@ src/plugins/token/
 │   ├── token-build-output.ts  # NFT output builder utilities
 │   ├── token-amount-helpers.ts  # Token amount processing helpers
 │   ├── token-data-builders.ts   # Token data builders for create-from-file and update commands
-│   ├── token-associations.ts   # Token association processing
-│   └── [other utility files...]
-├── zustand-state-helper.ts  # State management helper
-├── resolver-helper.ts       # Token and account resolver utilities
+│   └── [pure utility files...]
+├── services/
+│   ├── token-state.service.ts              # Token state service
+│   ├── token-state.service.interface.ts
+│   ├── token-reference.service.ts          # Token and account reference resolution
+│   ├── token-reference.service.interface.ts
+│   ├── token-keys.service.ts               # Token key resolution
+│   ├── token-keys.service.interface.ts
+│   ├── token-file.service.ts               # Token definition file loading
+│   ├── token-file.service.interface.ts
+│   ├── token-associations.service.ts       # Token association processing
+│   ├── token-associations.service.interface.ts
+│   ├── token-alias.service.ts              # Token alias state integration
+│   └── token-alias.service.interface.ts
 ├── __tests__/               # Comprehensive test suite
 │   ├── unit/
 │   │   ├── adr007-compliance.test.ts  # Output structure compliance tests
@@ -1653,7 +1663,8 @@ The plugin uses the Core API services:
 - `api.token` - Token transaction creation and management
 - `api.txExecution` - Transaction signing and execution
 - `api.kms` - Account credentials and key management
-- `api.alias` - Account and token name resolution
+- `api.identityResolution` - Account and token reference resolution
+- `api.alias` - Token alias registration/list/removal via token alias service
 - `api.state` - Namespaced state management
 - `api.network` - Network information
 - `api.receipt` - Transaction receipt retrieval (used by batch-state hooks)

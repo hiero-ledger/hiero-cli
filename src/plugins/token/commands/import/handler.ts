@@ -7,14 +7,15 @@ import type { ImportTokenNormalizedParams } from './types';
 
 import { NotFoundError, ValidationError } from '@/core/errors';
 import { MirrorTokenTypeToHederaTokenType } from '@/core/shared/constants';
-import { AliasType, SupplyType } from '@/core/types/shared.types';
+import { SupplyType } from '@/core/types/shared.types';
 import {
   extractPublicKeysFromMirrorNodeKey,
   getEffectiveKeyRequirement,
 } from '@/core/utils/extract-public-keys';
 import { composeKey } from '@/core/utils/key-composer';
 import { matchPublicKeysToKmsRefIds } from '@/core/utils/match-keys-to-kms';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenAliasServiceImpl } from '@/plugins/token/services/token-alias.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { TokenImportInputSchema } from './input';
 
@@ -37,17 +38,18 @@ export class TokenImportCommand implements Command {
 
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
+    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
     const parsedArgs = TokenImportInputSchema.parse(args.args);
     const validArgs: ImportTokenNormalizedParams = {
       tokenId: parsedArgs.token,
       alias: parsedArgs.name,
     };
     const network = api.network.getCurrentNetwork();
+    const tokenAliases = new TokenAliasServiceImpl(api.alias);
     const key = composeKey(network, validArgs.tokenId);
 
     if (validArgs.alias) {
-      api.alias.availableOrThrow(validArgs.alias, network);
+      tokenAliases.availableOrThrow(validArgs.alias, network);
     }
     if (tokenState.getToken(key)) {
       throw new ValidationError(
@@ -64,11 +66,10 @@ export class TokenImportCommand implements Command {
     }
 
     if (validArgs.alias) {
-      api.alias.register({
+      tokenAliases.register({
         alias: validArgs.alias,
-        type: AliasType.Token,
         network,
-        entityId: validArgs.tokenId,
+        tokenId: validArgs.tokenId,
         createdAt: new Date().toISOString(),
       });
     }

@@ -11,10 +11,7 @@ import type {
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { TransactionError, ValidationError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
-import {
-  resolveDestinationAccountParameter,
-  resolveTokenParameter,
-} from '@/plugins/token/resolver-helper';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
 
 import { TokenCancelAirdropInputSchema } from './input';
 
@@ -49,16 +46,18 @@ export class TokenCancelAirdropCommand extends BaseTransactionCommand<
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
+    const tokenReferences = new TokenReferenceServiceImpl(
+      api.identityResolution,
+    );
 
-    const resolvedToken = resolveTokenParameter(tokenIdOrAlias, api, network);
+    const resolvedToken = tokenReferences.resolveToken(tokenIdOrAlias, network);
     if (!resolvedToken?.tokenId) {
       throw new ValidationError(`Failed to resolve token: ${tokenIdOrAlias}`);
     }
     const tokenId = resolvedToken.tokenId;
 
-    const resolvedReceiver = resolveDestinationAccountParameter(
+    const resolvedReceiver = await tokenReferences.resolveDestinationAccount(
       receiver,
-      api,
       network,
     );
     if (!resolvedReceiver?.accountId) {

@@ -3,15 +3,16 @@ import type { Command } from '@/core/commands/command.interface';
 import type { TokenListOutput } from './output';
 import type { ListTokensNormalizedParams } from './types';
 
-import { AliasType } from '@/core/types/shared.types';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenAliasServiceImpl } from '@/plugins/token/services/token-alias.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { TokenListInputSchema } from './input';
 
 export class TokenListCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
+    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
+    const tokenAliases = new TokenAliasServiceImpl(api.alias);
     const validArgs: ListTokensNormalizedParams = TokenListInputSchema.parse(
       args.args,
     );
@@ -29,11 +30,10 @@ export class TokenListCommand implements Command {
     });
 
     const tokensList = tokens.map((token) => {
-      const alias = api.alias.resolve(
+      const alias = tokenAliases.resolveAliasForToken(
         token.tokenId,
-        AliasType.Token,
         token.network,
-      )?.alias;
+      );
 
       return {
         tokenId: token.tokenId,

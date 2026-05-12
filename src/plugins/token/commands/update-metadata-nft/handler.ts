@@ -18,8 +18,8 @@ import { ConfigOptionKey } from '@/core/services/config/config-service.interface
 import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { HederaTokenType } from '@/core/shared/constants';
 import { MAX_NFT_METADATA_BYTES } from '@/plugins/token/constants';
-import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { TokenUpdateNftMetadataInputSchema } from './input';
 
@@ -40,13 +40,19 @@ export class TokenUpdateNftMetadataCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
   ): Promise<UpdateNftMetadataNormalizedParams> {
     const { api } = args;
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
+    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
     const validArgs = TokenUpdateNftMetadataInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ||
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
     const network = api.network.getCurrentNetwork();
-    const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
+    const tokenReferences = new TokenReferenceServiceImpl(
+      api.identityResolution,
+    );
+    const resolvedToken = tokenReferences.resolveToken(
+      validArgs.token,
+      network,
+    );
 
     if (!resolvedToken) {
       throw new NotFoundError(`Token not found: ${validArgs.token}`, {

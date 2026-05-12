@@ -14,11 +14,8 @@ import { TransactionError, ValidationError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { isRawUnits } from '@/core/utils/amount-helpers';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
-import {
-  resolveDestinationAccountParameter,
-  resolveTokenParameter,
-} from '@/plugins/token/resolver-helper';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { TokenAirdropFtInputSchema } from './input';
 
@@ -41,7 +38,7 @@ export class TokenAirdropFtCommand extends BaseTransactionCommand<
   ): Promise<TokenAirdropFtNormalizedParams> {
     const { api } = args;
 
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
+    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
     const validArgs = TokenAirdropFtInputSchema.parse(args.args);
 
     const {
@@ -63,8 +60,11 @@ export class TokenAirdropFtCommand extends BaseTransactionCommand<
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
+    const tokenReferences = new TokenReferenceServiceImpl(
+      api.identityResolution,
+    );
 
-    const resolvedToken = resolveTokenParameter(tokenIdOrAlias, api, network);
+    const resolvedToken = tokenReferences.resolveToken(tokenIdOrAlias, network);
     if (!resolvedToken?.tokenId) {
       throw new ValidationError(`Failed to resolve token: ${tokenIdOrAlias}`);
     }
@@ -87,9 +87,8 @@ export class TokenAirdropFtCommand extends BaseTransactionCommand<
       const recipientInput = recipients[i];
       const amountInput = amounts[i];
 
-      const resolvedAccount = resolveDestinationAccountParameter(
+      const resolvedAccount = await tokenReferences.resolveDestinationAccount(
         recipientInput,
-        api,
         network,
       );
       if (!resolvedAccount?.accountId) {

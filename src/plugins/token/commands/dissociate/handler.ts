@@ -12,9 +12,9 @@ import { ValidationError } from '@/core';
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { NotFoundError, TransactionError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
-import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
-import { removeAssociationFromState } from '@/plugins/token/utils/token-associations';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenAssociationsServiceImpl } from '@/plugins/token/services/token-associations.service';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { TokenDissociateInputSchema } from './input';
 
@@ -39,7 +39,13 @@ export class TokenDissociateCommand extends BaseTransactionCommand<
       validArgs.keyManager ??
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
     const network = api.network.getCurrentNetwork();
-    const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
+    const tokenReferences = new TokenReferenceServiceImpl(
+      api.identityResolution,
+    );
+    const resolvedToken = tokenReferences.resolveToken(
+      validArgs.token,
+      network,
+    );
 
     if (!resolvedToken) {
       throw new NotFoundError('Token not found', {
@@ -145,13 +151,20 @@ export class TokenDissociateCommand extends BaseTransactionCommand<
     executeTransactionResult: DissociateExecuteTransactionResult,
   ): Promise<CommandResult> {
     const { api } = args;
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
-    removeAssociationFromState(
+    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
+    const tokenAssociations = new TokenAssociationsServiceImpl(
+      api.keyResolver,
+      api.token,
+      api.txSign,
+      api.txExecute,
       tokenState,
+      normalisedParams.keyManager,
+      api.logger,
+    );
+    tokenAssociations.removeAssociationFromState(
       normalisedParams.tokenId,
       normalisedParams.account.accountId,
       normalisedParams.network,
-      api.logger,
     );
 
     const outputData: TokenDissociateOutput = {

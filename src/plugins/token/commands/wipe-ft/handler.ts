@@ -19,12 +19,12 @@ import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { HederaTokenType } from '@/core/shared/constants';
 import { isRawUnits } from '@/core/utils/amount-helpers';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
-import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 import {
   isCannotWipeTreasuryError,
   isNoWipeKeyError,
 } from '@/plugins/token/utils/transaction-error-receipt-status';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { TokenWipeFtInputSchema } from './input';
 
@@ -45,7 +45,7 @@ export class TokenWipeFtCommand extends BaseTransactionCommand<
   ): Promise<WipeFtNormalizedParams> {
     const { api } = args;
 
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
+    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
     const validArgs = TokenWipeFtInputSchema.parse(args.args);
 
     const keyManager =
@@ -53,8 +53,14 @@ export class TokenWipeFtCommand extends BaseTransactionCommand<
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
+    const tokenReferences = new TokenReferenceServiceImpl(
+      api.identityResolution,
+    );
 
-    const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
+    const resolvedToken = tokenReferences.resolveToken(
+      validArgs.token,
+      network,
+    );
     if (!resolvedToken) {
       throw new NotFoundError(`Token not found: ${validArgs.token}`, {
         context: { token: validArgs.token },

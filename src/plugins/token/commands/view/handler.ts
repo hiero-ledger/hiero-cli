@@ -6,7 +6,7 @@ import type { ViewTokenNormalizedParams } from './types';
 
 import { NotFoundError, ValidationError } from '@/core/errors';
 import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
-import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
 import { tokenBuildOutput } from '@/plugins/token/utils/token-build-output';
 
 import { TokenViewInputSchema } from './input';
@@ -18,8 +18,14 @@ export class TokenViewCommand implements Command {
       args.args,
     );
     const network = api.network.getCurrentNetwork();
+    const tokenReferences = new TokenReferenceServiceImpl(
+      api.identityResolution,
+    );
 
-    const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
+    const resolvedToken = tokenReferences.resolveToken(
+      validArgs.token,
+      network,
+    );
     if (!resolvedToken) {
       throw new NotFoundError(`Token not found: ${validArgs.token}`, {
         context: { token: validArgs.token },

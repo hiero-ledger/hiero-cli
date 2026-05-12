@@ -26,10 +26,10 @@ import { ConfigOptionKey } from '@/core/services/config/config-service.interface
 import { NULL_TOKEN } from '@/core/shared/constants';
 import { composeKey } from '@/core/utils/key-composer';
 import { toNullableHederaKey } from '@/core/utils/keys-to-hedera-key';
-import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
+import { resolveOptionalKeys } from '@/plugins/token/services/token-keys.service';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 import { buildUpdatedTokenData } from '@/plugins/token/utils/token-data-builders';
-import { resolveOptionalKeys } from '@/plugins/token/utils/token-key-resolver';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { TokenUpdateInputSchema } from './input';
 
@@ -52,11 +52,17 @@ export class TokenUpdateCommand extends BaseTransactionCommand<
     const validArgs = TokenUpdateInputSchema.parse(args.args);
 
     const network = api.network.getCurrentNetwork();
+    const tokenReferences = new TokenReferenceServiceImpl(
+      api.identityResolution,
+    );
     const keyManager =
       validArgs.keyManager ??
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
-    const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
+    const resolvedToken = tokenReferences.resolveToken(
+      validArgs.token,
+      network,
+    );
     if (!resolvedToken) {
       throw new NotFoundError(`Token not found: ${validArgs.token}`, {
         context: { token: validArgs.token },
@@ -299,7 +305,7 @@ export class TokenUpdateCommand extends BaseTransactionCommand<
   ): Promise<CommandResult> {
     const { transactionResult } = executeTransactionResult;
     const { api } = args;
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
+    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
     const tokenInfo = normalisedParams.tokenInfo;
 
     const updatedFields = this.buildUpdatedFields(normalisedParams);

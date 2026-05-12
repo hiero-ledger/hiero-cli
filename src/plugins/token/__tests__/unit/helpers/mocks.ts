@@ -41,10 +41,10 @@ import {
   makeKeyResolverMock as makeGlobalKeyResolverMock,
   makeScheduleTransactionServiceMock,
 } from '@/__tests__/mocks/mocks';
-import { InternalError, KeyAlgorithm } from '@/core';
+import { InternalError, KeyAlgorithm, NotFoundError } from '@/core';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
-import { AliasType } from '@/core/types/shared.types';
+import { AliasType, EntityReferenceType } from '@/core/types/shared.types';
 
 import { mockTransactionResults } from './fixtures';
 
@@ -475,20 +475,72 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
       resolveAccount: jest
         .fn()
         .mockImplementation(
-          ({ accountReference }: { accountReference: string }) => {
+          ({
+            accountReference,
+            type,
+          }: {
+            accountReference: string;
+            type: EntityReferenceType;
+          }) => {
+            if (type !== EntityReferenceType.ALIAS) {
+              return {
+                accountId: accountReference,
+                accountPublicKey: '',
+              };
+            }
+
             const resolved = alias.resolve(
               accountReference,
               AliasType.Account,
               (config?.network || 'testnet') as SupportedNetwork,
             );
+            if (!resolved?.entityId) {
+              throw new NotFoundError(
+                `Account "${accountReference}" not found on ${
+                  config?.network || 'testnet'
+                }`,
+              );
+            }
             return {
-              accountId: resolved?.entityId ?? accountReference,
+              accountId: resolved.entityId,
               accountPublicKey: '',
             };
           },
         ),
       resolveContract: jest.fn(),
-      resolveReferenceToEntityOrEvmAddress: jest.fn(),
+      resolveReferenceToEntityOrEvmAddress: jest
+        .fn()
+        .mockImplementation(
+          ({
+            entityReference,
+            aliasType,
+            referenceType,
+          }: {
+            entityReference: string;
+            aliasType: AliasType;
+            referenceType: EntityReferenceType;
+          }) => {
+            if (referenceType !== EntityReferenceType.ALIAS) {
+              return { entityIdOrEvmAddress: entityReference };
+            }
+
+            const resolved = alias.resolve(
+              entityReference,
+              aliasType,
+              (config?.network || 'testnet') as SupportedNetwork,
+            );
+            if (!resolved?.entityId) {
+              const entityName =
+                aliasType === AliasType.Token ? 'Token' : 'Account';
+              throw new NotFoundError(
+                `${entityName} "${entityReference}" not found on ${
+                  config?.network || 'testnet'
+                }`,
+              );
+            }
+            return { entityIdOrEvmAddress: resolved.entityId };
+          },
+        ),
       ...(config?.identityResolution || {}),
     },
     schedule: makeScheduleTransactionServiceMock(),
@@ -587,11 +639,11 @@ export const mockProcessExitThrows = () => {
 };
 
 /**
- * Mock ZustandTokenStateHelper
+ * Mock TokenStateServiceImpl
  * Provides a mocked implementation of the token state helper
  */
-export const mockZustandTokenStateHelper = (
-  ZustandTokenStateHelperClass: jest.Mock,
+export const mockTokenStateServiceImpl = (
+  TokenStateServiceImplClass: jest.Mock,
   overrides?: Partial<{
     saveToken: jest.Mock;
     addToken: jest.Mock;
@@ -603,8 +655,8 @@ export const mockZustandTokenStateHelper = (
     removeTokenAssociation: jest.Mock;
   }>,
 ) => {
-  ZustandTokenStateHelperClass.mockClear();
-  ZustandTokenStateHelperClass.mockImplementation(() => ({
+  TokenStateServiceImplClass.mockClear();
+  TokenStateServiceImplClass.mockImplementation(() => ({
     saveToken: jest.fn().mockResolvedValue(undefined),
     addToken: jest.fn(),
     addAssociation: jest.fn(),
@@ -615,7 +667,7 @@ export const mockZustandTokenStateHelper = (
     removeTokenAssociation: jest.fn(),
     ...overrides,
   }));
-  return ZustandTokenStateHelperClass;
+  return TokenStateServiceImplClass;
 };
 
 /**
@@ -679,10 +731,10 @@ export const makeFsMocks = () => {
 };
 
 /**
- * Setup mock implementation for ZustandTokenStateHelper for list tests
+ * Setup mock implementation for TokenStateServiceImpl for list tests
  * Simplifies the repetitive mock setup across list test cases
  */
-export const setupZustandHelperMock = (
+export const setupTokenStateServiceMock = (
   MockedHelperClass: jest.Mock,
   config: {
     tokens?: Array<unknown>;
@@ -711,9 +763,9 @@ export const setupZustandHelperMock = (
 };
 
 /**
- * Setup mock implementation for ZustandTokenStateHelper for delete tests
+ * Setup mock implementation for TokenStateServiceImpl for delete tests
  */
-export const setupDeleteZustandHelperMock = (
+export const setupDeleteTokenStateServiceMock = (
   MockedHelperClass: jest.Mock,
   config: {
     getToken?: jest.Mock;

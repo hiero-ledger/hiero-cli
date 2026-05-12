@@ -2,7 +2,6 @@ import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { TokenAirdropItem } from '@/core/services/mirrornode/types';
-import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { TokenPendingAirdropsOutput } from './output';
 import type {
   PendingAirdropEntry,
@@ -10,8 +9,7 @@ import type {
 } from './types';
 
 import { NotFoundError } from '@/core/errors';
-import { EntityIdSchema } from '@/core/schemas/common-schemas';
-import { AliasType } from '@/core/types/shared.types';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
 
 import { TokenPendingAirdropsInputSchema } from './input';
 
@@ -24,7 +22,7 @@ export class TokenPendingAirdropsCommand implements Command {
       TokenPendingAirdropsInputSchema.parse(args.args);
     const network = api.network.getCurrentNetwork();
 
-    const accountId = this.resolveAccountId(validArgs.account, api, network);
+    const accountId = await this.resolveAccountId(validArgs.account, api);
 
     api.logger.info(`Fetching pending airdrops for ${accountId}...`);
     const allAirdrops = await this.fetchAirdrops(
@@ -53,28 +51,24 @@ export class TokenPendingAirdropsCommand implements Command {
     return { result: output };
   }
 
-  private resolveAccountId(
+  private async resolveAccountId(
     accountOrAlias: string,
     api: CoreApi,
-    network: SupportedNetwork,
-  ): string {
-    const resolved = api.alias.resolve(
+  ): Promise<string> {
+    const tokenReferences = new TokenReferenceServiceImpl(
+      api.identityResolution,
+    );
+    const network = api.network.getCurrentNetwork();
+    const resolved = await tokenReferences.resolveDestinationAccount(
       accountOrAlias,
-      AliasType.Account,
       network,
     );
-    if (resolved && resolved.entityId) {
-      return resolved.entityId;
-    }
-
-    const parsed = EntityIdSchema.safeParse(accountOrAlias);
-    if (!parsed.success) {
+    if (!resolved) {
       throw new NotFoundError(
         `Account not found with ID or alias: ${accountOrAlias}`,
       );
     }
-
-    return parsed.data;
+    return resolved.accountId;
   }
 
   private async fetchAirdrops(

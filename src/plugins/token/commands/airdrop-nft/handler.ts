@@ -17,10 +17,7 @@ import {
 } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
-import {
-  resolveDestinationAccountParameter,
-  resolveTokenParameter,
-} from '@/plugins/token/resolver-helper';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
 
 import { TokenAirdropNftInputSchema } from './input';
 
@@ -64,8 +61,11 @@ export class TokenAirdropNftCommand extends BaseTransactionCommand<
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
+    const tokenReferences = new TokenReferenceServiceImpl(
+      api.identityResolution,
+    );
 
-    const resolvedToken = resolveTokenParameter(tokenIdOrAlias, api, network);
+    const resolvedToken = tokenReferences.resolveToken(tokenIdOrAlias, network);
     if (!resolvedToken) {
       throw new NotFoundError(`Token not found: ${tokenIdOrAlias}`, {
         context: { tokenIdOrAlias },
@@ -86,9 +86,8 @@ export class TokenAirdropNftCommand extends BaseTransactionCommand<
       const recipientInput = toList[i];
       const recipientSerials = serials[i];
 
-      const resolvedAccount = resolveDestinationAccountParameter(
+      const resolvedAccount = await tokenReferences.resolveDestinationAccount(
         recipientInput,
-        api,
         network,
       );
 

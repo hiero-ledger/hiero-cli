@@ -16,11 +16,11 @@ import {
   TokenUpdateCommand,
 } from '@/plugins/token/commands/update';
 import { TokenUpdateOutputSchema } from '@/plugins/token/commands/update/output';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { makeApiMocks, makeTransactionResult } from './helpers/mocks';
 
-jest.mock('@/plugins/token/zustand-state-helper');
+jest.mock('@/plugins/token/services/token-state.service');
 
 const DEFAULT_TOKEN_INFO = {
   token_id: '0.0.123456',
@@ -101,7 +101,7 @@ describe('tokenUpdate', () => {
     mockSaveToken = jest.fn();
     mockGetToken = jest.fn().mockReturnValue(null);
 
-    (ZustandTokenStateHelper as jest.Mock).mockImplementation(() => ({
+    (TokenStateServiceImpl as jest.Mock).mockImplementation(() => ({
       saveToken: mockSaveToken,
       getToken: mockGetToken,
       addToken: jest.fn(),

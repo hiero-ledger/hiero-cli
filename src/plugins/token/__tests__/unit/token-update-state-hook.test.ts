@@ -12,11 +12,11 @@ import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { TOKEN_UPDATE_COMMAND_NAME } from '@/plugins/token/commands/update/handler';
 import { TokenUpdateStateHook } from '@/plugins/token/hooks/token-update-state';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
-jest.mock('@/plugins/token/zustand-state-helper');
+jest.mock('@/plugins/token/services/token-state.service');
 
-const MockedHelper = ZustandTokenStateHelper as jest.Mock;
+const MockedHelper = TokenStateServiceImpl as jest.Mock;
 
 const DEFAULT_TOKEN_INFO = {
   token_id: '0.0.123456',

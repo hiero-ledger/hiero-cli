@@ -12,17 +12,18 @@ import { BaseTransactionCommand } from '@/core/commands/command';
 import { StateError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
-import { AliasType, SupplyType } from '@/core/types/shared.types';
+import { SupplyType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import { TokenCreateNftInputSchema } from '@/plugins/token/commands/create-nft/input';
+import { TokenAliasServiceImpl } from '@/plugins/token/services/token-alias.service';
+import { resolveOptionalKeys } from '@/plugins/token/services/token-keys.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 import {
   buildTokenData,
   determineFiniteMaxSupply,
 } from '@/plugins/token/utils/token-data-builders';
-import { resolveOptionalKeys } from '@/plugins/token/utils/token-key-resolver';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 export const TOKEN_CREATE_NFT_COMMAND_NAME = 'token_create-nft';
 
@@ -48,8 +49,9 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
       ? processTokenBalanceInput(validArgs.maxSupply, 0)
       : undefined;
     const network = api.network.getCurrentNetwork();
+    const tokenAliases = new TokenAliasServiceImpl(api.alias);
 
-    api.alias.availableOrThrow(validArgs.name, network);
+    tokenAliases.availableOrThrow(validArgs.name, network);
 
     const treasury = await api.keyResolver.resolveAccountCredentials(
       validArgs.treasury,
@@ -289,7 +291,7 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
     executeTransactionResult: TokenCreateNftExecuteTransactionResult,
   ): Promise<CommandResult> {
     const { api } = args;
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
+    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
     const result = executeTransactionResult.transactionResult;
     const tokenId = result.tokenId ?? '';
 
@@ -327,11 +329,11 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
     api.logger.info('   Non-fungible token data saved to state');
 
     if (normalisedParams.alias) {
-      api.alias.register({
+      const tokenAliases = new TokenAliasServiceImpl(api.alias);
+      tokenAliases.register({
         alias: normalisedParams.alias,
-        type: AliasType.Token,
         network: normalisedParams.network,
-        entityId: tokenId,
+        tokenId,
         createdAt: result.consensusTimestamp,
       });
       api.logger.info(`   Name registered: ${normalisedParams.alias}`);

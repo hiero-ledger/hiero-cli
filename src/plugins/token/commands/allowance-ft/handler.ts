@@ -14,11 +14,8 @@ import { FtAllowanceEntry } from '@/core/services/allowance';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { isRawUnits } from '@/core/utils/amount-helpers';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
-import {
-  resolveDestinationAccountParameter,
-  resolveTokenParameter,
-} from '@/plugins/token/resolver-helper';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { TokenAllowanceFtInputSchema } from './input';
 
@@ -45,8 +42,14 @@ export class TokenAllowanceFtCommand extends BaseTransactionCommand<
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
+    const tokenReferences = new TokenReferenceServiceImpl(
+      api.identityResolution,
+    );
 
-    const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
+    const resolvedToken = tokenReferences.resolveToken(
+      validArgs.token,
+      network,
+    );
     if (!resolvedToken) {
       throw new NotFoundError(`Token not found: ${validArgs.token}`, {
         context: { token: validArgs.token },
@@ -54,7 +57,7 @@ export class TokenAllowanceFtCommand extends BaseTransactionCommand<
     }
     const tokenId = resolvedToken.tokenId;
 
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
+    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
     let tokenDecimals = 0;
     if (!isRawUnits(validArgs.amount)) {
       const tokenInfoStorage = tokenState.getToken(tokenId);
@@ -75,9 +78,8 @@ export class TokenAllowanceFtCommand extends BaseTransactionCommand<
       ['token:owner'],
     );
 
-    const resolvedSpender = resolveDestinationAccountParameter(
+    const resolvedSpender = await tokenReferences.resolveDestinationAccount(
       validArgs.spender,
-      api,
       network,
     );
     if (!resolvedSpender) {

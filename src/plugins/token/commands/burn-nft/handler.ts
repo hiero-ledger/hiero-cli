@@ -17,8 +17,8 @@ import {
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { HederaTokenType } from '@/core/shared/constants';
-import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { TokenBurnNftInputSchema } from './input';
 
@@ -39,7 +39,7 @@ export class TokenBurnNftCommand extends BaseTransactionCommand<
   ): Promise<BurnNftNormalizedParams> {
     const { api } = args;
 
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
+    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
 
     const validArgs = TokenBurnNftInputSchema.parse(args.args);
 
@@ -51,8 +51,11 @@ export class TokenBurnNftCommand extends BaseTransactionCommand<
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
+    const tokenReferences = new TokenReferenceServiceImpl(
+      api.identityResolution,
+    );
 
-    const resolvedToken = resolveTokenParameter(tokenIdOrAlias, api, network);
+    const resolvedToken = tokenReferences.resolveToken(tokenIdOrAlias, network);
 
     if (!resolvedToken) {
       throw new NotFoundError(`Token not found: ${tokenIdOrAlias}`, {

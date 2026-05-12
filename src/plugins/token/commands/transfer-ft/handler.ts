@@ -14,11 +14,8 @@ import { ConfigOptionKey } from '@/core/services/config/config-service.interface
 import { FtTransferEntry } from '@/core/services/transfer';
 import { isRawUnits } from '@/core/utils/amount-helpers';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
-import {
-  resolveDestinationAccountParameter,
-  resolveTokenParameter,
-} from '@/plugins/token/resolver-helper';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { TokenTransferFtInputSchema } from './input';
 
@@ -39,7 +36,7 @@ export class TokenTransferFtCommand extends BaseTransactionCommand<
   ): Promise<TokenTransferFtNormalizedParams> {
     const { api } = args;
 
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
+    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
 
     const validArgs = TokenTransferFtInputSchema.parse(args.args);
 
@@ -53,8 +50,11 @@ export class TokenTransferFtCommand extends BaseTransactionCommand<
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
+    const tokenReferences = new TokenReferenceServiceImpl(
+      api.identityResolution,
+    );
 
-    const resolvedToken = resolveTokenParameter(tokenIdOrAlias, api, network);
+    const resolvedToken = tokenReferences.resolveToken(tokenIdOrAlias, network);
 
     if (!resolvedToken) {
       throw new NotFoundError(`Token not found: ${tokenIdOrAlias}`, {
@@ -93,9 +93,8 @@ export class TokenTransferFtCommand extends BaseTransactionCommand<
     api.logger.info(`🔑 Using from account: ${fromAccountId}`);
     api.logger.info(`🔑 Will sign with from account key`);
 
-    const resolvedToAccount = resolveDestinationAccountParameter(
+    const resolvedToAccount = await tokenReferences.resolveDestinationAccount(
       to,
-      api,
       network,
     );
 

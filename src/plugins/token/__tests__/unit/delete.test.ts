@@ -13,19 +13,19 @@ import {
   tokenDelete,
   TokenDeleteOutputSchema,
 } from '@/plugins/token/commands/delete';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import {
   makeDeleteApiMocks,
   makeDeleteSuccessMocks,
-  mockZustandTokenStateHelper,
+  mockTokenStateServiceImpl,
 } from './helpers/mocks';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandTokenStateHelper: jest.fn(),
+jest.mock('../../services/token-state.service', () => ({
+  TokenStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = ZustandTokenStateHelper as jest.Mock;
+const MockedHelper = TokenStateServiceImpl as jest.Mock;
 
 const makeArgs = (
   api: ReturnType<typeof makeDeleteSuccessMocks>['api'],
@@ -43,7 +43,7 @@ const makeArgs = (
 
 describe('tokenDelete - network delete (stateOnly=false)', () => {
   beforeEach(() => {
-    mockZustandTokenStateHelper(MockedHelper, {
+    mockTokenStateServiceImpl(MockedHelper, {
       getToken: jest.fn().mockReturnValue(null),
       removeToken: jest.fn(),
     });
@@ -76,7 +76,7 @@ describe('tokenDelete - network delete (stateOnly=false)', () => {
 
     test('token in local state - state cleaned up, aliases removed', async () => {
       const mockRemoveToken = jest.fn();
-      mockZustandTokenStateHelper(MockedHelper, {
+      mockTokenStateServiceImpl(MockedHelper, {
         getToken: jest.fn().mockReturnValue({
           tokenId: '0.0.123456',
           name: 'TestToken',
@@ -104,7 +104,7 @@ describe('tokenDelete - network delete (stateOnly=false)', () => {
     });
 
     test('token NOT in local state - tx succeeds, no state cleanup', async () => {
-      mockZustandTokenStateHelper(MockedHelper, {
+      mockTokenStateServiceImpl(MockedHelper, {
         getToken: jest.fn().mockReturnValue(null),
         removeToken: jest.fn(),
       });
@@ -119,7 +119,7 @@ describe('tokenDelete - network delete (stateOnly=false)', () => {
     });
 
     test('token name falls back to mirror node name when not in state', async () => {
-      mockZustandTokenStateHelper(MockedHelper, {
+      mockTokenStateServiceImpl(MockedHelper, {
         getToken: jest.fn().mockReturnValue(null),
         removeToken: jest.fn(),
       });
@@ -203,7 +203,7 @@ describe('tokenDelete - network delete (stateOnly=false)', () => {
 
 describe('tokenDelete - state-only (stateOnly=true)', () => {
   beforeEach(() => {
-    mockZustandTokenStateHelper(MockedHelper, {
+    mockTokenStateServiceImpl(MockedHelper, {
       getToken: jest.fn().mockReturnValue({
         tokenId: '0.0.123456',
         name: 'TestToken',
@@ -226,7 +226,7 @@ describe('tokenDelete - state-only (stateOnly=true)', () => {
 
   test('happy path - removes token from state, returns output without transactionId', async () => {
     const mockRemoveToken = jest.fn();
-    mockZustandTokenStateHelper(MockedHelper, {
+    mockTokenStateServiceImpl(MockedHelper, {
       getToken: jest.fn().mockReturnValue({
         tokenId: '0.0.123456',
         name: 'TestToken',
@@ -252,7 +252,7 @@ describe('tokenDelete - state-only (stateOnly=true)', () => {
 
   test('removes all aliases for token', async () => {
     const mockRemoveToken = jest.fn();
-    mockZustandTokenStateHelper(MockedHelper, {
+    mockTokenStateServiceImpl(MockedHelper, {
       getToken: jest.fn().mockReturnValue({
         tokenId: '0.0.123456',
         name: 'TestToken',
@@ -293,7 +293,7 @@ describe('tokenDelete - state-only (stateOnly=true)', () => {
   });
 
   test('throws NotFoundError when token not in state', async () => {
-    mockZustandTokenStateHelper(MockedHelper, {
+    mockTokenStateServiceImpl(MockedHelper, {
       getToken: jest.fn().mockReturnValue(null),
       removeToken: jest.fn(),
     });

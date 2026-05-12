@@ -11,7 +11,7 @@ import {
   tokenCreateNftFromFile,
   TokenCreateNftFromFileOutputSchema,
 } from '@/plugins/token/commands/create-nft-from-file';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import {
   expectedNftTransactionParamsFromFile,
@@ -41,11 +41,11 @@ jest.mock('path', () => ({
   resolve: jest.fn(),
 }));
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandTokenStateHelper: jest.fn(),
+jest.mock('../../services/token-state.service', () => ({
+  TokenStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = ZustandTokenStateHelper as jest.Mock;
+const MockedHelper = TokenStateServiceImpl as jest.Mock;
 const mockFs = fs as jest.Mocked<typeof fs>;
 const mockPath = path as jest.Mocked<typeof path>;
 

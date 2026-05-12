@@ -4,7 +4,6 @@ import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
 import type { Credential } from '@/core/services/kms/kms-types.interface';
 
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
-import { AliasType } from '@/core/types/shared.types';
 import {
   type BatchDataItem,
   OrchestratorSource,
@@ -12,9 +11,10 @@ import {
 } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { TOKEN_CREATE_NFT_FROM_FILE_COMMAND_NAME } from '@/plugins/token/commands/create-nft-from-file';
-import { processTokenAssociations } from '@/plugins/token/utils/token-associations';
+import { TokenAliasServiceImpl } from '@/plugins/token/services/token-alias.service';
+import { TokenAssociationsServiceImpl } from '@/plugins/token/services/token-associations.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 import { buildNftTokenDataFromFile } from '@/plugins/token/utils/token-data-builders';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { CreateNftFromFileNormalizedParamsSchema } from './types';
 
@@ -78,32 +78,42 @@ export class TokenCreateNftFromFileStateHook implements Hook<PostOutputPreparati
       normalisedParams,
     );
 
-    tokenData.associations = await processTokenAssociations(
+    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
+    const tokenAliases = new TokenAliasServiceImpl(api.alias);
+    const tokenAssociations = new TokenAssociationsServiceImpl(
+      api.keyResolver,
+      api.token,
+      api.txSign,
+      api.txExecute,
+      tokenState,
+      normalisedParams.keyManager,
+      api.logger,
+    );
+
+    tokenData.associations = await tokenAssociations.processTokenAssociations(
       innerTransactionResult.tokenId,
       normalisedParams.associations as Credential[],
-      api,
-      normalisedParams.keyManager,
     );
 
     const key = composeKey(
       normalisedParams.network,
       innerTransactionResult.tokenId,
     );
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     tokenState.saveToken(key, tokenData);
     api.logger.info('   Non-fungible token data saved to state');
 
     if (normalisedParams.alias) {
-      if (api.alias.exists(normalisedParams.alias, normalisedParams.network)) {
+      if (
+        tokenAliases.exists(normalisedParams.alias, normalisedParams.network)
+      ) {
         api.logger.warn(
           `Alias "${normalisedParams.alias}" already exists, skipping registration`,
         );
       } else {
-        api.alias.register({
+        tokenAliases.register({
           alias: normalisedParams.alias,
-          type: AliasType.Token,
           network: normalisedParams.network,
-          entityId: innerTransactionResult.tokenId,
+          tokenId: innerTransactionResult.tokenId,
           createdAt: innerTransactionResult.consensusTimestamp,
         });
         api.logger.info(`   Name registered: ${normalisedParams.alias}`);

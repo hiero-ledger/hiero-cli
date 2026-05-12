@@ -10,13 +10,13 @@ import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { TOKEN_ASSOCIATE_COMMAND_NAME } from '@/plugins/token/commands/associate';
 import { TokenAssociateStateHook } from '@/plugins/token/hooks/token-associate-state';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandTokenStateHelper: jest.fn(),
+jest.mock('../../services/token-state.service', () => ({
+  TokenStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = ZustandTokenStateHelper as jest.Mock;
+const MockedHelper = TokenStateServiceImpl as jest.Mock;
 
 const createAssociateBatchDataItem = (
   overrides: Partial<BatchDataItem> = {},

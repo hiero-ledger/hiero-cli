@@ -6,8 +6,8 @@ import type { BatchDataItem } from '@/core/types/shared.types';
 import { OrchestratorSource } from '@/core';
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
 import { TOKEN_ASSOCIATE_COMMAND_NAME } from '@/plugins/token/commands/associate';
-import { saveAssociationToState } from '@/plugins/token/utils/token-associations';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenAssociationsServiceImpl } from '@/plugins/token/services/token-associations.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { AssociateNormalizedParamsSchema } from './types';
 
@@ -51,13 +51,20 @@ export class TokenAssociateStateHook implements Hook<PostOutputPreparationHookPa
       return;
     }
 
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
-    saveAssociationToState(
+    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
+    const tokenAssociations = new TokenAssociationsServiceImpl(
+      api.keyResolver,
+      api.token,
+      api.txSign,
+      api.txExecute,
       tokenState,
+      normalisedParams.keyManager,
+      api.logger,
+    );
+    tokenAssociations.saveAssociationToState(
       normalisedParams.tokenId,
       normalisedParams.account.accountId,
       normalisedParams.network,
-      api.logger,
     );
   }
 }

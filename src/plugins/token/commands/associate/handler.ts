@@ -15,7 +15,7 @@ import {
   ValidationError,
 } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
-import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
 
 import { TokenAssociateInputSchema } from './input';
 
@@ -40,7 +40,13 @@ export class TokenAssociateCommand extends BaseTransactionCommand<
       validArgs.keyManager ??
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
     const network = api.network.getCurrentNetwork();
-    const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
+    const tokenReferences = new TokenReferenceServiceImpl(
+      api.identityResolution,
+    );
+    const resolvedToken = tokenReferences.resolveToken(
+      validArgs.token,
+      network,
+    );
 
     if (!resolvedToken) {
       throw new NotFoundError('Token not found', {

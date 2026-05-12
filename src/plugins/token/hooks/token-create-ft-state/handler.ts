@@ -3,7 +3,6 @@ import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
 
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
-import { AliasType } from '@/core/types/shared.types';
 import {
   type BatchDataItem,
   OrchestratorSource,
@@ -11,8 +10,9 @@ import {
 } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { TOKEN_CREATE_FT_COMMAND_NAME } from '@/plugins/token/commands/create-ft';
+import { TokenAliasServiceImpl } from '@/plugins/token/services/token-alias.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 import { buildTokenData } from '@/plugins/token/utils/token-data-builders';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { CreateFtNormalizedParamsSchema } from './types';
 
@@ -104,21 +104,23 @@ export class TokenCreateFtStateHook implements Hook<PostOutputPreparationHookPar
       normalisedParams.network,
       innerTransactionResult.tokenId,
     );
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
+    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
+    const tokenAliases = new TokenAliasServiceImpl(api.alias);
     tokenState.saveToken(key, tokenData);
     api.logger.info('   Token data saved to state');
 
     if (normalisedParams.alias) {
-      if (api.alias.exists(normalisedParams.alias, normalisedParams.network)) {
+      if (
+        tokenAliases.exists(normalisedParams.alias, normalisedParams.network)
+      ) {
         api.logger.warn(
           `Alias "${normalisedParams.alias}" already exists, skipping registration`,
         );
       } else {
-        api.alias.register({
+        tokenAliases.register({
           alias: normalisedParams.alias,
-          type: AliasType.Token,
           network: normalisedParams.network,
-          entityId: innerTransactionResult.tokenId,
+          tokenId: innerTransactionResult.tokenId,
           createdAt: innerTransactionResult.consensusTimestamp,
         });
         api.logger.info(`   Name registered: ${normalisedParams.alias}`);

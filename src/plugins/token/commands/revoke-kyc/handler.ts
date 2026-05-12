@@ -15,7 +15,7 @@ import {
   ValidationError,
 } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
-import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
 import { isNoKycKeyError } from '@/plugins/token/utils/transaction-error-receipt-status';
 
 import { TokenRevokeKycInputSchema } from './input';
@@ -44,8 +44,14 @@ export class TokenRevokeKycCommand extends BaseTransactionCommand<
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
+    const tokenReferences = new TokenReferenceServiceImpl(
+      api.identityResolution,
+    );
 
-    const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
+    const resolvedToken = tokenReferences.resolveToken(
+      validArgs.token,
+      network,
+    );
     if (!resolvedToken) {
       throw new NotFoundError('Token not found', {
         context: { token: validArgs.token },

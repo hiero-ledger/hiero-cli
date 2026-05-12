@@ -17,13 +17,13 @@ import {
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { HederaTokenType } from '@/core/shared/constants';
-import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 import {
   isAccountDoesNotOwnWipedNftError,
   isCannotWipeTreasuryError,
   isNoWipeKeyError,
 } from '@/plugins/token/utils/transaction-error-receipt-status';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { TokenWipeNftInputSchema } from './input';
 
@@ -44,7 +44,7 @@ export class TokenWipeNftCommand extends BaseTransactionCommand<
   ): Promise<WipeNftNormalizedParams> {
     const { api } = args;
 
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
+    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
     const validArgs = TokenWipeNftInputSchema.parse(args.args);
 
     const keyManager =
@@ -52,8 +52,14 @@ export class TokenWipeNftCommand extends BaseTransactionCommand<
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
+    const tokenReferences = new TokenReferenceServiceImpl(
+      api.identityResolution,
+    );
 
-    const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
+    const resolvedToken = tokenReferences.resolveToken(
+      validArgs.token,
+      network,
+    );
     if (!resolvedToken) {
       throw new NotFoundError(`Token not found: ${validArgs.token}`, {
         context: { token: validArgs.token },

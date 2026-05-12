@@ -9,13 +9,13 @@ import {
 import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 import { TOKEN_DELETE_COMMAND_NAME } from '@/plugins/token/commands/delete';
 import { TokenDeleteStateHook } from '@/plugins/token/hooks/token-delete-state';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandTokenStateHelper: jest.fn(),
+jest.mock('../../services/token-state.service', () => ({
+  TokenStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = ZustandTokenStateHelper as jest.Mock;
+const MockedHelper = TokenStateServiceImpl as jest.Mock;
 
 const createDeleteBatchDataItem = (
   overrides: Partial<BatchDataItem> = {},

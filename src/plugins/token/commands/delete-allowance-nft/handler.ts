@@ -16,10 +16,7 @@ import {
 } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
-import {
-  resolveDestinationAccountParameter,
-  resolveTokenParameter,
-} from '@/plugins/token/resolver-helper';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
 
 import { TokenDeleteAllowanceNftInputSchema } from './input';
 
@@ -45,8 +42,14 @@ export class TokenDeleteAllowanceNftCommand extends BaseTransactionCommand<
       validArgs.keyManager ??
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
     const network = api.network.getCurrentNetwork();
+    const tokenReferences = new TokenReferenceServiceImpl(
+      api.identityResolution,
+    );
 
-    const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
+    const resolvedToken = tokenReferences.resolveToken(
+      validArgs.token,
+      network,
+    );
     if (!resolvedToken) {
       throw new NotFoundError(`Token not found: ${validArgs.token}`, {
         context: { tokenIdOrAlias: validArgs.token },
@@ -70,9 +73,8 @@ export class TokenDeleteAllowanceNftCommand extends BaseTransactionCommand<
 
     let spenderAccountId: string | null = null;
     if (validArgs.allSerials && validArgs.spender) {
-      const resolvedSpender = resolveDestinationAccountParameter(
+      const resolvedSpender = await tokenReferences.resolveDestinationAccount(
         validArgs.spender,
-        api,
         network,
       );
       if (!resolvedSpender) {

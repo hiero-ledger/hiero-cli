@@ -17,10 +17,7 @@ import {
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { NftTransferEntry } from '@/core/services/transfer';
-import {
-  resolveDestinationAccountParameter,
-  resolveTokenParameter,
-} from '@/plugins/token/resolver-helper';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
 
 import { TokenTransferNftInputSchema } from './input';
 
@@ -45,7 +42,13 @@ export class TokenTransferNftCommand extends BaseTransactionCommand<
       validArgs.keyManager ||
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
     const network = api.network.getCurrentNetwork();
-    const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
+    const tokenReferences = new TokenReferenceServiceImpl(
+      api.identityResolution,
+    );
+    const resolvedToken = tokenReferences.resolveToken(
+      validArgs.token,
+      network,
+    );
 
     if (!resolvedToken) {
       throw new NotFoundError(`Token not found: ${validArgs.token}`, {
@@ -87,9 +90,8 @@ export class TokenTransferNftCommand extends BaseTransactionCommand<
       }
     }
 
-    const resolvedToAccount = resolveDestinationAccountParameter(
+    const resolvedToAccount = await tokenReferences.resolveDestinationAccount(
       validArgs.to,
-      api,
       network,
     );
     if (!resolvedToAccount) {

@@ -6,8 +6,8 @@ import type { BatchDataItem } from '@/core/types/shared.types';
 import { OrchestratorSource } from '@/core';
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
 import { TOKEN_DISSOCIATE_COMMAND_NAME } from '@/plugins/token/commands/dissociate';
-import { removeAssociationFromState } from '@/plugins/token/utils/token-associations';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenAssociationsServiceImpl } from '@/plugins/token/services/token-associations.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { DissociateNormalizedParamsSchema } from './types';
 
@@ -48,13 +48,20 @@ export class TokenDissociateStateHook implements Hook<PostOutputPreparationHookP
     }
     const normalisedParams = parseResult.data;
 
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
-    removeAssociationFromState(
+    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
+    const tokenAssociations = new TokenAssociationsServiceImpl(
+      api.keyResolver,
+      api.token,
+      api.txSign,
+      api.txExecute,
       tokenState,
+      normalisedParams.keyManager,
+      api.logger,
+    );
+    tokenAssociations.removeAssociationFromState(
       normalisedParams.tokenId,
       normalisedParams.account.accountId,
       normalisedParams.network,
-      api.logger,
     );
   }
 }

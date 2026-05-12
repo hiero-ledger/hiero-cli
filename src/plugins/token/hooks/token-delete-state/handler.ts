@@ -5,10 +5,10 @@ import type { BatchDataItem } from '@/core/types/shared.types';
 
 import { OrchestratorSource } from '@/core';
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
-import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { TOKEN_DELETE_COMMAND_NAME } from '@/plugins/token/commands/delete';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenAliasServiceImpl } from '@/plugins/token/services/token-alias.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { DeleteNormalizedParamsSchema } from './types';
 
@@ -49,18 +49,19 @@ export class TokenDeleteStateHook implements Hook<PostOutputPreparationHookParam
     }
 
     const { network, tokenId } = parseResult.data;
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
+    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
+    const tokenAliases = new TokenAliasServiceImpl(api.alias);
     const key = composeKey(network, tokenId);
     const tokenInState = tokenState.getToken(key);
 
     if (!tokenInState) return;
 
-    const aliases = api.alias
-      .list({ network, type: AliasType.Token })
+    const aliases = tokenAliases
+      .list(network)
       .filter((rec) => rec.entityId === tokenId);
 
     for (const rec of aliases) {
-      api.alias.remove(rec.alias, network);
+      tokenAliases.remove(rec.alias, network);
     }
 
     tokenState.removeToken(key);

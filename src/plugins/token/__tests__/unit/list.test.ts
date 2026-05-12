@@ -8,19 +8,19 @@ import {
   tokenList,
   TokenListOutputSchema,
 } from '@/plugins/token/commands/list';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
-import { makeApiMocks, setupZustandHelperMock } from './helpers/mocks';
+import { makeApiMocks, setupTokenStateServiceMock } from './helpers/mocks';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandTokenStateHelper: jest.fn(),
+jest.mock('../../services/token-state.service', () => ({
+  TokenStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = ZustandTokenStateHelper as jest.Mock;
+const MockedHelper = TokenStateServiceImpl as jest.Mock;
 
 describe('tokenListHandler', () => {
   beforeEach(() => {
-    setupZustandHelperMock(MockedHelper, { tokens: [] });
+    setupTokenStateServiceMock(MockedHelper, { tokens: [] });
   });
 
   describe('success scenarios', () => {

@@ -201,6 +201,7 @@ describe('tokenMintFtHandler', () => {
         mirror: {
           getTokenInfo: jest.fn().mockResolvedValue({
             decimals: '0',
+            type: 'NON_FUNGIBLE_TOKEN',
             supply_key: {
               _type: MirrorNodeKeyType.ED25519,
               key: ED25519_HEX_PUBLIC_KEY,
