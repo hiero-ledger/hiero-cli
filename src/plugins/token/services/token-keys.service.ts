@@ -41,27 +41,3 @@ export class TokenKeysServiceImpl implements TokenKeysService {
     ]);
   }
 }
-
-export async function resolveOptionalKeys(
-  credentials: Credential[],
-  keyManager: KeyManager,
-  keyResolver: KeyResolverService,
-  tag: string,
-): Promise<ResolvedPublicKey[]> {
-  return new TokenKeysServiceImpl(keyResolver, keyManager).resolveOptionalKeys(
-    credentials,
-    tag,
-  );
-}
-
-export async function resolveOptionalKey(
-  credential: Credential | undefined,
-  keyManager: KeyManager,
-  keyResolver: KeyResolverService,
-  tag: string,
-): Promise<ResolvedPublicKey | undefined> {
-  return new TokenKeysServiceImpl(keyResolver, keyManager).resolveOptionalKey(
-    credential,
-    tag,
-  );
-}

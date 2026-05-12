@@ -23,7 +23,7 @@ import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
 import { TokenAliasServiceImpl } from '@/plugins/token/services/token-alias.service';
 import { TokenAssociationsServiceImpl } from '@/plugins/token/services/token-associations.service';
 import { TokenFileServiceImpl } from '@/plugins/token/services/token-file.service';
-import { resolveOptionalKey } from '@/plugins/token/services/token-keys.service';
+import { TokenKeysServiceImpl } from '@/plugins/token/services/token-keys.service';
 import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 import { buildTokenDataFromFile } from '@/plugins/token/utils/token-data-builders';
 import { readAndValidateTokenFile } from '@/plugins/token/utils/token-file-helpers';
@@ -355,8 +355,6 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
 
     const adminKeys = await resolveOptionalKeys(
       tokenDefinition.adminKey,
-      keyManager,
-      api.keyResolver,
       'token:admin',
     );
     if (adminKeys.length > 0) {
@@ -370,29 +368,21 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
 
     const supplyKeys = await resolveOptionalKeys(
       tokenDefinition.supplyKey,
-      keyManager,
-      api.keyResolver,
       'token:supply',
     );
 
     const wipeKeys = await resolveOptionalKeys(
       tokenDefinition.wipeKey,
-      keyManager,
-      api.keyResolver,
       'token:wipe',
     );
 
     const kycKeys = await resolveOptionalKeys(
       tokenDefinition.kycKey,
-      keyManager,
-      api.keyResolver,
       'token:kyc',
     );
 
     const freezeKeys = await resolveOptionalKeys(
       tokenDefinition.freezeKey,
-      keyManager,
-      api.keyResolver,
       'token:freeze',
     );
     if (tokenDefinition.freezeDefault && freezeKeys.length === 0) {
@@ -403,22 +393,16 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
 
     const pauseKeys = await resolveOptionalKeys(
       tokenDefinition.pauseKey,
-      keyManager,
-      api.keyResolver,
       'token:pause',
     );
 
     const feeScheduleKeys = await resolveOptionalKeys(
       tokenDefinition.feeScheduleKey,
-      keyManager,
-      api.keyResolver,
       'token:feeSchedule',
     );
 
     const metadataKeys = await resolveOptionalKeys(
       tokenDefinition.metadataKey,
-      keyManager,
-      api.keyResolver,
       'token:metadata',
     );
 

@@ -22,7 +22,7 @@ import { composeKey } from '@/core/utils/key-composer';
 import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import { TokenAliasServiceImpl } from '@/plugins/token/services/token-alias.service';
-import { resolveOptionalKeys } from '@/plugins/token/services/token-keys.service';
+import { TokenKeysServiceImpl } from '@/plugins/token/services/token-keys.service';
 import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 import {
   buildTokenData,
@@ -366,6 +366,7 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
     feeSchedule: ResolvedPublicKey[];
     metadata: ResolvedPublicKey[];
   }> {
+    const keysService = new TokenKeysServiceImpl(api.keyResolver, keyManager);
     const treasury = await api.keyResolver.resolveAccountCredentials(
       validArgs.treasury,
       keyManager,
@@ -373,24 +374,18 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
       ['token:treasury'],
     );
 
-    const admin = await resolveOptionalKeys(
+    const admin = await keysService.resolveOptionalKeys(
       validArgs.adminKey,
-      keyManager,
-      api.keyResolver,
       'token:admin',
     );
 
-    const supply = await resolveOptionalKeys(
+    const supply = await keysService.resolveOptionalKeys(
       validArgs.supplyKey,
-      keyManager,
-      api.keyResolver,
       'token:supply',
     );
 
-    const freeze = await resolveOptionalKeys(
+    const freeze = await keysService.resolveOptionalKeys(
       validArgs.freezeKey,
-      keyManager,
-      api.keyResolver,
       'token:freeze',
     );
 
@@ -400,38 +395,28 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
       );
     }
 
-    const wipe = await resolveOptionalKeys(
+    const wipe = await keysService.resolveOptionalKeys(
       validArgs.wipeKey,
-      keyManager,
-      api.keyResolver,
       'token:wipe',
     );
 
-    const kyc = await resolveOptionalKeys(
+    const kyc = await keysService.resolveOptionalKeys(
       validArgs.kycKey,
-      keyManager,
-      api.keyResolver,
       'token:kyc',
     );
 
-    const pause = await resolveOptionalKeys(
+    const pause = await keysService.resolveOptionalKeys(
       validArgs.pauseKey,
-      keyManager,
-      api.keyResolver,
       'token:pause',
     );
 
-    const feeSchedule = await resolveOptionalKeys(
+    const feeSchedule = await keysService.resolveOptionalKeys(
       validArgs.feeScheduleKey,
-      keyManager,
-      api.keyResolver,
       'token:feeSchedule',
     );
 
-    const metadata = await resolveOptionalKeys(
+    const metadata = await keysService.resolveOptionalKeys(
       validArgs.metadataKey,
-      keyManager,
-      api.keyResolver,
       'token:metadata',
     );
 

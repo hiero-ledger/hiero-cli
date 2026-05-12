@@ -26,7 +26,7 @@ import { ConfigOptionKey } from '@/core/services/config/config-service.interface
 import { NULL_TOKEN } from '@/core/shared/constants';
 import { composeKey } from '@/core/utils/key-composer';
 import { toNullableHederaKey } from '@/core/utils/keys-to-hedera-key';
-import { resolveOptionalKeys } from '@/plugins/token/services/token-keys.service';
+import { TokenKeysServiceImpl } from '@/plugins/token/services/token-keys.service';
 import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
 import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 import { buildUpdatedTokenData } from '@/plugins/token/utils/token-data-builders';
@@ -121,12 +121,13 @@ export class TokenUpdateCommand extends BaseTransactionCommand<
       signerKeyRefIds.add(treasuryCredential.keyRefId);
     }
 
+    const keysService = new TokenKeysServiceImpl(api.keyResolver, keyManager);
     const resolveUpdateableKeys = async (
       input: Credential[] | null,
       tag: string,
     ): Promise<ResolvedPublicKey[] | null> => {
       if (input === null) return null;
-      return resolveOptionalKeys(input, keyManager, api.keyResolver, tag);
+      return keysService.resolveOptionalKeys(input, tag);
     };
 
     const [

@@ -19,7 +19,7 @@ import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
 import { TokenAliasServiceImpl } from '@/plugins/token/services/token-alias.service';
 import { TokenAssociationsServiceImpl } from '@/plugins/token/services/token-associations.service';
 import { TokenFileServiceImpl } from '@/plugins/token/services/token-file.service';
-import { resolveOptionalKeys } from '@/plugins/token/services/token-keys.service';
+import { TokenKeysServiceImpl } from '@/plugins/token/services/token-keys.service';
 import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 import { buildNftTokenDataFromFile } from '@/plugins/token/utils/token-data-builders';
 
@@ -46,6 +46,7 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
     const keyManager =
       validArgs.keyManager ??
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
+    const keysService = new TokenKeysServiceImpl(api.keyResolver, keyManager);
 
     api.logger.info(`Creating NFT token from file: ${validArgs.file}`);
 
@@ -64,54 +65,40 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
       ['token:treasury'],
     );
 
-    const adminKeys = await resolveOptionalKeys(
+    const adminKeys = await keysService.resolveOptionalKeys(
       tokenDefinition.adminKey,
-      keyManager,
-      api.keyResolver,
       'token:admin',
     );
     api.logger.info(`Resolved ${adminKeys.length} admin key(s) for signing`);
 
-    const supplyKeys = await resolveOptionalKeys(
+    const supplyKeys = await keysService.resolveOptionalKeys(
       tokenDefinition.supplyKey,
-      keyManager,
-      api.keyResolver,
       'token:supply',
     );
     api.logger.info(`Resolved ${supplyKeys.length} supply key(s)`);
 
-    const wipeKeys = await resolveOptionalKeys(
+    const wipeKeys = await keysService.resolveOptionalKeys(
       tokenDefinition.wipeKey,
-      keyManager,
-      api.keyResolver,
       'token:wipe',
     );
 
-    const kycKeys = await resolveOptionalKeys(
+    const kycKeys = await keysService.resolveOptionalKeys(
       tokenDefinition.kycKey,
-      keyManager,
-      api.keyResolver,
       'token:kyc',
     );
 
-    const freezeKeys = await resolveOptionalKeys(
+    const freezeKeys = await keysService.resolveOptionalKeys(
       tokenDefinition.freezeKey,
-      keyManager,
-      api.keyResolver,
       'token:freeze',
     );
 
-    const pauseKeys = await resolveOptionalKeys(
+    const pauseKeys = await keysService.resolveOptionalKeys(
       tokenDefinition.pauseKey,
-      keyManager,
-      api.keyResolver,
       'token:pause',
     );
 
-    const feeScheduleKeys = await resolveOptionalKeys(
+    const feeScheduleKeys = await keysService.resolveOptionalKeys(
       tokenDefinition.feeScheduleKey,
-      keyManager,
-      api.keyResolver,
       'token:feeSchedule',
     );
 
