@@ -1,6 +1,7 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
+import type { BatchStateService } from '@/plugins/batch/services/batch-state.service.interface';
 
 import {
   makeAliasMock,
@@ -24,13 +25,9 @@ import {
 
 export { makeGlobalLogger as makeLogger };
 
-export const makeBatchStateHelperMock = (overrides?: {
-  saveBatch?: jest.Mock;
-  getBatch?: jest.Mock;
-  listBatches?: jest.Mock;
-  hasBatch?: jest.Mock;
-  deleteBatch?: jest.Mock;
-}) => ({
+export const makeBatchStateServiceMock = (
+  overrides?: Partial<Record<keyof BatchStateService, jest.Mock>>,
+): jest.Mocked<BatchStateService> => ({
   saveBatch: jest.fn(),
   getBatch: jest.fn().mockReturnValue(null),
   listBatches: jest.fn().mockReturnValue([]),

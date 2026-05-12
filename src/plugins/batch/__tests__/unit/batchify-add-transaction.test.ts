@@ -7,7 +7,7 @@ import { NotFoundError, ValidationError } from '@/core/errors';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { BatchifyAddTransactionHook } from '@/plugins/batch/hooks/batchify-add-transaction/handler';
 import { BatchifyOutputSchema } from '@/plugins/batch/hooks/batchify-add-transaction/output';
-import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
+import { BatchStateServiceImpl } from '@/plugins/batch/services/batch-state.service';
 
 import {
   BATCH_COMPOSED_KEY,
@@ -17,11 +17,11 @@ import {
 } from './helpers/fixtures';
 import { makeArgs, makeBatchApiMocks } from './helpers/mocks';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandBatchStateHelper: jest.fn(),
+jest.mock('../../services/batch-state.service', () => ({
+  BatchStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = ZustandBatchStateHelper as jest.Mock;
+const MockedService = BatchStateServiceImpl as jest.Mock;
 
 describe('batch plugin - BatchifyAddTransactionHook', () => {
   let hook: BatchifyAddTransactionHook;
@@ -58,7 +58,7 @@ describe('batch plugin - BatchifyAddTransactionHook', () => {
   test('throws NotFoundError when batch does not exist in state', () => {
     const logger = makeLogger();
     const getBatchMock = jest.fn().mockReturnValue(null);
-    MockedHelper.mockImplementation(() => ({
+    MockedService.mockImplementation(() => ({
       getBatch: getBatchMock,
       saveBatch: jest.fn(),
     }));
@@ -99,7 +99,7 @@ describe('batch plugin - BatchifyAddTransactionHook', () => {
         }),
       ),
     };
-    MockedHelper.mockImplementation(() => ({
+    MockedService.mockImplementation(() => ({
       getBatch: jest.fn().mockReturnValue(fullBatch),
       saveBatch: jest.fn(),
     }));
@@ -127,7 +127,7 @@ describe('batch plugin - BatchifyAddTransactionHook', () => {
     const logger = makeLogger();
     const saveBatchMock = jest.fn();
     const batchSnapshot = structuredClone(mockBatchData);
-    MockedHelper.mockImplementation(() => ({
+    MockedService.mockImplementation(() => ({
       getBatch: jest.fn().mockReturnValue(batchSnapshot),
       saveBatch: saveBatchMock,
     }));
@@ -184,7 +184,7 @@ describe('batch plugin - BatchifyAddTransactionHook', () => {
     const logger = makeLogger();
     const saveBatchMock = jest.fn();
     const batchSnapshot = structuredClone(mockBatchDataWithTransactions);
-    MockedHelper.mockImplementation(() => ({
+    MockedService.mockImplementation(() => ({
       getBatch: jest.fn().mockReturnValue(batchSnapshot),
       saveBatch: saveBatchMock,
     }));

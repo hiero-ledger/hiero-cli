@@ -8,7 +8,7 @@ import { PublicKey } from '@hiero-ledger/sdk';
 import { NotFoundError, ValidationError } from '@/core';
 import { composeKey } from '@/core/utils/key-composer';
 import { BatchifyInputSchema } from '@/plugins/batch/hooks/shared/input';
-import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
+import { BatchStateServiceImpl } from '@/plugins/batch/services/batch-state.service';
 
 export class BatchifySetBatchKeyHook implements Hook<
   PreSignTransactionHookParams<
@@ -24,16 +24,18 @@ export class BatchifySetBatchKeyHook implements Hook<
   ): Promise<HookResult> {
     const { args, buildTransactionResult } = params;
     const { api } = args;
-    const batchState = new ZustandBatchStateHelper(api.state, api.logger);
+    const batchState = new BatchStateServiceImpl(api.state, api.logger);
     const validArgs = BatchifyInputSchema.parse(args.args);
     const batchName = validArgs.batch;
     const network = api.network.getCurrentNetwork();
+
     if (!batchName) {
       api.logger.debug(
         'No parameter "batch" found. Transaction will not be added to batch.',
       );
       return Promise.resolve({ breakFlow: false });
     }
+
     const key = composeKey(network, batchName);
     const batch = batchState.getBatch(key);
     if (!batch) {
@@ -44,12 +46,14 @@ export class BatchifySetBatchKeyHook implements Hook<
         `Batch "${batch.name}" has been already executed `,
       );
     }
+
     const batchKey = api.kms.get(batch.keyRefId);
     if (!batchKey) {
       throw new NotFoundError(
         `Batch key with key reference ${batch.keyRefId} not found`,
       );
     }
+
     buildTransactionResult.transaction.setBatchKey(
       PublicKey.fromString(batchKey.publicKey),
     );

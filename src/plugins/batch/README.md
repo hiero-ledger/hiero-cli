@@ -19,7 +19,9 @@ This plugin follows the plugin architecture principles:
 src/plugins/batch/
 ├── manifest.ts              # Plugin manifest with command definitions and output specs
 ├── schema.ts                # Batch data schema with Zod validation
-├── zustand-state-helper.ts  # State management helper
+├── services/
+│   ├── batch-state.service.interface.ts  # BatchStateService interface
+│   └── batch-state.service.ts           # BatchStateServiceImpl implementation
 ├── commands/
 │   ├── create/
 │   │   ├── handler.ts       # Batch creation handler
@@ -42,19 +44,24 @@ src/plugins/batch/
 │       ├── output.ts        # Output schema and template
 │       └── index.ts         # Command exports
 ├── hooks/
-│   └── batchify/
-│       ├── handler.ts       # Hook that intercepts commands and adds transactions to batch
-│       ├── input.ts         # Input schema
-│       ├── output.ts        # Output schema and template
-│       ├── types.ts         # Hook types
-│       └── index.ts         # Hook exports
+│   ├── batchify-set-batch-key/
+│   │   ├── handler.ts       # Sets batch key on transaction before signing
+│   │   └── index.ts         # Hook exports
+│   ├── batchify-add-transaction/
+│   │   ├── handler.ts       # Intercepts and adds signed transaction to batch
+│   │   ├── output.ts        # Output schema and template
+│   │   └── index.ts         # Hook exports
+│   └── shared/
+│       ├── input.ts         # Shared --batch option schema
+│       └── types.ts         # Shared hook types
 ├── __tests__/               # Test suite
 │   ├── unit/
 │   │   ├── create.test.ts
 │   │   ├── execute.test.ts
 │   │   ├── list.test.ts
 │   │   ├── delete.test.ts
-│   │   ├── batchify.test.ts
+│   │   ├── batchify-add-transaction.test.ts
+│   │   ├── batchify-set-batch-key.test.ts
 │   │   └── helpers/
 │   └── ...
 └── index.ts                 # Plugin exports
@@ -191,6 +198,8 @@ The plugin uses the Core API services:
 - `api.logger` - Logging
 
 ## State Management
+
+Batch state is managed by `BatchStateServiceImpl` (`services/batch-state.service.ts`), which implements the `BatchStateService` interface. The service is constructed fresh on each command invocation and injected via constructor. Hooks instantiate it directly inside `execute()`.
 
 Batch data is stored in the `batch-batches` namespace with the following structure:
 

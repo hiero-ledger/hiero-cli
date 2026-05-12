@@ -13,7 +13,7 @@ import {
   BatchifyOutputSchema,
 } from '@/plugins/batch/hooks/batchify-add-transaction/output';
 import { BatchifyInputSchema } from '@/plugins/batch/hooks/shared/input';
-import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
+import { BatchStateServiceImpl } from '@/plugins/batch/services/batch-state.service';
 
 export class BatchifyAddTransactionHook implements Hook<
   PreExecuteTransactionHookParams<
@@ -34,16 +34,18 @@ export class BatchifyAddTransactionHook implements Hook<
     const { args, commandName, normalisedParams, signTransactionResult } =
       params;
     const { api } = args;
-    const batchState = new ZustandBatchStateHelper(api.state, api.logger);
+    const batchState = new BatchStateServiceImpl(api.state, api.logger);
     const validArgs = BatchifyInputSchema.parse(args.args);
     const batchName = validArgs.batch;
     const network = api.network.getCurrentNetwork();
+
     if (!batchName) {
       api.logger.debug(
         'No parameter "batch" found. Transaction will not be added to batch.',
       );
       return Promise.resolve({ breakFlow: false });
     }
+
     const key = composeKey(network, batchName);
     const batch = batchState.getBatch(key);
     if (!batch) {
@@ -56,6 +58,7 @@ export class BatchifyAddTransactionHook implements Hook<
         `Couldn't add new transaction to batch ${batchName} as it will exceed batch transaction maximum size ${BatchifyAddTransactionHook.BATCH_MAXIMUM_SIZE}`,
       );
     }
+
     const transaction = signTransactionResult.signedTransaction;
     const keyRefIds = normalisedParams.keyRefIds;
 
