@@ -92,8 +92,6 @@ export class TokenListCommand implements Command {
         withKeys: stats.withKeys,
         byNetwork: stats.byNetwork,
         bySupplyType: stats.bySupplyType,
-        withAssociations: stats.withAssociations,
-        totalAssociations: stats.totalAssociations,
       },
     };
 
