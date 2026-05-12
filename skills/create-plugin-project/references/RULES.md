@@ -258,6 +258,8 @@ Rules:
 - Use Pattern A by default; Pattern B only when the command submits a transaction
 - `normalizeParams` is where input schema parsing happens — not in `buildTransaction`
 - Never put business logic in the function wrapper
+- Use real imports everywhere — never write placeholder comments like `// TODO: import X`
+- Mark every unimplemented handler body with `// IMPLEMENT` so the developer knows exactly where to add logic
 
 ---
 
@@ -628,7 +630,6 @@ The `scripts` block and `dependencies` are fixed. The `devDependencies` below ar
     "typescript": "<match>"
   }
 }
-```
 ```
 
 ---

@@ -4,7 +4,7 @@ Scaffold a standalone TypeScript project that exports one or more plugins for hi
 
 ## Setup
 
-Before doing anything else, read the full contents of `.claude/skills/create-plugin-project/RULES.md`. It contains project structure rules, config file templates, naming conventions, and code generation standards. Apply them silently — do not narrate rule application. Only surface a rule if the user's requirements conflict with it.
+Before doing anything else, read the full contents of `.claude/skills/create-plugin-project/references/RULES.md`. It contains project structure rules, config file templates, naming conventions, and code generation standards. Apply them silently — do not narrate rule application. Only surface a rule if the user's requirements conflict with it.
 
 ---
 
@@ -127,13 +127,7 @@ Generate in this order:
 6. `src/plugins/{name}/__tests__/unit/helpers/fixtures.ts`
 7. For each command: `src/plugins/{name}/__tests__/unit/{command}.test.ts`
 
-**Generation rules:**
-
-- All hiero-cli types and classes import from `@hiero-ledger/hiero-cli` — never `@/core` or any internal path
-- Use real imports — never placeholder `// TODO: import X`
-- Mark every unimplemented handler body with `// IMPLEMENT`
-- Apply all rules from RULES.md silently
-- Conflict with a rule → flag it in Phase 3 under "⚠️ Rule conflicts", propose a compliant alternative, proceed with compliant version unless user explicitly overrides
+Apply all rules from RULES.md silently. If a user requirement conflicts with a rule, flag it in the Phase 3 summary under "⚠️ Rule conflicts", propose a compliant alternative, and proceed with the compliant version unless the user explicitly overrides.
 
 ### 4c. Build verification
 

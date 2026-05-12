@@ -4,7 +4,7 @@ Scaffold a new hiero-cli plugin by interviewing the user, then generating rules-
 
 ## Setup
 
-Before doing anything else, read the full contents of `skills/plugin-create/RULES.md`. This file contains the architectural rules you must enforce during code generation. You will apply them silently — do not narrate rule application. Only surface a rule if the user's requirements conflict with it.
+Before doing anything else, read the full contents of `skills/plugin-create/references/RULES.md`. This file contains the architectural rules you must enforce during code generation. You will apply them silently — do not narrate rule application. Only surface a rule if the user's requirements conflict with it.
 
 Also read `src/core/shared/config/cli-options.ts` to get the list of existing plugin names and reserved short options — you need these to avoid naming conflicts.
 
@@ -89,16 +89,7 @@ Generate all files in this order:
 7. For each command: `src/plugins/{name}/__tests__/unit/{command}.test.ts`
 8. If registration requested: update `src/core/shared/config/cli-options.ts`
 
-**Generation rules:**
-
-- Apply all rules from RULES.md silently
-- Use real imports — never use placeholder strings like `// TODO: import X`
-- Do not generate `utils/` or `constants.ts` unless the interview revealed a concrete need
-- Handler tests must mock `args.api`, `args.state`, `args.logger`, `args.config` using the pattern in `__tests__/unit/helpers/mocks.ts`
-- Test file must include at minimum: one happy-path test and one validation-error test per command
-
-**Conflict handling:**
-If a user requirement conflicts with a rule in RULES.md, do not silently ignore it. Flag it in the Phase 2 summary under "⚠️ Rule conflicts" and propose a compliant alternative. Proceed with the compliant version unless the user explicitly overrides.
+Apply all rules from RULES.md silently. If a user requirement conflicts with a rule, flag it in the Phase 2 summary under "⚠️ Rule conflicts", propose a compliant alternative, and proceed with the compliant version unless the user explicitly overrides.
 
 ---
 
@@ -119,5 +110,3 @@ Next steps:
   2. Run: npx tsc --noEmit to verify types
   3. Run tests: npx jest src/plugins/{name}
 ```
-
-Mark every unimplemented handler body with a `// IMPLEMENT` comment so the developer knows exactly where to add logic.

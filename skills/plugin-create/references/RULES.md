@@ -138,6 +138,8 @@ Rules:
 - Use Pattern A by default; only use Pattern B when the command submits a transaction
 - `normalizeParams` is where input schema parsing happens — not in `buildTransaction`
 - Never put business logic in the function wrapper — it delegates to the class
+- Use real imports everywhere — never write placeholder comments like `// TODO: import X`
+- Mark every unimplemented handler body with `// IMPLEMENT` so the developer knows exactly where to add logic
 
 ---
 
@@ -285,7 +287,7 @@ Rules:
 
 - Always use `AliasNameSchema` for alias/name fields
 - Always include `network: NetworkSchema` — resources are network-scoped
-- State is accessed via `args.state` in handlers
+- State is accessed via `args.api.state` in handlers
 - Never store private keys in state
 
 ---
