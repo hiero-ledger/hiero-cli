@@ -1,9 +1,11 @@
 import { z } from 'zod';
 
 import {
-  JsonInputSchema,
+  Eip712DomainSchema,
+  Eip712TypesSchema,
   KeyManagerTypeSchema,
   KeySchema,
+  typedJsonInput,
 } from '@/core/schemas';
 
 export const Eip712SignInputSchema = z.object({
@@ -13,13 +15,13 @@ export const Eip712SignInputSchema = z.object({
   keyManager: KeyManagerTypeSchema.optional().describe(
     'Key manager type (defaults to config setting)',
   ),
-  domain: JsonInputSchema.describe(
+  domain: typedJsonInput(Eip712DomainSchema).describe(
     'EIP-712 domain as inline JSON or path to a JSON file',
   ),
-  types: JsonInputSchema.describe(
+  types: typedJsonInput(Eip712TypesSchema).describe(
     'EIP-712 types definition as inline JSON or path to a JSON file',
   ),
-  message: JsonInputSchema.describe(
+  message: typedJsonInput(z.record(z.string(), z.unknown())).describe(
     'Message object to sign as inline JSON or path to a JSON file',
   ),
 });

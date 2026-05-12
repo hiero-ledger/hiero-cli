@@ -5,10 +5,6 @@ import type {
   SupportedNetwork,
 } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type {
-  Eip712Domain,
-  Eip712TypedDataField,
-} from '@/core/types/shared.types';
 import type { Eip712VerifyOutput } from './output';
 
 import { verifyTypedData } from 'ethers';
@@ -24,12 +20,9 @@ export class Eip712VerifyCommand implements Command {
     const validArgs = Eip712VerifyInputSchema.parse(args.args);
 
     const network = api.network.getCurrentNetwork();
-    const domain = validArgs.domain.value as Eip712Domain;
-    const types = validArgs.types.value as Record<
-      string,
-      Eip712TypedDataField[]
-    >;
-    const message = validArgs.message.value as Record<string, unknown>;
+    const domain = validArgs.domain.value;
+    const types = validArgs.types.value;
+    const message = validArgs.message.value;
     const signature = validArgs.signature;
     const expectedSigner = validArgs.expectedSigner;
 

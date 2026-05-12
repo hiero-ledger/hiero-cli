@@ -2,18 +2,20 @@ import { z } from 'zod';
 
 import {
   AccountReferenceObjectSchema,
+  Eip712DomainSchema,
   Eip712SignatureSchema,
-  JsonInputSchema,
+  Eip712TypesSchema,
+  typedJsonInput,
 } from '@/core/schemas';
 
 export const Eip712VerifyInputSchema = z.object({
-  domain: JsonInputSchema.describe(
+  domain: typedJsonInput(Eip712DomainSchema).describe(
     'EIP-712 domain as inline JSON or path to a JSON file',
   ),
-  types: JsonInputSchema.describe(
+  types: typedJsonInput(Eip712TypesSchema).describe(
     'EIP-712 types definition as inline JSON or path to a JSON file',
   ),
-  message: JsonInputSchema.describe(
+  message: typedJsonInput(z.record(z.string(), z.unknown())).describe(
     'Signed message object as inline JSON or path to a JSON file',
   ),
   signature: Eip712SignatureSchema.describe(

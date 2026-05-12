@@ -851,6 +851,44 @@ export const Eip712SignatureSchema = z
   )
   .describe('EIP-712 signature (0x-prefixed 65-byte hex)');
 
+export const Eip712TypedDataFieldSchema = z.object({
+  name: z.string(),
+  type: z.string(),
+});
+
+export const Eip712DomainSchema = z
+  .object({
+    name: z.string().optional(),
+    version: z.string().optional(),
+    chainId: z.union([z.number(), z.bigint()]).optional(),
+    verifyingContract: z.string().optional(),
+    salt: z.string().optional(),
+  })
+  .describe('EIP-712 domain object');
+
+export const Eip712TypesSchema = z
+  .record(z.string(), z.array(Eip712TypedDataFieldSchema))
+  .describe('EIP-712 types definition');
+
+/**
+ * Wraps JsonInputSchema and validates the parsed value against a Zod schema.
+ * Produces a typed { type, value: T } instead of { type, value: unknown }.
+ */
+export const typedJsonInput = <T>(valueSchema: z.ZodType<T>) =>
+  JsonInputSchema.transform(({ type, value }) => {
+    const result = valueSchema.safeParse(value);
+    if (!result.success) {
+      throw new ValidationError(
+        `JSON structure validation failed: ${result.error.issues
+          .map(
+            (i) => `${i.path.length ? i.path.join('.') : 'root'}: ${i.message}`,
+          )
+          .join('; ')}`,
+      );
+    }
+    return { type, value: result.data };
+  });
+
 /**
  * Token Name
  * Name of a token (alphanumeric, spaces, hyphens)

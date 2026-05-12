@@ -1,10 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
-import type {
-  Eip712Domain,
-  Eip712TypedDataField,
-} from '@/core/types/shared.types';
 import type { Eip712SignOutput } from './output';
 
 import { computeAddress } from 'ethers';
@@ -20,12 +16,9 @@ export class Eip712SignCommand implements Command {
     const { api } = args;
     const validArgs = Eip712SignInputSchema.parse(args.args);
 
-    const domain = validArgs.domain.value as Eip712Domain;
-    const types = validArgs.types.value as Record<
-      string,
-      Eip712TypedDataField[]
-    >;
-    const message = validArgs.message.value as Record<string, unknown>;
+    const domain = validArgs.domain.value;
+    const types = validArgs.types.value;
+    const message = validArgs.message.value;
 
     const keyManager =
       validArgs.keyManager ||
