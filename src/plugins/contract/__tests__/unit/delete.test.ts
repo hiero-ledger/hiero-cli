@@ -20,24 +20,18 @@ import {
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, NotFoundError, ValidationError } from '@/core';
 import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
-import { composeKey } from '@/core/utils/key-composer';
 import {
   makeAliasServiceMock,
   makeArgs,
   makeLogger,
 } from '@/plugins/account/__tests__/unit/helpers/mocks';
-import { makeApiMocks } from '@/plugins/contract/__tests__/unit/helpers/mocks';
+import {
+  makeApiMocks,
+  makeContractCleanupServiceMock,
+  makeContractStateServiceMock,
+} from '@/plugins/contract/__tests__/unit/helpers/mocks';
 import { DeleteContractOutputSchema } from '@/plugins/contract/commands/delete';
-import { contractDelete } from '@/plugins/contract/commands/delete/handler';
-import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
-
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandContractStateHelper: jest.fn(),
-}));
-
-const MockedHelper = ZustandContractStateHelper as jest.Mock;
-
-const expectedStateKey = composeKey(SupportedNetwork.TESTNET, MOCK_CONTRACT_ID);
+import { DeleteContractCommand } from '@/plugins/contract/commands/delete/handler';
 
 const MOCK_ADMIN_KEY_CLI = ['ed25519:private:' + 'a'.repeat(64)];
 const STORED_CONTRACT_ADMIN_REF = 'test-admin-key-ref';
@@ -99,27 +93,30 @@ describe('contract plugin - delete command', () => {
     );
   });
 
-  test('deletes contract successfully by contract ID', async () => {
-    const contract = makeContractData({
-      name: 'MyContract',
+  test('deletes contract successfully by contract ID (state-only)', async () => {
+    const contract = makeContractData({ name: 'MyContract' });
+    const contractState = makeContractStateServiceMock({
+      getContract: jest.fn().mockReturnValue(contract),
+    });
+    const contractCleanup = makeContractCleanupServiceMock({
+      removeContractFromLocalState: jest.fn().mockReturnValue([]),
     });
     const alias = makeAliasServiceMock();
-    alias.list.mockReturnValue([]);
-
-    const contractDeleteMock = jest.fn().mockReturnValue(undefined);
-    MockedHelper.mockImplementation(() => ({
-      getContract: jest.fn().mockReturnValue(contract),
-      deleteContract: contractDeleteMock,
-    }));
 
     const args = makeArgs({ ...api, alias }, logger, {
       contract: MOCK_CONTRACT_ID,
       stateOnly: true,
     });
 
-    const result = await contractDelete(args);
+    const result = await new DeleteContractCommand(
+      contractState,
+      contractCleanup,
+    ).execute(args);
 
-    expect(contractDeleteMock).toHaveBeenCalledWith(expectedStateKey);
+    expect(contractCleanup.removeContractFromLocalState).toHaveBeenCalledWith(
+      contract,
+      SupportedNetwork.TESTNET,
+    );
     const output = assertOutput(result.result, DeleteContractOutputSchema);
     expect(output.deletedContract.contractId).toBe(MOCK_CONTRACT_ID);
     expect(output.deletedContract.name).toBe('MyContract');
@@ -132,8 +129,13 @@ describe('contract plugin - delete command', () => {
       adminKeyRefIds: [STORED_CONTRACT_ADMIN_REF],
       adminKeyThreshold: 1,
     });
+    const contractState = makeContractStateServiceMock({
+      getContract: jest.fn().mockReturnValue(contract),
+    });
+    const contractCleanup = makeContractCleanupServiceMock({
+      removeContractFromLocalState: jest.fn().mockReturnValue([]),
+    });
     const alias = makeAliasServiceMock();
-    alias.list.mockReturnValue([]);
 
     api.kms.findByPublicKey = jest
       .fn()
@@ -146,19 +148,16 @@ describe('contract plugin - delete command', () => {
           : undefined,
       );
 
-    const contractDeleteMock = jest.fn().mockReturnValue(undefined);
-    MockedHelper.mockImplementation(() => ({
-      getContract: jest.fn().mockReturnValue(contract),
-      deleteContract: contractDeleteMock,
-    }));
-
     const args = makeArgs({ ...api, alias }, logger, {
       contract: MOCK_CONTRACT_ID,
       stateOnly: false,
       transferId: MOCK_ACCOUNT_ID,
     });
 
-    const result = await contractDelete(args);
+    const result = await new DeleteContractCommand(
+      contractState,
+      contractCleanup,
+    ).execute(args);
 
     expect(api.contract.deleteContract).toHaveBeenCalledWith({
       contractId: MOCK_CONTRACT_ID,
@@ -169,8 +168,11 @@ describe('contract plugin - delete command', () => {
       STORED_CONTRACT_ADMIN_REF,
     ]);
     expect(api.txExecute.execute).toHaveBeenCalled();
+    expect(contractCleanup.removeContractFromLocalState).toHaveBeenCalledWith(
+      expect.objectContaining({ contractId: MOCK_CONTRACT_ID }),
+      SupportedNetwork.TESTNET,
+    );
 
-    expect(contractDeleteMock).toHaveBeenCalledWith(expectedStateKey);
     const output = assertOutput(result.result, DeleteContractOutputSchema);
     expect(output.deletedContract.contractId).toBe(MOCK_CONTRACT_ID);
     expect(output.deletedContract.name).toBe('MyContract');
@@ -185,8 +187,15 @@ describe('contract plugin - delete command', () => {
       contractId: MOCK_CONTRACT_ID,
       name: 'ImportedContract',
     });
+    const contractState = makeContractStateServiceMock({
+      getContract: jest.fn().mockReturnValue(contract),
+    });
+    const contractCleanup = makeContractCleanupServiceMock({
+      removeContractFromLocalState: jest
+        .fn()
+        .mockReturnValue([`my-contract (${SupportedNetwork.TESTNET})`]),
+    });
 
-    const contractDeleteMock = jest.fn().mockReturnValue(undefined);
     const alias = makeAliasServiceMock();
     alias.resolveOrThrow.mockReturnValue({
       alias: 'my-contract',
@@ -195,66 +204,51 @@ describe('contract plugin - delete command', () => {
       entityId: MOCK_CONTRACT_ID,
       createdAt: '2024-01-01T00:00:00.000Z',
     });
-    alias.list.mockReturnValue([
-      {
-        alias: 'my-contract',
-        type: AliasType.Contract,
-        network: SupportedNetwork.TESTNET,
-        entityId: MOCK_CONTRACT_ID,
-        createdAt: '2024-01-01T00:00:00.000Z',
-      },
-    ]);
 
-    MockedHelper.mockImplementation(() => ({
-      getContract: jest.fn().mockReturnValue(contract),
-      deleteContract: contractDeleteMock,
-    }));
+    const args = makeArgs({ ...api, alias }, logger, {
+      contract: 'my-contract',
+      stateOnly: true,
+    });
 
-    const args = makeArgs(
-      {
-        ...api,
-        alias,
-      },
-      logger,
-      {
-        contract: 'my-contract',
-        stateOnly: true,
-      },
-    );
-
-    const result = await contractDelete(args);
+    const result = await new DeleteContractCommand(
+      contractState,
+      contractCleanup,
+    ).execute(args);
 
     expect(alias.resolveOrThrow).toHaveBeenCalledWith(
       'my-contract',
       AliasType.Contract,
       SupportedNetwork.TESTNET,
     );
-    expect(contractDeleteMock).toHaveBeenCalledWith(expectedStateKey);
-    expect(alias.remove).toHaveBeenCalledWith(
-      'my-contract',
+    expect(contractCleanup.removeContractFromLocalState).toHaveBeenCalledWith(
+      contract,
       SupportedNetwork.TESTNET,
     );
     const output = assertOutput(result.result, DeleteContractOutputSchema);
     expect(output.deletedContract.contractId).toBe(MOCK_CONTRACT_ID);
     expect(output.deletedContract.name).toBe('ImportedContract');
+    expect(output.removedAliases).toContain(
+      `my-contract (${SupportedNetwork.TESTNET})`,
+    );
   });
 
   test('throws when contract param is missing', async () => {
-    MockedHelper.mockImplementation(() => ({
-      getContract: jest.fn(),
-      deleteContract: jest.fn(),
-    }));
+    const contractState = makeContractStateServiceMock();
+    const contractCleanup = makeContractCleanupServiceMock();
 
     const args = makeArgs(api, logger, {});
 
-    await expect(contractDelete(args)).rejects.toThrow();
+    await expect(
+      new DeleteContractCommand(contractState, contractCleanup).execute(args),
+    ).rejects.toThrow();
   });
 
   test('throws when contract with given ID not found', async () => {
-    MockedHelper.mockImplementation(() => ({
+    const contractState = makeContractStateServiceMock({
       getContract: jest.fn().mockReturnValue(undefined),
-      deleteContract: jest.fn(),
-    }));
+    });
+    const contractCleanup = makeContractCleanupServiceMock();
+
     api.mirror.getContractInfo = jest
       .fn()
       .mockRejectedValue(
@@ -271,7 +265,9 @@ describe('contract plugin - delete command', () => {
       adminKey: MOCK_ADMIN_KEY_CLI,
     });
 
-    await expect(contractDelete(args)).rejects.toThrow(NotFoundError);
+    await expect(
+      new DeleteContractCommand(contractState, contractCleanup).execute(args),
+    ).rejects.toThrow(NotFoundError);
   });
 
   test('throws when contract alias not found', async () => {
@@ -281,11 +277,8 @@ describe('contract plugin - delete command', () => {
         'Alias "missing-alias" for contract on network "testnet" not found',
       );
     });
-
-    MockedHelper.mockImplementation(() => ({
-      getContract: jest.fn(),
-      deleteContract: jest.fn(),
-    }));
+    const contractState = makeContractStateServiceMock();
+    const contractCleanup = makeContractCleanupServiceMock();
 
     const args = makeArgs({ ...api, alias }, logger, {
       contract: 'missing-alias',
@@ -293,10 +286,12 @@ describe('contract plugin - delete command', () => {
       adminKey: MOCK_ADMIN_KEY_CLI,
     });
 
-    await expect(contractDelete(args)).rejects.toThrow(NotFoundError);
+    await expect(
+      new DeleteContractCommand(contractState, contractCleanup).execute(args),
+    ).rejects.toThrow(NotFoundError);
   });
 
-  test('throws when alias resolves but contract not in state', async () => {
+  test('throws when alias resolves but contract not in state (and mirror fails)', async () => {
     const alias = makeAliasServiceMock();
     alias.resolveOrThrow.mockReturnValue({
       alias: 'my-contract',
@@ -305,11 +300,10 @@ describe('contract plugin - delete command', () => {
       entityId: MOCK_CONTRACT_ID,
       createdAt: '2024-01-01T00:00:00.000Z',
     });
-
-    MockedHelper.mockImplementation(() => ({
+    const contractState = makeContractStateServiceMock({
       getContract: jest.fn().mockReturnValue(undefined),
-      deleteContract: jest.fn(),
-    }));
+    });
+    const contractCleanup = makeContractCleanupServiceMock();
 
     api.mirror.getContractInfo = jest
       .fn()
@@ -327,7 +321,9 @@ describe('contract plugin - delete command', () => {
       adminKey: MOCK_ADMIN_KEY_CLI,
     });
 
-    await expect(contractDelete(args)).rejects.toThrow(NotFoundError);
+    await expect(
+      new DeleteContractCommand(contractState, contractCleanup).execute(args),
+    ).rejects.toThrow(NotFoundError);
   });
 
   test('throws when KMS has no keys matching mirror admin and no --admin-key', async () => {
@@ -335,12 +331,11 @@ describe('contract plugin - delete command', () => {
       name: 'NoAdminRefs',
       adminKeyRefIds: [],
     });
-    const alias = makeAliasServiceMock();
-    alias.list.mockReturnValue([]);
-    MockedHelper.mockImplementation(() => ({
+    const contractState = makeContractStateServiceMock({
       getContract: jest.fn().mockReturnValue(contract),
-      deleteContract: jest.fn(),
-    }));
+    });
+    const contractCleanup = makeContractCleanupServiceMock();
+    const alias = makeAliasServiceMock();
 
     const args = makeArgs({ ...api, alias }, logger, {
       contract: MOCK_CONTRACT_ID,
@@ -348,27 +343,35 @@ describe('contract plugin - delete command', () => {
       transferId: MOCK_ACCOUNT_ID,
     });
 
-    await expect(contractDelete(args)).rejects.toThrow(ValidationError);
-    await expect(contractDelete(args)).rejects.toThrow(
+    await expect(
+      new DeleteContractCommand(contractState, contractCleanup).execute(args),
+    ).rejects.toThrow(ValidationError);
+    await expect(
+      new DeleteContractCommand(contractState, contractCleanup).execute(args),
+    ).rejects.toThrow(
       'Not enough admin key(s) not found in key manager for this contract. Provide --admin-key.',
     );
   });
 
-  test('throws when contractDelete throws', async () => {
+  test('throws when cleanup service throws', async () => {
     const contract = makeContractData({ contractId: MOCK_CONTRACT_ID });
-    const alias = makeAliasServiceMock();
-    alias.list.mockReturnValue([]);
-    MockedHelper.mockImplementation(() => ({
+    const contractState = makeContractStateServiceMock({
       getContract: jest.fn().mockReturnValue(contract),
-      deleteContract: jest.fn().mockImplementation(() => {
+    });
+    const contractCleanup = makeContractCleanupServiceMock({
+      removeContractFromLocalState: jest.fn().mockImplementation(() => {
         throw new InternalError('db error');
       }),
-    }));
+    });
+    const alias = makeAliasServiceMock();
+
     const args = makeArgs({ ...api, alias }, logger, {
       contract: MOCK_CONTRACT_ID,
       stateOnly: true,
     });
 
-    await expect(contractDelete(args)).rejects.toThrow('db error');
+    await expect(
+      new DeleteContractCommand(contractState, contractCleanup).execute(args),
+    ).rejects.toThrow('db error');
   });
 });
