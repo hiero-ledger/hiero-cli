@@ -23,7 +23,3 @@ export function validateOutputFormat(outputFormat: unknown): OutputFormat {
     );
   }
 }
-
-// Re-export for convenience
-export type { OutputFormat };
-export { OUTPUT_FORMATS };

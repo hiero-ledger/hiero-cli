@@ -8,7 +8,7 @@ export interface CliErrorOptions {
 
 export type SerializedCliError = Omit<CliErrorOptions, 'recoverable'>;
 
-export const DEFAULT_TEMPLATE = '{{{message}}}';
+const DEFAULT_TEMPLATE = '{{{message}}}';
 
 export abstract class CliError extends Error {
   readonly code: string;
