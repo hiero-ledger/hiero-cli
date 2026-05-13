@@ -12,9 +12,9 @@ export class SwapStateServiceImpl implements SwapStateService {
   constructor(private readonly state: StateService) {}
 
   getSwap(name: string): SwapEntry | undefined {
-    const raw = this.state.get<SwapEntry>(SWAP_STATE_NAMESPACE, name);
+    const raw = this.state.get<unknown>(SWAP_STATE_NAMESPACE, name);
     if (!raw) return undefined;
-    return SwapEntrySchema.parse(raw);
+    return this.parseSwapEntry(raw);
   }
 
   getSwapOrThrow(name: string): SwapEntry {
@@ -38,8 +38,8 @@ export class SwapStateServiceImpl implements SwapStateService {
   listSwaps(): Array<{ name: string; entry: SwapEntry }> {
     return this.state.getKeys(SWAP_STATE_NAMESPACE).map((key) => ({
       name: key,
-      entry: SwapEntrySchema.parse(
-        this.state.get<SwapEntry>(SWAP_STATE_NAMESPACE, key),
+      entry: this.parseSwapEntry(
+        this.state.get<unknown>(SWAP_STATE_NAMESPACE, key),
       ),
     }));
   }
@@ -67,5 +67,13 @@ export class SwapStateServiceImpl implements SwapStateService {
     };
     this.saveSwap(name, updated);
     return updated;
+  }
+
+  private parseSwapEntry(raw: unknown): SwapEntry {
+    const result = SwapEntrySchema.safeParse(raw);
+    if (!result.success) {
+      throw ValidationError.fromZod(result.error);
+    }
+    return result.data;
   }
 }

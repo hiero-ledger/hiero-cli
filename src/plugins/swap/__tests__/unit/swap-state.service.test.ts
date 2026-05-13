@@ -112,11 +112,11 @@ describe('swap plugin - swap state service', () => {
     );
   });
 
-  test('throws when stored swap has invalid shape', () => {
+  test('throws ValidationError when stored swap has invalid shape', () => {
     const state = makeStateMock();
     state.get.mockReturnValue({ transfers: [{ type: 'invalid' }] });
     const service = new SwapStateServiceImpl(state);
 
-    expect(() => service.getSwap(SWAP_NAME)).toThrow();
+    expect(() => service.getSwap(SWAP_NAME)).toThrow(ValidationError);
   });
 });
