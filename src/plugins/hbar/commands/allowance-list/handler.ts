@@ -1,7 +1,10 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
+import type { AccountReference } from '@/core/schemas/common-schemas';
+import type { IdentityResolutionService } from '@/core/services/identity-resolution/identity-resolution-service.interface';
+import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { HbarAllowanceInfo } from '@/core/services/mirrornode/types';
-import type { HbarAllowanceListInput } from './input';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { HbarAllowanceListOutput } from './output';
 
 import BigNumber from 'bignumber.js';
@@ -18,14 +21,19 @@ export class HbarAllowanceListCommand implements Command {
     const { api } = args;
     const validArgs = HbarAllowanceListInputSchema.parse(args.args);
     const network = api.network.getCurrentNetwork();
-    const accountId = await this.resolveAccountId(args, validArgs.account);
+    const accountId = await this.resolveAccountId(
+      api.identityResolution,
+      network,
+      validArgs.account,
+    );
     const spenderAccountId = await this.resolveOptionalAccountId(
-      args,
+      api.identityResolution,
+      network,
       validArgs.spender,
     );
 
     const response = await this.fetchAllowances(
-      args,
+      api.mirror,
       accountId,
       validArgs.showAll,
     );
@@ -45,11 +53,11 @@ export class HbarAllowanceListCommand implements Command {
   }
 
   private async resolveAccountId(
-    args: CommandHandlerArgs,
-    account: HbarAllowanceListInput['account'],
+    identityResolution: IdentityResolutionService,
+    network: SupportedNetwork,
+    account: AccountReference,
   ): Promise<string> {
-    const network = args.api.network.getCurrentNetwork();
-    const resolved = await args.api.identityResolution.resolveAccount({
+    const resolved = await identityResolution.resolveAccount({
       accountReference: account.value,
       type: account.type,
       network,
@@ -58,19 +66,19 @@ export class HbarAllowanceListCommand implements Command {
   }
 
   private async resolveOptionalAccountId(
-    args: CommandHandlerArgs,
-    account: HbarAllowanceListInput['spender'],
+    identityResolution: IdentityResolutionService,
+    network: SupportedNetwork,
+    account: AccountReference | undefined,
   ): Promise<string | undefined> {
     if (account === undefined) return undefined;
-    return this.resolveAccountId(args, account);
+    return this.resolveAccountId(identityResolution, network, account);
   }
 
   private async fetchAllowances(
-    args: CommandHandlerArgs,
+    mirror: HederaMirrornodeService,
     accountId: string,
     showAll: boolean,
   ): Promise<{ allowances: HbarAllowanceInfo[]; hasMore: boolean }> {
-    const { mirror } = args.api;
     if (!showAll) {
       const response = await mirror.getHbarAllowances(accountId);
       return {

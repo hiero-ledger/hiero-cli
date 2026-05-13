@@ -391,6 +391,8 @@ export const AccountReferenceObjectSchema = z
   })
   .describe('Account identifier (ID, EVM address, or alias)');
 
+export type AccountReference = z.infer<typeof AccountReferenceObjectSchema>;
+
 /**
  * Parsed token reference as a discriminated object by type (entity ID or alias).
  */

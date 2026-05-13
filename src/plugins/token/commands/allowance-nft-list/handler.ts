@@ -1,12 +1,15 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { AccountReference } from '@/core/schemas/common-schemas';
+import type { IdentityResolutionService } from '@/core/services/identity-resolution/identity-resolution-service.interface';
+import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type {
   NftAllowanceInfo,
   TokenInfo,
 } from '@/core/services/mirrornode/types';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { TokenAllowanceNftListInput } from './input';
+import type { NftTokenMetadata } from '@/plugins/token/types';
 import type { TokenAllowanceNftListOutput } from './output';
 
 import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
@@ -14,11 +17,6 @@ import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
 import { TokenAllowanceNftListInputSchema } from './input';
 
 export const TOKEN_ALLOWANCE_NFT_LIST_COMMAND_NAME = 'token_allowance-nft-list';
-
-interface TokenMetadata {
-  name: string;
-  symbol: string;
-}
 
 interface NftAllowanceGroup {
   tokenId: string;
@@ -32,15 +30,20 @@ export class TokenAllowanceNftListCommand implements Command {
     const { api } = args;
     const validArgs = TokenAllowanceNftListInputSchema.parse(args.args);
     const network = api.network.getCurrentNetwork();
-    const accountId = await this.resolveAccountId(args, validArgs.account);
+    const accountId = await this.resolveAccountId(
+      api.identityResolution,
+      network,
+      validArgs.account,
+    );
     const spenderAccountId = await this.resolveOptionalSpender(
-      args,
+      api.identityResolution,
+      network,
       validArgs.spender,
     );
     const tokenId = this.resolveOptionalToken(validArgs.token, api, network);
 
     const response = await this.fetchAllowances(
-      args,
+      api.mirror,
       accountId,
       validArgs.showAll,
     );
@@ -49,7 +52,7 @@ export class TokenAllowanceNftListCommand implements Command {
     );
     const groups = this.groupAllowances(filtered);
     const tokenInfoMap = await this.fetchTokenInfoMap(
-      api,
+      api.mirror,
       groups,
       validArgs.raw,
     );
@@ -70,11 +73,11 @@ export class TokenAllowanceNftListCommand implements Command {
   }
 
   private async resolveAccountId(
-    args: CommandHandlerArgs,
-    account: TokenAllowanceNftListInput['account'],
+    identityResolution: IdentityResolutionService,
+    network: SupportedNetwork,
+    account: AccountReference,
   ): Promise<string> {
-    const network = args.api.network.getCurrentNetwork();
-    const resolved = await args.api.identityResolution.resolveAccount({
+    const resolved = await identityResolution.resolveAccount({
       accountReference: account.value,
       type: account.type,
       network,
@@ -83,11 +86,12 @@ export class TokenAllowanceNftListCommand implements Command {
   }
 
   private async resolveOptionalSpender(
-    args: CommandHandlerArgs,
-    spender: TokenAllowanceNftListInput['spender'],
+    identityResolution: IdentityResolutionService,
+    network: SupportedNetwork,
+    spender: AccountReference | undefined,
   ): Promise<string | undefined> {
     if (spender === undefined) return undefined;
-    return this.resolveAccountId(args, spender);
+    return this.resolveAccountId(identityResolution, network, spender);
   }
 
   private resolveOptionalToken(
@@ -102,11 +106,10 @@ export class TokenAllowanceNftListCommand implements Command {
   }
 
   private async fetchAllowances(
-    args: CommandHandlerArgs,
+    mirror: HederaMirrornodeService,
     accountId: string,
     showAll: boolean,
   ): Promise<{ allowances: NftAllowanceInfo[]; hasMore: boolean }> {
-    const { mirror } = args.api;
     if (!showAll) {
       const response = await mirror.getNftAllowances(accountId);
       return {
@@ -168,22 +171,22 @@ export class TokenAllowanceNftListCommand implements Command {
   }
 
   private async fetchTokenInfoMap(
-    api: CoreApi,
+    mirror: HederaMirrornodeService,
     groups: NftAllowanceGroup[],
     raw: boolean,
-  ): Promise<Map<string, TokenMetadata>> {
+  ): Promise<Map<string, NftTokenMetadata>> {
     if (raw) return new Map();
     const tokenIds = [...new Set(groups.map((group) => group.tokenId))];
     const entries = await Promise.all(
       tokenIds.map(async (tokenId) => {
-        const info = await api.mirror.getTokenInfo(tokenId);
+        const info = await mirror.getTokenInfo(tokenId);
         return [tokenId, this.toTokenMetadata(info)] as const;
       }),
     );
     return new Map(entries);
   }
 
-  private toTokenMetadata(info: TokenInfo): TokenMetadata {
+  private toTokenMetadata(info: TokenInfo): NftTokenMetadata {
     return {
       name: info.name,
       symbol: info.symbol,
@@ -192,7 +195,7 @@ export class TokenAllowanceNftListCommand implements Command {
 
   private toOutputEntry(
     group: NftAllowanceGroup,
-    metadata: TokenMetadata | undefined,
+    metadata: NftTokenMetadata | undefined,
   ) {
     return {
       tokenId: group.tokenId,

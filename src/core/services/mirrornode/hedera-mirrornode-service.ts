@@ -5,6 +5,8 @@ import type {
   AccountListItemDto,
   AccountNftsResponse,
   AccountResponse,
+  AllowancePage,
+  AllowanceType,
   ContractCallRequest,
   ContractCallResponse,
   ContractInfo,
@@ -65,15 +67,6 @@ import {
   TransactionDetailsResponseSchema,
 } from './schemas';
 import { MirrorNodeKeyType, NetworkToBaseUrl } from './types';
-
-type AllowanceType = 'crypto' | 'tokens' | 'nfts';
-
-interface AllowancePage<T> {
-  allowances: T[];
-  links?: {
-    next?: string | null;
-  };
-}
 
 export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeService {
   private static readonly API_PATH = '/api/v1';

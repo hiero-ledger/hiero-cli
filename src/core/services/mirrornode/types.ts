@@ -487,3 +487,12 @@ export interface ContractCallResponse {
    */
   result: string;
 }
+
+export type AllowanceType = 'crypto' | 'tokens' | 'nfts';
+
+export interface AllowancePage<T> {
+  allowances: T[];
+  links?: {
+    next?: string | null;
+  };
+}
