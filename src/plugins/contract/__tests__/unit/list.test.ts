@@ -1,5 +1,3 @@
-import type { CoreApi } from '@/core/core-api/core-api.interface';
-
 import {
   makeAliasMock,
   makeArgs,
@@ -9,15 +7,9 @@ import {
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError } from '@/core';
 import { SupportedNetwork } from '@/core/types/shared.types';
+import { makeContractStateServiceMock } from '@/plugins/contract/__tests__/unit/helpers/mocks';
 import { ContractListOutputSchema } from '@/plugins/contract/commands/list';
-import { contractList } from '@/plugins/contract/commands/list/handler';
-import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
-
-jest.mock('@/plugins/contract/zustand-state-helper', () => ({
-  ZustandContractStateHelper: jest.fn(),
-}));
-
-const MockedHelper = ZustandContractStateHelper as jest.Mock;
+import { ListContractsCommand } from '@/plugins/contract/commands/list/handler';
 
 const NETWORK_TESTNET = SupportedNetwork.TESTNET;
 const NETWORK_MAINNET = SupportedNetwork.MAINNET;
@@ -29,22 +21,18 @@ describe('contract plugin - list command', () => {
 
   test('returns empty list when no contracts exist', async () => {
     const logger = makeLogger();
-
-    MockedHelper.mockImplementation(() => ({
+    const contractState = makeContractStateServiceMock({
       listContracts: jest.fn().mockReturnValue([]),
-    }));
+    });
 
-    const alias = makeAliasMock();
-    alias.list = jest.fn().mockReturnValue([]);
-    const api: Partial<CoreApi> = {
-      alias,
+    const api = {
+      alias: makeAliasMock(),
       network: makeNetworkMock('testnet'),
       logger: makeLogger(),
     };
 
     const args = makeArgs(api, logger, {});
-
-    const result = await contractList(args);
+    const result = await new ListContractsCommand(contractState).execute(args);
 
     const output = assertOutput(result.result, ContractListOutputSchema);
     expect(output.contracts).toHaveLength(0);
@@ -73,21 +61,20 @@ describe('contract plugin - list command', () => {
       },
     ];
 
-    MockedHelper.mockImplementation(() => ({
+    const contractState = makeContractStateServiceMock({
       listContracts: jest.fn().mockReturnValue(contracts),
-    }));
+    });
 
-    const alias = makeAliasMock();
-    const api: Partial<CoreApi> = {
-      alias,
+    const api = {
+      alias: makeAliasMock(),
       network: makeNetworkMock(SupportedNetwork.TESTNET),
       logger: makeLogger(),
     };
     const args = makeArgs(api, logger, {});
 
-    const result = await contractList(args);
+    const result = await new ListContractsCommand(contractState).execute(args);
 
-    expect(MockedHelper).toHaveBeenCalledTimes(1);
+    expect(contractState.listContracts).toHaveBeenCalledTimes(1);
     const output = assertOutput(result.result, ContractListOutputSchema);
 
     expect(output.contracts).toHaveLength(2);
@@ -113,20 +100,21 @@ describe('contract plugin - list command', () => {
   test('throws when listing contracts fails', async () => {
     const logger = makeLogger();
 
-    MockedHelper.mockImplementation(() => ({
+    const contractState = makeContractStateServiceMock({
       listContracts: jest.fn().mockImplementation(() => {
         throw new InternalError('database error');
       }),
-    }));
+    });
 
-    const alias = makeAliasMock();
-    const api: Partial<CoreApi> = {
-      alias,
+    const api = {
+      alias: makeAliasMock(),
       network: makeNetworkMock(SupportedNetwork.TESTNET),
       logger: makeLogger(),
     };
     const args = makeArgs(api, logger, {});
 
-    await expect(contractList(args)).rejects.toThrow('database error');
+    await expect(
+      new ListContractsCommand(contractState).execute(args),
+    ).rejects.toThrow('database error');
   });
 });
