@@ -86,7 +86,7 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
     if (isEntityId) {
       key = composeKey(network, topicRef);
     } else {
-      const topicEntityId = this.topicResolution.resolveTopicEntityIdOrThrow(
+      const topicEntityId = this.topicResolution.resolveTopicId(
         topicRef,
         network,
       );
@@ -117,7 +117,7 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
     if (isEntityId) {
       return EntityIdSchema.parse(topicRef);
     }
-    return this.topicResolution.resolveTopicEntityIdOrThrow(topicRef, network);
+    return this.topicResolution.resolveTopicId(topicRef, network);
   }
 
   async normalizeParams(

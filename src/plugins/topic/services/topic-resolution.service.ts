@@ -38,11 +38,4 @@ export class TopicResolutionServiceImpl implements TopicResolutionService {
 
     return topicAliasResult.entityId;
   }
-
-  resolveTopicEntityIdOrThrow(
-    topicRef: string,
-    network: SupportedNetwork,
-  ): string {
-    return this.resolveTopicId(topicRef, network);
-  }
 }

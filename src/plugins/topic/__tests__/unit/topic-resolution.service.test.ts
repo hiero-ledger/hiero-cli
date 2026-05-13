@@ -59,10 +59,7 @@ describe('topic plugin - TopicResolutionService', () => {
     const service = new TopicResolutionServiceImpl(alias);
 
     expect(() =>
-      service.resolveTopicEntityIdOrThrow(
-        'broken-topic',
-        SupportedNetwork.TESTNET,
-      ),
+      service.resolveTopicId('broken-topic', SupportedNetwork.TESTNET),
     ).toThrow(StateError);
   });
 });
