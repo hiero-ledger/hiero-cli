@@ -30,3 +30,7 @@ export const mockSignature65Bytes = '0x' + 'a'.repeat(130);
 
 export const mockAltSignature65Bytes =
   '0x' + 'a'.repeat(64) + '7'.repeat(64) + '1c';
+
+export const mockPrecomputedHash = '0x' + 'c'.repeat(64);
+
+export const mockSignature64Bytes = '0x' + '0'.repeat(128);

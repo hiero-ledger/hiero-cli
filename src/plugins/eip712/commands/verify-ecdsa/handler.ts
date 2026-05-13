@@ -5,29 +5,33 @@ import type {
   SupportedNetwork,
 } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { Eip712VerifyOutput } from './output';
+import type { ExpectedSignerType } from '@/plugins/eip712/commands/verify-ecdsa/types';
+import type { Eip712VerifyEcdsaOutput } from './output';
 
-import { verifyTypedData } from 'ethers';
+import { recoverAddress } from 'ethers';
 
 import { EntityReferenceType } from '@/core';
 import { ValidationError } from '@/core/errors';
+import { resolveHash } from '@/plugins/eip712/util/resolve-hash';
 
-import { Eip712VerifyInputSchema } from './input';
+import { Eip712VerifyEcdsaInputSchema } from './input';
 
-export class Eip712VerifyCommand implements Command {
+export class Eip712VerifyEcdsaCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
-    const validArgs = Eip712VerifyInputSchema.parse(args.args);
+    const validArgs = Eip712VerifyEcdsaInputSchema.parse(args.args);
 
     const network = api.network.getCurrentNetwork();
-    const domain = validArgs.domain.value;
-    const types = validArgs.types.value;
-    const message = validArgs.message.value;
     const signature = validArgs.signature;
     const expectedSigner = validArgs.expectedSigner;
-
-    const recoveredSigner = verifyTypedData(domain, types, message, signature);
-    const output: Eip712VerifyOutput = { recoveredSigner };
+    const hash = resolveHash(
+      validArgs.hash,
+      validArgs.domain?.value,
+      validArgs.types?.value,
+      validArgs.message?.value,
+    );
+    const recoveredSigner = recoverAddress(hash, signature);
+    const output: Eip712VerifyEcdsaOutput = { recoveredSigner };
 
     if (expectedSigner) {
       const expectedSignerEvmAddress = await this.resolveExpectedSigner(
@@ -44,10 +48,7 @@ export class Eip712VerifyCommand implements Command {
   }
 
   private async resolveExpectedSigner(
-    expectedSigner: {
-      value: string;
-      type: EntityReferenceType;
-    },
+    expectedSigner: ExpectedSignerType,
     identityResolutionService: IdentityResolutionService,
     network: SupportedNetwork,
   ): Promise<string> {
@@ -69,8 +70,8 @@ export class Eip712VerifyCommand implements Command {
   }
 }
 
-export async function eip712Verify(
+export async function eip712VerifyEcdsa(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new Eip712VerifyCommand().execute(args);
+  return new Eip712VerifyEcdsaCommand().execute(args);
 }

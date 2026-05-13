@@ -4,7 +4,10 @@ module.exports = {
   },
   testEnvironment: 'node',
   testTimeout: 10000,
-  testPathIgnorePatterns: ['.*/__tests__/helpers/.*'],
+  testPathIgnorePatterns: [
+    '.*/__tests__/.*/helpers/.*',
+    '.*/__tests__/helpers/.*',
+  ],
   reporters: ['default', 'jest-junit'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',

@@ -1,24 +1,19 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
-import type { Eip712SignOutput } from './output';
-
-import { computeAddress } from 'ethers';
+import type { Ed25519SignOutput } from './output';
 
 import { ValidationError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
+import { resolveHash } from '@/plugins/eip712/util/resolve-hash';
 
-import { Eip712SignInputSchema } from './input';
+import { Ed25519SignInputSchema } from './input';
 
-export class Eip712SignCommand implements Command {
+export class Ed25519SignCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
-    const validArgs = Eip712SignInputSchema.parse(args.args);
-
-    const domain = validArgs.domain.value;
-    const types = validArgs.types.value;
-    const message = validArgs.message.value;
+    const validArgs = Ed25519SignInputSchema.parse(args.args);
 
     const keyManager =
       validArgs.keyManager ||
@@ -28,7 +23,7 @@ export class Eip712SignCommand implements Command {
       validArgs.key,
       keyManager,
       true,
-      ['eip712:signer'],
+      ['eip712:ed25519:signer'],
     );
 
     const kmsRecord = api.kms.get(resolved.keyRefId);
@@ -37,34 +32,36 @@ export class Eip712SignCommand implements Command {
         `Key reference not found: ${resolved.keyRefId}`,
       );
     }
-    if (kmsRecord.keyAlgorithm !== KeyAlgorithm.ECDSA) {
+    if (kmsRecord.keyAlgorithm !== KeyAlgorithm.ED25519) {
       throw new ValidationError(
-        `EIP-712 signing requires an ECDSA key; key ${resolved.keyRefId} uses ${kmsRecord.keyAlgorithm}`,
+        `ED25519 verification requires an ED25519 key; key ${resolved.keyRefId} uses ${kmsRecord.keyAlgorithm}`,
       );
     }
 
+    const hash = resolveHash(
+      validArgs.hash,
+      validArgs.domain?.value,
+      validArgs.types?.value,
+      validArgs.message?.value,
+    );
+    const digestBytes = Buffer.from(hash.slice(2), 'hex');
+
     const signer = api.kms.getSignerHandle(kmsRecord.keyRefId);
-    const signature = await signer.signWithWallet(domain, types, message);
+    const signatureBytes = signer.sign(digestBytes);
+    const signature = `0x${Buffer.from(signatureBytes).toString('hex')}`;
 
-    const signerEvm = computeAddress(`0x${kmsRecord.publicKey}`);
-    const r = `0x${signature.slice(2, 66)}`;
-    const s = `0x${signature.slice(66, 130)}`;
-    const v = parseInt(signature.slice(130, 132), 16) as 27 | 28;
-
-    const output: Eip712SignOutput = {
-      signerEvm,
+    const output: Ed25519SignOutput = {
+      signerPublicKey: `0x${kmsRecord.publicKey}`,
+      hash,
       signature,
-      r,
-      s,
-      v,
     };
 
     return { result: output };
   }
 }
 
-export async function eip712Sign(
+export async function ed25519Sign(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new Eip712SignCommand().execute(args);
+  return new Ed25519SignCommand().execute(args);
 }

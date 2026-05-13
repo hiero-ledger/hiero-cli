@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const Eip712VerifyOutputSchema = z.object({
+export const Eip712VerifyEcdsaOutputSchema = z.object({
   recoveredSigner: z
     .string()
     .describe('EVM address recovered from the signature'),
@@ -10,9 +10,11 @@ export const Eip712VerifyOutputSchema = z.object({
     .describe('Whether the recovered signer matches --expected-signer'),
 });
 
-export type Eip712VerifyOutput = z.infer<typeof Eip712VerifyOutputSchema>;
+export type Eip712VerifyEcdsaOutput = z.infer<
+  typeof Eip712VerifyEcdsaOutputSchema
+>;
 
-export const EIP712_VERIFY_TEMPLATE = `
+export const EIP712_VERIFY_ECDSA_TEMPLATE = `
 EIP-712 Verification
 ─────────────────────────────────────────────────
 Recovered Signer:  {{recoveredSigner}}

@@ -26,6 +26,7 @@ import {
 } from '@/core/shared/constants';
 import {
   EntityReferenceType,
+  JsonInputType,
   SupplyType,
   SupportedNetwork,
 } from '@/core/types/shared.types';
@@ -797,15 +798,6 @@ export const FilePathSchema = z
   .describe('Filesystem path (absolute or relative)');
 
 /**
- * JSON Input Source Type
- * Discriminates between inline JSON and a file-backed JSON value.
- */
-export enum JsonInputType {
-  INLINE = 'INLINE',
-  FILE = 'FILE',
-}
-
-/**
  * JSON Input Schema
  * Accepts either an inline JSON string (starts with { or [) or a filesystem path
  * to a JSON file. Transforms to { type, value } where value is the parsed object.
@@ -840,16 +832,27 @@ export const JsonInputSchema = z
   .describe('Inline JSON string or path to a JSON file');
 
 /**
- * EIP-712 Signature
+ * EIP-712 Ecdsa Signature
  * 0x-prefixed 65-byte ECDSA signature (r + s + v)
  */
-export const Eip712SignatureSchema = z
+export const Eip712EcdsaSignatureSchema = z
   .string()
   .regex(
     /^0x[0-9a-fA-F]{130}$/,
     'Signature must be a 0x-prefixed 65-byte hex string',
   )
   .describe('EIP-712 signature (0x-prefixed 65-byte hex)');
+/**
+ * EIP-712 Signature
+ * 0x-prefixed 65-byte ECDSA signature (r + s + v)
+ */
+export const Eip712Ed25519SignatureSchema = z
+  .string()
+  .regex(
+    /^0x[0-9a-fA-F]{128}$/,
+    'Signature must be a 0x-prefixed 64-byte hex string',
+  )
+  .describe('EIP-712 signature (0x-prefixed 64-byte hex)');
 
 export const Eip712TypedDataFieldSchema = z.object({
   name: z.string(),
@@ -1255,3 +1258,7 @@ export const ScheduledTransactionDataSchema = z.object({
   ),
   createdAt: z.string().optional(),
 });
+
+export const HashSchema = z
+  .string()
+  .regex(/^0x[0-9a-fA-F]+$/, 'hash must be a hex string starting with 0x');

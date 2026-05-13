@@ -159,6 +159,11 @@ export enum MirrorTransactionResult {
   FAILURE = 'FAILURE',
 }
 
+export enum JsonInputType {
+  INLINE = 'INLINE',
+  FILE = 'FILE',
+}
+
 export interface TransactionStatus {
   status: 'pending' | 'success' | 'failed';
   transactionId: string;

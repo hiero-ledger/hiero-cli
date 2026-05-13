@@ -17,19 +17,19 @@ src/plugins/eip712/
 ├── manifest.ts              # Plugin manifest with command definitions
 ├── index.ts                 # Public exports
 ├── commands/
-│   ├── sign/
-│   │   ├── handler.ts       # Eip712SignCommand + eip712Sign()
+│   ├── sign-ecdsa/
+│   │   ├── handler.ts       # Eip712SignEcdsaCommand + eip712SignEcdsa()
 │   │   ├── index.ts
 │   │   ├── input.ts         # Zod schema: key, keyManager, domain, types, message
 │   │   └── output.ts        # Zod schema + human template
-│   └── verify/
-│       ├── handler.ts       # Eip712VerifyCommand + eip712Verify()
+│   └── verify-ecdsa/
+│       ├── handler.ts       # Eip712VerifyEcdsaCommand + eip712VerifyEcdsa()
 │       ├── index.ts
 │       ├── input.ts         # Zod schema: domain, types, message, signature, expectedSigner
 │       └── output.ts        # Zod schema + human template
 └── __tests__/unit/
-    ├── sign.test.ts
-    ├── verify.test.ts
+    ├── sign-ecdsa.test.ts
+    ├── verify-ecdsa.test.ts
     └── helpers/
         ├── fixtures.ts
         └── mocks.ts
@@ -42,14 +42,14 @@ src/plugins/eip712/
 Sign an EIP-712 typed data payload using an ECDSA key from the KMS.
 
 ```bash
-hcli eip712 sign \
+hcli eip712 sign-ecdsa \
   --key my-ecdsa-key \
   --domain '{"name":"MyApp","version":"1","chainId":295}' \
   --types '{"Mail":[{"name":"from","type":"address"},{"name":"contents","type":"string"}]}' \
   --message '{"from":"0xAb...","contents":"Hello"}'
 
 # Domain and types from JSON files
-hcli eip712 sign \
+hcli eip712 sign-ecdsa \
   --key my-ecdsa-key \
   --domain ./domain.json \
   --types ./types.json \
@@ -83,20 +83,20 @@ JSON output fields: `signerEvm`, `signature`, `r`, `s`, `v`
 Recover the EVM signer address from an EIP-712 signature and optionally assert it matches an expected signer.
 
 ```bash
-hcli eip712 verify \
+hcli eip712 verify-ecdsa \
   --domain '{"name":"MyApp","version":"1","chainId":295}' \
   --types '{"Mail":[{"name":"from","type":"address"},{"name":"contents","type":"string"}]}' \
   --message '{"from":"0xAb...","contents":"Hello"}' \
   --signature 0x<65-byte-hex>
 
 # With expected signer assertion (accepts EVM address, account ID, or alias)
-hcli eip712 verify \
+hcli eip712 verify-ecdsa \
   --domain ./domain.json --types ./types.json --message ./message.json \
   --signature 0x... \
   --expected-signer 0xAbCd...1234
 
-hcli eip712 verify ... --expected-signer 0.0.12345
-hcli eip712 verify ... --expected-signer my-account-alias
+hcli eip712 verify-ecdsa ... --expected-signer 0.0.12345
+hcli eip712 verify-ecdsa ... --expected-signer my-account-alias
 ```
 
 **Options:**
@@ -122,14 +122,14 @@ JSON output fields: `recoveredSigner`, `match?` (only present when `--expected-s
 
 ```bash
 # 1. Sign a permit-style payload
-hcli eip712 sign \
+hcli eip712 sign-ecdsa \
   --key alice \
   --domain ./permit-domain.json \
   --types ./permit-types.json \
   --message ./permit-message.json
 
 # 2. Verify the signature was produced by alice
-hcli eip712 verify \
+hcli eip712 verify-ecdsa \
   --domain ./permit-domain.json \
   --types ./permit-types.json \
   --message ./permit-message.json \

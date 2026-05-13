@@ -1,14 +1,10 @@
 import type { KmsCredentialSecret } from '@/core/services/kms/kms-types.interface';
-import type {
-  Eip712Domain,
-  Eip712TypedDataField,
-} from '@/core/types/shared.types';
 import type { Signer } from './signer.interface';
 
 import { PrivateKey } from '@hiero-ledger/sdk';
-import { Wallet } from 'ethers';
+import { SigningKey } from 'ethers';
 
-import { ConfigurationError } from '@/core/errors';
+import { ConfigurationError, ValidationError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
 
 /**
@@ -36,21 +32,20 @@ export class PrivateKeySigner implements Signer {
     return new Uint8Array(signature);
   }
 
-  async signWithWallet(
-    domain: Eip712Domain,
-    types: Record<string, Eip712TypedDataField[]>,
-    message: Record<string, unknown>,
-  ): Promise<string> {
+  signHashWithEcdsaKey(hash: string): string {
     if (!this.secret.privateKey) {
       throw new ConfigurationError('Missing private key in secret');
+    }
+    if (this.algorithm !== KeyAlgorithm.ECDSA) {
+      throw new ValidationError(
+        'Wallet signing can be only done with ECDSA key',
+      );
     }
     const rawPrivateKey = PrivateKey.fromStringECDSA(
       this.secret.privateKey,
     ).toStringRaw();
-    const wallet = new Wallet(`0x${rawPrivateKey}`);
-    // ethers v6 adds EIP712Domain automatically — strip it if present to avoid conflict
-    const { EIP712Domain: _ignored, ...filteredTypes } = types;
-    return await wallet.signTypedData(domain, filteredTypes, message);
+    const signingKey = new SigningKey(`0x${rawPrivateKey}`);
+    return signingKey.sign(hash).serialized;
   }
 
   getPublicKey(): string {
