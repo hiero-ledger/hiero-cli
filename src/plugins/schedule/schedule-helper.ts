@@ -4,9 +4,8 @@ import type {
   ScheduleHelperResolveParams,
 } from '@/plugins/schedule/shared/types';
 
-import { EntityReferenceType, KeyAlgorithm } from '@/core';
+import { EntityReferenceType } from '@/core';
 import { NotFoundError, ValidationError } from '@/core/errors';
-import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandScheduleStateHelper } from '@/plugins/schedule/zustand-state-helper';
 
@@ -54,12 +53,6 @@ export class ScheduleHelper {
         scheduleId: response.schedule_id,
         scheduled: true,
         executed: !!response.executed_timestamp,
-        //@TODO: change if you add support for threshold key
-        adminPublicKey: response.admin_key?.key,
-        adminKeyType:
-          response.admin_key?._type === MirrorNodeKeyType.ED25519
-            ? KeyAlgorithm.ED25519
-            : KeyAlgorithm.ECDSA,
       };
     }
   }
