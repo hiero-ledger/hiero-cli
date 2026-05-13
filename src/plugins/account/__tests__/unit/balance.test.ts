@@ -17,13 +17,13 @@ import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { AliasType } from '@/core/types/shared.types';
 import { AccountBalanceOutputSchema } from '@/plugins/account/commands/balance';
 import { accountBalance } from '@/plugins/account/commands/balance/handler';
-import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
+import { AccountStateServiceImpl } from '@/plugins/account/services/account-state.service';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandAccountStateHelper: jest.fn(),
+jest.mock('../../services/account-state.service', () => ({
+  AccountStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = ZustandAccountStateHelper as jest.Mock;
+const MockedHelper = AccountStateServiceImpl as jest.Mock;
 
 describe('account plugin - balance command (ADR-003)', () => {
   beforeEach(() => {

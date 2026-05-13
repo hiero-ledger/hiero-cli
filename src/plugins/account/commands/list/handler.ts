@@ -3,25 +3,25 @@ import type {
   CommandHandlerArgs,
   CommandResult,
 } from '@/core/plugins/plugin.interface';
+import type { AccountStateService } from '@/plugins/account/services/account-state.service.interface';
 import type { AccountListOutput } from './output';
 
-import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
+import { AccountStateServiceImpl } from '@/plugins/account/services/account-state.service';
 
 import { AccountListInputSchema } from './input';
 
 export class AccountListCommand implements Command {
+  constructor(private readonly accountState: AccountStateService) {}
+
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { api } = args;
-
-    const accountState = new ZustandAccountStateHelper(api.state, api.logger);
-
     const validArgs = AccountListInputSchema.parse(args.args);
 
     const showPrivateKeys = validArgs.private;
 
+    const { api } = args;
     api.logger.info('Listing all accounts...');
 
-    const accounts = accountState.listAccounts();
+    const accounts = this.accountState.listAccounts();
 
     const outputData: AccountListOutput = {
       accounts: accounts.map((account) => ({
@@ -40,4 +40,6 @@ export class AccountListCommand implements Command {
 }
 
 export const accountList = (args: CommandHandlerArgs) =>
-  new AccountListCommand().execute(args);
+  new AccountListCommand(
+    new AccountStateServiceImpl(args.api.state, args.api.logger),
+  ).execute(args);

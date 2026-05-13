@@ -20,6 +20,8 @@ import type { TopicService } from '@/core/services/topic/topic-transaction-servi
 import type { TransferService } from '@/core/services/transfer/transfer-service.interface';
 import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
 import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
+import type { ContractCleanupService } from '@/plugins/contract/services/contract-cleanup.service.interface';
+import type { ContractStateService } from '@/plugins/contract/services/contract-state.service.interface';
 
 import { MOCK_CONTRACT_ID } from '@/__tests__/mocks/fixtures';
 import {
@@ -255,6 +257,24 @@ export const makeLogger = (): jest.Mocked<Logger> => ({
   debug: jest.fn(),
   warn: jest.fn(),
   setLevel: jest.fn(),
+});
+
+export const makeContractStateServiceMock = (
+  overrides?: Partial<jest.Mocked<ContractStateService>>,
+): jest.Mocked<ContractStateService> => ({
+  hasContract: jest.fn().mockReturnValue(false),
+  getContract: jest.fn().mockReturnValue(undefined),
+  saveContract: jest.fn(),
+  deleteContract: jest.fn(),
+  listContracts: jest.fn().mockReturnValue([]),
+  ...overrides,
+});
+
+export const makeContractCleanupServiceMock = (
+  overrides?: Partial<jest.Mocked<ContractCleanupService>>,
+): jest.Mocked<ContractCleanupService> => ({
+  removeContractFromLocalState: jest.fn().mockReturnValue([]),
+  ...overrides,
 });
 
 export { EntityReferenceType };

@@ -1,6 +1,7 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { AccountData } from '@/plugins/account/schema';
+import type { AccountStateService } from '@/plugins/account/services/account-state.service.interface';
 import type { AccountCreateOutput } from './output';
 import type {
   CreateBuildTransactionResult,
@@ -16,9 +17,9 @@ import { HBAR_DECIMALS, KeyAlgorithm } from '@/core/shared/constants';
 import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { processBalanceInput } from '@/core/utils/process-balance-input';
+import { AccountStateServiceImpl } from '@/plugins/account/services/account-state.service';
 import { buildEvmAddressFromAccountId } from '@/plugins/account/utils/account-address';
 import { validateSufficientBalance } from '@/plugins/account/utils/account-validation';
-import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 import { AccountCreateInputSchema } from './input';
 
@@ -30,7 +31,7 @@ export class AccountCreateCommand extends BaseTransactionCommand<
   CreateSignTransactionResult,
   CreateExecuteTransactionResult
 > {
-  constructor() {
+  constructor(private readonly accountState: AccountStateService) {
     super(ACCOUNT_CREATE_COMMAND_NAME);
   }
 
@@ -202,8 +203,7 @@ export class AccountCreateCommand extends BaseTransactionCommand<
       normalisedParams.network,
       transactionResult.accountId,
     );
-    const accountState = new ZustandAccountStateHelper(api.state, api.logger);
-    accountState.saveAccount(accountKey, accountData);
+    this.accountState.saveAccount(accountKey, accountData);
 
     const outputData: AccountCreateOutput = {
       accountId: accountData.accountId,
@@ -222,5 +222,7 @@ export class AccountCreateCommand extends BaseTransactionCommand<
 export async function accountCreate(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new AccountCreateCommand().execute(args);
+  return new AccountCreateCommand(
+    new AccountStateServiceImpl(args.api.state, args.api.logger),
+  ).execute(args);
 }

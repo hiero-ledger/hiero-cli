@@ -1,7 +1,3 @@
-/**
- * Update Contract Command Handler
- * Updates smart contract properties on Hedera network
- */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
@@ -29,7 +25,8 @@ import { NULL_TOKEN } from '@/core/shared/constants';
 import { ensureEvmAddress0xPrefix } from '@/core/utils/evm-address';
 import { composeKey } from '@/core/utils/key-composer';
 import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
-import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
+import { ContractStateServiceImpl } from '@/plugins/contract/services/contract-state.service';
+import { type ContractStateService } from '@/plugins/contract/services/contract-state.service.interface';
 
 import { ContractUpdateInputSchema } from './input';
 
@@ -41,7 +38,7 @@ export class UpdateContractCommand extends BaseTransactionCommand<
   ContractUpdateSignTransactionResult,
   ContractUpdateExecuteTransactionResult
 > {
-  constructor() {
+  constructor(private readonly contractState: ContractStateService) {
     super(CONTRACT_UPDATE_COMMAND_NAME);
   }
 
@@ -64,13 +61,11 @@ export class UpdateContractCommand extends BaseTransactionCommand<
         aliasType: AliasType.Contract,
         network,
       });
-    // Fetch mirror node info for admin key resolution
     const contractInfo = await api.mirror.getContractInfo(entityIdOrEvmAddress);
     const contractId = contractInfo.contract_id;
     const stateKey = composeKey(network, contractId);
 
-    const contractState = new ZustandContractStateHelper(api.state, api.logger);
-    let storedContract = contractState.getContract(stateKey);
+    let storedContract = this.contractState.getContract(stateKey);
 
     const keyManager =
       validArgs.keyManager ||
@@ -226,13 +221,12 @@ export class UpdateContractCommand extends BaseTransactionCommand<
   ): Promise<CommandResult> {
     const { transactionResult } = executeTransactionResult;
     const { api } = args;
-    const contractState = new ZustandContractStateHelper(api.state, api.logger);
-    const existingContract = contractState.getContract(
+    const existingContract = this.contractState.getContract(
       normalisedParams.stateKey,
     );
 
     if (existingContract) {
-      contractState.saveContract(
+      this.contractState.saveContract(
         normalisedParams.stateKey,
         this.applyContractUpdates(existingContract, normalisedParams),
       );
@@ -338,5 +332,9 @@ export class UpdateContractCommand extends BaseTransactionCommand<
 export async function contractUpdate(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new UpdateContractCommand().execute(args);
+  const contractState = new ContractStateServiceImpl(
+    args.api.state,
+    args.api.logger,
+  );
+  return new UpdateContractCommand(contractState).execute(args);
 }

@@ -259,20 +259,28 @@ export const topicPluginManifest: PluginManifest = {
             'New admin key(s). Pass multiple times for multiple keys. Cannot be cleared, only replaced.',
         },
         {
-          name: 'submit-key',
-          short: 's',
-          type: OptionType.REPEATABLE,
-          required: false,
-          description:
-            'New submit key(s). Pass "null" to clear (makes topic public).',
-        },
-        {
           name: 'admin-key-threshold',
           short: 'A',
           type: OptionType.NUMBER,
           required: false,
           description:
             'Number of admin keys required to sign (M-of-N). Only applies when multiple admin keys are provided.',
+        },
+        {
+          name: 'admin-signing-key',
+          short: 'x',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'Admin credential(s) to sign the update transaction. Pass multiple times for threshold keys. Required when the admin key is not available in the key manager.',
+        },
+        {
+          name: 'submit-key',
+          short: 's',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'New submit key(s). Pass "null" to clear (makes topic public).',
         },
         {
           name: 'submit-key-threshold',

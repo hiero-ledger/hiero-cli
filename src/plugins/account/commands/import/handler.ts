@@ -2,23 +2,23 @@ import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { AccountData } from '@/plugins/account/schema';
+import type { AccountStateService } from '@/plugins/account/services/account-state.service.interface';
 import type { AccountImportOutput } from './output';
 
 import { StateError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
+import { AccountStateServiceImpl } from '@/plugins/account/services/account-state.service';
 import { buildAccountEvmAddress } from '@/plugins/account/utils/account-address';
-import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 import { AccountImportInputSchema } from './input';
 
 export class AccountImportCommand implements Command {
+  constructor(private readonly accountState: AccountStateService) {}
+
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
-
-    const accountState = new ZustandAccountStateHelper(api.state, api.logger);
-
     const validArgs = AccountImportInputSchema.parse(args.args);
 
     const alias = validArgs.name;
@@ -39,7 +39,7 @@ export class AccountImportCommand implements Command {
     const accountId = resolved.accountId;
     const accountKey = composeKey(network, accountId);
 
-    if (accountState.hasAccount(accountKey)) {
+    if (this.accountState.hasAccount(accountKey)) {
       throw new StateError('Account with this ID is already saved in state');
     }
     api.alias.availableOrThrow(alias, network);
@@ -78,7 +78,7 @@ export class AccountImportCommand implements Command {
       network: api.network.getCurrentNetwork(),
     };
 
-    accountState.saveAccount(accountKey, account);
+    this.accountState.saveAccount(accountKey, account);
 
     const outputData: AccountImportOutput = {
       accountId,
@@ -94,4 +94,6 @@ export class AccountImportCommand implements Command {
 }
 
 export const accountImport = (args: CommandHandlerArgs) =>
-  new AccountImportCommand().execute(args);
+  new AccountImportCommand(
+    new AccountStateServiceImpl(args.api.state, args.api.logger),
+  ).execute(args);

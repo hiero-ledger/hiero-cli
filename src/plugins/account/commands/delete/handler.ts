@@ -1,7 +1,10 @@
-import type { CommandHandlerArgs, CommandResult, CoreApi } from '@/core';
+import type { CommandHandlerArgs, CommandResult } from '@/core';
+import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { AccountData } from '@/plugins/account/schema';
+import type { AccountCleanupService } from '@/plugins/account/services/account-cleanup.service.interface';
+import type { AccountStateService } from '@/plugins/account/services/account-state.service.interface';
 import type { AccountDeleteOutput } from './output';
 import type {
   DeleteBuildTransactionResult,
@@ -24,8 +27,8 @@ import {
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
-import { AccountHelper } from '@/plugins/account/account-helper';
-import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
+import { AccountCleanupServiceImpl } from '@/plugins/account/services/account-cleanup.service';
+import { AccountStateServiceImpl } from '@/plugins/account/services/account-state.service';
 
 import { AccountDeleteInputSchema } from './input';
 
@@ -37,7 +40,10 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
   DeleteSignTransactionResult,
   DeleteExecuteTransactionResult
 > {
-  constructor() {
+  constructor(
+    private readonly accountState: AccountStateService,
+    private readonly accountCleanup: AccountCleanupService,
+  ) {
     super(ACCOUNT_DELETE_COMMAND_NAME);
   }
 
@@ -52,17 +58,9 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
   private async executeStateOnlyDelete(
     args: CommandHandlerArgs,
   ): Promise<CommandResult> {
-    const { api } = args;
     const resolved = await this.resolveAccountFromState(args);
-    const accountHelper = new AccountHelper(
-      api.state,
-      api.logger,
-      api.alias,
-      api.kms,
-      api.network,
-    );
 
-    const removedAliases = accountHelper.removeAccountFromLocalState(
+    const removedAliases = this.accountCleanup.removeAccountFromLocalState(
       resolved.accountToDelete,
       resolved.network,
     );
@@ -107,12 +105,10 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
     stateKey: string;
     accountRef: string;
   }> {
-    const { api } = args;
-    const accountState = new ZustandAccountStateHelper(api.state, api.logger);
     const { stateKey, accountRef, network } =
       await this.resolveEntityIdFromAccountRef(args);
 
-    const accountToDelete = accountState.getAccount(stateKey);
+    const accountToDelete = this.accountState.getAccount(stateKey);
     if (!accountToDelete) {
       throw new NotFoundError(`Account with ID '${accountRef}' not found`);
     }
@@ -123,17 +119,22 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
   private resolveTransferAccountId(
     transferRef: string,
     network: SupportedNetwork,
-    api: CoreApi,
+    aliasService: AliasService,
   ): string {
     if (EntityIdSchema.safeParse(transferRef).success) {
       return transferRef;
     }
-    const alias = api.alias.resolveOrThrow(
+    const alias = aliasService.resolveOrThrow(
       transferRef,
       AliasType.Account,
       network,
     );
-    return alias.entityId!;
+    if (!alias.entityId) {
+      throw new NotFoundError(
+        `Alias for transfer account '${transferRef}' is missing account ID in its record`,
+      );
+    }
+    return alias.entityId;
   }
 
   async normalizeParams(
@@ -159,13 +160,12 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
     }
     const network = api.network.getCurrentNetwork();
     const stateKey = composeKey(network, resolvedCredential.accountId);
-    const accountState = new ZustandAccountStateHelper(api.state, api.logger);
-    const localAccount = accountState.getAccount(stateKey);
+    const localAccount = this.accountState.getAccount(stateKey);
 
     const transferAccountId = this.resolveTransferAccountId(
       transferId,
       network,
-      args.api,
+      api.alias,
     );
 
     if (transferAccountId === resolvedCredential.accountId) {
@@ -232,14 +232,13 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
   }
 
   async outputPreparation(
-    args: CommandHandlerArgs,
+    _args: CommandHandlerArgs,
     normalisedParams: DeleteNormalisedParams,
     _buildTransactionResult: DeleteBuildTransactionResult,
     _signTransactionResult: DeleteSignTransactionResult,
     executeTransactionResult: DeleteExecuteTransactionResult,
   ): Promise<CommandResult> {
     const { transactionResult } = executeTransactionResult;
-    const { api } = args;
 
     if (!transactionResult.success) {
       throw new TransactionError(
@@ -254,19 +253,11 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
       );
     }
 
-    const accountHelper = new AccountHelper(
-      api.state,
-      api.logger,
-      api.alias,
-      api.kms,
-      api.network,
-    );
-
-    const removedAliases = accountHelper.removeAccountFromLocalState(
+    const removedAliases = this.accountCleanup.removeAccountFromLocalState(
       normalisedParams.accountToDelete,
       normalisedParams.network,
     );
-    accountHelper.removeKmsCredentialIfUnusedAfterAccountRemoved(
+    this.accountCleanup.removeKmsCredentialIfUnusedAfterAccountRemoved(
       normalisedParams.accountToDelete,
     );
 
@@ -288,5 +279,17 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
 export async function accountDelete(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new AccountDeleteCommand().execute(args);
+  const accountState = new AccountStateServiceImpl(
+    args.api.state,
+    args.api.logger,
+  );
+  const accountCleanup = new AccountCleanupServiceImpl(
+    accountState,
+    args.api.alias,
+    args.api.kms,
+    args.api.network,
+    args.api.logger,
+  );
+
+  return new AccountDeleteCommand(accountState, accountCleanup).execute(args);
 }

@@ -1,6 +1,7 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { AccountData } from '@/plugins/account/schema';
+import type { AccountStateService } from '@/plugins/account/services/account-state.service.interface';
 import type { AccountUpdateOutput } from './output';
 import type {
   UpdateBuildTransactionResult,
@@ -20,7 +21,7 @@ import { EntityIdSchema } from '@/core/schemas';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
-import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
+import { AccountStateServiceImpl } from '@/plugins/account/services/account-state.service';
 
 import { AccountUpdateInputSchema } from './input';
 
@@ -32,7 +33,7 @@ export class AccountUpdateCommand extends BaseTransactionCommand<
   UpdateSignTransactionResult,
   UpdateExecuteTransactionResult
 > {
-  constructor() {
+  constructor(private readonly accountState: AccountStateService) {
     super(ACCOUNT_UPDATE_COMMAND_NAME);
   }
 
@@ -44,7 +45,6 @@ export class AccountUpdateCommand extends BaseTransactionCommand<
     const validArgs = AccountUpdateInputSchema.parse(args.args);
     const network = api.network.getCurrentNetwork();
     const accountRef = validArgs.account;
-    const accountState = new ZustandAccountStateHelper(api.state, api.logger);
 
     const isEntityId = EntityIdSchema.safeParse(accountRef).success;
     let accountStateKey: string;
@@ -65,7 +65,7 @@ export class AccountUpdateCommand extends BaseTransactionCommand<
       accountStateKey = composeKey(network, alias.entityId);
     }
 
-    const existingAccount = accountState.getAccount(accountStateKey);
+    const existingAccount = this.accountState.getAccount(accountStateKey);
     if (!existingAccount) {
       throw new NotFoundError(`Account '${accountRef}' not found in state`);
     }
@@ -205,8 +205,7 @@ export class AccountUpdateCommand extends BaseTransactionCommand<
       );
     }
 
-    const accountState = new ZustandAccountStateHelper(api.state, api.logger);
-    const existingAccount = accountState.getAccount(
+    const existingAccount = this.accountState.getAccount(
       normalisedParams.accountStateKey,
     );
 
@@ -226,7 +225,7 @@ export class AccountUpdateCommand extends BaseTransactionCommand<
         publicKey: normalisedParams.newPublicKey,
         type: normalisedParams.newKeyType ?? existingAccount.type,
       };
-      accountState.saveAccount(
+      this.accountState.saveAccount(
         normalisedParams.accountStateKey,
         updatedAccount,
       );
@@ -258,4 +257,7 @@ export class AccountUpdateCommand extends BaseTransactionCommand<
 
 export const accountUpdate = (
   args: CommandHandlerArgs,
-): Promise<CommandResult> => new AccountUpdateCommand().execute(args);
+): Promise<CommandResult> =>
+  new AccountUpdateCommand(
+    new AccountStateServiceImpl(args.api.state, args.api.logger),
+  ).execute(args);

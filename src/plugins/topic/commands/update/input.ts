@@ -9,6 +9,7 @@ import {
   KeyThresholdOptionalSchema,
   MemoSchema,
   NullLiteralSchema,
+  OptionalDefaultEmptyKeyListSchema,
 } from '@/core/schemas';
 import { NULL_TOKEN, ZOD_CUSTOM_ISSUE_CODE } from '@/core/shared/constants';
 import { applyKeyThresholdSuperRefine } from '@/core/utils/key-threshold-input-schema';
@@ -18,20 +19,21 @@ const topicUpdateInputObjectSchema = z.object({
   memo: MemoSchema.or(NullLiteralSchema)
     .optional()
     .describe('New memo for the topic. Pass "null" to clear.'),
-  adminKey: z
-    .array(KeySchema)
-    .optional()
-    .default([])
-    .describe('New admin key(s). Cannot be cleared, only replaced.'),
+  adminKey: OptionalDefaultEmptyKeyListSchema.describe(
+    'New admin key(s). Cannot be cleared, only replaced.',
+  ),
+  adminKeyThreshold: KeyThresholdOptionalSchema.describe(
+    'Number of admin keys required to sign (M-of-N)',
+  ),
+  adminSigningKey: OptionalDefaultEmptyKeyListSchema.describe(
+    'Admin credential(s) to sign the update transaction. Required if the admin key is not available in the key manager.',
+  ),
   submitKey: z
     .array(KeySchema)
     .or(NullLiteralSchema)
     .optional()
     .default([])
     .describe('New submit key(s). Pass "null" to clear.'),
-  adminKeyThreshold: KeyThresholdOptionalSchema.describe(
-    'Number of admin keys required to sign (M-of-N)',
-  ),
   submitKeyThreshold: KeyThresholdOptionalSchema.describe(
     'Number of submit keys required to sign (M-of-N)',
   ),

@@ -1,5 +1,7 @@
 import type { CoreApi, TransactionResult } from '@/core';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
+import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
+import type { SigningKeysResult } from '@/core/services/key-resolver/types';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { TopicData } from '@/plugins/topic/schema';
 
@@ -9,8 +11,13 @@ import {
   ED25519_DER_PRIVATE_KEY_SUBMIT_1,
   ED25519_DER_PUBLIC_KEY,
   ED25519_HEX_PUBLIC_KEY,
+  MOCK_ACCOUNT_ID,
+  MOCK_HEDERA_ENTITY_ID_1,
+  MOCK_HEDERA_ENTITY_ID_2,
+  MOCK_HEDERA_ENTITY_ID_3,
   MOCK_TOPIC_ADMIN_KEY_REF_ID,
   MOCK_TOPIC_ADMIN_KEY_REF_ID_2,
+  MOCK_TOPIC_ID,
   MOCK_TOPIC_SUBMIT_KEY_REF_ID,
 } from '@/__tests__/mocks/fixtures';
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
@@ -25,11 +32,7 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { SupportedNetwork } from '@/core';
-import {
-  NotFoundError,
-  TransactionError,
-  ValidationError,
-} from '@/core/errors';
+import { TransactionError, ValidationError } from '@/core/errors';
 import { createMockTopicInfo } from '@/core/services/mirrornode/__tests__/unit/mocks';
 import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
 import { TopicUpdateOutputSchema } from '@/plugins/topic/commands/update';
@@ -71,7 +74,7 @@ function mirrorWithNoAdminKey(topicId: string): HederaMirrornodeService {
 
 const EXISTING_TOPIC: TopicData = {
   name: 'my-topic',
-  topicId: '0.0.9999',
+  topicId: MOCK_TOPIC_ID,
   memo: 'Original memo',
   adminKeyRefIds: [MOCK_TOPIC_ADMIN_KEY_REF_ID],
   submitKeyRefIds: [MOCK_TOPIC_SUBMIT_KEY_REF_ID],
@@ -145,8 +148,8 @@ const makeApiMocks = ({
   });
   const alias = makeAliasMock();
   const mirror = noAdminKey
-    ? mirrorWithNoAdminKey('0.0.9999')
-    : mirrorWithAdminKey('0.0.9999');
+    ? mirrorWithNoAdminKey(MOCK_TOPIC_ID)
+    : mirrorWithAdminKey(MOCK_TOPIC_ID);
 
   const baseApi: Partial<CoreApi> = {
     topic: topicTransactions,
@@ -166,7 +169,7 @@ const makeUpdateArgs = (
   logger: ReturnType<typeof makeLogger>,
   inputArgs: Record<string, unknown>,
 ) => {
-  return makeArgs(api, logger, { topic: '0.0.9999', ...inputArgs });
+  return makeArgs(api, logger, { topic: MOCK_TOPIC_ID, ...inputArgs });
 };
 
 describe('topic plugin - update command', () => {
@@ -189,15 +192,15 @@ describe('topic plugin - update command', () => {
     const result = await topicUpdate(args);
 
     const output = assertOutput(result.result, TopicUpdateOutputSchema);
-    expect(output.topicId).toBe('0.0.9999');
+    expect(output.topicId).toBe(MOCK_TOPIC_ID);
     expect(output.memo).toBe('Updated memo');
     expect(output.updatedFields).toContain('memo');
 
     expect(topicTransactions.updateTopic).toHaveBeenCalledWith(
-      expect.objectContaining({ topicId: '0.0.9999', memo: 'Updated memo' }),
+      expect.objectContaining({ topicId: MOCK_TOPIC_ID, memo: 'Updated memo' }),
     );
     expect(saveTopicMock).toHaveBeenCalledWith(
-      `${SupportedNetwork.TESTNET}:0.0.9999`,
+      `${SupportedNetwork.TESTNET}:${MOCK_TOPIC_ID}`,
       expect.objectContaining({ memo: 'Updated memo' }),
     );
   });
@@ -210,7 +213,7 @@ describe('topic plugin - update command', () => {
       saveTopic: saveTopicMock,
     }));
 
-    const newAdminKey = `0.0.222:${ED25519_DER_PRIVATE_KEY_ADMIN_2}`;
+    const newAdminKey = `${MOCK_HEDERA_ENTITY_ID_2}:${ED25519_DER_PRIVATE_KEY_ADMIN_2}`;
 
     const { txSign, baseApi } = makeApiMocks({});
     const api: Partial<CoreApi> = { ...baseApi, logger };
@@ -231,7 +234,7 @@ describe('topic plugin - update command', () => {
       saveTopic: jest.fn(),
     }));
 
-    const newSubmitKey = `0.0.333:${ED25519_DER_PRIVATE_KEY_SUBMIT_1}`;
+    const newSubmitKey = `${MOCK_HEDERA_ENTITY_ID_3}:${ED25519_DER_PRIVATE_KEY_SUBMIT_1}`;
 
     const { txSign, baseApi } = makeApiMocks({});
     const api: Partial<CoreApi> = { ...baseApi, logger };
@@ -253,7 +256,7 @@ describe('topic plugin - update command', () => {
       saveTopic: saveTopicMock,
     }));
 
-    const newSubmitKey = `0.0.333:${ED25519_DER_PRIVATE_KEY_SUBMIT_1}`;
+    const newSubmitKey = `${MOCK_HEDERA_ENTITY_ID_3}:${ED25519_DER_PRIVATE_KEY_SUBMIT_1}`;
 
     const { baseApi } = makeApiMocks({});
     const api: Partial<CoreApi> = { ...baseApi, logger };
@@ -269,18 +272,138 @@ describe('topic plugin - update command', () => {
     expect(output.updatedFields).toContain('submitKey');
   });
 
-  test('throws NotFoundError when topic not in state', async () => {
+  test('succeeds and saves to state when topic not in local state and KMS finds admin key', async () => {
+    const logger = makeLogger();
+    const saveTopicMock = jest.fn();
+    MockedHelper.mockImplementation(() => ({
+      loadTopic: jest.fn().mockReturnValue(null),
+      saveTopic: saveTopicMock,
+    }));
+
+    const keyResolver: Pick<KeyResolverService, 'resolveSigningKeys'> = {
+      resolveSigningKeys: jest.fn().mockResolvedValue({
+        keyRefIds: [MOCK_TOPIC_ADMIN_KEY_REF_ID],
+        requiredSignatures: 1,
+      } satisfies SigningKeysResult),
+    };
+
+    const { baseApi } = makeApiMocks({});
+    const api: Partial<CoreApi> = {
+      ...baseApi,
+      logger,
+      keyResolver: keyResolver as unknown as KeyResolverService,
+    };
+
+    const args = makeUpdateArgs(api, logger, { memo: 'New memo' });
+    const result = await topicUpdate(args);
+
+    const output = assertOutput(result.result, TopicUpdateOutputSchema);
+    expect(output.topicId).toBe(MOCK_TOPIC_ID);
+    expect(output.memo).toBe('New memo');
+    expect(saveTopicMock).toHaveBeenCalledWith(
+      `${SupportedNetwork.TESTNET}:${MOCK_TOPIC_ID}`,
+      expect.objectContaining({ topicId: MOCK_TOPIC_ID, memo: 'New memo' }),
+    );
+  });
+
+  test('succeeds when topic not in state with explicit adminSigningKey', async () => {
+    const logger = makeLogger();
+    const saveTopicMock = jest.fn();
+    MockedHelper.mockImplementation(() => ({
+      loadTopic: jest.fn().mockReturnValue(null),
+      saveTopic: saveTopicMock,
+    }));
+
+    const keyResolver: Pick<KeyResolverService, 'resolveSigningKeys'> = {
+      resolveSigningKeys: jest.fn().mockResolvedValue({
+        keyRefIds: [MOCK_TOPIC_ADMIN_KEY_REF_ID],
+        requiredSignatures: 1,
+      } satisfies SigningKeysResult),
+    };
+
+    const { baseApi } = makeApiMocks({});
+    const api: Partial<CoreApi> = {
+      ...baseApi,
+      logger,
+      keyResolver: keyResolver as unknown as KeyResolverService,
+    };
+
+    const args = makeUpdateArgs(api, logger, {
+      memo: 'Updated via signing key',
+      adminSigningKey: [
+        `${MOCK_HEDERA_ENTITY_ID_1}:${ED25519_DER_PRIVATE_KEY}`,
+      ],
+    });
+    const result = await topicUpdate(args);
+
+    const output = assertOutput(result.result, TopicUpdateOutputSchema);
+    expect(output.memo).toBe('Updated via signing key');
+    expect(keyResolver.resolveSigningKeys).toHaveBeenCalledWith(
+      expect.objectContaining({
+        explicitCredentials: expect.arrayContaining([expect.any(Object)]),
+      }),
+    );
+    expect(saveTopicMock).toHaveBeenCalled();
+  });
+
+  test('saves topic built from mirror data to state when not previously tracked', async () => {
+    const logger = makeLogger();
+    const saveTopicMock = jest.fn();
+    MockedHelper.mockImplementation(() => ({
+      loadTopic: jest.fn().mockReturnValue(null),
+      saveTopic: saveTopicMock,
+    }));
+
+    const keyResolver: Pick<KeyResolverService, 'resolveSigningKeys'> = {
+      resolveSigningKeys: jest.fn().mockResolvedValue({
+        keyRefIds: [MOCK_TOPIC_ADMIN_KEY_REF_ID],
+        requiredSignatures: 1,
+      } satisfies SigningKeysResult),
+    };
+
+    const { baseApi } = makeApiMocks({});
+    const api: Partial<CoreApi> = {
+      ...baseApi,
+      logger,
+      keyResolver: keyResolver as unknown as KeyResolverService,
+    };
+
+    const args = makeUpdateArgs(api, logger, { memo: 'Fresh' });
+    await topicUpdate(args);
+
+    const savedData = saveTopicMock.mock.calls[0][1];
+    expect(savedData.topicId).toBe(MOCK_TOPIC_ID);
+    expect(savedData.adminKeyRefIds).toEqual([MOCK_TOPIC_ADMIN_KEY_REF_ID]);
+    expect(savedData.adminKeyThreshold).toBe(1);
+    expect(savedData.memo).toBe('Fresh');
+  });
+
+  test('fails with error when topic not in state and admin key cannot be resolved', async () => {
     const logger = makeLogger();
     MockedHelper.mockImplementation(() => ({
       loadTopic: jest.fn().mockReturnValue(null),
       saveTopic: jest.fn(),
     }));
 
-    const { baseApi } = makeApiMocks({});
-    const api: Partial<CoreApi> = { ...baseApi, logger };
+    const keyResolver: Pick<KeyResolverService, 'resolveSigningKeys'> = {
+      resolveSigningKeys: jest
+        .fn()
+        .mockRejectedValue(
+          new ValidationError(
+            'Not enough admin key(s) found in key manager for this topic. Provide --admin-signing-key.',
+          ),
+        ),
+    };
 
-    const args = makeUpdateArgs(api, logger, { memo: 'New memo' });
-    await expect(topicUpdate(args)).rejects.toThrow(NotFoundError);
+    const { baseApi } = makeApiMocks({});
+    const api: Partial<CoreApi> = {
+      ...baseApi,
+      logger,
+      keyResolver: keyResolver as unknown as KeyResolverService,
+    };
+
+    const args = makeUpdateArgs(api, logger, { memo: 'Should fail' });
+    await expect(topicUpdate(args)).rejects.toThrow(ValidationError);
   });
 
   test('throws ValidationError for immutable topic (no admin key) with non-expiration update', async () => {
@@ -381,7 +504,7 @@ describe('topic plugin - update command', () => {
       saveTopic: jest.fn(),
     }));
 
-    const sameAdminKey = `0.0.123456:${ED25519_DER_PRIVATE_KEY}`;
+    const sameAdminKey = `${MOCK_HEDERA_ENTITY_ID_1}:${ED25519_DER_PRIVATE_KEY}`;
 
     const { txSign, baseApi } = makeApiMocks({});
     const api: Partial<CoreApi> = { ...baseApi, logger };
@@ -437,7 +560,7 @@ describe('topic plugin - update command', () => {
     const logger = makeLogger();
     const topicWithAutoRenew = {
       ...EXISTING_TOPIC,
-      autoRenewAccount: '0.0.5555',
+      autoRenewAccount: MOCK_ACCOUNT_ID,
     };
     const saveTopicMock = jest.fn();
     MockedHelper.mockImplementation(() => ({
