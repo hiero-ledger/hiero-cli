@@ -153,9 +153,9 @@ describe('schedule plugin — sign command', () => {
     const logger = makeLogger();
     resolveScheduleMock.mockResolvedValue(resolvedSchedule());
 
-    const buildScheduleSignTransaction = jest.fn().mockReturnValue({
-      transaction: createMockTransaction(),
-    });
+    const buildScheduleSignTransaction = jest
+      .fn()
+      .mockReturnValue(createMockTransaction());
     const scheduleService = makeScheduleTransactionServiceMock();
     scheduleService.buildScheduleSignTransaction = buildScheduleSignTransaction;
 
@@ -248,9 +248,9 @@ describe('schedule plugin — sign command', () => {
       .fn()
       .mockResolvedValue(mirrorSchedulePayload(MIRROR_CONSENSUS_TS));
 
-    const buildScheduleSignTransaction = jest.fn().mockReturnValue({
-      transaction: createMockTransaction(),
-    });
+    const buildScheduleSignTransaction = jest
+      .fn()
+      .mockReturnValue(createMockTransaction());
     const scheduleService = makeScheduleTransactionServiceMock();
     scheduleService.buildScheduleSignTransaction = buildScheduleSignTransaction;
 
@@ -314,9 +314,7 @@ describe('schedule plugin — sign command', () => {
     resolveScheduleMock.mockResolvedValue(resolvedSchedule());
 
     const mockTx = createMockTransaction();
-    const buildScheduleSignTransaction = jest.fn().mockReturnValue({
-      transaction: mockTx,
-    });
+    const buildScheduleSignTransaction = jest.fn().mockReturnValue(mockTx);
     const scheduleService = makeScheduleTransactionServiceMock();
     scheduleService.buildScheduleSignTransaction = buildScheduleSignTransaction;
 
@@ -386,7 +384,7 @@ describe('schedule plugin — sign command', () => {
     const scheduleService = makeScheduleTransactionServiceMock();
     scheduleService.buildScheduleSignTransaction = jest
       .fn()
-      .mockReturnValue({ transaction: createMockTransaction() });
+      .mockReturnValue(createMockTransaction());
 
     const txSign = makeTxSignMock();
     txSign.sign = jest.fn().mockResolvedValue(createMockTransaction());
