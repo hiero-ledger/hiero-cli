@@ -19,7 +19,7 @@ import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { AccountUpdateOutputSchema } from '@/plugins/account/commands/update';
 import { accountUpdate } from '@/plugins/account/commands/update/handler';
-import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
+import { AccountStateServiceImpl } from '@/plugins/account/services/account-state.service';
 
 import {
   mockAccountData,
@@ -37,11 +37,11 @@ import {
   makeTxSignServiceMock,
 } from './helpers/mocks';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandAccountStateHelper: jest.fn(),
+jest.mock('../../services/account-state.service', () => ({
+  AccountStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = ZustandAccountStateHelper as jest.Mock;
+const MockedHelper = AccountStateServiceImpl as jest.Mock;
 
 const NEW_KEY_REF_ID = 'kr_new123';
 const EXISTING_KEY_REF_ID = mockAccountData.default.keyRefId;

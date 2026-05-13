@@ -512,7 +512,7 @@ state.set('my-plugin-data', key, data);
 const data = state.get<MyData>('my-plugin-data', key);
 ```
 
-For more complex state operations (list, getKeys, etc.), use `StateService` methods. See existing plugins (e.g. `account`, `token`, `contract`) for patterns using `zustand-state-helper` or direct state access.
+For more complex state operations (list, getKeys, etc.), use `StateService` methods. See existing plugins (e.g. `account`, `token`, `contract`) for patterns using direct state access.
 
 ### 2. Reusing Core Services
 

@@ -13,7 +13,7 @@ import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 import { AccountDeleteOutputSchema } from '@/plugins/account/commands/delete';
 import { accountDelete } from '@/plugins/account/commands/delete/handler';
 import { AccountDeleteInputSchema } from '@/plugins/account/commands/delete/input';
-import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
+import { AccountStateServiceImpl } from '@/plugins/account/services/account-state.service';
 
 import {
   mockAliasLists,
@@ -30,11 +30,11 @@ import {
   mockIdentityResolution,
 } from './helpers/mocks';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandAccountStateHelper: jest.fn(),
+jest.mock('../../services/account-state.service', () => ({
+  AccountStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = ZustandAccountStateHelper as jest.Mock;
+const MockedHelper = AccountStateServiceImpl as jest.Mock;
 
 describe('account plugin - delete command (ADR-003)', () => {
   beforeEach(() => {

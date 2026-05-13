@@ -18,7 +18,7 @@ import {
   type AccountUpdateNormalisedParams,
   AccountUpdateNormalisedParamsSchema,
 } from '@/plugins/account/hooks/account-update-state/types';
-import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
+import { AccountStateServiceImpl } from '@/plugins/account/services/account-state.service';
 
 export class AccountUpdateStateHook implements Hook<PostOutputPreparationHookParams> {
   async execute(params: PostOutputPreparationHookParams): Promise<HookResult> {
@@ -143,7 +143,7 @@ export class AccountUpdateStateHook implements Hook<PostOutputPreparationHookPar
       return;
     }
 
-    const accountState = new ZustandAccountStateHelper(api.state, api.logger);
+    const accountState = new AccountStateServiceImpl(api.state, api.logger);
     const existingAccount = accountState.getAccount(accountStateKey);
 
     if (!existingAccount) {

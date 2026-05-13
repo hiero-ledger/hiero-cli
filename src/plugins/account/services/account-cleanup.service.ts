@@ -1,34 +1,23 @@
-import type {
-  AliasService,
-  KmsService,
-  Logger,
-  NetworkService,
-  StateService,
-} from '@/core';
+import type { AliasService, KmsService, Logger, NetworkService } from '@/core';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type {
+  AccountCleanupService,
   AccountDeleteKmsCleanupInput,
   AccountDeleteLocalStateInput,
-} from '@/plugins/account/commands/delete/types';
+} from '@/plugins/account/services/account-cleanup.service.interface';
+import type { AccountStateService } from '@/plugins/account/services/account-state.service.interface';
 
 import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
-import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
-export class AccountHelper {
-  private readonly accountState: ZustandAccountStateHelper;
-  private readonly logger: Logger;
-
+export class AccountCleanupServiceImpl implements AccountCleanupService {
   constructor(
-    state: StateService,
-    logger: Logger,
+    private readonly accountState: AccountStateService,
     private readonly alias: AliasService,
     private readonly kms: KmsService,
     private readonly network: NetworkService,
-  ) {
-    this.logger = logger;
-    this.accountState = new ZustandAccountStateHelper(state, logger);
-  }
+    private readonly logger: Logger,
+  ) {}
 
   removeAccountFromLocalState(
     accountToDelete: AccountDeleteLocalStateInput,
@@ -44,7 +33,7 @@ export class AccountHelper {
     for (const rec of aliasesForAccount) {
       this.alias.remove(rec.alias, network);
       removedAliases.push(`${rec.alias} (${network})`);
-      this.logger.info(`🧹 Removed alias '${rec.alias}' on ${network}`);
+      this.logger.info(`Removed alias '${rec.alias}' on ${network}`);
     }
 
     this.accountState.deleteAccount(key);

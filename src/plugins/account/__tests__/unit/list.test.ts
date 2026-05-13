@@ -5,15 +5,15 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError } from '@/core';
 import { AccountListOutputSchema } from '@/plugins/account/commands/list';
 import { accountList } from '@/plugins/account/commands/list/handler';
-import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
+import { AccountStateServiceImpl } from '@/plugins/account/services/account-state.service';
 
 import { makeAccountData } from './helpers/mocks';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandAccountStateHelper: jest.fn(),
+jest.mock('../../services/account-state.service', () => ({
+  AccountStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = ZustandAccountStateHelper as jest.Mock;
+const MockedHelper = AccountStateServiceImpl as jest.Mock;
 
 describe('account plugin - list command (ADR-003)', () => {
   beforeEach(() => {

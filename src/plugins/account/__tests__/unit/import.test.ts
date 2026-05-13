@@ -20,13 +20,13 @@ import { KeyAlgorithm } from '@/core/shared/constants';
 import { AliasType } from '@/core/types/shared.types';
 import { AccountImportOutputSchema } from '@/plugins/account/commands/import';
 import { accountImport } from '@/plugins/account/commands/import/handler';
-import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
+import { AccountStateServiceImpl } from '@/plugins/account/services/account-state.service';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandAccountStateHelper: jest.fn(),
+jest.mock('../../services/account-state.service', () => ({
+  AccountStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = ZustandAccountStateHelper as jest.Mock;
+const MockedHelper = AccountStateServiceImpl as jest.Mock;
 
 describe('account plugin - import command (ADR-003)', () => {
   beforeEach(() => {

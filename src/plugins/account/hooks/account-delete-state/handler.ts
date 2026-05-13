@@ -7,9 +7,10 @@ import {
   type BatchDataItem,
   OrchestratorSource,
 } from '@/core/types/shared.types';
-import { AccountHelper } from '@/plugins/account/account-helper';
 import { ACCOUNT_DELETE_COMMAND_NAME } from '@/plugins/account/commands/delete/handler';
 import { AccountDeleteNormalisedParamsSchema } from '@/plugins/account/hooks/account-delete-state/types';
+import { AccountCleanupServiceImpl } from '@/plugins/account/services/account-cleanup.service';
+import { AccountStateServiceImpl } from '@/plugins/account/services/account-state.service';
 
 export class AccountDeleteStateHook implements Hook<PostOutputPreparationHookParams> {
   execute(params: PostOutputPreparationHookParams): Promise<HookResult> {
@@ -48,18 +49,19 @@ export class AccountDeleteStateHook implements Hook<PostOutputPreparationHookPar
       return;
     }
     const normalisedParams = parseResult.data;
-    const accountHelper = new AccountHelper(
-      api.state,
-      api.logger,
+    const accountState = new AccountStateServiceImpl(api.state, api.logger);
+    const accountCleanup = new AccountCleanupServiceImpl(
+      accountState,
       api.alias,
       api.kms,
       api.network,
+      api.logger,
     );
-    accountHelper.removeAccountFromLocalState(
+    accountCleanup.removeAccountFromLocalState(
       normalisedParams.accountToDelete,
       normalisedParams.network,
     );
-    accountHelper.removeKmsCredentialIfUnusedAfterAccountRemoved(
+    accountCleanup.removeKmsCredentialIfUnusedAfterAccountRemoved(
       normalisedParams.accountToDelete,
     );
   }
