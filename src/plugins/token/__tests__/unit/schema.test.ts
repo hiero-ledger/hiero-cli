@@ -16,10 +16,12 @@ import {
 import {
   invalidTokenDataForValidation,
   minimalTokenCreateParams,
+  mockAccountKeyPairs,
   validTokenAssociation,
   validTokenCreateParams,
   validTokenDataForSchema,
   validTokenDataForValidation,
+  validTokenFile,
 } from './helpers/fixtures';
 
 describe('Token Schema Validation', () => {
@@ -360,6 +362,151 @@ describe('Token Schema Validation', () => {
           'Maximum 10 custom fees allowed per token',
         );
       }
+    });
+  });
+
+  describe('FungibleTokenFileSchema threshold key validation', () => {
+    const baseFtFile = {
+      name: validTokenFile.name,
+      tokenName: validTokenFile.tokenName,
+      symbol: validTokenFile.symbol,
+      decimals: validTokenFile.decimals,
+      supplyType: 'infinite' as const,
+      initialSupply: validTokenFile.initialSupply,
+      treasuryKey: mockAccountKeyPairs.treasury,
+    };
+
+    describe('backward compatibility', () => {
+      test('should accept single string key and normalize it to an array of length 1', () => {
+        const result = FungibleTokenFileSchema.safeParse({
+          ...baseFtFile,
+          adminKey: mockAccountKeyPairs.admin,
+        });
+        expect(result.success).toBe(true);
+        if (result.success) {
+          expect(result.data.adminKey).toHaveLength(1);
+          expect(result.data.adminKey[0].rawValue).toBe(
+            mockAccountKeyPairs.admin,
+          );
+        }
+      });
+
+      test('should accept token with no role keys and default all to empty arrays', () => {
+        const result = FungibleTokenFileSchema.safeParse(baseFtFile);
+        expect(result.success).toBe(true);
+        if (result.success) {
+          expect(result.data.adminKey).toEqual([]);
+          expect(result.data.supplyKey).toEqual([]);
+          expect(result.data.metadataKey).toEqual([]);
+        }
+      });
+    });
+
+    describe('valid threshold configurations', () => {
+      test('should accept array of keys without a threshold field', () => {
+        const result = FungibleTokenFileSchema.safeParse({
+          ...baseFtFile,
+          adminKey: [mockAccountKeyPairs.admin, mockAccountKeyPairs.supply],
+        });
+        expect(result.success).toBe(true);
+      });
+
+      test('should accept 1-of-2 admin key threshold', () => {
+        const result = FungibleTokenFileSchema.safeParse({
+          ...baseFtFile,
+          adminKey: [mockAccountKeyPairs.admin, mockAccountKeyPairs.supply],
+          adminKeyThreshold: 1,
+        });
+        expect(result.success).toBe(true);
+      });
+
+      test('should accept N-of-N admin key threshold', () => {
+        const result = FungibleTokenFileSchema.safeParse({
+          ...baseFtFile,
+          adminKey: [mockAccountKeyPairs.admin, mockAccountKeyPairs.supply],
+          adminKeyThreshold: 2,
+        });
+        expect(result.success).toBe(true);
+      });
+
+      test('should accept valid thresholds for multiple roles simultaneously', () => {
+        const result = FungibleTokenFileSchema.safeParse({
+          ...baseFtFile,
+          adminKey: [mockAccountKeyPairs.admin, mockAccountKeyPairs.supply],
+          adminKeyThreshold: 1,
+          wipeKey: [
+            mockAccountKeyPairs.wipe,
+            mockAccountKeyPairs.freeze,
+            mockAccountKeyPairs.pause,
+          ],
+          wipeKeyThreshold: 2,
+          metadataKey: [mockAccountKeyPairs.admin, mockAccountKeyPairs.supply],
+          metadataKeyThreshold: 2,
+        });
+        expect(result.success).toBe(true);
+      });
+    });
+
+    describe('invalid threshold configurations', () => {
+      test('should reject adminKeyThreshold set with a single key', () => {
+        const result = FungibleTokenFileSchema.safeParse({
+          ...baseFtFile,
+          adminKey: mockAccountKeyPairs.admin,
+          adminKeyThreshold: 1,
+        });
+        expect(result.success).toBe(false);
+        if (!result.success) {
+          expect(result.error.issues[0].path).toContain('adminKeyThreshold');
+          expect(result.error.issues[0].message).toContain(
+            'adminKeyThreshold can only be set when multiple admin keys are provided',
+          );
+        }
+      });
+
+      test('should reject adminKeyThreshold exceeding the key count', () => {
+        const result = FungibleTokenFileSchema.safeParse({
+          ...baseFtFile,
+          adminKey: [mockAccountKeyPairs.admin, mockAccountKeyPairs.supply],
+          adminKeyThreshold: 3,
+        });
+        expect(result.success).toBe(false);
+        if (!result.success) {
+          expect(result.error.issues[0].path).toContain('adminKeyThreshold');
+          expect(result.error.issues[0].message).toContain(
+            'adminKeyThreshold must not exceed the number of admin keys provided',
+          );
+        }
+      });
+
+      test('should reject metadataKeyThreshold set with a single key', () => {
+        const result = FungibleTokenFileSchema.safeParse({
+          ...baseFtFile,
+          metadataKey: mockAccountKeyPairs.admin,
+          metadataKeyThreshold: 1,
+        });
+        expect(result.success).toBe(false);
+        if (!result.success) {
+          expect(result.error.issues[0].path).toContain('metadataKeyThreshold');
+          expect(result.error.issues[0].message).toContain(
+            'metadataKeyThreshold can only be set when multiple metadata keys are provided',
+          );
+        }
+      });
+
+      test('should report an error only for the role with an invalid threshold', () => {
+        const result = FungibleTokenFileSchema.safeParse({
+          ...baseFtFile,
+          adminKey: [mockAccountKeyPairs.admin, mockAccountKeyPairs.supply],
+          adminKeyThreshold: 1,
+          wipeKey: mockAccountKeyPairs.wipe,
+          wipeKeyThreshold: 2,
+        });
+        expect(result.success).toBe(false);
+        if (!result.success) {
+          expect(result.error.issues).toHaveLength(1);
+          expect(result.error.issues[0].path).toContain('wipeKeyThreshold');
+        }
+      });
     });
   });
 

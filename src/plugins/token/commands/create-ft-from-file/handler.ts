@@ -24,7 +24,7 @@ import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
 import { processTokenAssociations } from '@/plugins/token/utils/token-associations';
 import { buildTokenDataFromFile } from '@/plugins/token/utils/token-data-builders';
 import { readAndValidateTokenFile } from '@/plugins/token/utils/token-file-helpers';
-import { resolveOptionalKey } from '@/plugins/token/utils/token-key-resolver';
+import { resolveOptionalKeys } from '@/plugins/token/utils/token-key-resolver';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { TokenCreateFtFromFileInputSchema } from './input';
@@ -124,21 +124,25 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
       network,
       treasury,
       adminKeys,
-      adminKeyThreshold: adminKeys.length,
+      adminKeyThreshold: tokenDefinition.adminKeyThreshold ?? adminKeys.length,
       supplyKeys,
-      supplyKeyThreshold: supplyKeys.length,
+      supplyKeyThreshold:
+        tokenDefinition.supplyKeyThreshold ?? supplyKeys.length,
       wipeKeys,
-      wipeKeyThreshold: wipeKeys.length,
+      wipeKeyThreshold: tokenDefinition.wipeKeyThreshold ?? wipeKeys.length,
       kycKeys,
-      kycKeyThreshold: kycKeys.length,
+      kycKeyThreshold: tokenDefinition.kycKeyThreshold ?? kycKeys.length,
       freezeKeys,
-      freezeKeyThreshold: freezeKeys.length,
+      freezeKeyThreshold:
+        tokenDefinition.freezeKeyThreshold ?? freezeKeys.length,
       pauseKeys,
-      pauseKeyThreshold: pauseKeys.length,
+      pauseKeyThreshold: tokenDefinition.pauseKeyThreshold ?? pauseKeys.length,
       feeScheduleKeys,
-      feeScheduleKeyThreshold: feeScheduleKeys.length,
+      feeScheduleKeyThreshold:
+        tokenDefinition.feeScheduleKeyThreshold ?? feeScheduleKeys.length,
       metadataKeys,
-      metadataKeyThreshold: metadataKeys.length,
+      metadataKeyThreshold:
+        tokenDefinition.metadataKeyThreshold ?? metadataKeys.length,
       keyRefIds,
       freezeDefault: tokenDefinition.freezeDefault,
       autoRenewPeriodSeconds: autoRenewAccountCredential
@@ -336,80 +340,75 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
       false,
       ['token:treasury'],
     );
-    const keyRefIds: string[] = [treasury.keyRefId];
 
-    const adminResolved = await resolveOptionalKey(
+    const adminKeys = await resolveOptionalKeys(
       tokenDefinition.adminKey,
       keyManager,
       api.keyResolver,
       'token:admin',
     );
-    const adminKeys = adminResolved ? [adminResolved] : [];
     if (adminKeys.length > 0) {
-      keyRefIds.push(...adminKeys.map((k) => k.keyRefId));
       api.logger.info('🔑 Resolved admin key for signing');
     }
 
-    const supplyResolved = await resolveOptionalKey(
+    const keyRefIds: string[] = [
+      treasury.keyRefId,
+      ...adminKeys.map((k) => k.keyRefId),
+    ];
+
+    const supplyKeys = await resolveOptionalKeys(
       tokenDefinition.supplyKey,
       keyManager,
       api.keyResolver,
       'token:supply',
     );
-    const supplyKeys = supplyResolved ? [supplyResolved] : [];
 
-    const wipeResolved = await resolveOptionalKey(
+    const wipeKeys = await resolveOptionalKeys(
       tokenDefinition.wipeKey,
       keyManager,
       api.keyResolver,
       'token:wipe',
     );
-    const wipeKeys = wipeResolved ? [wipeResolved] : [];
 
-    const kycResolved = await resolveOptionalKey(
+    const kycKeys = await resolveOptionalKeys(
       tokenDefinition.kycKey,
       keyManager,
       api.keyResolver,
       'token:kyc',
     );
-    const kycKeys = kycResolved ? [kycResolved] : [];
 
-    const freezeResolved = await resolveOptionalKey(
+    const freezeKeys = await resolveOptionalKeys(
       tokenDefinition.freezeKey,
       keyManager,
       api.keyResolver,
       'token:freeze',
     );
-    const freezeKeys = freezeResolved ? [freezeResolved] : [];
     if (tokenDefinition.freezeDefault && freezeKeys.length === 0) {
       api.logger.warn(
         'freezeDefault was requested but no freeze key is set; freeze default will be skipped.',
       );
     }
 
-    const pauseResolved = await resolveOptionalKey(
+    const pauseKeys = await resolveOptionalKeys(
       tokenDefinition.pauseKey,
       keyManager,
       api.keyResolver,
       'token:pause',
     );
-    const pauseKeys = pauseResolved ? [pauseResolved] : [];
 
-    const feeScheduleResolved = await resolveOptionalKey(
+    const feeScheduleKeys = await resolveOptionalKeys(
       tokenDefinition.feeScheduleKey,
       keyManager,
       api.keyResolver,
       'token:feeSchedule',
     );
-    const feeScheduleKeys = feeScheduleResolved ? [feeScheduleResolved] : [];
 
-    const metadataResolved = await resolveOptionalKey(
+    const metadataKeys = await resolveOptionalKeys(
       tokenDefinition.metadataKey,
       keyManager,
       api.keyResolver,
       'token:metadata',
     );
-    const metadataKeys = metadataResolved ? [metadataResolved] : [];
 
     return {
       treasury,

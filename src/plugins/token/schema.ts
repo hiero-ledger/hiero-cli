@@ -193,6 +193,21 @@ export function safeParseTokenData(data: unknown) {
   return TokenDataSchema.safeParse(data);
 }
 
+// Accepts either a single key string (backward compat) or an array of key strings.
+// Always normalizes to an array.
+const KeyOrListSchema = (minLength: number, label: string) =>
+  z.preprocess(
+    (val) => (typeof val === 'string' ? [val] : val),
+    z
+      .array(KeySchema)
+      .min(minLength, `At least ${minLength} ${label} key(s) required`),
+  );
+
+const OptionalKeyOrListSchema = z.preprocess((val) => {
+  if (val === undefined || val === null) return [];
+  return typeof val === 'string' ? [val] : val;
+}, z.array(KeySchema).default([]));
+
 export const FungibleTokenFileSchema = z
   .object({
     name: TokenAliasNameSchema.describe('CLI alias for the token'),
@@ -203,20 +218,28 @@ export const FungibleTokenFileSchema = z
     initialSupply: AmountInputSchema,
     maxSupply: AmountInputSchema.default('0'),
     treasuryKey: KeySchema,
-    adminKey: KeySchema.optional(),
-    supplyKey: KeySchema.optional(),
-    wipeKey: KeySchema.optional(),
-    kycKey: KeySchema.optional(),
-    freezeKey: KeySchema.optional(),
+    adminKey: OptionalKeyOrListSchema,
+    adminKeyThreshold: KeyThresholdOptionalSchema,
+    supplyKey: OptionalKeyOrListSchema,
+    supplyKeyThreshold: KeyThresholdOptionalSchema,
+    wipeKey: OptionalKeyOrListSchema,
+    wipeKeyThreshold: KeyThresholdOptionalSchema,
+    kycKey: OptionalKeyOrListSchema,
+    kycKeyThreshold: KeyThresholdOptionalSchema,
+    freezeKey: OptionalKeyOrListSchema,
+    freezeKeyThreshold: KeyThresholdOptionalSchema,
     freezeDefault: z
       .boolean()
       .default(false)
       .describe(
         'When true and freezeKey is set, new associations are frozen by default.',
       ),
-    pauseKey: KeySchema.optional(),
-    feeScheduleKey: KeySchema.optional(),
-    metadataKey: KeySchema.optional(),
+    pauseKey: OptionalKeyOrListSchema,
+    pauseKeyThreshold: KeyThresholdOptionalSchema,
+    feeScheduleKey: OptionalKeyOrListSchema,
+    feeScheduleKeyThreshold: KeyThresholdOptionalSchema,
+    metadataKey: OptionalKeyOrListSchema,
+    metadataKeyThreshold: KeyThresholdOptionalSchema,
     associations: z.array(KeySchema).default([]),
     customFees: z
       .array(TokenFileCustomFeeSchema)
@@ -227,6 +250,90 @@ export const FungibleTokenFileSchema = z
     autoRenewPeriod: AutoRenewPeriodSecondsSchema,
     autoRenewAccount: KeySchema.optional(),
     expirationTime: ExpirationTimeSchema,
+  })
+  .superRefine((data, context) => {
+    applyKeyThresholdSuperRefine(data, context, [
+      {
+        thresholdField: 'adminKeyThreshold',
+        getKeyCount: (row) => row.adminKey.length,
+        messages: {
+          thresholdWithoutEnoughKeys:
+            'adminKeyThreshold can only be set when multiple admin keys are provided',
+          thresholdExceedsKeyCount:
+            'adminKeyThreshold must not exceed the number of admin keys provided',
+        },
+      },
+      {
+        thresholdField: 'supplyKeyThreshold',
+        getKeyCount: (row) => row.supplyKey.length,
+        messages: {
+          thresholdWithoutEnoughKeys:
+            'supplyKeyThreshold can only be set when multiple supply keys are provided',
+          thresholdExceedsKeyCount:
+            'supplyKeyThreshold must not exceed the number of supply keys provided',
+        },
+      },
+      {
+        thresholdField: 'wipeKeyThreshold',
+        getKeyCount: (row) => row.wipeKey.length,
+        messages: {
+          thresholdWithoutEnoughKeys:
+            'wipeKeyThreshold can only be set when multiple wipe keys are provided',
+          thresholdExceedsKeyCount:
+            'wipeKeyThreshold must not exceed the number of wipe keys provided',
+        },
+      },
+      {
+        thresholdField: 'kycKeyThreshold',
+        getKeyCount: (row) => row.kycKey.length,
+        messages: {
+          thresholdWithoutEnoughKeys:
+            'kycKeyThreshold can only be set when multiple KYC keys are provided',
+          thresholdExceedsKeyCount:
+            'kycKeyThreshold must not exceed the number of KYC keys provided',
+        },
+      },
+      {
+        thresholdField: 'freezeKeyThreshold',
+        getKeyCount: (row) => row.freezeKey.length,
+        messages: {
+          thresholdWithoutEnoughKeys:
+            'freezeKeyThreshold can only be set when multiple freeze keys are provided',
+          thresholdExceedsKeyCount:
+            'freezeKeyThreshold must not exceed the number of freeze keys provided',
+        },
+      },
+      {
+        thresholdField: 'pauseKeyThreshold',
+        getKeyCount: (row) => row.pauseKey.length,
+        messages: {
+          thresholdWithoutEnoughKeys:
+            'pauseKeyThreshold can only be set when multiple pause keys are provided',
+          thresholdExceedsKeyCount:
+            'pauseKeyThreshold must not exceed the number of pause keys provided',
+        },
+      },
+      {
+        thresholdField: 'feeScheduleKeyThreshold',
+        getKeyCount: (row) => row.feeScheduleKey.length,
+        messages: {
+          thresholdWithoutEnoughKeys:
+            'feeScheduleKeyThreshold can only be set when multiple fee schedule keys are provided',
+          thresholdExceedsKeyCount:
+            'feeScheduleKeyThreshold must not exceed the number of fee schedule keys provided',
+        },
+      },
+      {
+        thresholdField: 'metadataKeyThreshold',
+        getKeyCount: (row) => row.metadataKey.length,
+        messages: {
+          thresholdWithoutEnoughKeys:
+            'metadataKeyThreshold can only be set when multiple metadata keys are provided',
+          thresholdExceedsKeyCount:
+            'metadataKeyThreshold must not exceed the number of metadata keys provided',
+        },
+      },
+    ]);
   })
   .transform((data) => ({
     ...data,
@@ -263,21 +370,6 @@ function validateFileSupplyTypeAndMaxSupply<
     });
   }
 }
-
-// Accepts either a single key string (backward compat) or an array of key strings.
-// Always normalizes to an array.
-const KeyOrListSchema = (minLength: number, label: string) =>
-  z.preprocess(
-    (val) => (typeof val === 'string' ? [val] : val),
-    z
-      .array(KeySchema)
-      .min(minLength, `At least ${minLength} ${label} key(s) required`),
-  );
-
-const OptionalKeyOrListSchema = z.preprocess((val) => {
-  if (val === undefined || val === null) return [];
-  return typeof val === 'string' ? [val] : val;
-}, z.array(KeySchema).default([]));
 
 export const NonFungibleTokenFileSchema = z
   .object({

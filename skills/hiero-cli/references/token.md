@@ -128,7 +128,18 @@ Minimal JSON:
 }
 ```
 
-Common key fields: `treasuryKey`, `adminKey`, `supplyKey`, `wipeKey`, `kycKey`, `freezeKey`, `pauseKey`, `feeScheduleKey`, `metadataKey`. Key values accept the same formats as CLI key options: alias, `accountId:privateKey`, `{ed25519|ecdsa}:private:{hex}`, `{ed25519|ecdsa}:public:{hex}`, or `kr_xxx`.
+Common key fields: `treasuryKey`, `adminKey`, `supplyKey`, `wipeKey`, `kycKey`, `freezeKey`, `pauseKey`, `feeScheduleKey`, `metadataKey`. Each role key accepts a single credential string **or an array of strings** for KeyList / ThresholdKey support. Each role also has an optional `*KeyThreshold` field (`adminKeyThreshold`, `supplyKeyThreshold`, etc.) for M-of-N signing — omit to require all keys. Key values accept the same formats as CLI key options: alias, `accountId:privateKey`, `{ed25519|ecdsa}:private:{hex}`, `{ed25519|ecdsa}:public:{hex}`, or `kr_xxx`.
+
+Threshold example:
+
+```json
+{
+  "adminKey": ["alice", "bob"],
+  "adminKeyThreshold": 1,
+  "wipeKey": ["alice", "bob", "carol"],
+  "wipeKeyThreshold": 2
+}
+```
 
 **Output:** Same shape as CLI `create-ft`, plus `associations[]`, including optional `autoRenewPeriodSeconds`, `autoRenewAccountId`, `expirationTime`.
 
