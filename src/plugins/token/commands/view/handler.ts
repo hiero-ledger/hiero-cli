@@ -1,6 +1,7 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { NftInfo } from '@/core/services/mirrornode/types';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
 import type { TokenViewOutput } from './output';
 import type { ViewTokenNormalizedParams } from './types';
 
@@ -12,17 +13,16 @@ import { tokenBuildOutput } from '@/plugins/token/utils/token-build-output';
 import { TokenViewInputSchema } from './input';
 
 export class TokenViewCommand implements Command {
+  constructor(private readonly tokenReferenceService: TokenReferenceService) {}
+
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
     const validArgs: ViewTokenNormalizedParams = TokenViewInputSchema.parse(
       args.args,
     );
     const network = api.network.getCurrentNetwork();
-    const tokenReferences = new TokenReferenceServiceImpl(
-      api.identityResolution,
-    );
 
-    const resolvedToken = tokenReferences.resolveToken(
+    const resolvedToken = this.tokenReferenceService.resolveToken(
       validArgs.token,
       network,
     );
@@ -66,5 +66,8 @@ export class TokenViewCommand implements Command {
 export async function tokenView(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenViewCommand().execute(args);
+  const { api } = args;
+  return new TokenViewCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+  ).execute(args);
 }

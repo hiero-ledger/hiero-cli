@@ -6,6 +6,8 @@ import type {
   MintFtNormalizedParams,
   MintFtSignTransactionResult,
 } from '@/plugins/token/commands/mint-ft/types';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
+import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 import type { TokenMintFtOutput } from './output';
 
 import { BaseTransactionCommand } from '@/core/commands/command';
@@ -31,7 +33,10 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
   MintFtSignTransactionResult,
   MintFtExecuteTransactionResult
 > {
-  constructor() {
+  constructor(
+    private readonly tokenReferenceService: TokenReferenceService,
+    private readonly tokenStateService: TokenStateService,
+  ) {
     super(TOKEN_MINT_FT_COMMAND_NAME);
   }
 
@@ -39,8 +44,6 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
   ): Promise<MintFtNormalizedParams> {
     const { api } = args;
-
-    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
 
     const validArgs = TokenMintFtInputSchema.parse(args.args);
 
@@ -53,11 +56,11 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
-    const tokenReferences = new TokenReferenceServiceImpl(
-      api.identityResolution,
-    );
 
-    const resolvedToken = tokenReferences.resolveToken(tokenIdOrAlias, network);
+    const resolvedToken = this.tokenReferenceService.resolveToken(
+      tokenIdOrAlias,
+      network,
+    );
 
     if (!resolvedToken) {
       throw new NotFoundError(`Token not found: ${tokenIdOrAlias}`, {
@@ -71,7 +74,7 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
 
     const tokenInfo = await api.mirror.getTokenInfo(tokenId);
 
-    const tokenData = tokenState.getToken(tokenId);
+    const tokenData = this.tokenStateService.getToken(tokenId);
 
     const tokenInfoType = String(tokenInfo.type);
     if (
@@ -199,5 +202,9 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
 export async function tokenMintFt(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenMintFtCommand().execute(args);
+  const { api } = args;
+  return new TokenMintFtCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+    new TokenStateServiceImpl(api.state, api.logger),
+  ).execute(args);
 }

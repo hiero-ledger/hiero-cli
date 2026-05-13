@@ -1,5 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
 import type { TokenAssociateOutput } from './output';
 import type {
   AssociateBuildTransactionResult,
@@ -27,7 +28,7 @@ export class TokenAssociateCommand extends BaseTransactionCommand<
   AssociateSignTransactionResult,
   AssociateExecuteTransactionResult
 > {
-  constructor() {
+  constructor(private readonly tokenReferenceService: TokenReferenceService) {
     super(TOKEN_ASSOCIATE_COMMAND_NAME);
   }
 
@@ -40,10 +41,7 @@ export class TokenAssociateCommand extends BaseTransactionCommand<
       validArgs.keyManager ??
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
     const network = api.network.getCurrentNetwork();
-    const tokenReferences = new TokenReferenceServiceImpl(
-      api.identityResolution,
-    );
-    const resolvedToken = tokenReferences.resolveToken(
+    const resolvedToken = this.tokenReferenceService.resolveToken(
       validArgs.token,
       network,
     );
@@ -165,5 +163,8 @@ export class TokenAssociateCommand extends BaseTransactionCommand<
 export async function tokenAssociate(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenAssociateCommand().execute(args);
+  const { api } = args;
+  return new TokenAssociateCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+  ).execute(args);
 }

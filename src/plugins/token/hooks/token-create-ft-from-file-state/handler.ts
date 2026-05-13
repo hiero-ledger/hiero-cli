@@ -1,6 +1,9 @@
 import type { CoreApi } from '@/core';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
+import type { TokenAliasService } from '@/plugins/token/services/token-alias.service.interface';
+import type { TokenAssociationsService } from '@/plugins/token/services/token-associations.service.interface';
+import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
 import {
@@ -18,6 +21,12 @@ import { buildTokenDataFromFile } from '@/plugins/token/utils/token-data-builder
 import { CreateFtFromFileNormalizedParamsSchema } from './types';
 
 export class TokenCreateFtFromFileStateHook implements Hook<PostOutputPreparationHookParams> {
+  constructor(
+    private readonly tokenStateService: TokenStateService,
+    private readonly tokenAliasService: TokenAliasService,
+    private readonly tokenAssociationsService: TokenAssociationsService,
+  ) {}
+
   async execute(params: PostOutputPreparationHookParams): Promise<HookResult> {
     const parsed = OrchestratorResultSchema.safeParse(
       params.executeTransactionResult,
@@ -77,39 +86,32 @@ export class TokenCreateFtFromFileStateHook implements Hook<PostOutputPreparatio
       normalisedParams,
     );
 
-    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
-    const tokenAliases = new TokenAliasServiceImpl(api.alias);
-    const tokenAssociations = new TokenAssociationsServiceImpl(
-      api.keyResolver,
-      api.token,
-      api.txSign,
-      api.txExecute,
-      tokenState,
-      normalisedParams.keyManager,
-      api.logger,
-    );
-
-    tokenData.associations = await tokenAssociations.processTokenAssociations(
-      innerTransactionResult.tokenId,
-      normalisedParams.associations,
-    );
+    tokenData.associations =
+      await this.tokenAssociationsService.processTokenAssociations(
+        innerTransactionResult.tokenId,
+        normalisedParams.associations,
+        normalisedParams.keyManager,
+      );
 
     const key = composeKey(
       normalisedParams.network,
       innerTransactionResult.tokenId,
     );
-    tokenState.saveToken(key, tokenData);
+    this.tokenStateService.saveToken(key, tokenData);
     api.logger.info('   Token data saved to state');
 
     if (normalisedParams.alias) {
       if (
-        tokenAliases.exists(normalisedParams.alias, normalisedParams.network)
+        this.tokenAliasService.exists(
+          normalisedParams.alias,
+          normalisedParams.network,
+        )
       ) {
         api.logger.warn(
           `Alias "${normalisedParams.alias}" already exists, skipping registration`,
         );
       } else {
-        tokenAliases.register({
+        this.tokenAliasService.register({
           alias: normalisedParams.alias,
           network: normalisedParams.network,
           tokenId: innerTransactionResult.tokenId,
@@ -120,3 +122,26 @@ export class TokenCreateFtFromFileStateHook implements Hook<PostOutputPreparatio
     }
   }
 }
+
+export const tokenCreateFtFromFileStateHook: Hook<PostOutputPreparationHookParams> =
+  {
+    execute: (params: PostOutputPreparationHookParams) => {
+      const { api } = params.args;
+      const tokenStateService = new TokenStateServiceImpl(
+        api.state,
+        api.logger,
+      );
+      return new TokenCreateFtFromFileStateHook(
+        tokenStateService,
+        new TokenAliasServiceImpl(api.alias),
+        new TokenAssociationsServiceImpl(
+          api.keyResolver,
+          api.token,
+          api.txSign,
+          api.txExecute,
+          tokenStateService,
+          api.logger,
+        ),
+      ).execute(params);
+    },
+  };

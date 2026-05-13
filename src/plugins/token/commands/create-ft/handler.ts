@@ -4,6 +4,9 @@ import type {
   ResolvedPublicKey,
 } from '@/core/services/key-resolver/types';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenAliasService } from '@/plugins/token/services/token-alias.service.interface';
+import type { TokenKeysService } from '@/plugins/token/services/token-keys.service.interface';
+import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 import type { TokenCreateFtInput } from './input';
 import type { TokenCreateFtOutput } from './output';
 import type {
@@ -39,7 +42,11 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
   TokenCreateFtSignTransactionResult,
   TokenCreateFtExecuteTransactionResult
 > {
-  constructor() {
+  constructor(
+    private readonly tokenStateService: TokenStateService,
+    private readonly tokenAliasService: TokenAliasService,
+    private readonly tokenKeysService: TokenKeysService,
+  ) {
     super(TOKEN_CREATE_FT_COMMAND_NAME);
   }
 
@@ -62,9 +69,8 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
       ? processTokenBalanceInput(validArgs.maxSupply, validArgs.decimals)
       : undefined;
     const network = api.network.getCurrentNetwork();
-    const tokenAliases = new TokenAliasServiceImpl(api.alias);
 
-    tokenAliases.availableOrThrow(validArgs.name, network);
+    this.tokenAliasService.availableOrThrow(validArgs.name, network);
 
     const {
       treasury,
@@ -284,7 +290,6 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
     executeTransactionResult: TokenCreateFtExecuteTransactionResult,
   ): Promise<CommandResult> {
     const { api } = args;
-    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
     const result = executeTransactionResult.transactionResult;
 
     const tokenData = buildTokenData(result, {
@@ -318,12 +323,11 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
 
     const tokenId = result.tokenId ?? '';
     const key = composeKey(normalisedParams.network, tokenId);
-    tokenState.saveToken(key, tokenData);
+    this.tokenStateService.saveToken(key, tokenData);
     api.logger.info('   Token data saved to state');
 
     if (normalisedParams.alias) {
-      const tokenAliases = new TokenAliasServiceImpl(api.alias);
-      tokenAliases.register({
+      this.tokenAliasService.register({
         alias: normalisedParams.alias,
         network: normalisedParams.network,
         tokenId,
@@ -366,7 +370,6 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
     feeSchedule: ResolvedPublicKey[];
     metadata: ResolvedPublicKey[];
   }> {
-    const keysService = new TokenKeysServiceImpl(api.keyResolver, keyManager);
     const treasury = await api.keyResolver.resolveAccountCredentials(
       validArgs.treasury,
       keyManager,
@@ -374,18 +377,21 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
       ['token:treasury'],
     );
 
-    const admin = await keysService.resolveOptionalKeys(
+    const admin = await this.tokenKeysService.resolveOptionalKeys(
       validArgs.adminKey,
+      keyManager,
       'token:admin',
     );
 
-    const supply = await keysService.resolveOptionalKeys(
+    const supply = await this.tokenKeysService.resolveOptionalKeys(
       validArgs.supplyKey,
+      keyManager,
       'token:supply',
     );
 
-    const freeze = await keysService.resolveOptionalKeys(
+    const freeze = await this.tokenKeysService.resolveOptionalKeys(
       validArgs.freezeKey,
+      keyManager,
       'token:freeze',
     );
 
@@ -395,28 +401,33 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
       );
     }
 
-    const wipe = await keysService.resolveOptionalKeys(
+    const wipe = await this.tokenKeysService.resolveOptionalKeys(
       validArgs.wipeKey,
+      keyManager,
       'token:wipe',
     );
 
-    const kyc = await keysService.resolveOptionalKeys(
+    const kyc = await this.tokenKeysService.resolveOptionalKeys(
       validArgs.kycKey,
+      keyManager,
       'token:kyc',
     );
 
-    const pause = await keysService.resolveOptionalKeys(
+    const pause = await this.tokenKeysService.resolveOptionalKeys(
       validArgs.pauseKey,
+      keyManager,
       'token:pause',
     );
 
-    const feeSchedule = await keysService.resolveOptionalKeys(
+    const feeSchedule = await this.tokenKeysService.resolveOptionalKeys(
       validArgs.feeScheduleKey,
+      keyManager,
       'token:feeSchedule',
     );
 
-    const metadata = await keysService.resolveOptionalKeys(
+    const metadata = await this.tokenKeysService.resolveOptionalKeys(
       validArgs.metadataKey,
+      keyManager,
       'token:metadata',
     );
 
@@ -437,5 +448,10 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
 export async function tokenCreateFt(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenCreateFtCommand().execute(args);
+  const { api } = args;
+  return new TokenCreateFtCommand(
+    new TokenStateServiceImpl(api.state, api.logger),
+    new TokenAliasServiceImpl(api.alias),
+    new TokenKeysServiceImpl(api.keyResolver),
+  ).execute(args);
 }

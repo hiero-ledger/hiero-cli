@@ -2,6 +2,8 @@ import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { MirrorNodeKey } from '@/core/services/mirrornode/types';
 import type { TokenData } from '@/plugins/token/schema';
+import type { TokenAliasService } from '@/plugins/token/services/token-alias.service.interface';
+import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 import type { TokenImportOutput } from './output';
 import type { ImportTokenNormalizedParams } from './types';
 
@@ -20,6 +22,11 @@ import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.serv
 import { TokenImportInputSchema } from './input';
 
 export class TokenImportCommand implements Command {
+  constructor(
+    private readonly tokenStateService: TokenStateService,
+    private readonly tokenAliasService: TokenAliasService,
+  ) {}
+
   private importKeyRole(
     mirrorKey: MirrorNodeKey | undefined | null,
     findByPublicKey: (pk: string) => { keyRefId: string } | undefined,
@@ -38,20 +45,18 @@ export class TokenImportCommand implements Command {
 
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
-    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
     const parsedArgs = TokenImportInputSchema.parse(args.args);
     const validArgs: ImportTokenNormalizedParams = {
       tokenId: parsedArgs.token,
       alias: parsedArgs.name,
     };
     const network = api.network.getCurrentNetwork();
-    const tokenAliases = new TokenAliasServiceImpl(api.alias);
     const key = composeKey(network, validArgs.tokenId);
 
     if (validArgs.alias) {
-      tokenAliases.availableOrThrow(validArgs.alias, network);
+      this.tokenAliasService.availableOrThrow(validArgs.alias, network);
     }
-    if (tokenState.getToken(key)) {
+    if (this.tokenStateService.getToken(key)) {
       throw new ValidationError(
         `Token with ID '${validArgs.tokenId}' already exists in state`,
       );
@@ -66,7 +71,7 @@ export class TokenImportCommand implements Command {
     }
 
     if (validArgs.alias) {
-      tokenAliases.register({
+      this.tokenAliasService.register({
         alias: validArgs.alias,
         network,
         tokenId: validArgs.tokenId,
@@ -126,7 +131,7 @@ export class TokenImportCommand implements Command {
       memo: tokenInfo.memo || undefined,
     };
 
-    tokenState.saveToken(key, tokenData);
+    this.tokenStateService.saveToken(key, tokenData);
 
     const result: TokenImportOutput = {
       tokenId: validArgs.tokenId,
@@ -147,5 +152,9 @@ export class TokenImportCommand implements Command {
 export async function tokenImport(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenImportCommand().execute(args);
+  const { api } = args;
+  return new TokenImportCommand(
+    new TokenStateServiceImpl(api.state, api.logger),
+    new TokenAliasServiceImpl(api.alias),
+  ).execute(args);
 }

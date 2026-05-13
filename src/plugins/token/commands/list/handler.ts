@@ -1,5 +1,7 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
+import type { TokenAliasService } from '@/plugins/token/services/token-alias.service.interface';
+import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 import type { TokenListOutput } from './output';
 import type { ListTokensNormalizedParams } from './types';
 
@@ -9,17 +11,20 @@ import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.serv
 import { TokenListInputSchema } from './input';
 
 export class TokenListCommand implements Command {
+  constructor(
+    private readonly tokenStateService: TokenStateService,
+    private readonly tokenAliasService: TokenAliasService,
+  ) {}
+
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
-    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
-    const tokenAliases = new TokenAliasServiceImpl(api.alias);
     const validArgs: ListTokensNormalizedParams = TokenListInputSchema.parse(
       args.args,
     );
 
     api.logger.info('Listing tokens...');
 
-    const tokens = tokenState.listTokens();
+    const tokens = this.tokenStateService.listTokens();
     api.logger.debug(
       `[TOKEN LIST] Retrieved ${tokens.length} tokens from state`,
     );
@@ -30,7 +35,7 @@ export class TokenListCommand implements Command {
     });
 
     const tokensList = tokens.map((token) => {
-      const alias = tokenAliases.resolveAliasForToken(
+      const alias = this.tokenAliasService.resolveAliasForToken(
         token.tokenId,
         token.network,
       );
@@ -84,7 +89,7 @@ export class TokenListCommand implements Command {
       };
     });
 
-    const stats = tokenState.getTokensWithStats();
+    const stats = this.tokenStateService.getTokensWithStats();
     const outputData: TokenListOutput = {
       tokens: tokensList,
       totalCount: tokens.length,
@@ -105,5 +110,9 @@ export class TokenListCommand implements Command {
 export async function tokenList(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenListCommand().execute(args);
+  const { api } = args;
+  return new TokenListCommand(
+    new TokenStateServiceImpl(api.state, api.logger),
+    new TokenAliasServiceImpl(api.alias),
+  ).execute(args);
 }

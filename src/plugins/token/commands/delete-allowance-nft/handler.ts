@@ -1,5 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
 import type { TokenDeleteAllowanceNftOutput } from './output';
 import type {
   DeleteAllowanceNftBuildTransactionResult,
@@ -29,7 +30,7 @@ export class TokenDeleteAllowanceNftCommand extends BaseTransactionCommand<
   DeleteAllowanceNftSignTransactionResult,
   DeleteAllowanceNftExecuteTransactionResult
 > {
-  constructor() {
+  constructor(private readonly tokenReferenceService: TokenReferenceService) {
     super(TOKEN_DELETE_ALLOWANCE_NFT_COMMAND_NAME);
   }
 
@@ -42,11 +43,8 @@ export class TokenDeleteAllowanceNftCommand extends BaseTransactionCommand<
       validArgs.keyManager ??
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
     const network = api.network.getCurrentNetwork();
-    const tokenReferences = new TokenReferenceServiceImpl(
-      api.identityResolution,
-    );
 
-    const resolvedToken = tokenReferences.resolveToken(
+    const resolvedToken = this.tokenReferenceService.resolveToken(
       validArgs.token,
       network,
     );
@@ -73,10 +71,11 @@ export class TokenDeleteAllowanceNftCommand extends BaseTransactionCommand<
 
     let spenderAccountId: string | null = null;
     if (validArgs.allSerials && validArgs.spender) {
-      const resolvedSpender = await tokenReferences.resolveDestinationAccount(
-        validArgs.spender,
-        network,
-      );
+      const resolvedSpender =
+        await this.tokenReferenceService.resolveDestinationAccount(
+          validArgs.spender,
+          network,
+        );
       if (!resolvedSpender) {
         throw new NotFoundError(
           `Spender account not found: ${validArgs.spender}`,
@@ -205,5 +204,8 @@ export class TokenDeleteAllowanceNftCommand extends BaseTransactionCommand<
 export async function tokenDeleteAllowanceNft(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenDeleteAllowanceNftCommand().execute(args);
+  const { api } = args;
+  return new TokenDeleteAllowanceNftCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+  ).execute(args);
 }

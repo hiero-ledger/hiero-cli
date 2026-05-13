@@ -1,5 +1,7 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenAssociationsService } from '@/plugins/token/services/token-associations.service.interface';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
 import type { TokenDissociateOutput } from './output';
 import type {
   DissociateBuildTransactionResult,
@@ -26,7 +28,10 @@ export class TokenDissociateCommand extends BaseTransactionCommand<
   DissociateSignTransactionResult,
   DissociateExecuteTransactionResult
 > {
-  constructor() {
+  constructor(
+    private readonly tokenReferenceService: TokenReferenceService,
+    private readonly tokenAssociationsService: TokenAssociationsService,
+  ) {
     super(TOKEN_DISSOCIATE_COMMAND_NAME);
   }
 
@@ -39,10 +44,7 @@ export class TokenDissociateCommand extends BaseTransactionCommand<
       validArgs.keyManager ??
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
     const network = api.network.getCurrentNetwork();
-    const tokenReferences = new TokenReferenceServiceImpl(
-      api.identityResolution,
-    );
-    const resolvedToken = tokenReferences.resolveToken(
+    const resolvedToken = this.tokenReferenceService.resolveToken(
       validArgs.token,
       network,
     );
@@ -150,18 +152,7 @@ export class TokenDissociateCommand extends BaseTransactionCommand<
     _signTransactionResult: DissociateSignTransactionResult,
     executeTransactionResult: DissociateExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { api } = args;
-    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
-    const tokenAssociations = new TokenAssociationsServiceImpl(
-      api.keyResolver,
-      api.token,
-      api.txSign,
-      api.txExecute,
-      tokenState,
-      normalisedParams.keyManager,
-      api.logger,
-    );
-    tokenAssociations.removeAssociationFromState(
+    this.tokenAssociationsService.removeAssociationFromState(
       normalisedParams.tokenId,
       normalisedParams.account.accountId,
       normalisedParams.network,
@@ -181,5 +172,17 @@ export class TokenDissociateCommand extends BaseTransactionCommand<
 export async function tokenDissociate(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenDissociateCommand().execute(args);
+  const { api } = args;
+  const tokenStateService = new TokenStateServiceImpl(api.state, api.logger);
+  return new TokenDissociateCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+    new TokenAssociationsServiceImpl(
+      api.keyResolver,
+      api.token,
+      api.txSign,
+      api.txExecute,
+      tokenStateService,
+      api.logger,
+    ),
+  ).execute(args);
 }

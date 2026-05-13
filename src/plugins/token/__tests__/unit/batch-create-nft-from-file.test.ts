@@ -9,7 +9,7 @@ import {
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 import { TOKEN_CREATE_NFT_FROM_FILE_COMMAND_NAME } from '@/plugins/token/commands/create-nft-from-file';
-import { TokenCreateNftFromFileStateHook } from '@/plugins/token/hooks/token-create-nft-from-file-state';
+import { tokenCreateNftFromFileStateHook } from '@/plugins/token/hooks/token-create-nft-from-file-state';
 import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { mockAccountIds, validNftTokenFile } from './helpers/fixtures';
@@ -68,11 +68,10 @@ const createNftFromFileBatchDataItem = (
 });
 
 describe('token plugin - batch-create-nft-from-file hook', () => {
-  let hook: TokenCreateNftFromFileStateHook;
+  const hook = tokenCreateNftFromFileStateHook;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    hook = new TokenCreateNftFromFileStateHook();
     MockedHelper.mockImplementation(() => ({
       saveToken: jest.fn(),
     }));

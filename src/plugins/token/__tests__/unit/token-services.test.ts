@@ -64,11 +64,11 @@ describe('Token services', () => {
         }),
       } as unknown as jest.Mocked<KeyResolverService>;
       const keyManager = KeyManager.local;
-      const service = new TokenKeysServiceImpl(keyResolver, keyManager);
+      const service = new TokenKeysServiceImpl(keyResolver);
       const credentials = [{ rawValue: 'admin-key' }] as Credential[];
 
       await expect(
-        service.resolveOptionalKeys(credentials, 'token:admin'),
+        service.resolveOptionalKeys(credentials, keyManager, 'token:admin'),
       ).resolves.toEqual([{ keyRefId: 'key-1', publicKey: 'public-key-1' }]);
       expect(keyResolver.resolveSigningKey).toHaveBeenCalledWith(
         credentials[0],
@@ -80,10 +80,10 @@ describe('Token services', () => {
 
     test('returns undefined for missing optional key', async () => {
       const keyResolver = {} as jest.Mocked<KeyResolverService>;
-      const service = new TokenKeysServiceImpl(keyResolver, KeyManager.local);
+      const service = new TokenKeysServiceImpl(keyResolver);
 
       await expect(
-        service.resolveOptionalKey(undefined, 'token:supply'),
+        service.resolveOptionalKey(undefined, KeyManager.local, 'token:supply'),
       ).resolves.toBeUndefined();
     });
   });
@@ -129,7 +129,6 @@ describe('Token services', () => {
         txSign,
         txExecute,
         state,
-        KeyManager.local,
         logger,
       );
 
@@ -140,9 +139,11 @@ describe('Token services', () => {
       const { service, token, txSign, txExecute } = makeService();
 
       await expect(
-        service.processTokenAssociations('0.0.2002', [
-          { rawValue: '0.0.1001' },
-        ] as Credential[]),
+        service.processTokenAssociations(
+          '0.0.2002',
+          [{ rawValue: '0.0.1001' }] as Credential[],
+          KeyManager.local,
+        ),
       ).resolves.toEqual([{ name: '0.0.1001', accountId: '0.0.1001' }]);
       expect(token.createTokenAssociationTransaction).toHaveBeenCalledWith({
         tokenId: '0.0.2002',
@@ -162,9 +163,11 @@ describe('Token services', () => {
       });
 
       await expect(
-        service.processTokenAssociations('0.0.2002', [
-          { rawValue: '0.0.1001' },
-        ] as Credential[]),
+        service.processTokenAssociations(
+          '0.0.2002',
+          [{ rawValue: '0.0.1001' }] as Credential[],
+          KeyManager.local,
+        ),
       ).resolves.toEqual([]);
     });
   });

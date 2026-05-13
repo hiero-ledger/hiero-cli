@@ -8,7 +8,7 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 import { TOKEN_DELETE_COMMAND_NAME } from '@/plugins/token/commands/delete';
-import { TokenDeleteStateHook } from '@/plugins/token/hooks/token-delete-state';
+import { tokenDeleteStateHook } from '@/plugins/token/hooks/token-delete-state';
 import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 jest.mock('../../services/token-state.service', () => ({
@@ -34,11 +34,10 @@ const createDeleteBatchDataItem = (
 });
 
 describe('token plugin - batch-delete hook', () => {
-  let hook: TokenDeleteStateHook;
+  const hook = tokenDeleteStateHook;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    hook = new TokenDeleteStateHook();
     MockedHelper.mockImplementation(() => ({
       getToken: jest
         .fn()

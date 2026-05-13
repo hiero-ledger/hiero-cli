@@ -1,5 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
 import type { TokenRevokeKycOutput } from './output';
 import type {
   RevokeKycBuildTransactionResult,
@@ -28,7 +29,7 @@ export class TokenRevokeKycCommand extends BaseTransactionCommand<
   RevokeKycSignTransactionResult,
   RevokeKycExecuteTransactionResult
 > {
-  constructor() {
+  constructor(private readonly tokenReferenceService: TokenReferenceService) {
     super(TOKEN_REVOKE_KYC_COMMAND_NAME);
   }
 
@@ -44,11 +45,8 @@ export class TokenRevokeKycCommand extends BaseTransactionCommand<
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
-    const tokenReferences = new TokenReferenceServiceImpl(
-      api.identityResolution,
-    );
 
-    const resolvedToken = tokenReferences.resolveToken(
+    const resolvedToken = this.tokenReferenceService.resolveToken(
       validArgs.token,
       network,
     );
@@ -169,5 +167,8 @@ export class TokenRevokeKycCommand extends BaseTransactionCommand<
 export async function tokenRevokeKyc(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenRevokeKycCommand().execute(args);
+  const { api } = args;
+  return new TokenRevokeKycCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+  ).execute(args);
 }

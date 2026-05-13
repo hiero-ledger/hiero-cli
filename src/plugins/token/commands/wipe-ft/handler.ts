@@ -1,5 +1,7 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
+import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 import type { TokenWipeFtOutput } from './output';
 import type {
   WipeFtBuildTransactionResult,
@@ -36,7 +38,10 @@ export class TokenWipeFtCommand extends BaseTransactionCommand<
   WipeFtSignTransactionResult,
   WipeFtExecuteTransactionResult
 > {
-  constructor() {
+  constructor(
+    private readonly tokenReferenceService: TokenReferenceService,
+    private readonly tokenStateService: TokenStateService,
+  ) {
     super(TOKEN_WIPE_FT_COMMAND_NAME);
   }
 
@@ -44,8 +49,6 @@ export class TokenWipeFtCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
   ): Promise<WipeFtNormalizedParams> {
     const { api } = args;
-
-    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
     const validArgs = TokenWipeFtInputSchema.parse(args.args);
 
     const keyManager =
@@ -53,11 +56,8 @@ export class TokenWipeFtCommand extends BaseTransactionCommand<
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
-    const tokenReferences = new TokenReferenceServiceImpl(
-      api.identityResolution,
-    );
 
-    const resolvedToken = tokenReferences.resolveToken(
+    const resolvedToken = this.tokenReferenceService.resolveToken(
       validArgs.token,
       network,
     );
@@ -69,7 +69,7 @@ export class TokenWipeFtCommand extends BaseTransactionCommand<
 
     const tokenId = resolvedToken.tokenId;
     const tokenInfo = await api.mirror.getTokenInfo(tokenId);
-    const tokenData = tokenState.getToken(tokenId);
+    const tokenData = this.tokenStateService.getToken(tokenId);
 
     const isNftByState =
       tokenData !== null &&
@@ -212,5 +212,9 @@ export class TokenWipeFtCommand extends BaseTransactionCommand<
 export async function tokenWipeFt(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenWipeFtCommand().execute(args);
+  const { api } = args;
+  return new TokenWipeFtCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+    new TokenStateServiceImpl(api.state, api.logger),
+  ).execute(args);
 }

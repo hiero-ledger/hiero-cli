@@ -7,20 +7,18 @@ import type {
 import type { TokenKeysService } from '@/plugins/token/services/token-keys.service.interface';
 
 export class TokenKeysServiceImpl implements TokenKeysService {
-  constructor(
-    private readonly keyResolver: KeyResolverService,
-    private readonly keyManager: KeyManager,
-  ) {}
+  constructor(private readonly keyResolver: KeyResolverService) {}
 
   async resolveOptionalKeys(
     credentials: Credential[],
+    keyManager: KeyManager,
     tag: string,
   ): Promise<ResolvedPublicKey[]> {
     const results: ResolvedPublicKey[] = [];
     for (const credential of credentials) {
       const resolved = await this.keyResolver.resolveSigningKey(
         credential,
-        this.keyManager,
+        keyManager,
         false,
         [tag],
       );
@@ -31,13 +29,12 @@ export class TokenKeysServiceImpl implements TokenKeysService {
 
   async resolveOptionalKey(
     credential: Credential | undefined,
+    keyManager: KeyManager,
     tag: string,
   ): Promise<ResolvedPublicKey | undefined> {
     if (!credential) {
       return undefined;
     }
-    return this.keyResolver.getPublicKey(credential, this.keyManager, false, [
-      tag,
-    ]);
+    return this.keyResolver.getPublicKey(credential, keyManager, false, [tag]);
   }
 }

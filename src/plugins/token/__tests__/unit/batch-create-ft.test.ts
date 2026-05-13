@@ -10,7 +10,7 @@ import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 import { TOKEN_CREATE_FT_COMMAND_NAME } from '@/plugins/token/commands/create-ft';
-import { TokenCreateFtStateHook } from '@/plugins/token/hooks/token-create-ft-state';
+import { tokenCreateFtStateHook } from '@/plugins/token/hooks/token-create-ft-state';
 import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 jest.mock('../../services/token-state.service', () => ({
@@ -55,11 +55,10 @@ const createFtBatchDataItem = (
 });
 
 describe('token plugin - batch-create-ft hook', () => {
-  let hook: TokenCreateFtStateHook;
+  const hook = tokenCreateFtStateHook;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    hook = new TokenCreateFtStateHook();
     MockedHelper.mockImplementation(() => ({
       saveToken: jest.fn(),
     }));

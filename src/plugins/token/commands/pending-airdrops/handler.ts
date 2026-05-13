@@ -2,6 +2,7 @@ import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { TokenAirdropItem } from '@/core/services/mirrornode/types';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
 import type { TokenPendingAirdropsOutput } from './output';
 import type {
   PendingAirdropEntry,
@@ -16,6 +17,8 @@ import { TokenPendingAirdropsInputSchema } from './input';
 const PAGE_LIMIT = 100;
 
 export class TokenPendingAirdropsCommand implements Command {
+  constructor(private readonly tokenReferenceService: TokenReferenceService) {}
+
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
     const validArgs: PendingAirdropsNormalizedParams =
@@ -55,11 +58,8 @@ export class TokenPendingAirdropsCommand implements Command {
     accountOrAlias: string,
     api: CoreApi,
   ): Promise<string> {
-    const tokenReferences = new TokenReferenceServiceImpl(
-      api.identityResolution,
-    );
     const network = api.network.getCurrentNetwork();
-    const resolved = await tokenReferences.resolveDestinationAccount(
+    const resolved = await this.tokenReferenceService.resolveDestinationAccount(
       accountOrAlias,
       network,
     );
@@ -149,5 +149,8 @@ export class TokenPendingAirdropsCommand implements Command {
 export async function tokenPendingAirdrops(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenPendingAirdropsCommand().execute(args);
+  const { api } = args;
+  return new TokenPendingAirdropsCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+  ).execute(args);
 }

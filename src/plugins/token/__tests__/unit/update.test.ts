@@ -1,4 +1,7 @@
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+import type { TokenKeysService } from '@/plugins/token/services/token-keys.service.interface';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
+import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 
 import '@/core/utils/json-serialize';
 
@@ -115,7 +118,13 @@ describe('tokenUpdate', () => {
     });
 
     test('TokenUpdateCommand is instantiable', () => {
-      expect(new TokenUpdateCommand()).toBeInstanceOf(TokenUpdateCommand);
+      expect(
+        new TokenUpdateCommand(
+          {} as TokenReferenceService,
+          {} as TokenStateService,
+          {} as TokenKeysService,
+        ),
+      ).toBeInstanceOf(TokenUpdateCommand);
     });
   });
 

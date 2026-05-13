@@ -1,1 +1,4 @@
-export { TokenCreateFtFromFileStateHook } from './handler';
+export {
+  TokenCreateFtFromFileStateHook,
+  tokenCreateFtFromFileStateHook,
+} from './handler';

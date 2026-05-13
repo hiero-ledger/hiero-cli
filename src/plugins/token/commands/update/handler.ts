@@ -8,6 +8,9 @@ import type {
   KeyManager,
 } from '@/core/services/kms/kms-types.interface';
 import type { TokenData } from '@/plugins/token/schema';
+import type { TokenKeysService } from '@/plugins/token/services/token-keys.service.interface';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
+import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 import type { TokenUpdateOutput } from './output';
 import type {
   TokenUpdateBuildTransactionResult,
@@ -41,7 +44,11 @@ export class TokenUpdateCommand extends BaseTransactionCommand<
   TokenUpdateSignTransactionResult,
   TokenUpdateExecuteTransactionResult
 > {
-  constructor() {
+  constructor(
+    private readonly tokenReferenceService: TokenReferenceService,
+    private readonly tokenStateService: TokenStateService,
+    private readonly tokenKeysService: TokenKeysService,
+  ) {
     super(TOKEN_UPDATE_COMMAND_NAME);
   }
 
@@ -52,14 +59,11 @@ export class TokenUpdateCommand extends BaseTransactionCommand<
     const validArgs = TokenUpdateInputSchema.parse(args.args);
 
     const network = api.network.getCurrentNetwork();
-    const tokenReferences = new TokenReferenceServiceImpl(
-      api.identityResolution,
-    );
     const keyManager =
       validArgs.keyManager ??
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
-    const resolvedToken = tokenReferences.resolveToken(
+    const resolvedToken = this.tokenReferenceService.resolveToken(
       validArgs.token,
       network,
     );
@@ -120,14 +124,12 @@ export class TokenUpdateCommand extends BaseTransactionCommand<
       newTreasuryAccountKeyRefId = treasuryCredential.keyRefId;
       signerKeyRefIds.add(treasuryCredential.keyRefId);
     }
-
-    const keysService = new TokenKeysServiceImpl(api.keyResolver, keyManager);
     const resolveUpdateableKeys = async (
       input: Credential[] | null,
       tag: string,
     ): Promise<ResolvedPublicKey[] | null> => {
       if (input === null) return null;
-      return keysService.resolveOptionalKeys(input, tag);
+      return this.tokenKeysService.resolveOptionalKeys(input, keyManager, tag);
     };
 
     const [
@@ -306,12 +308,11 @@ export class TokenUpdateCommand extends BaseTransactionCommand<
   ): Promise<CommandResult> {
     const { transactionResult } = executeTransactionResult;
     const { api } = args;
-    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
     const tokenInfo = normalisedParams.tokenInfo;
 
     const updatedFields = this.buildUpdatedFields(normalisedParams);
 
-    const existing = tokenState.getToken(normalisedParams.stateKey);
+    const existing = this.tokenStateService.getToken(normalisedParams.stateKey);
 
     const tokenData: TokenData = buildUpdatedTokenData(
       normalisedParams,
@@ -319,7 +320,7 @@ export class TokenUpdateCommand extends BaseTransactionCommand<
       existing,
     );
 
-    tokenState.saveToken(normalisedParams.stateKey, tokenData);
+    this.tokenStateService.saveToken(normalisedParams.stateKey, tokenData);
     api.logger.info('Token data saved to state');
 
     const outputData: TokenUpdateOutput = {
@@ -461,5 +462,10 @@ export class TokenUpdateCommand extends BaseTransactionCommand<
 export async function tokenUpdate(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenUpdateCommand().execute(args);
+  const { api } = args;
+  return new TokenUpdateCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+    new TokenStateServiceImpl(api.state, api.logger),
+    new TokenKeysServiceImpl(api.keyResolver),
+  ).execute(args);
 }

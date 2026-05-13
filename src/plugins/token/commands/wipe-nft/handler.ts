@@ -1,5 +1,7 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
+import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 import type { TokenWipeNftOutput } from './output';
 import type {
   WipeNftBuildTransactionResult,
@@ -35,7 +37,10 @@ export class TokenWipeNftCommand extends BaseTransactionCommand<
   WipeNftSignTransactionResult,
   WipeNftExecuteTransactionResult
 > {
-  constructor() {
+  constructor(
+    private readonly tokenReferenceService: TokenReferenceService,
+    private readonly tokenStateService: TokenStateService,
+  ) {
     super(TOKEN_WIPE_NFT_COMMAND_NAME);
   }
 
@@ -43,8 +48,6 @@ export class TokenWipeNftCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
   ): Promise<WipeNftNormalizedParams> {
     const { api } = args;
-
-    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
     const validArgs = TokenWipeNftInputSchema.parse(args.args);
 
     const keyManager =
@@ -52,11 +55,8 @@ export class TokenWipeNftCommand extends BaseTransactionCommand<
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
-    const tokenReferences = new TokenReferenceServiceImpl(
-      api.identityResolution,
-    );
 
-    const resolvedToken = tokenReferences.resolveToken(
+    const resolvedToken = this.tokenReferenceService.resolveToken(
       validArgs.token,
       network,
     );
@@ -68,7 +68,7 @@ export class TokenWipeNftCommand extends BaseTransactionCommand<
 
     const tokenId = resolvedToken.tokenId;
     const tokenInfo = await api.mirror.getTokenInfo(tokenId);
-    const tokenData = tokenState.getToken(tokenId);
+    const tokenData = this.tokenStateService.getToken(tokenId);
 
     const isNftByState =
       tokenData !== null &&
@@ -216,5 +216,9 @@ export class TokenWipeNftCommand extends BaseTransactionCommand<
 export async function tokenWipeNft(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenWipeNftCommand().execute(args);
+  const { api } = args;
+  return new TokenWipeNftCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+    new TokenStateServiceImpl(api.state, api.logger),
+  ).execute(args);
 }

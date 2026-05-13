@@ -10,7 +10,7 @@ import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 import { TOKEN_CREATE_NFT_COMMAND_NAME } from '@/plugins/token/commands/create-nft';
-import { TokenCreateNftStateHook } from '@/plugins/token/hooks/token-create-nft-state';
+import { tokenCreateNftStateHook } from '@/plugins/token/hooks/token-create-nft-state';
 import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 jest.mock('../../services/token-state.service', () => ({
@@ -62,11 +62,10 @@ const createNftBatchDataItem = (
 });
 
 describe('token plugin - batch-create-nft hook', () => {
-  let hook: TokenCreateNftStateHook;
+  const hook = tokenCreateNftStateHook;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    hook = new TokenCreateNftStateHook();
     MockedHelper.mockImplementation(() => ({
       saveToken: jest.fn(),
     }));

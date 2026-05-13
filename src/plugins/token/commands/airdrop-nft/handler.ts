@@ -1,5 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
 import type { TokenAirdropNftOutput } from './output';
 import type {
   AirdropNftRecipient,
@@ -31,7 +32,7 @@ export class TokenAirdropNftCommand extends BaseTransactionCommand<
   TokenAirdropNftSignTransactionResult,
   TokenAirdropNftExecuteTransactionResult
 > {
-  constructor() {
+  constructor(private readonly tokenReferenceService: TokenReferenceService) {
     super(TOKEN_AIRDROP_NFT_COMMAND_NAME);
   }
 
@@ -61,11 +62,11 @@ export class TokenAirdropNftCommand extends BaseTransactionCommand<
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
-    const tokenReferences = new TokenReferenceServiceImpl(
-      api.identityResolution,
-    );
 
-    const resolvedToken = tokenReferences.resolveToken(tokenIdOrAlias, network);
+    const resolvedToken = this.tokenReferenceService.resolveToken(
+      tokenIdOrAlias,
+      network,
+    );
     if (!resolvedToken) {
       throw new NotFoundError(`Token not found: ${tokenIdOrAlias}`, {
         context: { tokenIdOrAlias },
@@ -86,10 +87,11 @@ export class TokenAirdropNftCommand extends BaseTransactionCommand<
       const recipientInput = toList[i];
       const recipientSerials = serials[i];
 
-      const resolvedAccount = await tokenReferences.resolveDestinationAccount(
-        recipientInput,
-        network,
-      );
+      const resolvedAccount =
+        await this.tokenReferenceService.resolveDestinationAccount(
+          recipientInput,
+          network,
+        );
 
       if (!resolvedAccount) {
         throw new NotFoundError(
@@ -209,5 +211,8 @@ export class TokenAirdropNftCommand extends BaseTransactionCommand<
 export async function tokenAirdropNft(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenAirdropNftCommand().execute(args);
+  const { api } = args;
+  return new TokenAirdropNftCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+  ).execute(args);
 }

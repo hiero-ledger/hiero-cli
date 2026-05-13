@@ -2,16 +2,19 @@ import type { CoreApi } from '@/core';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
 import type { BatchDataItem } from '@/core/types/shared.types';
+import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 
 import { OrchestratorSource } from '@/core';
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
+import { composeKey } from '@/core/utils/key-composer';
 import { TOKEN_DISSOCIATE_COMMAND_NAME } from '@/plugins/token/commands/dissociate';
-import { TokenAssociationsServiceImpl } from '@/plugins/token/services/token-associations.service';
 import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { DissociateNormalizedParamsSchema } from './types';
 
 export class TokenDissociateStateHook implements Hook<PostOutputPreparationHookParams> {
+  constructor(private readonly tokenStateService: TokenStateService) {}
+
   execute(params: PostOutputPreparationHookParams): Promise<HookResult> {
     const parsed = OrchestratorResultSchema.safeParse(
       params.executeTransactionResult,
@@ -48,20 +51,26 @@ export class TokenDissociateStateHook implements Hook<PostOutputPreparationHookP
     }
     const normalisedParams = parseResult.data;
 
-    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
-    const tokenAssociations = new TokenAssociationsServiceImpl(
-      api.keyResolver,
-      api.token,
-      api.txSign,
-      api.txExecute,
-      tokenState,
-      normalisedParams.keyManager,
-      api.logger,
-    );
-    tokenAssociations.removeAssociationFromState(
-      normalisedParams.tokenId,
-      normalisedParams.account.accountId,
+    const tokenKey = composeKey(
       normalisedParams.network,
+      normalisedParams.tokenId,
     );
+    const tokenData = this.tokenStateService.getToken(tokenKey);
+    if (!tokenData) return;
+
+    this.tokenStateService.removeTokenAssociation(
+      tokenKey,
+      normalisedParams.account.accountId,
+    );
+    api.logger.info('   Association removed from token state');
   }
 }
+
+export const tokenDissociateStateHook: Hook<PostOutputPreparationHookParams> = {
+  execute: (params: PostOutputPreparationHookParams) => {
+    const { api } = params.args;
+    return new TokenDissociateStateHook(
+      new TokenStateServiceImpl(api.state, api.logger),
+    ).execute(params);
+  },
+};

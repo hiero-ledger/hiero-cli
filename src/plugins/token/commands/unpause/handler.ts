@@ -1,5 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
 import type { TokenUnpauseOutput } from './output';
 import type {
   UnpauseBuildTransactionResult,
@@ -28,7 +29,7 @@ export class TokenUnpauseCommand extends BaseTransactionCommand<
   UnpauseSignTransactionResult,
   UnpauseExecuteTransactionResult
 > {
-  constructor() {
+  constructor(private readonly tokenReferenceService: TokenReferenceService) {
     super(TOKEN_UNPAUSE_COMMAND_NAME);
   }
 
@@ -44,11 +45,8 @@ export class TokenUnpauseCommand extends BaseTransactionCommand<
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
-    const tokenReferences = new TokenReferenceServiceImpl(
-      api.identityResolution,
-    );
 
-    const resolvedToken = tokenReferences.resolveToken(
+    const resolvedToken = this.tokenReferenceService.resolveToken(
       validArgs.token,
       network,
     );
@@ -158,5 +156,8 @@ export class TokenUnpauseCommand extends BaseTransactionCommand<
 export async function tokenUnpause(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenUnpauseCommand().execute(args);
+  const { api } = args;
+  return new TokenUnpauseCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+  ).execute(args);
 }

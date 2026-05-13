@@ -1,5 +1,7 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
+import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 import type { TokenAllowanceFtOutput } from './output';
 import type {
   TokenAllowanceFtBuildTransactionResult,
@@ -27,7 +29,10 @@ export class TokenAllowanceFtCommand extends BaseTransactionCommand<
   TokenAllowanceFtSignTransactionResult,
   TokenAllowanceFtExecuteTransactionResult
 > {
-  constructor() {
+  constructor(
+    private readonly tokenReferenceService: TokenReferenceService,
+    private readonly tokenStateService: TokenStateService,
+  ) {
     super(TOKEN_ALLOWANCE_FT_COMMAND_NAME);
   }
 
@@ -42,11 +47,8 @@ export class TokenAllowanceFtCommand extends BaseTransactionCommand<
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
-    const tokenReferences = new TokenReferenceServiceImpl(
-      api.identityResolution,
-    );
 
-    const resolvedToken = tokenReferences.resolveToken(
+    const resolvedToken = this.tokenReferenceService.resolveToken(
       validArgs.token,
       network,
     );
@@ -56,11 +58,9 @@ export class TokenAllowanceFtCommand extends BaseTransactionCommand<
       });
     }
     const tokenId = resolvedToken.tokenId;
-
-    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
     let tokenDecimals = 0;
     if (!isRawUnits(validArgs.amount)) {
-      const tokenInfoStorage = tokenState.getToken(tokenId);
+      const tokenInfoStorage = this.tokenStateService.getToken(tokenId);
       if (tokenInfoStorage) {
         tokenDecimals = tokenInfoStorage.decimals;
       } else {
@@ -78,10 +78,11 @@ export class TokenAllowanceFtCommand extends BaseTransactionCommand<
       ['token:owner'],
     );
 
-    const resolvedSpender = await tokenReferences.resolveDestinationAccount(
-      validArgs.spender,
-      network,
-    );
+    const resolvedSpender =
+      await this.tokenReferenceService.resolveDestinationAccount(
+        validArgs.spender,
+        network,
+      );
     if (!resolvedSpender) {
       throw new NotFoundError(
         `Spender account not found: ${validArgs.spender}`,
@@ -178,5 +179,9 @@ export class TokenAllowanceFtCommand extends BaseTransactionCommand<
 export async function tokenAllowanceFt(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenAllowanceFtCommand().execute(args);
+  const { api } = args;
+  return new TokenAllowanceFtCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+    new TokenStateServiceImpl(api.state, api.logger),
+  ).execute(args);
 }

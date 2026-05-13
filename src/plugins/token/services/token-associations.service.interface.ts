@@ -1,4 +1,7 @@
-import type { Credential } from '@/core/services/kms/kms-types.interface';
+import type {
+  Credential,
+  KeyManager,
+} from '@/core/services/kms/kms-types.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 
 export interface TokenAssociationResult {
@@ -20,5 +23,6 @@ export interface TokenAssociationsService {
   processTokenAssociations(
     tokenId: string,
     associations: Credential[],
+    keyManager: KeyManager,
   ): Promise<TokenAssociationResult[]>;
 }

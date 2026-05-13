@@ -6,23 +6,13 @@ import type {
 import type { TokenFileService } from '@/plugins/token/services/token-file.service.interface';
 
 import * as fs from 'fs/promises';
-import * as path from 'path';
 
 import { FileError, ValidationError } from '@/core/errors';
 import {
   FungibleTokenFileSchema,
   NonFungibleTokenFileSchema,
 } from '@/plugins/token/schema';
-
-export function resolveTokenFilePath(filename: string): string {
-  const hasPathSeparator = filename.includes('/') || filename.includes('\\');
-
-  if (hasPathSeparator) {
-    return filename;
-  }
-
-  return path.resolve(filename);
-}
+import { resolveTokenFilePath } from '@/plugins/token/utils/token-file-helpers';
 
 export class TokenFileServiceImpl implements TokenFileService {
   constructor(private readonly logger: Logger) {}

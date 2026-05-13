@@ -6,6 +6,8 @@ import type {
   BurnNftNormalizedParams,
   BurnNftSignTransactionResult,
 } from '@/plugins/token/commands/burn-nft/types';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
+import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 import type { TokenBurnNftOutput } from './output';
 
 import { BaseTransactionCommand } from '@/core/commands/command';
@@ -30,7 +32,10 @@ export class TokenBurnNftCommand extends BaseTransactionCommand<
   BurnNftSignTransactionResult,
   BurnNftExecuteTransactionResult
 > {
-  constructor() {
+  constructor(
+    private readonly tokenReferenceService: TokenReferenceService,
+    private readonly tokenStateService: TokenStateService,
+  ) {
     super(TOKEN_BURN_NFT_COMMAND_NAME);
   }
 
@@ -38,8 +43,6 @@ export class TokenBurnNftCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
   ): Promise<BurnNftNormalizedParams> {
     const { api } = args;
-
-    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
 
     const validArgs = TokenBurnNftInputSchema.parse(args.args);
 
@@ -51,11 +54,11 @@ export class TokenBurnNftCommand extends BaseTransactionCommand<
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
-    const tokenReferences = new TokenReferenceServiceImpl(
-      api.identityResolution,
-    );
 
-    const resolvedToken = tokenReferences.resolveToken(tokenIdOrAlias, network);
+    const resolvedToken = this.tokenReferenceService.resolveToken(
+      tokenIdOrAlias,
+      network,
+    );
 
     if (!resolvedToken) {
       throw new NotFoundError(`Token not found: ${tokenIdOrAlias}`, {
@@ -69,7 +72,7 @@ export class TokenBurnNftCommand extends BaseTransactionCommand<
 
     const tokenInfo = await api.mirror.getTokenInfo(tokenId);
 
-    const tokenData = tokenState.getToken(tokenId);
+    const tokenData = this.tokenStateService.getToken(tokenId);
 
     const isNftByState =
       tokenData !== null &&
@@ -186,5 +189,9 @@ export class TokenBurnNftCommand extends BaseTransactionCommand<
 export async function tokenBurnNft(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenBurnNftCommand().execute(args);
+  const { api } = args;
+  return new TokenBurnNftCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+    new TokenStateServiceImpl(api.state, api.logger),
+  ).execute(args);
 }

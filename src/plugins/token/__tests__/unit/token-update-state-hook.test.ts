@@ -11,7 +11,7 @@ import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { TOKEN_UPDATE_COMMAND_NAME } from '@/plugins/token/commands/update/handler';
-import { TokenUpdateStateHook } from '@/plugins/token/hooks/token-update-state';
+import { tokenUpdateStateHook } from '@/plugins/token/hooks/token-update-state';
 import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 jest.mock('@/plugins/token/services/token-state.service');
@@ -65,13 +65,12 @@ const createUpdateBatchDataItem = (
 });
 
 describe('TokenUpdateStateHook', () => {
-  let hook: TokenUpdateStateHook;
+  const hook = tokenUpdateStateHook;
   let saveTokenMock: jest.Mock;
   let getTokenMock: jest.Mock;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    hook = new TokenUpdateStateHook();
     saveTokenMock = jest.fn();
     getTokenMock = jest.fn().mockReturnValue(null);
     MockedHelper.mockImplementation(() => ({

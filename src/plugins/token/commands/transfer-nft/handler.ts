@@ -1,5 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
 import type { TokenTransferNftOutput } from './output';
 import type {
   TransferNftBuildTransactionResult,
@@ -29,7 +30,7 @@ export class TokenTransferNftCommand extends BaseTransactionCommand<
   TransferNftSignTransactionResult,
   TransferNftExecuteTransactionResult
 > {
-  constructor() {
+  constructor(private readonly tokenReferenceService: TokenReferenceService) {
     super(TOKEN_TRANSFER_NFT_COMMAND_NAME);
   }
 
@@ -42,10 +43,7 @@ export class TokenTransferNftCommand extends BaseTransactionCommand<
       validArgs.keyManager ||
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
     const network = api.network.getCurrentNetwork();
-    const tokenReferences = new TokenReferenceServiceImpl(
-      api.identityResolution,
-    );
-    const resolvedToken = tokenReferences.resolveToken(
+    const resolvedToken = this.tokenReferenceService.resolveToken(
       validArgs.token,
       network,
     );
@@ -90,10 +88,11 @@ export class TokenTransferNftCommand extends BaseTransactionCommand<
       }
     }
 
-    const resolvedToAccount = await tokenReferences.resolveDestinationAccount(
-      validArgs.to,
-      network,
-    );
+    const resolvedToAccount =
+      await this.tokenReferenceService.resolveDestinationAccount(
+        validArgs.to,
+        network,
+      );
     if (!resolvedToAccount) {
       throw new NotFoundError(
         `Destination account not found: ${validArgs.to}`,
@@ -194,5 +193,8 @@ export class TokenTransferNftCommand extends BaseTransactionCommand<
 export async function tokenTransferNft(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenTransferNftCommand().execute(args);
+  const { api } = args;
+  return new TokenTransferNftCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+  ).execute(args);
 }

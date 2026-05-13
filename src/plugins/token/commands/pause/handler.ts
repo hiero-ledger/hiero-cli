@@ -1,5 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
 import type { TokenPauseOutput } from './output';
 import type {
   PauseBuildTransactionResult,
@@ -28,7 +29,7 @@ export class TokenPauseCommand extends BaseTransactionCommand<
   PauseSignTransactionResult,
   PauseExecuteTransactionResult
 > {
-  constructor() {
+  constructor(private readonly tokenReferenceService: TokenReferenceService) {
     super(TOKEN_PAUSE_COMMAND_NAME);
   }
 
@@ -44,11 +45,8 @@ export class TokenPauseCommand extends BaseTransactionCommand<
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
-    const tokenReferences = new TokenReferenceServiceImpl(
-      api.identityResolution,
-    );
 
-    const resolvedToken = tokenReferences.resolveToken(
+    const resolvedToken = this.tokenReferenceService.resolveToken(
       validArgs.token,
       network,
     );
@@ -158,5 +156,8 @@ export class TokenPauseCommand extends BaseTransactionCommand<
 export async function tokenPause(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenPauseCommand().execute(args);
+  const { api } = args;
+  return new TokenPauseCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+  ).execute(args);
 }

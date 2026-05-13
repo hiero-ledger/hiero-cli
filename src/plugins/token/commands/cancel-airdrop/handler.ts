@@ -1,5 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
 import type { TokenCancelAirdropOutput } from './output';
 import type {
   CancelAirdropBuildTransactionResult,
@@ -23,7 +24,7 @@ export class TokenCancelAirdropCommand extends BaseTransactionCommand<
   CancelAirdropSignTransactionResult,
   CancelAirdropExecuteTransactionResult
 > {
-  constructor() {
+  constructor(private readonly tokenReferenceService: TokenReferenceService) {
     super(TOKEN_CANCEL_AIRDROP_COMMAND_NAME);
   }
 
@@ -46,20 +47,21 @@ export class TokenCancelAirdropCommand extends BaseTransactionCommand<
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
-    const tokenReferences = new TokenReferenceServiceImpl(
-      api.identityResolution,
-    );
 
-    const resolvedToken = tokenReferences.resolveToken(tokenIdOrAlias, network);
+    const resolvedToken = this.tokenReferenceService.resolveToken(
+      tokenIdOrAlias,
+      network,
+    );
     if (!resolvedToken?.tokenId) {
       throw new ValidationError(`Failed to resolve token: ${tokenIdOrAlias}`);
     }
     const tokenId = resolvedToken.tokenId;
 
-    const resolvedReceiver = await tokenReferences.resolveDestinationAccount(
-      receiver,
-      network,
-    );
+    const resolvedReceiver =
+      await this.tokenReferenceService.resolveDestinationAccount(
+        receiver,
+        network,
+      );
     if (!resolvedReceiver?.accountId) {
       throw new ValidationError(`Failed to resolve receiver: ${receiver}`);
     }
@@ -178,5 +180,8 @@ export class TokenCancelAirdropCommand extends BaseTransactionCommand<
 export async function tokenCancelAirdrop(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenCancelAirdropCommand().execute(args);
+  const { api } = args;
+  return new TokenCancelAirdropCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+  ).execute(args);
 }

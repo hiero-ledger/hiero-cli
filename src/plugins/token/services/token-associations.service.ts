@@ -23,7 +23,6 @@ export class TokenAssociationsServiceImpl implements TokenAssociationsService {
     private readonly txSign: TxSignService,
     private readonly txExecute: TxExecuteService,
     private readonly state: TokenStateService,
-    private readonly keyManager: KeyManager,
     private readonly logger: Logger,
   ) {}
 
@@ -60,6 +59,7 @@ export class TokenAssociationsServiceImpl implements TokenAssociationsService {
   async processTokenAssociations(
     tokenId: string,
     associations: Credential[],
+    keyManager: KeyManager,
   ): Promise<TokenAssociationResult[]> {
     if (associations.length === 0) {
       return [];
@@ -71,7 +71,11 @@ export class TokenAssociationsServiceImpl implements TokenAssociationsService {
     const successfulAssociations: TokenAssociationResult[] = [];
 
     for (const association of associations) {
-      const result = await this.processTokenAssociation(tokenId, association);
+      const result = await this.processTokenAssociation(
+        tokenId,
+        association,
+        keyManager,
+      );
       if (result) {
         successfulAssociations.push(result);
       }
@@ -83,11 +87,12 @@ export class TokenAssociationsServiceImpl implements TokenAssociationsService {
   private async processTokenAssociation(
     tokenId: string,
     association: Credential,
+    keyManager: KeyManager,
   ): Promise<TokenAssociationResult | null> {
     try {
       const account = await this.keyResolver.resolveAccountCredentials(
         association,
-        this.keyManager,
+        keyManager,
         false,
         ['token:associate'],
       );

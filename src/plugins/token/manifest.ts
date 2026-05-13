@@ -172,14 +172,14 @@ import {
   tokenView,
   TokenViewOutputSchema,
 } from './commands/view';
-import { TokenAssociateStateHook } from './hooks/token-associate-state';
-import { TokenCreateFtFromFileStateHook } from './hooks/token-create-ft-from-file-state';
-import { TokenCreateFtStateHook } from './hooks/token-create-ft-state';
-import { TokenCreateNftFromFileStateHook } from './hooks/token-create-nft-from-file-state';
-import { TokenCreateNftStateHook } from './hooks/token-create-nft-state';
-import { TokenDeleteStateHook } from './hooks/token-delete-state';
-import { TokenDissociateStateHook } from './hooks/token-dissociate-state/handler';
-import { TokenUpdateStateHook } from './hooks/token-update-state';
+import { tokenAssociateStateHook } from './hooks/token-associate-state';
+import { tokenCreateFtFromFileStateHook } from './hooks/token-create-ft-from-file-state';
+import { tokenCreateFtStateHook } from './hooks/token-create-ft-state';
+import { tokenCreateNftFromFileStateHook } from './hooks/token-create-nft-from-file-state';
+import { tokenCreateNftStateHook } from './hooks/token-create-nft-state';
+import { tokenDeleteStateHook } from './hooks/token-delete-state';
+import { tokenDissociateStateHook } from './hooks/token-dissociate-state/handler';
+import { tokenUpdateStateHook } from './hooks/token-update-state';
 
 export const tokenPluginManifest: PluginManifest = {
   name: 'token',
@@ -189,42 +189,42 @@ export const tokenPluginManifest: PluginManifest = {
   hooks: [
     {
       name: 'token-create-ft-state',
-      hook: new TokenCreateFtStateHook(),
+      hook: tokenCreateFtStateHook,
       options: [],
     },
     {
       name: 'token-create-ft-from-file-state',
-      hook: new TokenCreateFtFromFileStateHook(),
+      hook: tokenCreateFtFromFileStateHook,
       options: [],
     },
     {
       name: 'token-create-nft-state',
-      hook: new TokenCreateNftStateHook(),
+      hook: tokenCreateNftStateHook,
       options: [],
     },
     {
       name: 'token-create-nft-from-file-state',
-      hook: new TokenCreateNftFromFileStateHook(),
+      hook: tokenCreateNftFromFileStateHook,
       options: [],
     },
     {
       name: 'token-associate-state',
-      hook: new TokenAssociateStateHook(),
+      hook: tokenAssociateStateHook,
       options: [],
     },
     {
       name: 'token-dissociate-state',
-      hook: new TokenDissociateStateHook(),
+      hook: tokenDissociateStateHook,
       options: [],
     },
     {
       name: 'token-delete-state',
-      hook: new TokenDeleteStateHook(),
+      hook: tokenDeleteStateHook,
       options: [],
     },
     {
       name: 'token-update-state',
-      hook: new TokenUpdateStateHook(),
+      hook: tokenUpdateStateHook,
       options: [],
     },
   ],

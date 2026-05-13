@@ -9,7 +9,7 @@ import {
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { TOKEN_ASSOCIATE_COMMAND_NAME } from '@/plugins/token/commands/associate';
-import { TokenAssociateStateHook } from '@/plugins/token/hooks/token-associate-state';
+import { tokenAssociateStateHook } from '@/plugins/token/hooks/token-associate-state';
 import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 jest.mock('../../services/token-state.service', () => ({
@@ -41,11 +41,10 @@ const createAssociateBatchDataItem = (
 });
 
 describe('token plugin - batch-associate hook', () => {
-  let hook: TokenAssociateStateHook;
+  const hook = tokenAssociateStateHook;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    hook = new TokenAssociateStateHook();
     MockedHelper.mockImplementation(() => ({
       getToken: jest.fn().mockReturnValue({ tokenId: '0.0.123456' }),
       addTokenAssociation: jest.fn(),

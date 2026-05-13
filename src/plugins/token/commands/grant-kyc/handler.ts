@@ -1,5 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
 import type { TokenGrantKycOutput } from './output';
 import type {
   GrantKycBuildTransactionResult,
@@ -28,7 +29,7 @@ export class TokenGrantKycCommand extends BaseTransactionCommand<
   GrantKycSignTransactionResult,
   GrantKycExecuteTransactionResult
 > {
-  constructor() {
+  constructor(private readonly tokenReferenceService: TokenReferenceService) {
     super(TOKEN_GRANT_KYC_COMMAND_NAME);
   }
 
@@ -44,11 +45,8 @@ export class TokenGrantKycCommand extends BaseTransactionCommand<
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
-    const tokenReferences = new TokenReferenceServiceImpl(
-      api.identityResolution,
-    );
 
-    const resolvedToken = tokenReferences.resolveToken(
+    const resolvedToken = this.tokenReferenceService.resolveToken(
       validArgs.token,
       network,
     );
@@ -169,5 +167,8 @@ export class TokenGrantKycCommand extends BaseTransactionCommand<
 export async function tokenGrantKyc(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenGrantKycCommand().execute(args);
+  const { api } = args;
+  return new TokenGrantKycCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+  ).execute(args);
 }

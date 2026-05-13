@@ -1,5 +1,7 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
+import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 import type { TokenMintNftOutput } from './output';
 import type {
   TokenMintNftBuildTransactionResult,
@@ -30,7 +32,10 @@ export class TokenMintNftCommand extends BaseTransactionCommand<
   TokenMintNftSignTransactionResult,
   TokenMintNftExecuteTransactionResult
 > {
-  constructor() {
+  constructor(
+    private readonly tokenReferenceService: TokenReferenceService,
+    private readonly tokenStateService: TokenStateService,
+  ) {
     super(TOKEN_MINT_NFT_COMMAND_NAME);
   }
 
@@ -38,16 +43,12 @@ export class TokenMintNftCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
   ): Promise<TokenMintNftNormalizedParams> {
     const { api } = args;
-    const tokenState = new TokenStateServiceImpl(api.state, api.logger);
     const validArgs = TokenMintNftInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ||
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
     const network = api.network.getCurrentNetwork();
-    const tokenReferences = new TokenReferenceServiceImpl(
-      api.identityResolution,
-    );
-    const resolvedToken = tokenReferences.resolveToken(
+    const resolvedToken = this.tokenReferenceService.resolveToken(
       validArgs.token,
       network,
     );
@@ -69,7 +70,7 @@ export class TokenMintNftCommand extends BaseTransactionCommand<
     }
 
     const tokenInfo = await api.mirror.getTokenInfo(tokenId);
-    const tokenData = tokenState.getToken(tokenId);
+    const tokenData = this.tokenStateService.getToken(tokenId);
 
     const tokenInfoType = String(tokenInfo.type);
     if (
@@ -183,5 +184,9 @@ export class TokenMintNftCommand extends BaseTransactionCommand<
 export async function tokenMintNft(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenMintNftCommand().execute(args);
+  const { api } = args;
+  return new TokenMintNftCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+    new TokenStateServiceImpl(api.state, api.logger),
+  ).execute(args);
 }
