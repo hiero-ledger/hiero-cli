@@ -198,22 +198,20 @@ const mirrorNodeIntegerAmountSchema = z.union([
   z.number().int().safe(),
 ]);
 
-export const HbarAllowanceInfoSchema: z.ZodType<HbarAllowanceInfo> = z.object({
+const HbarAllowanceInfoSchema: z.ZodType<HbarAllowanceInfo> = z.object({
   owner: z.string(),
   spender: z.string(),
   amount: mirrorNodeIntegerAmountSchema.pipe(TinybarSchema),
 });
 
-export const TokenAllowanceInfoSchema: z.ZodType<TokenAllowanceInfo> = z.object(
-  {
-    owner: z.string(),
-    spender: z.string(),
-    token_id: z.string(),
-    amount: mirrorNodeIntegerAmountSchema.pipe(HtsBaseUnitSchema),
-  },
-);
+const TokenAllowanceInfoSchema: z.ZodType<TokenAllowanceInfo> = z.object({
+  owner: z.string(),
+  spender: z.string(),
+  token_id: z.string(),
+  amount: mirrorNodeIntegerAmountSchema.pipe(HtsBaseUnitSchema),
+});
 
-export const NftAllowanceInfoSchema: z.ZodType<NftAllowanceInfo> = z.object({
+const NftAllowanceInfoSchema: z.ZodType<NftAllowanceInfo> = z.object({
   owner: z.string(),
   spender: z.string(),
   token_id: z.string(),
