@@ -45,7 +45,7 @@ function resolvedSchedule(overrides: Record<string, unknown> = {}) {
     scheduleId: ON_CHAIN_SCHEDULE_ID,
     scheduled: true,
     executed: false,
-    adminKeyRefId: ADMIN_KEY_REF,
+    adminKeyRefIds: [ADMIN_KEY_REF],
     ...overrides,
   };
 }
@@ -255,7 +255,7 @@ describe('schedule plugin — delete command', () => {
     const logger = makeLogger();
     resolveScheduleMock.mockResolvedValue(
       resolvedSchedule({
-        adminKeyRefId: undefined,
+        adminKeyRefIds: [],
       }),
     );
 

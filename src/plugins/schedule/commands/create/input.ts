@@ -4,7 +4,9 @@ import {
   AliasNameSchema,
   KeyManagerTypeSchema,
   KeySchema,
+  KeyThresholdOptionalSchema,
   MemoSchema,
+  OptionalDefaultEmptyKeyListSchema,
   ScheduleExpirationSchema,
   WaitForExpirySchema,
 } from '@/core/schemas';
@@ -14,8 +16,11 @@ import {
  */
 export const ScheduleCreateInputSchema = z.object({
   name: AliasNameSchema.describe('Name of the schedule. Option required'),
-  adminKey: KeySchema.optional().describe(
-    'Admin key for the schedule for managing scheduled transaction on Hedera chain',
+  adminKey: OptionalDefaultEmptyKeyListSchema.describe(
+    'Admin key(s) for the schedule. Repeat the flag for multiple keys.',
+  ),
+  adminKeyThreshold: KeyThresholdOptionalSchema.describe(
+    'M-of-N signing threshold for admin keys (required when multiple admin keys are provided)',
   ),
   payerAccount: KeySchema.optional().describe(
     'Payer account of token. Must be resolved to account ID with private key. Defaults to operator.',

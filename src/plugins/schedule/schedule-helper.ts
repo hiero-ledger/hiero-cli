@@ -46,7 +46,7 @@ export class ScheduleHelper {
         scheduleId: entry.scheduledId,
         scheduled: entry.scheduled,
         executed: entry.executed,
-        adminKeyRefId: entry.adminKeyRefId,
+        adminKeyRefIds: entry.adminKeyRefIds,
       };
     } else {
       const response = await this.mirror.getScheduled(params.scheduleReference);

@@ -1,13 +1,15 @@
 import { z } from 'zod';
 
-import { EntityIdSchema, PublicKeyDefinitionSchema } from '@/core';
+import { EntityIdSchema, KeyThresholdOptionalSchema } from '@/core';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
 export const ScheduleCreateOutputSchema = z.object({
   name: z.string(),
   waitForExpiry: z.boolean().default(false),
   payerAccountId: EntityIdSchema.optional(),
-  adminPublicKey: PublicKeyDefinitionSchema.optional(),
+  adminKeyPresent: z.boolean(),
+  adminKeyCount: z.number().int().positive().optional(),
+  adminKeyThreshold: KeyThresholdOptionalSchema,
   expirationTime: z.string().optional(),
   memo: z.string().optional(),
   network: z.enum(SupportedNetwork),
@@ -23,9 +25,7 @@ export const SCHEDULE_CREATE_TEMPLATE = `
 {{#if payerAccountId}}
    Payer account ID: {{payerAccountId}}
 {{/if}}
-{{#if adminPublicKey}}
-   Admin public key: {{adminPublicKey}}
-{{/if}}
+   Admin key: {{#if adminKeyPresent}}✅ Present{{#if adminKeyCount}}{{#if adminKeyThreshold}} ({{adminKeyThreshold}}-of-{{adminKeyCount}}){{else}} ({{adminKeyCount}}-of-{{adminKeyCount}}){{/if}}{{/if}}{{else}}❌ Not set{{/if}}
 {{#if expirationTime}}
    Expiration Date: {{expirationTime}}
 {{/if}}

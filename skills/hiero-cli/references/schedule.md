@@ -20,24 +20,26 @@ Schedules are persisted in `~/.hiero-cli/state/schedule-transactions-storage.jso
 
 Register a named schedule record in local state with signing parameters. This does not submit anything on-chain — the schedule is created on-chain when you pass `--scheduled <name>` to a command marked `[scheduled]` in its plugin reference.
 
-| Option              | Short | Type    | Required | Default        | Description                                                                          |
-| ------------------- | ----- | ------- | -------- | -------------- | ------------------------------------------------------------------------------------ |
-| `--name`            | `-n`  | string  | **yes**  | —              | Name/alias for the schedule                                                          |
-| `--admin-key`       | `-a`  | string  | no       | —              | Admin key for managing the scheduled transaction on Hedera                           |
-| `--payer-account`   | `-p`  | string  | no       | operator       | Account that pays for the schedule. Accepts alias, `accountId:key`, or key reference |
-| `--memo`            | `-m`  | string  | no       | —              | Public schedule memo (max 100 bytes)                                                 |
-| `--expiration`      | `-e`  | string  | no       | —              | Expiration time (ISO 8601). Max 62 days from now                                     |
-| `--wait-for-expiry` | `-w`  | boolean | no       | `false`        | Execute at expiration time instead of when all required signatures are collected     |
-| `--key-manager`     | `-k`  | string  | no       | config default | Key manager: `local` or `local_encrypted`                                            |
+| Option                  | Short | Type    | Required | Default        | Description                                                                                             |
+| ----------------------- | ----- | ------- | -------- | -------------- | ------------------------------------------------------------------------------------------------------- |
+| `--name`                | `-n`  | string  | **yes**  | —              | Name/alias for the schedule                                                                             |
+| `--admin-key`           | `-a`  | string  | no       | —              | Admin key for managing the scheduled transaction on Hedera. Repeat for multiple keys: `-a alice -a bob` |
+| `--admin-key-threshold` | `-t`  | number  | no       | —              | M-of-N signing threshold for admin keys. Required when multiple admin keys are provided                 |
+| `--payer-account`       | `-p`  | string  | no       | operator       | Account that pays for the schedule. Accepts alias, `accountId:key`, or key reference                    |
+| `--memo`                | `-m`  | string  | no       | —              | Public schedule memo (max 100 bytes)                                                                    |
+| `--expiration`          | `-e`  | string  | no       | —              | Expiration time (ISO 8601). Max 62 days from now                                                        |
+| `--wait-for-expiry`     | `-w`  | boolean | no       | `false`        | Execute at expiration time instead of when all required signatures are collected                        |
+| `--key-manager`         | `-k`  | string  | no       | config default | Key manager: `local` or `local_encrypted`                                                               |
 
 **Example:**
 
 ```
 hcli schedule create --name mySchedule
 hcli schedule create --name mySchedule --admin-key alice --memo "scheduled mint" --expiration 2026-05-01T12:00:00Z
+hcli schedule create --name mySchedule --admin-key alice --admin-key bob --admin-key carol --admin-key-threshold 2
 ```
 
-**Output:** `{ name, waitForExpiry, payerAccountId?, adminPublicKey?, expirationTime?, memo?, network }`
+**Output:** `{ name, waitForExpiry, payerAccountId?, adminKeyPresent, adminKeyCount?, adminKeyThreshold?, expirationTime?, memo?, network }`
 
 ---
 

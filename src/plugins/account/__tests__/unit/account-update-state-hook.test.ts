@@ -441,6 +441,8 @@ describe('account plugin - account-update-state hook (schedule path)', () => {
     name: 'my-schedule',
     network: SupportedNetwork.TESTNET,
     keyManager: KeyManager.local,
+    adminKeyRefIds: [],
+    adminPublicKeys: [],
     waitForExpiry: false,
     scheduled: false,
     executed: false,

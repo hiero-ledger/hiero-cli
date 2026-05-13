@@ -104,33 +104,36 @@ export class ScheduleDeleteCommand extends BaseTransactionCommand<
         `Could not resolve schedule ID for ${validArgs.schedule.value}`,
       );
     }
-    let adminCredential: Credential;
+    let adminKeyRefIds: string[];
     if (validArgs.adminKey) {
-      adminCredential = validArgs.adminKey;
-    } else if (schedule.adminKeyRefId) {
-      adminCredential = {
-        type: CredentialType.KEY_REFERENCE,
-        keyReference: schedule.adminKeyRefId,
-        rawValue: schedule.adminKeyRefId,
-      };
+      const admin = await api.keyResolver.resolveSigningKey(
+        validArgs.adminKey,
+        keyManager,
+        false,
+        ['schedule:admin'],
+      );
+      adminKeyRefIds = [admin.keyRefId];
+    } else if (schedule.adminKeyRefIds?.length) {
+      adminKeyRefIds = schedule.adminKeyRefIds;
     } else if (schedule.adminPublicKey && schedule.adminKeyType) {
-      adminCredential = {
+      const adminCredential: Credential = {
         type: CredentialType.PUBLIC_KEY,
         keyType: schedule.adminKeyType,
         publicKey: schedule.adminPublicKey,
         rawValue: `${schedule.adminKeyType}:${schedule.adminPublicKey}`,
       };
+      const admin = await api.keyResolver.resolveSigningKey(
+        adminCredential,
+        keyManager,
+        false,
+        ['schedule:admin'],
+      );
+      adminKeyRefIds = [admin.keyRefId];
     } else {
       throw new ValidationError(
         `Missing admin key to sign the transaction with`,
       );
     }
-    const admin = await api.keyResolver.resolveSigningKey(
-      adminCredential,
-      keyManager,
-      false,
-      ['schedule:admin'],
-    );
 
     return {
       scheduleName: schedule.name,
@@ -139,8 +142,7 @@ export class ScheduleDeleteCommand extends BaseTransactionCommand<
       executed: schedule.executed,
       network: currentNetwork,
       keyManager,
-      admin,
-      keyRefIds: [admin.keyRefId],
+      keyRefIds: adminKeyRefIds,
     };
   }
 

@@ -141,7 +141,7 @@ describe('schedule plugin — create command', () => {
 
     const args = makeScheduleArgs(api, logger, {
       name: SCHEDULE_NAME,
-      adminKey: ADMIN_KEY_REF,
+      adminKey: [ADMIN_KEY_REF],
       waitForExpiry: false,
     });
 
@@ -156,13 +156,14 @@ describe('schedule plugin — create command', () => {
     expect(saveScheduledMock).toHaveBeenCalledWith(
       SCHEDULE_COMPOSED_KEY,
       expect.objectContaining({
-        adminKeyRefId: ADMIN_KEY_REF,
-        adminPublicKey: ADMIN_PUBLIC_KEY,
+        adminKeyRefIds: [ADMIN_KEY_REF],
+        adminPublicKeys: [ADMIN_PUBLIC_KEY],
       }),
     );
 
     const output = assertOutput(result.result, ScheduleCreateOutputSchema);
-    expect(output.adminPublicKey).toBe(ADMIN_PUBLIC_KEY);
+    expect(output.adminKeyPresent).toBe(true);
+    expect(output.adminKeyCount).toBe(1);
   });
 
   test('resolves payer account credentials when --payer-account is set', async () => {

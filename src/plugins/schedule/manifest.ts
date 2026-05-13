@@ -65,10 +65,18 @@ export const schedulePluginManifest: PluginManifest = {
         {
           name: 'admin-key',
           short: 'a',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
-            'Admin key for the schedule for managing scheduled transaction on Hedera chain',
+            'Admin key for the schedule. Repeat the flag for multiple keys.',
+        },
+        {
+          name: 'admin-key-threshold',
+          short: 't',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N signing threshold for admin keys (required when multiple admin keys are provided)',
         },
         {
           name: 'payer-account',
