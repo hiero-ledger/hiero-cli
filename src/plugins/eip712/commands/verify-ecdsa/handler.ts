@@ -12,6 +12,7 @@ import { recoverAddress } from 'ethers';
 
 import { EntityReferenceType } from '@/core';
 import { ValidationError } from '@/core/errors';
+import { resolveEip712DataContents } from '@/plugins/eip712/util/resolve-eip712-data-contents';
 import { resolveHash } from '@/plugins/eip712/util/resolve-hash';
 
 import { Eip712VerifyEcdsaInputSchema } from './input';
@@ -24,12 +25,9 @@ export class Eip712VerifyEcdsaCommand implements Command {
     const network = api.network.getCurrentNetwork();
     const signature = validArgs.signature;
     const expectedSigner = validArgs.expectedSigner;
-    const hash = resolveHash(
-      validArgs.hash,
-      validArgs.domain?.value,
-      validArgs.types?.value,
-      validArgs.message?.value,
-    );
+    const { domain, types, message } = resolveEip712DataContents(validArgs);
+
+    const hash = resolveHash(validArgs.hash, domain, types, message);
     const recoveredSigner = recoverAddress(hash, signature);
     const output: Eip712VerifyEcdsaOutput = { recoveredSigner };
 

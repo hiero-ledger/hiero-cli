@@ -2,11 +2,9 @@ import { z } from 'zod';
 
 import {
   AccountReferenceObjectSchema,
-  Eip712DomainSchema,
   Eip712EcdsaSignatureSchema,
-  Eip712TypesSchema,
   HashSchema,
-  typedJsonInput,
+  JsonInputSchema,
 } from '@/core/schemas';
 
 export const Eip712VerifyEcdsaInputSchema = z
@@ -14,17 +12,15 @@ export const Eip712VerifyEcdsaInputSchema = z
     hash: HashSchema.optional().describe(
       'Pre-computed EIP-712 digest (0x-prefixed hex). Provide this OR domain+types+message, not both.',
     ),
-    domain: typedJsonInput(Eip712DomainSchema)
-      .optional()
-      .describe('EIP-712 domain as inline JSON or path to a JSON file'),
-    types: typedJsonInput(Eip712TypesSchema)
-      .optional()
-      .describe(
-        'EIP-712 types definition as inline JSON or path to a JSON file',
-      ),
-    message: typedJsonInput(z.record(z.string(), z.unknown()))
-      .optional()
-      .describe('Signed message object as inline JSON or path to a JSON file'),
+    domain: JsonInputSchema.optional().describe(
+      'EIP-712 domain as inline JSON or path to a JSON file',
+    ),
+    types: JsonInputSchema.optional().describe(
+      'EIP-712 types definition as inline JSON or path to a JSON file',
+    ),
+    message: JsonInputSchema.optional().describe(
+      'Signed message object as inline JSON or path to a JSON file',
+    ),
     signature: Eip712EcdsaSignatureSchema.describe(
       'EIP-712 signature to verify (0x-prefixed 65-byte hex)',
     ),

@@ -6,6 +6,7 @@ import type { Ed25519SignOutput } from './output';
 import { ValidationError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
+import { resolveEip712DataContents } from '@/plugins/eip712/util/resolve-eip712-data-contents';
 import { resolveHash } from '@/plugins/eip712/util/resolve-hash';
 
 import { Ed25519SignInputSchema } from './input';
@@ -38,12 +39,9 @@ export class Ed25519SignCommand implements Command {
       );
     }
 
-    const hash = resolveHash(
-      validArgs.hash,
-      validArgs.domain?.value,
-      validArgs.types?.value,
-      validArgs.message?.value,
-    );
+    const { domain, types, message } = resolveEip712DataContents(validArgs);
+
+    const hash = resolveHash(validArgs.hash, domain, types, message);
     const digestBytes = Buffer.from(hash.slice(2), 'hex');
 
     const signer = api.kms.getSignerHandle(kmsRecord.keyRefId);

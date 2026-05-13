@@ -8,6 +8,7 @@ import { PublicKey } from '@hiero-ledger/sdk';
 import { ValidationError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
+import { resolveEip712DataContents } from '@/plugins/eip712/util/resolve-eip712-data-contents';
 import { resolveHash } from '@/plugins/eip712/util/resolve-hash';
 
 import { Ed25519VerifyInputSchema } from './input';
@@ -40,12 +41,9 @@ export class Ed25519VerifyCommand implements Command {
       );
     }
 
-    const hash = resolveHash(
-      validArgs.hash,
-      validArgs.domain?.value,
-      validArgs.types?.value,
-      validArgs.message?.value,
-    );
+    const { domain, types, message } = resolveEip712DataContents(validArgs);
+
+    const hash = resolveHash(validArgs.hash, domain, types, message);
     const hashBytes = new Uint8Array(Buffer.from(hash.slice(2), 'hex'));
 
     const signature = validArgs.signature.slice(2);

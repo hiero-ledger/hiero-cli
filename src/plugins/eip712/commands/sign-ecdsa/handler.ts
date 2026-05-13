@@ -8,6 +8,8 @@ import { computeAddress } from 'ethers';
 import { ValidationError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
+import { parseEcdsaSignature } from '@/plugins/eip712/util/parse-ecdsa-signature';
+import { resolveEip712DataContents } from '@/plugins/eip712/util/resolve-eip712-data-contents';
 import { resolveHash } from '@/plugins/eip712/util/resolve-hash';
 
 import { Eip712SignEcdsaInputSchema } from './input';
@@ -17,12 +19,9 @@ export class Eip712SignEcdsaCommand implements Command {
     const { api } = args;
     const validArgs = Eip712SignEcdsaInputSchema.parse(args.args);
 
-    const hash = resolveHash(
-      validArgs.hash,
-      validArgs.domain?.value,
-      validArgs.types?.value,
-      validArgs.message?.value,
-    );
+    const { domain, types, message } = resolveEip712DataContents(validArgs);
+
+    const hash = resolveHash(validArgs.hash, domain, types, message);
 
     const keyManager =
       validArgs.keyManager ||
@@ -50,9 +49,7 @@ export class Eip712SignEcdsaCommand implements Command {
     const signature = signer.signHashWithEcdsaKey(hash);
 
     const signerEvm = computeAddress(`0x${kmsRecord.publicKey}`);
-    const r = `0x${signature.slice(2, 66)}`;
-    const s = `0x${signature.slice(66, 130)}`;
-    const v = parseInt(signature.slice(130, 132), 16) as 27 | 28;
+    const { r, s, v } = parseEcdsaSignature(signature);
 
     const output: Eip712SignEcdsaOutput = {
       signerEvm,

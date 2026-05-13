@@ -1,12 +1,10 @@
 import { z } from 'zod';
 
 import {
-  Eip712DomainSchema,
-  Eip712TypesSchema,
   HashSchema,
+  JsonInputSchema,
   KeyManagerTypeSchema,
   KeySchema,
-  typedJsonInput,
 } from '@/core/schemas';
 
 export const Ed25519SignInputSchema = z
@@ -20,17 +18,15 @@ export const Ed25519SignInputSchema = z
     hash: HashSchema.optional().describe(
       'Pre-computed EIP-712 digest (0x-prefixed hex). Provide this OR domain+types+message, not both.',
     ),
-    domain: typedJsonInput(Eip712DomainSchema)
-      .optional()
-      .describe('EIP-712 domain as inline JSON or path to a JSON file'),
-    types: typedJsonInput(Eip712TypesSchema)
-      .optional()
-      .describe(
-        'EIP-712 types definition as inline JSON or path to a JSON file',
-      ),
-    message: typedJsonInput(z.record(z.string(), z.unknown()))
-      .optional()
-      .describe('Message object to sign as inline JSON or path to a JSON file'),
+    domain: JsonInputSchema.optional().describe(
+      'EIP-712 domain as inline JSON or path to a JSON file',
+    ),
+    types: JsonInputSchema.optional().describe(
+      'EIP-712 types definition as inline JSON or path to a JSON file',
+    ),
+    message: JsonInputSchema.optional().describe(
+      'Message object to sign as inline JSON or path to a JSON file',
+    ),
   })
   .superRefine((data, ctx) => {
     const hasHash = data.hash !== undefined;

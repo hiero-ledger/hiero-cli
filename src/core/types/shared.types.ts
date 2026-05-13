@@ -238,3 +238,9 @@ export interface Eip712TypedDataField {
   name: string;
   type: string;
 }
+
+export interface EcdsaSignatureComponents {
+  r: string;
+  s: string;
+  v: 27 | 28;
+}

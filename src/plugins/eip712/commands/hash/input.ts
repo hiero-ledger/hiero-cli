@@ -1,19 +1,15 @@
 import { z } from 'zod';
 
-import {
-  Eip712DomainSchema,
-  Eip712TypesSchema,
-  typedJsonInput,
-} from '@/core/schemas';
+import { JsonInputSchema } from '@/core/schemas';
 
 export const Eip712HashInputSchema = z.object({
-  domain: typedJsonInput(Eip712DomainSchema).describe(
+  domain: JsonInputSchema.describe(
     'EIP-712 domain as inline JSON or path to a JSON file',
   ),
-  types: typedJsonInput(Eip712TypesSchema).describe(
+  types: JsonInputSchema.describe(
     'EIP-712 types definition as inline JSON or path to a JSON file',
   ),
-  message: typedJsonInput(z.record(z.string(), z.unknown())).describe(
+  message: JsonInputSchema.describe(
     'Message object as inline JSON or path to a JSON file',
   ),
 });

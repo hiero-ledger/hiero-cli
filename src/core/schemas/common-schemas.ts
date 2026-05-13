@@ -874,25 +874,6 @@ export const Eip712TypesSchema = z
   .describe('EIP-712 types definition');
 
 /**
- * Wraps JsonInputSchema and validates the parsed value against a Zod schema.
- * Produces a typed { type, value: T } instead of { type, value: unknown }.
- */
-export const typedJsonInput = <T>(valueSchema: z.ZodType<T>) =>
-  JsonInputSchema.transform(({ type, value }) => {
-    const result = valueSchema.safeParse(value);
-    if (!result.success) {
-      throw new ValidationError(
-        `JSON structure validation failed: ${result.error.issues
-          .map(
-            (i) => `${i.path.length ? i.path.join('.') : 'root'}: ${i.message}`,
-          )
-          .join('; ')}`,
-      );
-    }
-    return { type, value: result.data };
-  });
-
-/**
  * Token Name
  * Name of a token (alphanumeric, spaces, hyphens)
  */
