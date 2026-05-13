@@ -148,10 +148,10 @@ export const schedulePluginManifest: PluginManifest = {
         {
           name: 'key',
           short: 'k',
-          type: OptionType.STRING,
-          required: true,
+          type: OptionType.REPEATABLE,
+          required: false,
           description:
-            'Key whose signature to add to the schedule. Key must be resolved to private key',
+            'Key whose signature to add to the schedule. Repeat the flag for multiple keys. If omitted, the admin key from the mirror node is matched against the key manager.',
         },
         {
           name: 'key-manager',

@@ -88,18 +88,21 @@ hcli schedule create --name my-schedule --admin-key alice --admin-key bob --admi
 
 ### Schedule Sign
 
-Add a signature to an existing scheduled transaction (`ScheduleSignTransaction`).
+Add a signature (or multiple signatures) to an existing scheduled transaction (`ScheduleSignTransaction`).
 
 ```bash
 hcli schedule sign --schedule my-schedule --key bob
 
 hcli schedule sign --schedule 0.0.1234567 --key 0.0.111:302e020100300506032b657004220420...
+
+# Multiple signers in a single call
+hcli schedule sign --schedule my-schedule --key alice --key bob --key carol
 ```
 
 **Parameters:**
 
 - `--schedule` / `-s`: Schedule ID (`0.0.x`) or local schedule name — **Required**
-- `--key` / `-k`: Key whose signature to add — **Required**
+- `--key` / `-k`: Key whose signature to add. Repeat the flag for multiple keys. If omitted, the admin key from the mirror node is matched against the key manager.
 - `--key-manager` / `-K`: Key manager (optional; defaults to config)
 
 ### Schedule Delete
