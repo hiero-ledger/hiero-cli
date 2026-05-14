@@ -184,10 +184,10 @@ export const schedulePluginManifest: PluginManifest = {
         {
           name: 'admin-key',
           short: 'a',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
-            'Admin key to sign the transaction. If not provided the admin key from state is used to perform this operation.',
+            'Admin credential(s) to sign the delete transaction. Pass multiple times for threshold keys. Auto-detected from the key manager if omitted.',
         },
         {
           name: 'key-manager',
