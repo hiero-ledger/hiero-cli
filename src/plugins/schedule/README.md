@@ -7,7 +7,7 @@ Plugin for creating and managing **Hedera scheduled transactions** (`ScheduleCre
 This plugin follows the plugin architecture principles:
 
 - **Stateful (local records)**: Named schedule entries and options are persisted per network
-- **Dependency Injection**: Services are injected into command handlers and hooks
+- **Dependency Injection**: Plugin services are wired per invocation from Core API services
 - **Manifest-Driven**: Capabilities declared via manifest with output specifications
 - **Namespace Isolation**: Own state namespace (`schedule-transactions`)
 - **Type Safety**: Full TypeScript support with Zod input/output schemas
@@ -19,8 +19,11 @@ This plugin follows the plugin architecture principles:
 src/plugins/schedule/
 ├── manifest.ts                 # Plugin manifest (commands + scheduled hook)
 ├── schema.ts                   # Zod schema for persisted schedule entries
-├── zustand-state-helper.ts     # State helper (CRUD for schedule records)
-├── schedule-helper.ts          # Shared helpers
+├── services/
+│   ├── schedule-state.service.ts
+│   ├── schedule-resolver.service.ts
+│   ├── schedule-keys.service.ts
+│   └── schedule-sync.service.ts
 ├── commands/
 │   ├── create/
 │   │   ├── handler.ts          # Register a named schedule in local state

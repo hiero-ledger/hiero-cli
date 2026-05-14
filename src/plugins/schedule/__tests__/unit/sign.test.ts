@@ -19,8 +19,8 @@ import {
   scheduleSign,
   ScheduleSignOutputSchema,
 } from '@/plugins/schedule/commands/sign';
-import { ScheduleHelper } from '@/plugins/schedule/schedule-helper';
-import { ZustandScheduleStateHelper } from '@/plugins/schedule/zustand-state-helper';
+import { ScheduleResolverServiceImpl } from '@/plugins/schedule/services/schedule-resolver.service';
+import { ScheduleStateServiceImpl } from '@/plugins/schedule/services/schedule-state.service';
 
 import {
   ADMIN_PUBLIC_KEY,
@@ -32,16 +32,17 @@ import {
   SIGNER_KEY_REF,
 } from './helpers/fixtures';
 
-jest.mock('../../schedule-helper', () => ({
-  ScheduleHelper: jest.fn(),
+jest.mock('../../services/schedule-resolver.service', () => ({
+  ScheduleResolverServiceImpl: jest.fn(),
 }));
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandScheduleStateHelper: jest.fn(),
+jest.mock('../../services/schedule-state.service', () => ({
+  ScheduleStateServiceImpl: jest.fn(),
 }));
 
-const MockedScheduleHelper = ScheduleHelper as unknown as jest.Mock;
-const MockedZustand = ZustandScheduleStateHelper as unknown as jest.Mock;
+const MockedScheduleResolver =
+  ScheduleResolverServiceImpl as unknown as jest.Mock;
+const MockedScheduleState = ScheduleStateServiceImpl as unknown as jest.Mock;
 
 function resolvedSchedule(overrides: Record<string, unknown> = {}) {
   return {
@@ -70,10 +71,10 @@ describe('schedule plugin — sign command', () => {
     resolveScheduleMock = jest.fn();
     getScheduledStateMock = jest.fn().mockReturnValue(undefined);
     saveScheduledMock = jest.fn();
-    MockedScheduleHelper.mockImplementation(() => ({
+    MockedScheduleResolver.mockImplementation(() => ({
       resolveScheduleIdByEntityReference: resolveScheduleMock,
     }));
-    MockedZustand.mockImplementation(() => ({
+    MockedScheduleState.mockImplementation(() => ({
       getScheduled: getScheduledStateMock,
       saveScheduled: saveScheduledMock,
     }));

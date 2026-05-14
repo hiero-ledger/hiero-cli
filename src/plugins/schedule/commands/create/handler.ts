@@ -1,24 +1,27 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type {
-  ResolvedAccountCredential,
-  ResolvedPublicKey,
-} from '@/core/services/key-resolver/types';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { ScheduleKeysService } from '@/plugins/schedule/services/schedule-keys.service.interface';
+import type { ScheduleStateService } from '@/plugins/schedule/services/schedule-state.service.interface';
 import type { ScheduleCreateOutput } from './output';
 
 import { ValidationError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
-import { ZustandScheduleStateHelper } from '@/plugins/schedule/zustand-state-helper';
+import { ScheduleKeysServiceImpl } from '@/plugins/schedule/services/schedule-keys.service';
+import { ScheduleStateServiceImpl } from '@/plugins/schedule/services/schedule-state.service';
 
 import { ScheduleCreateInputSchema } from './input';
 
 export class ScheduleCreateCommand implements Command {
+  constructor(
+    private readonly scheduleState: ScheduleStateService,
+    private readonly scheduleKeys: ScheduleKeysService,
+  ) {}
+
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
 
-    const scheduleState = new ZustandScheduleStateHelper(api.state, api.logger);
     const validArgs = ScheduleCreateInputSchema.parse(args.args);
     const name = validArgs.name;
     const network = api.network.getCurrentNetwork();
@@ -33,32 +36,21 @@ export class ScheduleCreateCommand implements Command {
 
     const scheduleKey = composeKey(network, name);
 
-    if (scheduleState.hasScheduled(scheduleKey)) {
+    if (this.scheduleState.hasScheduled(scheduleKey)) {
       throw new ValidationError(
         `Schedule with name '${name}' already exists on this network`,
       );
     }
-    let payerCredential: ResolvedAccountCredential | undefined;
-    if (payer) {
-      payerCredential = await api.keyResolver.resolveAccountCredentials(
-        payer,
-        keyManager,
-        true,
-      );
-    }
+    const payerCredential = await this.scheduleKeys.resolveCreatePayer(
+      payer,
+      keyManager,
+    );
+    const adminKeys = await this.scheduleKeys.resolveCreateAdminKeys(
+      adminKey,
+      keyManager,
+    );
 
-    const adminKeys: ResolvedPublicKey[] = [];
-    for (const credential of adminKey) {
-      const resolved = await api.keyResolver.resolveSigningKey(
-        credential,
-        keyManager,
-        false,
-        ['schedule:admin'],
-      );
-      adminKeys.push(resolved);
-    }
-
-    scheduleState.saveScheduled(scheduleKey, {
+    this.scheduleState.saveScheduled(scheduleKey, {
       name,
       network,
       keyManager,
@@ -94,5 +86,9 @@ export class ScheduleCreateCommand implements Command {
 export async function scheduleCreate(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new ScheduleCreateCommand().execute(args);
+  const { api } = args;
+  const scheduleState = new ScheduleStateServiceImpl(api.state, api.logger);
+  const scheduleKeys = new ScheduleKeysServiceImpl(api.keyResolver, api.mirror);
+
+  return new ScheduleCreateCommand(scheduleState, scheduleKeys).execute(args);
 }

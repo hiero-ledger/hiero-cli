@@ -1,7 +1,9 @@
 import type { BaseBuildTransactionResult } from '@/core';
+import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PreSignTransactionHookParams } from '@/core/hooks/types';
 import type { ScheduledNormalizedParams } from '@/plugins/schedule/hooks/scheduled/types';
+import type { ScheduleStateService } from '@/plugins/schedule/services/schedule-state.service.interface';
 
 import { StateError, TransactionError } from '@/core';
 import { NotFoundError, ValidationError } from '@/core/errors';
@@ -12,7 +14,11 @@ import {
   SCHEDULED_TEMPLATE,
   ScheduledOutputSchema,
 } from '@/plugins/schedule/hooks/scheduled/output';
-import { ZustandScheduleStateHelper } from '@/plugins/schedule/zustand-state-helper';
+import { ScheduleStateServiceImpl } from '@/plugins/schedule/services/schedule-state.service';
+
+export type ScheduleStateServiceFactory = (
+  api: CoreApi,
+) => ScheduleStateService;
 
 export class ScheduledHook implements Hook<
   PreSignTransactionHookParams<
@@ -20,6 +26,11 @@ export class ScheduledHook implements Hook<
     BaseBuildTransactionResult
   >
 > {
+  constructor(
+    private readonly createScheduleState: ScheduleStateServiceFactory = (api) =>
+      new ScheduleStateServiceImpl(api.state, api.logger),
+  ) {}
+
   async execute(
     params: PreSignTransactionHookParams<
       ScheduledNormalizedParams,
@@ -28,10 +39,7 @@ export class ScheduledHook implements Hook<
   ): Promise<HookResult> {
     const { args, commandName, buildTransactionResult } = params;
     const { api } = args;
-    const scheduledState = new ZustandScheduleStateHelper(
-      api.state,
-      api.logger,
-    );
+    const scheduleState = this.createScheduleState(api);
     const validArgs = ScheduledInputSchema.parse(args.args);
     const scheduledName = validArgs.scheduled;
     const network = api.network.getCurrentNetwork();
@@ -42,7 +50,7 @@ export class ScheduledHook implements Hook<
       return { breakFlow: false };
     }
     const key = composeKey(network, scheduledName);
-    const scheduledRecord = scheduledState.getScheduled(key);
+    const scheduledRecord = scheduleState.getScheduled(key);
     if (!scheduledRecord) {
       throw new NotFoundError(`Scheduled not found for name ${scheduledName}`);
     }
@@ -88,7 +96,7 @@ export class ScheduledHook implements Hook<
       );
     }
 
-    scheduledState.saveScheduled(key, {
+    scheduleState.saveScheduled(key, {
       ...scheduledRecord,
       scheduledId: result.scheduleId,
       transactionId: result.transactionId,

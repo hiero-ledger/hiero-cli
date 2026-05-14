@@ -1,29 +1,23 @@
-/**
- * Zustand-based state for scheduled transactions (plugin-local persistence)
- */
 import type { Logger, StateService } from '@/core';
+import type { ScheduleStateService } from '@/plugins/schedule/services/schedule-state.service.interface';
 
 import { ValidationError } from '@/core/errors';
-
-import { SCHEDULE_NAMESPACE } from './schema';
 import {
   safeParseScheduledTransactionData,
+  SCHEDULE_NAMESPACE,
   type ScheduledTransactionData,
-} from './schema';
+} from '@/plugins/schedule/schema';
 
-export class ZustandScheduleStateHelper {
-  private state: StateService;
-  private logger: Logger;
-  private namespace: string;
+export class ScheduleStateServiceImpl implements ScheduleStateService {
+  private readonly namespace = SCHEDULE_NAMESPACE;
 
-  constructor(state: StateService, logger: Logger) {
-    this.state = state;
-    this.logger = logger;
-    this.namespace = SCHEDULE_NAMESPACE;
-  }
+  constructor(
+    private readonly state: StateService,
+    private readonly logger: Logger,
+  ) {}
 
   saveScheduled(key: string, data: ScheduledTransactionData): void {
-    this.logger.debug(`[ZUSTAND SCHEDULE STATE] Saving schedule entry: ${key}`);
+    this.logger.debug(`[SCHEDULE STATE] Saving schedule entry: ${key}`);
 
     const validation = safeParseScheduledTransactionData(data);
     if (!validation.success) {
@@ -34,30 +28,28 @@ export class ZustandScheduleStateHelper {
     }
 
     this.state.set(this.namespace, key, data);
-    this.logger.debug(`[ZUSTAND SCHEDULE STATE] Schedule entry saved: ${key}`);
+    this.logger.debug(`[SCHEDULE STATE] Schedule entry saved: ${key}`);
   }
 
   getScheduled(key: string): ScheduledTransactionData | null {
-    this.logger.debug(
-      `[ZUSTAND SCHEDULE STATE] Loading schedule entry: ${key}`,
-    );
+    this.logger.debug(`[SCHEDULE STATE] Loading schedule entry: ${key}`);
     const data = this.state.get<ScheduledTransactionData>(this.namespace, key);
 
-    if (data) {
-      const validation = safeParseScheduledTransactionData(data);
-      if (!validation.success) {
-        this.logger.warn(
-          `[ZUSTAND SCHEDULE STATE] Invalid data for key: ${key}`,
-        );
-        return null;
-      }
+    if (!data) {
+      return null;
     }
 
-    return data || null;
+    const validation = safeParseScheduledTransactionData(data);
+    if (!validation.success) {
+      this.logger.warn(`[SCHEDULE STATE] Invalid data for key: ${key}`);
+      return null;
+    }
+
+    return data;
   }
 
   listScheduled(): ScheduledTransactionData[] {
-    this.logger.debug(`[ZUSTAND SCHEDULE STATE] Listing schedule entries`);
+    this.logger.debug('[SCHEDULE STATE] Listing schedule entries');
     const allData = this.state.list<ScheduledTransactionData>(this.namespace);
     return allData.filter(
       (data) => safeParseScheduledTransactionData(data).success,
@@ -69,9 +61,7 @@ export class ZustandScheduleStateHelper {
   }
 
   deleteScheduled(key: string): void {
-    this.logger.debug(
-      `[ZUSTAND SCHEDULE STATE] Deleting schedule entry: ${key}`,
-    );
+    this.logger.debug(`[SCHEDULE STATE] Deleting schedule entry: ${key}`);
     this.state.delete(this.namespace, key);
   }
 }
