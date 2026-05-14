@@ -12,7 +12,7 @@ import { HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION } from '@/core/shared/const
 import { swapAddFt } from '@/plugins/swap/commands/add-ft/handler';
 import { SwapAddFtOutputSchema } from '@/plugins/swap/commands/add-ft/output';
 import { SwapTransferType } from '@/plugins/swap/schema';
-import { SwapStateHelper } from '@/plugins/swap/state-helper';
+import { SwapStateServiceImpl } from '@/plugins/swap/services/swap-state.service';
 
 import {
   FROM_ACCOUNT_INPUT,
@@ -30,11 +30,11 @@ import {
   makeSwapApiMocks,
 } from './helpers/mocks';
 
-jest.mock('../../state-helper', () => ({
-  SwapStateHelper: jest.fn(),
+jest.mock('../../services/swap-state.service', () => ({
+  SwapStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = SwapStateHelper as jest.Mock;
+const MockedSwapStateService = SwapStateServiceImpl as jest.Mock;
 
 describe('swap plugin - add-ft command', () => {
   let resolveAccountCredentialsMock: jest.Mock;
@@ -57,7 +57,7 @@ describe('swap plugin - add-ft command', () => {
     const addTransferMock = jest
       .fn()
       .mockReturnValue({ ...mockEmptySwap, transfers: [{}] });
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       assertCanAdd: jest.fn(),
       addTransfer: addTransferMock,
     }));
@@ -103,7 +103,7 @@ describe('swap plugin - add-ft command', () => {
 
   test('resolves token identifier via identity resolution before storing', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       assertCanAdd: jest.fn(),
       addTransfer: jest
         .fn()
@@ -149,7 +149,7 @@ describe('swap plugin - add-ft command', () => {
     const addTransferMock = jest
       .fn()
       .mockReturnValue({ ...mockEmptySwap, transfers: [{}] });
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       assertCanAdd: jest.fn(),
       addTransfer: addTransferMock,
     }));
@@ -188,7 +188,7 @@ describe('swap plugin - add-ft command', () => {
 
   test('throws ValidationError when swap transfer limit is reached', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       assertCanAdd: jest.fn().mockImplementation(() => {
         throw new ValidationError('Cannot add transfers: limit reached');
       }),
@@ -216,7 +216,7 @@ describe('swap plugin - add-ft command', () => {
 
   test('uses key manager from config when not specified in args', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       assertCanAdd: jest.fn(),
       addTransfer: jest
         .fn()
