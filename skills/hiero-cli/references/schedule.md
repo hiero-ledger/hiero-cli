@@ -64,17 +64,18 @@ The schedule record in local state is updated with the on-chain `scheduleId` and
 
 Add a signature to a pending scheduled transaction. Use when additional signers are required before the transaction can execute.
 
-| Option          | Short | Type   | Required | Default        | Description                                     |
-| --------------- | ----- | ------ | -------- | -------------- | ----------------------------------------------- |
-| `--schedule`    | `-s`  | string | **yes**  | —              | Schedule ID (`0.0.x`) or local schedule name    |
-| `--key`         | `-k`  | string | **yes**  | —              | Key to sign with. Must resolve to a private key |
-| `--key-manager` | `-K`  | string | no       | config default | Key manager: `local` or `local_encrypted`       |
+| Option          | Short | Type   | Required | Default        | Description                                                                                                   |
+| --------------- | ----- | ------ | -------- | -------------- | ------------------------------------------------------------------------------------------------------------- |
+| `--schedule`    | `-s`  | string | **yes**  | —              | Schedule ID (`0.0.x`) or local schedule name                                                                  |
+| `--key`         | `-k`  | string | no       | —              | Key to sign with. Repeat for multiple keys: `-k alice -k bob`. If omitted, matched from mirror node admin key |
+| `--key-manager` | `-K`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                                                     |
 
 **Example:**
 
 ```
 hcli schedule sign --schedule mySchedule --key alice
 hcli schedule sign --schedule 0.0.123456 --key 0.0.789:302e...
+hcli schedule sign --schedule mySchedule --key alice --key bob --key carol
 ```
 
 **Output:** `{ scheduleId, transactionId, network, name? }`

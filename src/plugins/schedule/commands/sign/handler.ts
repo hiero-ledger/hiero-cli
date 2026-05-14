@@ -53,19 +53,23 @@ export class ScheduleSignCommand extends BaseTransactionCommand<
   private async resolveSignerKeyRefIds(
     args: CommandHandlerArgs,
     scheduleId: string,
-    explicitKey: Credential | undefined,
+    explicitKeys: Credential[],
     keyManager: KeyManager,
   ): Promise<string[]> {
     const { api } = args;
 
-    if (explicitKey) {
-      const signer = await api.keyResolver.resolveSigningKey(
-        explicitKey,
-        keyManager,
-        false,
-        ['schedule:signer'],
-      );
-      return [signer.keyRefId];
+    if (explicitKeys.length > 0) {
+      const keyRefIds: string[] = [];
+      for (const credential of explicitKeys) {
+        const signer = await api.keyResolver.resolveSigningKey(
+          credential,
+          keyManager,
+          false,
+          ['schedule:signer'],
+        );
+        keyRefIds.push(signer.keyRefId);
+      }
+      return keyRefIds;
     }
 
     const mirrorScheduleInfo = await api.mirror.getScheduled(scheduleId);
@@ -123,7 +127,7 @@ export class ScheduleSignCommand extends BaseTransactionCommand<
     const signerKeyRefIds = await this.resolveSignerKeyRefIds(
       args,
       schedule.scheduleId,
-      validArgs.key,
+      validArgs.key ?? [],
       keyManager,
     );
 
