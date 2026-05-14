@@ -1239,7 +1239,3 @@ export const ScheduledTransactionDataSchema = z.object({
   ),
   createdAt: z.string().optional(),
 });
-
-export const HashSchema = z
-  .string()
-  .regex(/^0x[0-9a-fA-F]+$/, 'hash must be a hex string starting with 0x');

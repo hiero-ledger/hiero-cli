@@ -154,7 +154,7 @@ export const makeEip712VerifyEcdsaArgs = (params: {
         '{"Mail":[{"name":"from","type":"address"},{"name":"contents","type":"string"}]}',
       message:
         '{"from":"0xcd2a3d9f938e13cd947ec05abc7fe734df8dd826","contents":"Hello!"}',
-      signature: '0x' + 'a'.repeat(130),
+      signature: mockSignature65Bytes,
       ...params.args,
     },
   });

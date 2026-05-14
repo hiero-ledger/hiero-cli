@@ -14,3 +14,5 @@ export interface Eip712Data {
   types: Record<string, Eip712TypedDataField[]> | undefined;
   message: Record<string, unknown> | undefined;
 }
+
+export type RecoveryIdentifier = 27 | 28;

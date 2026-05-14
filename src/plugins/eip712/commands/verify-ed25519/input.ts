@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import {
   Eip712Ed25519SignatureSchema,
-  HashSchema,
+  HexEncodedDataSchema,
   JsonInputSchema,
   KeyManagerTypeSchema,
   KeySchema,
@@ -16,7 +16,7 @@ export const Ed25519VerifyInputSchema = z
     keyManager: KeyManagerTypeSchema.optional().describe(
       'Key manager type (defaults to config setting)',
     ),
-    hash: HashSchema.optional().describe(
+    hash: HexEncodedDataSchema.optional().describe(
       'Pre-computed EIP-712 digest (0x-prefixed hex). Provide this OR domain+types+message, not both.',
     ),
     domain: JsonInputSchema.optional().describe(

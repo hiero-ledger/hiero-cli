@@ -3,13 +3,13 @@ import { z } from 'zod';
 import {
   AccountReferenceObjectSchema,
   Eip712EcdsaSignatureSchema,
-  HashSchema,
+  HexEncodedDataSchema,
   JsonInputSchema,
 } from '@/core/schemas';
 
 export const Eip712VerifyEcdsaInputSchema = z
   .object({
-    hash: HashSchema.optional().describe(
+    hash: HexEncodedDataSchema.optional().describe(
       'Pre-computed EIP-712 digest (0x-prefixed hex). Provide this OR domain+types+message, not both.',
     ),
     domain: JsonInputSchema.optional().describe(
