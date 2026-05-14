@@ -8,10 +8,5 @@ export interface RegisterTopicAliasParams {
 }
 
 export interface TopicAliasService {
-  assertTopicAliasAvailable(
-    alias: string | undefined,
-    network: SupportedNetwork,
-  ): void;
-  registerTopicAlias(params: RegisterTopicAliasParams): void;
   tryRegisterTopicAlias(params: RegisterTopicAliasParams): boolean;
 }

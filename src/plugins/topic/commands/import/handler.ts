@@ -1,26 +1,22 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { TopicData } from '@/plugins/topic/schema';
-import type { TopicAliasService } from '@/plugins/topic/services/topic-alias.service.interface';
 import type { TopicStateService } from '@/plugins/topic/services/topic-state.service.interface';
 import type { TopicImportOutput } from './output';
 import type { ImportTopicNormalisedParams } from './types';
 
 import { ValidationError } from '@/core/errors';
+import { AliasType } from '@/core/types/shared.types';
 import { extractPublicKeysFromMirrorNodeKey } from '@/core/utils/extract-public-keys';
 import { hederaTimestampToIso } from '@/core/utils/hedera-timestamp';
 import { composeKey } from '@/core/utils/key-composer';
 import { matchPublicKeysToKmsRefIds } from '@/core/utils/match-keys-to-kms';
-import { TopicAliasServiceImpl } from '@/plugins/topic/services/topic-alias.service';
 import { TopicStateServiceImpl } from '@/plugins/topic/services/topic-state.service';
 
 import { TopicImportInputSchema } from './input';
 
 export class TopicImportCommand implements Command {
-  constructor(
-    private readonly topicState: TopicStateService,
-    private readonly topicAlias: TopicAliasService,
-  ) {}
+  constructor(private readonly topicState: TopicStateService) {}
 
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
@@ -35,7 +31,7 @@ export class TopicImportCommand implements Command {
     };
 
     if (normalisedParams.alias) {
-      this.topicAlias.assertTopicAliasAvailable(
+      api.alias.availableOrThrow(
         normalisedParams.alias,
         normalisedParams.network,
       );
@@ -53,10 +49,11 @@ export class TopicImportCommand implements Command {
     }
 
     if (normalisedParams.alias) {
-      this.topicAlias.registerTopicAlias({
+      api.alias.register({
         alias: normalisedParams.alias,
+        type: AliasType.Topic,
         network: normalisedParams.network,
-        topicId: normalisedParams.topicId,
+        entityId: normalisedParams.topicId,
         createdAt: new Date().toISOString(),
       });
     }
@@ -112,9 +109,8 @@ export class TopicImportCommand implements Command {
 export async function topicImport(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  const { alias, logger, state } = args.api;
+  const { logger, state } = args.api;
   const topicState = new TopicStateServiceImpl(state, logger);
-  const topicAlias = new TopicAliasServiceImpl(alias, logger);
 
-  return new TopicImportCommand(topicState, topicAlias).execute(args);
+  return new TopicImportCommand(topicState).execute(args);
 }

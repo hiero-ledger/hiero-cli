@@ -13,23 +13,6 @@ export class TopicAliasServiceImpl implements TopicAliasService {
     private readonly logger: Logger,
   ) {}
 
-  assertTopicAliasAvailable(
-    alias: string | undefined,
-    network: RegisterTopicAliasParams['network'],
-  ): void {
-    this.alias.availableOrThrow(alias, network);
-  }
-
-  registerTopicAlias(params: RegisterTopicAliasParams): void {
-    this.alias.register({
-      alias: params.alias,
-      type: AliasType.Topic,
-      network: params.network,
-      entityId: params.topicId,
-      createdAt: params.createdAt,
-    });
-  }
-
   tryRegisterTopicAlias(params: RegisterTopicAliasParams): boolean {
     if (this.alias.exists(params.alias, params.network)) {
       this.logger.warn(
@@ -38,7 +21,13 @@ export class TopicAliasServiceImpl implements TopicAliasService {
       return false;
     }
 
-    this.registerTopicAlias(params);
+    this.alias.register({
+      alias: params.alias,
+      type: AliasType.Topic,
+      network: params.network,
+      entityId: params.topicId,
+      createdAt: params.createdAt,
+    });
     return true;
   }
 }
