@@ -162,11 +162,10 @@ src/plugins/token/
 │   └── token-dissociate-state/
 │       ├── handler.ts       # TokenDissociateStateHook - removes association from state after batch execution
 │       └── types.ts         # DissociateNormalizedParamsSchema for batch item validation
-├── utils/
-│   ├── token-build-output.ts  # NFT output builder utilities
-│   ├── token-amount-helpers.ts  # Token amount processing helpers
-│   ├── token-data-builders.ts   # Token data builders for create-from-file and update commands
-│   └── [pure utility files...]
+├── utils/                       # Pure functions only (no DI)
+│   ├── token-build-output.ts             # NFT output builder utilities
+│   ├── token-data-builders.ts            # Token data builders for create-from-file and update commands
+│   └── transaction-error-receipt-status.ts # Receipt status helpers for tx errors
 ├── services/
 │   ├── token-state.service.ts              # Token state service
 │   ├── token-state.service.interface.ts

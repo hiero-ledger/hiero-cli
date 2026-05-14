@@ -4,7 +4,7 @@ import type {
 } from '@/plugins/token/schema';
 
 export interface TokenFileService {
-  readAndValidateTokenFile(
+  readAndValidateFtTokenFile(
     filename: string,
   ): Promise<FungibleTokenFileDefinition>;
   readAndValidateNftTokenFile(

@@ -553,7 +553,7 @@ describe('tokenCreateFtFromFileHandler', () => {
 
       // Act & Assert
       await expect(tokenCreateFtFromFile(args)).rejects.toThrow(
-        'Invalid token definition file',
+        'Invalid fungible token definition file',
       );
     });
 
@@ -595,7 +595,7 @@ describe('tokenCreateFtFromFileHandler', () => {
 
       // Act & Assert
       await expect(tokenCreateFtFromFile(args)).rejects.toThrow(
-        'Invalid token definition file',
+        'Invalid fungible token definition file',
       );
     });
 
@@ -616,7 +616,7 @@ describe('tokenCreateFtFromFileHandler', () => {
 
       // Act & Assert
       await expect(tokenCreateFtFromFile(args)).rejects.toThrow(
-        'Invalid token definition file',
+        'Invalid fungible token definition file',
       );
     });
   });

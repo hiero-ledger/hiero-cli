@@ -18,21 +18,12 @@ export const DEFAULT_CONSTRUCTOR_PARAMS: Record<
 };
 
 import { FileError } from '@/core/errors';
+import { resolveLocalFilePath } from '@/core/shared/file-path-helpers';
 
 export const CONTRACT_NAME_REGEX = /\bcontract\s+(\w+)/;
 
-export function resolveContractFilePath(filename: string): string {
-  const hasPathSeparator = filename.includes('/') || filename.includes('\\');
-
-  if (hasPathSeparator) {
-    return filename;
-  }
-
-  return path.resolve(filename);
-}
-
 export function readContractFile(filename: string): string {
-  const filepath = resolveContractFilePath(filename);
+  const filepath = resolveLocalFilePath(filename);
   if (!fs.existsSync(filepath)) {
     throw new FileError(`File ${filename} does not exist`, {
       context: { path: filepath },

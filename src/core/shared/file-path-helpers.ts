@@ -1,6 +1,6 @@
 import * as path from 'path';
 
-export function resolveTokenFilePath(filename: string): string {
+export function resolveLocalFilePath(filename: string): string {
   const hasPathSeparator = filename.includes('/') || filename.includes('\\');
 
   if (hasPathSeparator) {
