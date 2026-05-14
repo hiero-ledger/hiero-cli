@@ -9,7 +9,7 @@ import type { TokenViewOutput } from '@/plugins/token/commands/view';
 import '@/core/utils/json-serialize';
 
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
-import { delay } from '@/__tests__/utils/common-utils';
+import { delay, waitFor } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
@@ -45,15 +45,13 @@ describe('Mint NFT Integration Tests', () => {
     expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
     expect(createAccountOutput.network).toBe(network);
 
-    await delay(5000);
-
     const viewAccountArgs: Record<string, unknown> = {
       account: 'account-mint-nft',
     };
-    const viewAccountResult = await accountView({
-      args: viewAccountArgs,
-      api: coreApi,
-    });
+    const viewAccountResult = await waitFor(
+      () => accountView({ args: viewAccountArgs, api: coreApi }),
+      (result) => !!(result.result as AccountViewOutput).accountId,
+    );
     const viewAccountOutput = viewAccountResult.result as AccountViewOutput;
     expect(viewAccountOutput.accountId).toBe(createAccountOutput.accountId);
     expect(viewAccountOutput.balance).toBe(100000000n);
@@ -82,13 +80,20 @@ describe('Mint NFT Integration Tests', () => {
     expect(createNftOutput.symbol).toBe('TNFT');
     expect(createNftOutput.supplyType).toBe(SupplyType.FINITE);
 
-    await delay(5000);
+    await waitFor(
+      () =>
+        accountView({ args: { account: 'account-mint-nft' }, api: coreApi }),
+      (result) => !!(result.result as AccountViewOutput).accountId,
+    );
 
     const mintNftArgs: Record<string, unknown> = {
       token: createNftOutput.tokenId,
       metadata: 'Test NFT Metadata',
       supplyKey: ['account-mint-nft'],
     };
+
+    await delay(3000);
+
     const mintNftResult = await tokenMintNft({
       args: mintNftArgs,
       api: coreApi,
@@ -99,16 +104,14 @@ describe('Mint NFT Integration Tests', () => {
     expect(mintNftOutput.network).toBe(network);
     expect(mintNftOutput.transactionId).toBeDefined();
 
-    await delay(5000);
-
     const viewTokenArgs: Record<string, unknown> = {
       token: createNftOutput.tokenId,
       serial: mintNftOutput.serialNumber,
     };
-    const viewTokenResult = await tokenView({
-      args: viewTokenArgs,
-      api: coreApi,
-    });
+    const viewTokenResult = await waitFor(
+      () => tokenView({ args: viewTokenArgs, api: coreApi }),
+      (result) => (result.result as TokenViewOutput).nftSerial != null,
+    );
     const viewTokenOutput = viewTokenResult.result as TokenViewOutput;
     expect(viewTokenOutput.tokenId).toBe(createNftOutput.tokenId);
     expect(viewTokenOutput.name).toBe('Test NFT Collection');

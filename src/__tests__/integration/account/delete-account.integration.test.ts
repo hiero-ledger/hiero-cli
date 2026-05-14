@@ -8,7 +8,7 @@ import type { AccountViewOutput } from '@/plugins/account/commands/view';
 import '@/core/utils/json-serialize';
 
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
-import { delay } from '@/__tests__/utils/common-utils';
+import { waitFor } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import { SupportedNetwork } from '@/core/types/shared.types';
@@ -129,16 +129,18 @@ describe('Delete Account Integration Tests', () => {
           createBeneficiaryResult.result as AccountCreateOutput
         ).accountId;
 
-        await delay(5000);
-
-        const balanceBeneficiaryBeforeResult = await accountBalance({
-          args: {
-            account: beneficiaryAccountId,
-            raw: true,
-            'hbar-only': true,
-          },
-          api: coreApi,
-        });
+        const balanceBeneficiaryBeforeResult = await waitFor(
+          () =>
+            accountBalance({
+              args: {
+                account: beneficiaryAccountId,
+                raw: true,
+                'hbar-only': true,
+              },
+              api: coreApi,
+            }),
+          (result) => !!(result.result as AccountBalanceOutput).accountId,
+        );
         const beneficiaryBefore = tinybarsFromBalanceResult(
           balanceBeneficiaryBeforeResult.result as AccountBalanceOutput,
         );
@@ -159,16 +161,20 @@ describe('Delete Account Integration Tests', () => {
         expect(deleteAccountOutput.transactionId).toBeDefined();
         expect(deleteAccountOutput.stateOnly).toBe(false);
 
-        await delay(5000);
-
-        const balanceBeneficiaryAfterResult = await accountBalance({
-          args: {
-            account: beneficiaryAccountId,
-            raw: true,
-            'hbar-only': true,
-          },
-          api: coreApi,
-        });
+        const balanceBeneficiaryAfterResult = await waitFor(
+          () =>
+            accountBalance({
+              args: {
+                account: beneficiaryAccountId,
+                raw: true,
+                'hbar-only': true,
+              },
+              api: coreApi,
+            }),
+          (result) =>
+            tinybarsFromBalanceResult(result.result as AccountBalanceOutput) >
+            beneficiaryBefore,
+        );
         const beneficiaryAfter = tinybarsFromBalanceResult(
           balanceBeneficiaryAfterResult.result as AccountBalanceOutput,
         );

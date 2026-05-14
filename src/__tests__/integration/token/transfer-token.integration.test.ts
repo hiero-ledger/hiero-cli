@@ -10,7 +10,7 @@ import type { TokenTransferFtOutput } from '@/plugins/token/commands/transfer-ft
 import '@/core/utils/json-serialize';
 
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
-import { delay } from '@/__tests__/utils/common-utils';
+import { waitFor } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
@@ -50,15 +50,13 @@ describe('Transfer Token Integration Tests', () => {
     expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
     expect(createAccountOutput.network).toBe(network);
 
-    await delay(5000);
-
     const viewAccountArgs: Record<string, unknown> = {
       account: alias,
     };
-    const viewAccountResult = await accountView({
-      args: viewAccountArgs,
-      api: coreApi,
-    });
+    const viewAccountResult = await waitFor(
+      () => accountView({ args: viewAccountArgs, api: coreApi }),
+      (result) => !!(result.result as AccountViewOutput).accountId,
+    );
     const viewAccountOutput = viewAccountResult.result as AccountViewOutput;
     expect(viewAccountOutput.accountId).toBe(createAccountOutput.accountId);
     expect(viewAccountOutput.balance).toBe(100000000n); // result in tinybars
@@ -86,7 +84,10 @@ describe('Transfer Token Integration Tests', () => {
     expect(createTokenOutput.symbol).toBe('TTT');
     expect(createTokenOutput.supplyType).toBe(SupplyType.INFINITE);
 
-    await delay(5000);
+    await waitFor(
+      () => accountView({ args: { account: alias }, api: coreApi }),
+      (result) => !!(result.result as AccountViewOutput).accountId,
+    );
 
     const associateTokenArgs: Record<string, unknown> = {
       token: createTokenOutput.tokenId,
@@ -101,7 +102,10 @@ describe('Transfer Token Integration Tests', () => {
     expect(associateTokenOutput.tokenId).toBe(createTokenOutput.tokenId);
     expect(associateTokenOutput.accountId).toBe(createAccountOutput.accountId);
 
-    await delay(5000);
+    await waitFor(
+      () => accountView({ args: { account: alias }, api: coreApi }),
+      (result) => !!(result.result as AccountViewOutput).accountId,
+    );
 
     const transferTokenArgs: Record<string, unknown> = {
       token: createTokenOutput.tokenId,
@@ -120,17 +124,17 @@ describe('Transfer Token Integration Tests', () => {
     expect(transferTokenOutput.to).toBe(createAccountOutput.accountId);
     expect(transferTokenOutput.amount).toBe(5n);
 
-    await delay(5000);
-
     const accountBalanceArgs: Record<string, unknown> = {
       account: alias,
       hbarOnly: false,
       token: createTokenOutput.tokenId,
     };
-    const accountBalanceResult = await accountBalance({
-      args: accountBalanceArgs,
-      api: coreApi,
-    });
+    const accountBalanceResult = await waitFor(
+      () => accountBalance({ args: accountBalanceArgs, api: coreApi }),
+      (result) =>
+        (result.result as AccountBalanceOutput).tokenBalances?.at(0)
+          ?.balance === 5n,
+    );
     const accountBalanceOutput =
       accountBalanceResult.result as AccountBalanceOutput;
     expect(accountBalanceOutput.tokenBalances?.length).toBe(1);

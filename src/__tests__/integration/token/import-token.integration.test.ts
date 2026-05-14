@@ -7,7 +7,7 @@ import type { TokenListOutput } from '@/plugins/token/commands/list';
 import '@/core/utils/json-serialize';
 
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
-import { delay } from '@/__tests__/utils/common-utils';
+import { waitFor } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import { SupplyType } from '@/core/types/shared.types';
@@ -51,7 +51,14 @@ describe('Import Token Integration Tests', () => {
       `${coreApi.network.getCurrentNetwork()}:${tokenId}`,
     );
 
-    await delay(5000);
+    await waitFor(
+      () => tokenImport({ args: { token: tokenId }, api: coreApi }),
+      (result) => !!(result.result as TokenImportOutput).tokenId,
+    );
+    await tokenDelete({
+      args: { token: tokenId, stateOnly: true },
+      api: coreApi,
+    });
   });
 
   afterEach(async () => {

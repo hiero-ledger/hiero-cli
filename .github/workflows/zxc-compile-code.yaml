@@ -145,7 +145,7 @@ jobs:
         env:
           INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
         if: ${{ inputs.enable-integration-tests && env.INTEGRATION_TESTS_NETWORK == 'localnet' && !cancelled() && !failure() }}
-        run: npm install -g @hashgraph/solo@0.63.0
+        run: npm install -g @hashgraph/solo@0.72.0
 
       - name: Setup Local Node using solo (Integration Tests) (if tests are performed on localnet)
         id: setup-local-node

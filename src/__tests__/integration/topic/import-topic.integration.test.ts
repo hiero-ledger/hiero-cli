@@ -6,7 +6,7 @@ import type { TopicListOutput } from '@/plugins/topic/commands/list';
 import '@/core/utils/json-serialize';
 
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
-import { delay } from '@/__tests__/utils/common-utils';
+import { waitFor } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import { SupportedNetwork } from '@/core/types/shared.types';
@@ -57,7 +57,14 @@ describeSuite('Import Topic Integration Tests', () => {
       api: coreApi,
     });
 
-    await delay(5000);
+    await waitFor(
+      () => topicImport({ args: { topic: topicId }, api: coreApi }),
+      (result) => !!(result.result as TopicImportOutput).topicId,
+    );
+    await topicDelete({
+      args: { topic: topicId, stateOnly: true },
+      api: coreApi,
+    });
   });
 
   afterEach(async () => {
