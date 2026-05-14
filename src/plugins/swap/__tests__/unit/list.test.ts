@@ -4,7 +4,7 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import { HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION } from '@/core/shared/constants';
 import { swapList } from '@/plugins/swap/commands/list/handler';
 import { SwapListOutputSchema } from '@/plugins/swap/commands/list/output';
-import { SwapStateHelper } from '@/plugins/swap/state-helper';
+import { SwapStateServiceImpl } from '@/plugins/swap/services/swap-state.service';
 
 import {
   mockEmptySwap,
@@ -15,11 +15,11 @@ import {
 } from './helpers/fixtures';
 import { makeArgs, makeLogger, makeSwapApiMocks } from './helpers/mocks';
 
-jest.mock('../../state-helper', () => ({
-  SwapStateHelper: jest.fn(),
+jest.mock('../../services/swap-state.service', () => ({
+  SwapStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = SwapStateHelper as jest.Mock;
+const MockedSwapStateService = SwapStateServiceImpl as jest.Mock;
 
 describe('swap plugin - list command', () => {
   beforeEach(() => {
@@ -28,7 +28,7 @@ describe('swap plugin - list command', () => {
 
   test('returns empty list when no swaps exist', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       listSwaps: jest.fn().mockReturnValue([]),
     }));
 
@@ -45,7 +45,7 @@ describe('swap plugin - list command', () => {
 
   test('returns all saved swaps with correct count', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       listSwaps: jest.fn().mockReturnValue([
         { name: SWAP_NAME, entry: mockSwapWithHbar },
         { name: 'second-swap', entry: mockSwapWithMultipleTransfers },
@@ -65,7 +65,7 @@ describe('swap plugin - list command', () => {
 
   test('maps swap name, transferCount and maxTransfers correctly', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       listSwaps: jest
         .fn()
         .mockReturnValue([{ name: SWAP_NAME, entry: mockSwapWithHbar }]),
@@ -86,7 +86,7 @@ describe('swap plugin - list command', () => {
 
   test('includes memo when present', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       listSwaps: jest
         .fn()
         .mockReturnValue([
@@ -106,7 +106,7 @@ describe('swap plugin - list command', () => {
 
   test('omits memo when not set', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       listSwaps: jest
         .fn()
         .mockReturnValue([{ name: SWAP_NAME, entry: mockEmptySwap }]),

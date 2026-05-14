@@ -1,16 +1,16 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
+import type { SwapStateService } from '@/plugins/swap/services/swap-state.service.interface';
 import type { SwapListOutput } from './output';
 
 import { HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION } from '@/core/shared/constants';
-import { SwapStateHelper } from '@/plugins/swap/state-helper';
+import { SwapStateServiceImpl } from '@/plugins/swap/services/swap-state.service';
 
 export class SwapListCommand implements Command {
-  async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const { api } = args;
+  constructor(private readonly swapState: SwapStateService) {}
 
-    const helper = new SwapStateHelper(api.state);
-    const swaps = helper.listSwaps();
+  async execute(_args: CommandHandlerArgs): Promise<CommandResult> {
+    const swaps = this.swapState.listSwaps();
 
     const output: SwapListOutput = {
       totalCount: swaps.length,
@@ -29,5 +29,6 @@ export class SwapListCommand implements Command {
 export async function swapList(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new SwapListCommand().execute(args);
+  const swapState = new SwapStateServiceImpl(args.api.state);
+  return new SwapListCommand(swapState).execute(args);
 }

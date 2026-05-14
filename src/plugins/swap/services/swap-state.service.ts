@@ -1,20 +1,20 @@
 import type { StateService } from '@/core/services/state/state-service.interface';
-import type { SwapEntry, SwapTransfer } from './schema';
+import type { SwapEntry, SwapTransfer } from '@/plugins/swap/schema';
+import type { SwapStateService } from '@/plugins/swap/services/swap-state.service.interface';
 
 import { NotFoundError, ValidationError } from '@/core/errors';
 import { HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION } from '@/core/shared/constants';
-
-import { SwapEntrySchema } from './schema';
+import { SwapEntrySchema } from '@/plugins/swap/schema';
 
 export const SWAP_STATE_NAMESPACE = 'swap';
 
-export class SwapStateHelper {
+export class SwapStateServiceImpl implements SwapStateService {
   constructor(private readonly state: StateService) {}
 
   getSwap(name: string): SwapEntry | undefined {
-    const raw = this.state.get<SwapEntry>(SWAP_STATE_NAMESPACE, name);
+    const raw = this.state.get<unknown>(SWAP_STATE_NAMESPACE, name);
     if (!raw) return undefined;
-    return SwapEntrySchema.parse(raw);
+    return this.parseSwapEntry(raw);
   }
 
   getSwapOrThrow(name: string): SwapEntry {
@@ -38,8 +38,8 @@ export class SwapStateHelper {
   listSwaps(): Array<{ name: string; entry: SwapEntry }> {
     return this.state.getKeys(SWAP_STATE_NAMESPACE).map((key) => ({
       name: key,
-      entry: SwapEntrySchema.parse(
-        this.state.get<SwapEntry>(SWAP_STATE_NAMESPACE, key),
+      entry: this.parseSwapEntry(
+        this.state.get<unknown>(SWAP_STATE_NAMESPACE, key),
       ),
     }));
   }
@@ -67,5 +67,13 @@ export class SwapStateHelper {
     };
     this.saveSwap(name, updated);
     return updated;
+  }
+
+  private parseSwapEntry(raw: unknown): SwapEntry {
+    const result = SwapEntrySchema.safeParse(raw);
+    if (!result.success) {
+      throw ValidationError.fromZod(result.error);
+    }
+    return result.data;
   }
 }

@@ -1,6 +1,7 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { SwapStateService } from '@/plugins/swap/services/swap-state.service.interface';
 import type { SwapAddFtOutput } from './output';
 
 import { ValidationError } from '@/core/errors';
@@ -9,11 +10,13 @@ import { HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION } from '@/core/shared/const
 import { AliasType } from '@/core/types/shared.types';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import { SwapTransferType } from '@/plugins/swap/schema';
-import { SwapStateHelper } from '@/plugins/swap/state-helper';
+import { SwapStateServiceImpl } from '@/plugins/swap/services/swap-state.service';
 
 import { SwapAddFtInputSchema } from './input';
 
 export class SwapAddFtCommand implements Command {
+  constructor(private readonly swapState: SwapStateService) {}
+
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
 
@@ -25,9 +28,8 @@ export class SwapAddFtCommand implements Command {
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
-    const helper = new SwapStateHelper(api.state);
 
-    helper.assertCanAdd(name, 1);
+    this.swapState.assertCanAdd(name, 1);
 
     const { entityIdOrEvmAddress: tokenId } =
       api.identityResolution.resolveReferenceToEntityOrEvmAddress({
@@ -58,7 +60,7 @@ export class SwapAddFtCommand implements Command {
     }
     const toDestination = toResolved.accountId;
 
-    const updated = helper.addTransfer(name, {
+    const updated = this.swapState.addTransfer(name, {
       type: SwapTransferType.FT,
       from: {
         accountId: fromResolved.accountId,
@@ -86,5 +88,6 @@ export class SwapAddFtCommand implements Command {
 export async function swapAddFt(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new SwapAddFtCommand().execute(args);
+  const swapState = new SwapStateServiceImpl(args.api.state);
+  return new SwapAddFtCommand(swapState).execute(args);
 }
