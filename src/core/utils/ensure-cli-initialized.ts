@@ -80,7 +80,7 @@ async function promptForAccountCredentials(): Promise<{
   });
   accountId = ensureNotCanceled(accountId);
 
-  let privateKey = await clack.text({
+  let privateKey = await clack.password({
     message: 'Enter your Private Key:',
     validate: clackZodValidation(PrivateKeyDefinitionSchema),
   });
