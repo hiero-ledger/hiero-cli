@@ -1,17 +1,16 @@
 import { z } from 'zod';
 
 import {
-  Eip712Ed25519SignatureSchema,
   HexEncodedDataSchema,
   JsonInputSchema,
   KeyManagerTypeSchema,
   KeySchema,
 } from '@/core/schemas';
 
-export const Ed25519VerifyInputSchema = z
+export const Eip712SignInputSchema = z
   .object({
     key: KeySchema.optional().describe(
-      'Public key to verify against. Can be a key reference, account alias, or account ID.',
+      'Signing key. Defaults to operator when omitted. Can be {accountId}:{privateKey} pair, private key in {ed25519|ecdsa}:private:{private-key} format, key reference, or account alias.',
     ),
     keyManager: KeyManagerTypeSchema.optional().describe(
       'Key manager type (defaults to config setting)',
@@ -26,10 +25,7 @@ export const Ed25519VerifyInputSchema = z
       'EIP-712 types definition as inline JSON or path to a JSON file',
     ),
     message: JsonInputSchema.optional().describe(
-      'Signed message object as inline JSON or path to a JSON file',
-    ),
-    signature: Eip712Ed25519SignatureSchema.describe(
-      'Signature to verify (0x-prefixed 64-byte hex)',
+      'Message object to sign as inline JSON or path to a JSON file',
     ),
   })
   .superRefine((data, ctx) => {
@@ -66,4 +62,4 @@ export const Ed25519VerifyInputSchema = z
     }
   });
 
-export type Ed25519VerifyInput = z.infer<typeof Ed25519VerifyInputSchema>;
+export type Eip712SignInput = z.infer<typeof Eip712SignInputSchema>;

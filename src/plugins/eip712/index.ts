@@ -1,3 +1,3 @@
-export * from './commands/sign-ecdsa';
-export * from './commands/verify-ecdsa';
+export * from './commands/sign';
+export * from './commands/verify';
 export { Eip712PluginManifest } from './manifest';

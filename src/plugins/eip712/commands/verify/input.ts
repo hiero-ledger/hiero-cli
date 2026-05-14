@@ -3,12 +3,25 @@ import { z } from 'zod';
 import {
   AccountReferenceObjectSchema,
   Eip712EcdsaSignatureSchema,
+  Eip712Ed25519SignatureSchema,
   HexEncodedDataSchema,
   JsonInputSchema,
+  KeyManagerTypeSchema,
+  KeySchema,
 } from '@/core/schemas';
+import {
+  isEcdsaSignature,
+  isEd25519Signature,
+} from '@/plugins/eip712/util/detect-signature-algorithm';
 
-export const Eip712VerifyEcdsaInputSchema = z
+export const Eip712VerifyInputSchema = z
   .object({
+    key: KeySchema.optional().describe(
+      'Public key to verify against (ED25519 only). Can be a key reference, account alias, or account ID.',
+    ),
+    keyManager: KeyManagerTypeSchema.optional().describe(
+      'Key manager type (defaults to config setting, ED25519 only)',
+    ),
     hash: HexEncodedDataSchema.optional().describe(
       'Pre-computed EIP-712 digest (0x-prefixed hex). Provide this OR domain+types+message, not both.',
     ),
@@ -21,11 +34,13 @@ export const Eip712VerifyEcdsaInputSchema = z
     message: JsonInputSchema.optional().describe(
       'Signed message object as inline JSON or path to a JSON file',
     ),
-    signature: Eip712EcdsaSignatureSchema.describe(
-      'EIP-712 signature to verify (0x-prefixed 65-byte hex)',
-    ),
+    signature: z
+      .union([Eip712EcdsaSignatureSchema, Eip712Ed25519SignatureSchema])
+      .describe(
+        'Signature to verify: 0x-prefixed 65-byte hex (ECDSA) or 64-byte hex (ED25519)',
+      ),
     expectedSigner: AccountReferenceObjectSchema.optional().describe(
-      'Account to assert against the recovered signer. Accepts an EVM address (0x...), Hedera account ID (0.0.xxx), or account alias',
+      'Account to assert against the recovered signer (ECDSA only). Accepts an EVM address (0x...), Hedera account ID (0.0.xxx), or account alias',
     ),
   })
   .superRefine((data, ctx) => {
@@ -60,8 +75,30 @@ export const Eip712VerifyEcdsaInputSchema = z
         });
       }
     }
+
+    if (data.signature) {
+      if (
+        isEcdsaSignature(data.signature) &&
+        (data.key !== undefined || data.keyManager !== undefined)
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            '--key and --key-manager are only valid with an ED25519 (64-byte) signature.',
+        });
+      }
+
+      if (
+        isEd25519Signature(data.signature) &&
+        data.expectedSigner !== undefined
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            '--expected-signer is only valid with an ECDSA (65-byte) signature.',
+        });
+      }
+    }
   });
 
-export type Eip712VerifyEcdsaInput = z.infer<
-  typeof Eip712VerifyEcdsaInputSchema
->;
+export type Eip712VerifyInput = z.infer<typeof Eip712VerifyInputSchema>;

@@ -13,7 +13,6 @@ import { SupportedNetwork } from '@/core/types/shared.types';
 import {
   mockEcdsaPublicKey,
   mockKeyRefId,
-  mockSignature64Bytes,
   mockSignature65Bytes,
 } from './fixtures';
 
@@ -107,7 +106,7 @@ export const makeCommandArgs = (params: {
   hooks: new Map(),
 });
 
-export const makeEip712SignEcdsaArgs = (params: {
+export const makeEip712SignArgs = (params: {
   api: jest.Mocked<CoreApi>;
   logger?: jest.Mocked<Logger>;
   args?: Partial<{
@@ -133,10 +132,12 @@ export const makeEip712SignEcdsaArgs = (params: {
     },
   });
 
-export const makeEip712VerifyEcdsaArgs = (params: {
+export const makeEip712VerifyArgs = (params: {
   api: jest.Mocked<CoreApi>;
   logger?: jest.Mocked<Logger>;
   args?: Partial<{
+    key: string;
+    keyManager: string;
     hash: string;
     domain: string;
     types: string;
@@ -155,60 +156,6 @@ export const makeEip712VerifyEcdsaArgs = (params: {
       message:
         '{"from":"0xcd2a3d9f938e13cd947ec05abc7fe734df8dd826","contents":"Hello!"}',
       signature: mockSignature65Bytes,
-      ...params.args,
-    },
-  });
-
-export const makeEip712SignEd25519Args = (params: {
-  api: jest.Mocked<CoreApi>;
-  logger?: jest.Mocked<Logger>;
-  args?: Partial<{
-    key: string;
-    keyManager: string;
-    hash: string;
-    domain: string;
-    types: string;
-    message: string;
-  }>;
-}): CommandHandlerArgs =>
-  makeCommandArgs({
-    api: params.api,
-    logger: params.logger,
-    args: {
-      key: 'kr_testkey',
-      domain: '{"name":"TestApp","version":"1","chainId":296}',
-      types:
-        '{"Mail":[{"name":"from","type":"address"},{"name":"contents","type":"string"}]}',
-      message:
-        '{"from":"0xcd2a3d9f938e13cd947ec05abc7fe734df8dd826","contents":"Hello!"}',
-      ...params.args,
-    },
-  });
-
-export const makeEip712VerifyEd25519Args = (params: {
-  api: jest.Mocked<CoreApi>;
-  logger?: jest.Mocked<Logger>;
-  args?: Partial<{
-    key: string;
-    keyManager: string;
-    hash: string;
-    domain: string;
-    types: string;
-    message: string;
-    signature: string;
-  }>;
-}): CommandHandlerArgs =>
-  makeCommandArgs({
-    api: params.api,
-    logger: params.logger,
-    args: {
-      key: 'kr_testkey',
-      domain: '{"name":"TestApp","version":"1","chainId":296}',
-      types:
-        '{"Mail":[{"name":"from","type":"address"},{"name":"contents","type":"string"}]}',
-      message:
-        '{"from":"0xcd2a3d9f938e13cd947ec05abc7fe734df8dd826","contents":"Hello!"}',
-      signature: mockSignature64Bytes,
       ...params.args,
     },
   });
