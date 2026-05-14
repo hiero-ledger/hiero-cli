@@ -1,7 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { SupplyType } from '@/core/types/shared.types';
-import type { TokenAliasService } from '@/plugins/token/services/token-alias.service.interface';
 import type { TokenAssociationsService } from '@/plugins/token/services/token-associations.service.interface';
 import type { TokenFileService } from '@/plugins/token/services/token-file.service.interface';
 import type { TokenKeysService } from '@/plugins/token/services/token-keys.service.interface';
@@ -19,9 +18,9 @@ import { BaseTransactionCommand } from '@/core/commands/command';
 import { StateError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
+import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
-import { TokenAliasServiceImpl } from '@/plugins/token/services/token-alias.service';
 import { TokenAssociationsServiceImpl } from '@/plugins/token/services/token-associations.service';
 import { TokenFileServiceImpl } from '@/plugins/token/services/token-file.service';
 import { TokenKeysServiceImpl } from '@/plugins/token/services/token-keys.service';
@@ -41,7 +40,6 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
 > {
   constructor(
     private readonly tokenStateService: TokenStateService,
-    private readonly tokenAliasService: TokenAliasService,
     private readonly tokenFileService: TokenFileService,
     private readonly tokenAssociationsService: TokenAssociationsService,
     private readonly tokenKeysService: TokenKeysService,
@@ -62,7 +60,7 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
     const tokenDefinition =
       await this.tokenFileService.readAndValidateNftTokenFile(validArgs.file);
     const network = api.network.getCurrentNetwork();
-    this.tokenAliasService.availableOrThrow(tokenDefinition.name, network);
+    api.alias.availableOrThrow(tokenDefinition.name, network);
 
     const treasury = await api.keyResolver.resolveAccountCredentials(
       tokenDefinition.treasuryKey,
@@ -262,10 +260,11 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
     api.logger.info('   Token data saved to state');
 
     if (normalisedParams.alias && result.tokenId) {
-      this.tokenAliasService.register({
+      api.alias.register({
         alias: normalisedParams.alias,
+        type: AliasType.Token,
         network: normalisedParams.network,
-        tokenId,
+        entityId: tokenId,
         createdAt: result.consensusTimestamp,
       });
       api.logger.info(`   Name registered: ${normalisedParams.alias}`);
@@ -303,7 +302,6 @@ export async function tokenCreateNftFromFile(
   const tokenStateService = new TokenStateServiceImpl(api.state, api.logger);
   return new TokenCreateNftFromFileCommand(
     tokenStateService,
-    new TokenAliasServiceImpl(api.alias),
     new TokenFileServiceImpl(api.logger),
     new TokenAssociationsServiceImpl(
       api.keyResolver,

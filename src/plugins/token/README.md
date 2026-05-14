@@ -177,9 +177,7 @@ src/plugins/token/
 │   ├── token-file.service.ts               # Token definition file loading
 │   ├── token-file.service.interface.ts
 │   ├── token-associations.service.ts       # Token association processing
-│   ├── token-associations.service.interface.ts
-│   ├── token-alias.service.ts              # Token alias state integration
-│   └── token-alias.service.interface.ts
+│   └── token-associations.service.interface.ts
 ├── __tests__/               # Comprehensive test suite
 │   ├── unit/
 │   │   ├── adr007-compliance.test.ts  # Output structure compliance tests

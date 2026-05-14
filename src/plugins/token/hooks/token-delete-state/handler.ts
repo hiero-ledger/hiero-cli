@@ -2,23 +2,19 @@ import type { CoreApi } from '@/core';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
 import type { BatchDataItem } from '@/core/types/shared.types';
-import type { TokenAliasService } from '@/plugins/token/services/token-alias.service.interface';
 import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 
 import { OrchestratorSource } from '@/core';
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
+import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { TOKEN_DELETE_COMMAND_NAME } from '@/plugins/token/commands/delete';
-import { TokenAliasServiceImpl } from '@/plugins/token/services/token-alias.service';
 import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { DeleteNormalizedParamsSchema } from './types';
 
 export class TokenDeleteStateHook implements Hook<PostOutputPreparationHookParams> {
-  constructor(
-    private readonly tokenStateService: TokenStateService,
-    private readonly tokenAliasService: TokenAliasService,
-  ) {}
+  constructor(private readonly tokenStateService: TokenStateService) {}
 
   execute(params: PostOutputPreparationHookParams): Promise<HookResult> {
     const parsed = OrchestratorResultSchema.safeParse(
@@ -61,12 +57,12 @@ export class TokenDeleteStateHook implements Hook<PostOutputPreparationHookParam
 
     if (!tokenInState) return;
 
-    const aliases = this.tokenAliasService
-      .list(network)
+    const aliases = api.alias
+      .list({ network, type: AliasType.Token })
       .filter((rec) => rec.entityId === tokenId);
 
     for (const rec of aliases) {
-      this.tokenAliasService.remove(rec.alias, network);
+      api.alias.remove(rec.alias, network);
     }
 
     this.tokenStateService.removeToken(key);
@@ -79,7 +75,6 @@ export const tokenDeleteStateHook: Hook<PostOutputPreparationHookParams> = {
     const { api } = params.args;
     return new TokenDeleteStateHook(
       new TokenStateServiceImpl(api.state, api.logger),
-      new TokenAliasServiceImpl(api.alias),
     ).execute(params);
   },
 };

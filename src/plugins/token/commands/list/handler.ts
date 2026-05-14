@@ -1,20 +1,16 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { TokenAliasService } from '@/plugins/token/services/token-alias.service.interface';
 import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 import type { TokenListOutput } from './output';
 import type { ListTokensNormalizedParams } from './types';
 
-import { TokenAliasServiceImpl } from '@/plugins/token/services/token-alias.service';
+import { AliasType } from '@/core/types/shared.types';
 import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { TokenListInputSchema } from './input';
 
 export class TokenListCommand implements Command {
-  constructor(
-    private readonly tokenStateService: TokenStateService,
-    private readonly tokenAliasService: TokenAliasService,
-  ) {}
+  constructor(private readonly tokenStateService: TokenStateService) {}
 
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
@@ -35,10 +31,9 @@ export class TokenListCommand implements Command {
     });
 
     const tokensList = tokens.map((token) => {
-      const alias = this.tokenAliasService.resolveAliasForToken(
-        token.tokenId,
-        token.network,
-      );
+      const alias = api.alias
+        .list({ network: token.network, type: AliasType.Token })
+        .find((rec) => rec.entityId === token.tokenId)?.alias;
 
       return {
         tokenId: token.tokenId,
@@ -113,6 +108,5 @@ export async function tokenList(
   const { api } = args;
   return new TokenListCommand(
     new TokenStateServiceImpl(api.state, api.logger),
-    new TokenAliasServiceImpl(api.alias),
   ).execute(args);
 }

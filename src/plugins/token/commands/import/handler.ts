@@ -2,30 +2,25 @@ import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { MirrorNodeKey } from '@/core/services/mirrornode/types';
 import type { TokenData } from '@/plugins/token/schema';
-import type { TokenAliasService } from '@/plugins/token/services/token-alias.service.interface';
 import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 import type { TokenImportOutput } from './output';
 import type { ImportTokenNormalizedParams } from './types';
 
 import { NotFoundError, ValidationError } from '@/core/errors';
 import { MirrorTokenTypeToHederaTokenType } from '@/core/shared/constants';
-import { SupplyType } from '@/core/types/shared.types';
+import { AliasType, SupplyType } from '@/core/types/shared.types';
 import {
   extractPublicKeysFromMirrorNodeKey,
   getEffectiveKeyRequirement,
 } from '@/core/utils/extract-public-keys';
 import { composeKey } from '@/core/utils/key-composer';
 import { matchPublicKeysToKmsRefIds } from '@/core/utils/match-keys-to-kms';
-import { TokenAliasServiceImpl } from '@/plugins/token/services/token-alias.service';
 import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { TokenImportInputSchema } from './input';
 
 export class TokenImportCommand implements Command {
-  constructor(
-    private readonly tokenStateService: TokenStateService,
-    private readonly tokenAliasService: TokenAliasService,
-  ) {}
+  constructor(private readonly tokenStateService: TokenStateService) {}
 
   private importKeyRole(
     mirrorKey: MirrorNodeKey | undefined | null,
@@ -54,7 +49,7 @@ export class TokenImportCommand implements Command {
     const key = composeKey(network, validArgs.tokenId);
 
     if (validArgs.alias) {
-      this.tokenAliasService.availableOrThrow(validArgs.alias, network);
+      api.alias.availableOrThrow(validArgs.alias, network);
     }
     if (this.tokenStateService.getToken(key)) {
       throw new ValidationError(
@@ -71,10 +66,11 @@ export class TokenImportCommand implements Command {
     }
 
     if (validArgs.alias) {
-      this.tokenAliasService.register({
+      api.alias.register({
         alias: validArgs.alias,
+        type: AliasType.Token,
         network,
-        tokenId: validArgs.tokenId,
+        entityId: validArgs.tokenId,
         createdAt: new Date().toISOString(),
       });
     }
@@ -155,6 +151,5 @@ export async function tokenImport(
   const { api } = args;
   return new TokenImportCommand(
     new TokenStateServiceImpl(api.state, api.logger),
-    new TokenAliasServiceImpl(api.alias),
   ).execute(args);
 }

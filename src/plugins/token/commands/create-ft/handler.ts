@@ -4,7 +4,6 @@ import type {
   ResolvedPublicKey,
 } from '@/core/services/key-resolver/types';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
-import type { TokenAliasService } from '@/plugins/token/services/token-alias.service.interface';
 import type { TokenKeysService } from '@/plugins/token/services/token-keys.service.interface';
 import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 import type { TokenCreateFtInput } from './input';
@@ -20,11 +19,10 @@ import { BaseTransactionCommand } from '@/core/commands/command';
 import { StateError, ValidationError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
-import { SupplyType } from '@/core/types/shared.types';
+import { AliasType, SupplyType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
-import { TokenAliasServiceImpl } from '@/plugins/token/services/token-alias.service';
 import { TokenKeysServiceImpl } from '@/plugins/token/services/token-keys.service';
 import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 import {
@@ -44,7 +42,6 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
 > {
   constructor(
     private readonly tokenStateService: TokenStateService,
-    private readonly tokenAliasService: TokenAliasService,
     private readonly tokenKeysService: TokenKeysService,
   ) {
     super(TOKEN_CREATE_FT_COMMAND_NAME);
@@ -70,7 +67,7 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
       : undefined;
     const network = api.network.getCurrentNetwork();
 
-    this.tokenAliasService.availableOrThrow(validArgs.name, network);
+    api.alias.availableOrThrow(validArgs.name, network);
 
     const {
       treasury,
@@ -327,10 +324,11 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
     api.logger.info('   Token data saved to state');
 
     if (normalisedParams.alias) {
-      this.tokenAliasService.register({
+      api.alias.register({
         alias: normalisedParams.alias,
+        type: AliasType.Token,
         network: normalisedParams.network,
-        tokenId,
+        entityId: tokenId,
         createdAt: result.consensusTimestamp,
       });
       api.logger.info(`   Name registered: ${normalisedParams.alias}`);
@@ -451,7 +449,6 @@ export async function tokenCreateFt(
   const { api } = args;
   return new TokenCreateFtCommand(
     new TokenStateServiceImpl(api.state, api.logger),
-    new TokenAliasServiceImpl(api.alias),
     new TokenKeysServiceImpl(api.keyResolver),
   ).execute(args);
 }

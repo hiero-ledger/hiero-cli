@@ -1,28 +1,24 @@
 import type { CoreApi } from '@/core';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
-import type { TokenAliasService } from '@/plugins/token/services/token-alias.service.interface';
 import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
 import {
+  AliasType,
   type BatchDataItem,
   OrchestratorSource,
   type TransactionResult,
 } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { TOKEN_CREATE_NFT_COMMAND_NAME } from '@/plugins/token/commands/create-nft';
-import { TokenAliasServiceImpl } from '@/plugins/token/services/token-alias.service';
 import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 import { buildTokenData } from '@/plugins/token/utils/token-data-builders';
 
 import { CreateNftNormalizedParamsSchema } from './types';
 
 export class TokenCreateNftStateHook implements Hook<PostOutputPreparationHookParams> {
-  constructor(
-    private readonly tokenStateService: TokenStateService,
-    private readonly tokenAliasService: TokenAliasService,
-  ) {}
+  constructor(private readonly tokenStateService: TokenStateService) {}
 
   async execute(params: PostOutputPreparationHookParams): Promise<HookResult> {
     const parsed = OrchestratorResultSchema.safeParse(
@@ -115,20 +111,16 @@ export class TokenCreateNftStateHook implements Hook<PostOutputPreparationHookPa
     api.logger.info('   Non-fungible token data saved to state');
 
     if (normalisedParams.alias) {
-      if (
-        this.tokenAliasService.exists(
-          normalisedParams.alias,
-          normalisedParams.network,
-        )
-      ) {
+      if (api.alias.exists(normalisedParams.alias, normalisedParams.network)) {
         api.logger.warn(
           `Alias "${normalisedParams.alias}" already exists, skipping registration`,
         );
       } else {
-        this.tokenAliasService.register({
+        api.alias.register({
           alias: normalisedParams.alias,
+          type: AliasType.Token,
           network: normalisedParams.network,
-          tokenId: innerTransactionResult.tokenId,
+          entityId: innerTransactionResult.tokenId,
           createdAt: innerTransactionResult.consensusTimestamp,
         });
         api.logger.info(`   Name registered: ${normalisedParams.alias}`);
@@ -142,7 +134,6 @@ export const tokenCreateNftStateHook: Hook<PostOutputPreparationHookParams> = {
     const { api } = params.args;
     return new TokenCreateNftStateHook(
       new TokenStateServiceImpl(api.state, api.logger),
-      new TokenAliasServiceImpl(api.alias),
     ).execute(params);
   },
 };

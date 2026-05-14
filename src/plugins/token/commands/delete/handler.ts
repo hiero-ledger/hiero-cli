@@ -1,6 +1,5 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
-import type { TokenAliasService } from '@/plugins/token/services/token-alias.service.interface';
 import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
 import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 import type { TokenDeleteInput } from './input';
@@ -19,8 +18,8 @@ import {
   ValidationError,
 } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
+import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
-import { TokenAliasServiceImpl } from '@/plugins/token/services/token-alias.service';
 import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
 import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
@@ -37,7 +36,6 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
   constructor(
     private readonly tokenReferenceService: TokenReferenceService,
     private readonly tokenStateService: TokenStateService,
-    private readonly tokenAliasService: TokenAliasService,
   ) {
     super(TOKEN_DELETE_COMMAND_NAME);
   }
@@ -83,13 +81,13 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
       });
     }
 
-    const aliasesForToken = this.tokenAliasService
-      .list(network)
+    const aliasesForToken = api.alias
+      .list({ network, type: AliasType.Token })
       .filter((rec) => rec.entityId === tokenId);
 
     const removedAliases: string[] = [];
     for (const rec of aliasesForToken) {
-      this.tokenAliasService.remove(rec.alias, network);
+      api.alias.remove(rec.alias, network);
       removedAliases.push(`${rec.alias} (${network})`);
     }
 
@@ -224,12 +222,12 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
     const removedAliases: string[] = [];
 
     if (tokenInState) {
-      const aliasesForToken = this.tokenAliasService
-        .list(network)
+      const aliasesForToken = args.api.alias
+        .list({ network, type: AliasType.Token })
         .filter((rec) => rec.entityId === tokenId);
 
       for (const rec of aliasesForToken) {
-        this.tokenAliasService.remove(rec.alias, network);
+        args.api.alias.remove(rec.alias, network);
         removedAliases.push(`${rec.alias} (${network})`);
       }
 
@@ -257,6 +255,5 @@ export async function tokenDelete(
   return new TokenDeleteCommand(
     new TokenReferenceServiceImpl(api.identityResolution),
     new TokenStateServiceImpl(api.state, api.logger),
-    new TokenAliasServiceImpl(api.alias),
   ).execute(args);
 }
