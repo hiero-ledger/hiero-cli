@@ -599,8 +599,6 @@ export const mockZustandTokenStateHelper = (
     getToken: jest.Mock;
     getAllTokens: jest.Mock;
     removeToken: jest.Mock;
-    addTokenAssociation: jest.Mock;
-    removeTokenAssociation: jest.Mock;
   }>,
 ) => {
   ZustandTokenStateHelperClass.mockClear();
@@ -611,8 +609,6 @@ export const mockZustandTokenStateHelper = (
     getToken: jest.fn(),
     getAllTokens: jest.fn(),
     removeToken: jest.fn(),
-    addTokenAssociation: jest.fn(),
-    removeTokenAssociation: jest.fn(),
     ...overrides,
   }));
   return ZustandTokenStateHelperClass;
@@ -690,8 +686,6 @@ export const setupZustandHelperMock = (
       total: number;
       byNetwork: Record<string, number>;
       bySupplyType: Record<string, number>;
-      withAssociations: number;
-      totalAssociations: number;
     };
   },
 ) => {
@@ -703,8 +697,6 @@ export const setupZustandHelperMock = (
         withKeys: 0,
         byNetwork: {},
         bySupplyType: {},
-        withAssociations: 0,
-        totalAssociations: 0,
       },
     ),
   }));

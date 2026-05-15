@@ -78,7 +78,7 @@ export class TokenCreateNftFromFileStateHook implements Hook<PostOutputPreparati
       normalisedParams,
     );
 
-    tokenData.associations = await processTokenAssociations(
+    await processTokenAssociations(
       innerTransactionResult.tokenId,
       normalisedParams.associations as Credential[],
       api,

@@ -77,7 +77,7 @@ export class TokenCreateFtFromFileStateHook implements Hook<PostOutputPreparatio
       normalisedParams,
     );
 
-    tokenData.associations = await processTokenAssociations(
+    await processTokenAssociations(
       innerTransactionResult.tokenId,
       normalisedParams.associations,
       api,

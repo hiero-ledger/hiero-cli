@@ -137,14 +137,6 @@ export const batchPluginManifest: PluginManifest = {
           phase: 'postOutputPreparation',
         },
         {
-          hook: 'token-associate-state',
-          phase: 'postOutputPreparation',
-        },
-        {
-          hook: 'token-dissociate-state',
-          phase: 'postOutputPreparation',
-        },
-        {
           hook: 'token-delete-state',
           phase: 'postOutputPreparation',
         },
