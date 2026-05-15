@@ -274,6 +274,7 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
       api,
       normalisedParams.keyManager,
     );
+
     const key = composeKey(normalisedParams.network, tokenId);
     tokenState.saveToken(key, tokenData);
     api.logger.info('   Token data saved to state');

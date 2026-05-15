@@ -2,7 +2,7 @@
  * Token Associations
  * Utility functions for processing token associations
  */
-import type { CoreApi, Logger } from '@/core';
+import type { CoreApi } from '@/core';
 import type {
   Credential,
   KeyManager,
