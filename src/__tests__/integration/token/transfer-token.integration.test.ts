@@ -6,6 +6,7 @@ import type { AccountViewOutput } from '@/plugins/account/commands/view';
 import type { TokenAssociateOutput } from '@/plugins/token/commands/associate';
 import type { TokenCreateFtOutput } from '@/plugins/token/commands/create-ft';
 import type { TokenTransferFtOutput } from '@/plugins/token/commands/transfer-ft';
+import type { TokenViewOutput } from '@/plugins/token/commands/view';
 
 import '@/core/utils/json-serialize';
 
@@ -19,9 +20,9 @@ import { accountBalance, accountCreate, accountView } from '@/plugins/account';
 import {
   tokenAssociate,
   tokenCreateFt,
-  tokenTransferFt, tokenView
+  tokenTransferFt,
+  tokenView,
 } from '@/plugins/token';
-import { TokenViewOutput } from '@/plugins/token/commands/view';
 
 describe('Transfer Token Integration Tests', () => {
   let coreApi: CoreApi;
