@@ -10,7 +10,7 @@ import type { TokenTransferFtOutput } from '@/plugins/token/commands/transfer-ft
 import '@/core/utils/json-serialize';
 
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
-import { waitFor } from '@/__tests__/utils/common-utils';
+import { delay, waitFor } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
@@ -19,8 +19,9 @@ import { accountBalance, accountCreate, accountView } from '@/plugins/account';
 import {
   tokenAssociate,
   tokenCreateFt,
-  tokenTransferFt,
+  tokenTransferFt, tokenView
 } from '@/plugins/token';
+import { TokenViewOutput } from '@/plugins/token/commands/view';
 
 describe('Transfer Token Integration Tests', () => {
   let coreApi: CoreApi;
@@ -85,8 +86,9 @@ describe('Transfer Token Integration Tests', () => {
     expect(createTokenOutput.supplyType).toBe(SupplyType.INFINITE);
 
     await waitFor(
-      () => accountView({ args: { account: alias }, api: coreApi }),
-      (result) => !!(result.result as AccountViewOutput).accountId,
+      () =>
+        tokenView({ args: { token: createTokenOutput.alias }, api: coreApi }),
+      (result) => !!(result.result as TokenViewOutput).tokenId,
     );
 
     const associateTokenArgs: Record<string, unknown> = {
@@ -102,10 +104,7 @@ describe('Transfer Token Integration Tests', () => {
     expect(associateTokenOutput.tokenId).toBe(createTokenOutput.tokenId);
     expect(associateTokenOutput.accountId).toBe(createAccountOutput.accountId);
 
-    await waitFor(
-      () => accountView({ args: { account: alias }, api: coreApi }),
-      (result) => !!(result.result as AccountViewOutput).accountId,
-    );
+    await delay(5000);
 
     const transferTokenArgs: Record<string, unknown> = {
       token: createTokenOutput.tokenId,
