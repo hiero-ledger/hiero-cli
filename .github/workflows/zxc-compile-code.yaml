@@ -159,14 +159,14 @@ jobs:
         if: ${{ inputs.enable-integration-tests && env.INTEGRATION_TESTS_NETWORK == 'localnet' && !cancelled() && !failure() }}
         run: |
           sleep 5
-          pnpm test:solo:check
+          npm run test:solo:check
 
       - name: Configure Integration Tests
         env:
           INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
           INTEGRATION_TESTS_OPERATOR_ID: ${{ secrets.integration-tests-operator-id }}
           INTEGRATION_TESTS_OPERATOR_KEY: ${{ secrets.integration-tests-operator-key }}
-        if: ${{ inputs.enable-integration-tests && !cancelled() && !failure() }}
+        if: ${{ inputs.enable-integration-tests }}
         run: |
           touch .env.test
           echo "OPERATOR_ID=${{ env.INTEGRATION_TESTS_OPERATOR_ID }}" >> ".env.test"
@@ -174,7 +174,7 @@ jobs:
           echo "NETWORK=${{ env.INTEGRATION_TESTS_NETWORK }}" >> ".env.test"
 
       - name: Run Integration Tests
-        if: ${{ inputs.enable-integration-tests && !cancelled() && !failure() }}
+        if: ${{ inputs.enable-integration-tests }}
         run: npm run test:integration
 
       - name: Teardown Local Node (Integration Tests) (if tests are performed on localnet)
