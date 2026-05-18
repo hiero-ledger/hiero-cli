@@ -47,7 +47,7 @@ describe('Delete Account Integration Tests', () => {
         : '3030020100300706052b8104000a042204206790ef7f62d1b4a2d2fdcf4e0fc0882b86786dfbb1efc9ace8a2e3656adea122';
     evmAddress =
       network === SupportedNetwork.LOCALNET
-        ? '0x00000000000000000000000000000000000003ec'
+        ? '0x927e41ff8307835a1c081e0d7fd250625f2d4d0e'
         : '0x91d9247415c979a289aa178c4c67181e11d38872';
   });
 
