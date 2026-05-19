@@ -2,6 +2,7 @@ import type { CoreApi, Logger } from '@/core';
 
 import { ZodError } from 'zod';
 
+import { makeHederaSdkContractMock } from '@/__tests__/mocks/hedera-sdk-contract-mock';
 import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { StateError } from '@/core/errors';
@@ -11,17 +12,7 @@ import { ContractErc20CallNameOutputSchema } from '@/plugins/contract-erc20/comm
 import { contractErc20Name } from '@/plugins/contract-erc20/commands/name/handler';
 import { ContractErc20CallNameInputSchema } from '@/plugins/contract-erc20/commands/name/input';
 
-jest.mock('@hiero-ledger/sdk', () => ({
-  ContractId: {
-    fromString: jest.fn(() => ({
-      toEvmAddress: jest.fn(() => 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
-    })),
-  },
-  TokenType: {
-    NonFungibleUnique: 'NonFungibleUnique',
-    FungibleCommon: 'FungibleCommon',
-  },
-}));
+jest.mock('@hiero-ledger/sdk', () => makeHederaSdkContractMock());
 
 describe('contract-erc20 plugin - name command (unit)', () => {
   let api: jest.Mocked<CoreApi>;

@@ -4,6 +4,7 @@ import '@/core/utils/json-serialize';
 
 import { ZodError } from 'zod';
 
+import { makeHederaSdkContractMock } from '@/__tests__/mocks/hedera-sdk-contract-mock';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { StateError } from '@/core/errors';
 import { makeContractErc20CallCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
@@ -15,17 +16,7 @@ import { ContractErc20CallDecimalsOutputSchema } from '@/plugins/contract-erc20/
 import { contractErc20Decimals } from '@/plugins/contract-erc20/commands/decimals/handler';
 import { ContractErc20CallDecimalsInputSchema } from '@/plugins/contract-erc20/commands/decimals/input';
 
-jest.mock('@hiero-ledger/sdk', () => ({
-  ContractId: {
-    fromString: jest.fn(() => ({
-      toEvmAddress: jest.fn(() => 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
-    })),
-  },
-  TokenType: {
-    NonFungibleUnique: 'NonFungibleUnique',
-    FungibleCommon: 'FungibleCommon',
-  },
-}));
+jest.mock('@hiero-ledger/sdk', () => makeHederaSdkContractMock());
 
 describe('contract-erc20 plugin - decimals command (unit)', () => {
   let api: jest.Mocked<CoreApi>;
