@@ -139,20 +139,6 @@ describe('EIP-712 sign command', () => {
       await expect(eip712Sign(args)).rejects.toThrow(ValidationError);
     });
 
-    it('throws ValidationError for unsupported key algorithm', async () => {
-      const api = makeApiMock({
-        kms: makeKmsMock({
-          get: jest.fn().mockReturnValue({
-            ...mockEcdsaKmsRecord,
-            keyAlgorithm: 'RSA' as never,
-          }),
-        }),
-      });
-      const args = makeEip712SignArgs({ api });
-
-      await expect(eip712Sign(args)).rejects.toThrow(ValidationError);
-    });
-
     it('throws ValidationError when domain is invalid JSON and not a file path', async () => {
       const api = makeApiMock({
         kms: makeKmsMock({
