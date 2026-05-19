@@ -56,7 +56,7 @@ export class AccountBalanceCommand implements Command {
 
       accountId = accountIdParseResult.data;
     }
-    console.log('signoff test');
+
     const outputData: AccountBalanceOutput = {
       accountId,
       hbarOnly,
