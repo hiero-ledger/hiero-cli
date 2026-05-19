@@ -6,6 +6,7 @@ import {
   KeyManagerTypeSchema,
   KeySchema,
 } from '@/core/schemas';
+import { hasTypedData } from '@/plugins/eip712/util/has-typed-data';
 
 export const Eip712SignInputSchema = z
   .object({
@@ -30,26 +31,23 @@ export const Eip712SignInputSchema = z
   })
   .superRefine((data, ctx) => {
     const hasHash = data.hash !== undefined;
-    const hasTypedData =
-      data.domain !== undefined ||
-      data.types !== undefined ||
-      data.message !== undefined;
+    const typedData = hasTypedData(data);
 
-    if (hasHash && hasTypedData) {
+    if (hasHash && typedData) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'Provide either hash or domain+types+message, not both.',
       });
     }
 
-    if (!hasHash && !hasTypedData) {
+    if (!hasHash && !typedData) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'Provide either hash or all of domain, types, and message.',
       });
     }
 
-    if (!hasHash && hasTypedData) {
+    if (!hasHash && typedData) {
       const missing = (['domain', 'types', 'message'] as const).filter(
         (k) => data[k] === undefined,
       );
