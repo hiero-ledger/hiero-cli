@@ -172,13 +172,13 @@ jobs:
           echo "NETWORK=${{ env.INTEGRATION_TESTS_NETWORK }}" >> ".env.test"
 
       - name: Run Integration Tests
-        if: ${{ inputs.enable-integration-tests && !cancelled() && !failure()  }}
+        if: ${{ inputs.enable-integration-tests && !cancelled() && !failure() }}
         run: npm run test:integration
 
-      - name: Teardown Local Node (Integration Tests) (if tests are performed on localnet)
+      - name: Destroy solo instance (Integration Tests) (if tests are performed on localnet)
         env:
           INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
-        if: ${{ inputs.enable-integration-tests && env.INTEGRATION_TESTS_NETWORK == 'localnet' }}
+        if: ${{ always() && inputs.enable-integration-tests && env.INTEGRATION_TESTS_NETWORK == 'localnet' }}
         run: npm run test:solo:destroy
 
       - name: Publish Integration Test Report
