@@ -157,9 +157,7 @@ jobs:
         env:
           INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
         if: ${{ inputs.enable-integration-tests && env.INTEGRATION_TESTS_NETWORK == 'localnet' && !cancelled() && !failure() }}
-        run: |
-          sleep 5
-          npm run test:solo:check
+        run: npm run test:solo:check
 
       - name: Configure Integration Tests
         env:
