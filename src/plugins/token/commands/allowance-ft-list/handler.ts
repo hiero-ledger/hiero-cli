@@ -21,6 +21,11 @@ import { TokenAllowanceFtListInputSchema } from './input';
 
 export const TOKEN_ALLOWANCE_FT_LIST_COMMAND_NAME = 'token_allowance-ft-list';
 
+type TokenAllowanceFtFetchResult = {
+  allowances: TokenAllowanceInfo[];
+  hasMore: boolean;
+};
+
 export class TokenAllowanceFtListCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
@@ -105,7 +110,7 @@ export class TokenAllowanceFtListCommand implements Command {
     mirror: HederaMirrornodeService,
     accountId: string,
     showAll: boolean,
-  ): Promise<{ allowances: TokenAllowanceInfo[]; hasMore: boolean }> {
+  ): Promise<TokenAllowanceFtFetchResult> {
     if (!showAll) {
       const response = await mirror.getTokenAllowances(accountId);
       return {

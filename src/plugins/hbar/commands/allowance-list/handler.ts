@@ -16,6 +16,11 @@ import { HbarAllowanceListInputSchema } from './input';
 
 export const HBAR_ALLOWANCE_LIST_COMMAND_NAME = 'hbar_allowance-list';
 
+type HbarAllowanceFetchResult = {
+  allowances: HbarAllowanceInfo[];
+  hasMore: boolean;
+};
+
 export class HbarAllowanceListCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
@@ -78,7 +83,7 @@ export class HbarAllowanceListCommand implements Command {
     mirror: HederaMirrornodeService,
     accountId: string,
     showAll: boolean,
-  ): Promise<{ allowances: HbarAllowanceInfo[]; hasMore: boolean }> {
+  ): Promise<HbarAllowanceFetchResult> {
     if (!showAll) {
       const response = await mirror.getHbarAllowances(accountId);
       return {

@@ -25,6 +25,11 @@ interface NftAllowanceGroup {
   serialNumbers: Set<number>;
 }
 
+type TokenAllowanceNftFetchResult = {
+  allowances: NftAllowanceInfo[];
+  hasMore: boolean;
+};
+
 export class TokenAllowanceNftListCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
@@ -109,7 +114,7 @@ export class TokenAllowanceNftListCommand implements Command {
     mirror: HederaMirrornodeService,
     accountId: string,
     showAll: boolean,
-  ): Promise<{ allowances: NftAllowanceInfo[]; hasMore: boolean }> {
+  ): Promise<TokenAllowanceNftFetchResult> {
     if (!showAll) {
       const response = await mirror.getNftAllowances(accountId);
       return {
