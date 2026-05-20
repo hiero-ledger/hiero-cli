@@ -1,4 +1,4 @@
-import type { CommandHandlerArgs, CommandResult, CoreApi } from '@/core';
+import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type {
   ResolvedAccountCredential,
   ResolvedPublicKey,
@@ -20,11 +20,7 @@ import type {
 } from './types';
 
 import { BaseTransactionCommand } from '@/core/commands/command';
-import {
-  NotFoundError,
-  TransactionError,
-  ValidationError,
-} from '@/core/errors';
+import { NotFoundError, TransactionError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { NULL_TOKEN } from '@/core/shared/constants';
 import { composeKey } from '@/core/utils/key-composer';
@@ -115,7 +111,6 @@ export class TokenUpdateCommand extends BaseTransactionCommand<
     let newTreasuryAccountId: string | undefined;
     if (validArgs.treasury) {
       const treasuryCredential = await this.resolveTreasuryKeyRefId(
-        api,
         validArgs.currentTreasuryKey,
         tokenInfo.treasury_account_id,
         keyManager,
@@ -418,44 +413,15 @@ export class TokenUpdateCommand extends BaseTransactionCommand<
   }
 
   private async resolveTreasuryKeyRefId(
-    api: CoreApi,
     explicitKey: Credential | undefined,
     treasuryAccountId: string,
     keyManager: KeyManager,
   ): Promise<ResolvedAccountCredential> {
-    if (explicitKey) {
-      const resolved = await api.keyResolver.resolveAccountCredentials(
-        explicitKey,
-        keyManager,
-        false,
-        ['token:treasury'],
-      );
-      return resolved;
-    }
-
-    const treasuryAccountInfo = await api.mirror.getAccount(treasuryAccountId);
-    if (!treasuryAccountInfo) {
-      throw new ValidationError(
-        `Account ${treasuryAccountId} not found on mirror node`,
-        { context: { treasuryAccountId } },
-      );
-    }
-
-    const kmsRecord = api.kms.findByPublicKey(
-      treasuryAccountInfo.accountPublicKey,
-    );
-    if (!kmsRecord) {
-      throw new ValidationError(
-        'Treasury key not found in key manager. Provide --current-treasury-key.',
-        { context: { treasuryAccountId } },
-      );
-    }
-
-    return {
-      accountId: treasuryAccountInfo.accountId,
-      keyRefId: kmsRecord.keyRefId,
-      publicKey: kmsRecord.publicKey,
-    };
+    return this.tokenKeysService.resolveUpdatedTreasury({
+      explicitKey,
+      treasuryAccountId,
+      keyManager,
+    });
   }
 }
 
@@ -466,6 +432,6 @@ export async function tokenUpdate(
   return new TokenUpdateCommand(
     new TokenReferenceServiceImpl(api.identityResolution),
     new TokenStateServiceImpl(api.state, api.logger),
-    new TokenKeysServiceImpl(api.keyResolver),
+    new TokenKeysServiceImpl(api.keyResolver, api.mirror, api.kms),
   ).execute(args);
 }

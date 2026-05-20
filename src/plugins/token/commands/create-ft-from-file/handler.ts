@@ -1,11 +1,6 @@
-import type { CommandHandlerArgs, CommandResult, CoreApi } from '@/core';
-import type {
-  ResolvedAccountCredential,
-  ResolvedPublicKey,
-} from '@/core/services/key-resolver/types';
+import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { SupplyType } from '@/core/types/shared.types';
-import type { FungibleTokenFileDefinition } from '@/plugins/token/schema';
 import type { TokenAssociationsService } from '@/plugins/token/services/token-associations.service.interface';
 import type { TokenFileService } from '@/plugins/token/services/token-file.service.interface';
 import type { TokenKeysService } from '@/plugins/token/services/token-keys.service.interface';
@@ -78,7 +73,18 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
       feeScheduleKeys,
       metadataKeys,
       keyRefIds,
-    } = await this.resolveKeys(api, tokenDefinition, keyManager);
+    } = await this.tokenKeysService.resolveCreateFtFromFileKeys(
+      tokenDefinition,
+      keyManager,
+    );
+    if (adminKeys.length > 0) {
+      api.logger.info('🔑 Resolved admin key for signing');
+    }
+    if (tokenDefinition.freezeDefault && freezeKeys.length === 0) {
+      api.logger.warn(
+        'freezeDefault was requested but no freeze key is set; freeze default will be skipped.',
+      );
+    }
 
     const autoRenewPeriodSeconds = tokenDefinition.autoRenewPeriod;
     const autoRenewAccountCredential = tokenDefinition.autoRenewAccount
@@ -322,104 +328,6 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
     };
 
     return { result: outputData };
-  }
-
-  private async resolveKeys(
-    api: CoreApi,
-    tokenDefinition: FungibleTokenFileDefinition,
-    keyManager: KeyManager,
-  ): Promise<{
-    treasury: ResolvedAccountCredential;
-    adminKeys: ResolvedPublicKey[];
-    supplyKeys: ResolvedPublicKey[];
-    wipeKeys: ResolvedPublicKey[];
-    kycKeys: ResolvedPublicKey[];
-    freezeKeys: ResolvedPublicKey[];
-    pauseKeys: ResolvedPublicKey[];
-    feeScheduleKeys: ResolvedPublicKey[];
-    metadataKeys: ResolvedPublicKey[];
-    keyRefIds: string[];
-  }> {
-    const treasury = await api.keyResolver.resolveAccountCredentials(
-      tokenDefinition.treasuryKey,
-      keyManager,
-      false,
-      ['token:treasury'],
-    );
-
-    const adminKeys = await this.tokenKeysService.resolveOptionalKeys(
-      tokenDefinition.adminKey,
-      keyManager,
-      'token:admin',
-    );
-    if (adminKeys.length > 0) {
-      api.logger.info('🔑 Resolved admin key for signing');
-    }
-
-    const keyRefIds: string[] = [
-      treasury.keyRefId,
-      ...adminKeys.map((k) => k.keyRefId),
-    ];
-
-    const supplyKeys = await this.tokenKeysService.resolveOptionalKeys(
-      tokenDefinition.supplyKey,
-      keyManager,
-      'token:supply',
-    );
-
-    const wipeKeys = await this.tokenKeysService.resolveOptionalKeys(
-      tokenDefinition.wipeKey,
-      keyManager,
-      'token:wipe',
-    );
-
-    const kycKeys = await this.tokenKeysService.resolveOptionalKeys(
-      tokenDefinition.kycKey,
-      keyManager,
-      'token:kyc',
-    );
-
-    const freezeKeys = await this.tokenKeysService.resolveOptionalKeys(
-      tokenDefinition.freezeKey,
-      keyManager,
-      'token:freeze',
-    );
-    if (tokenDefinition.freezeDefault && freezeKeys.length === 0) {
-      api.logger.warn(
-        'freezeDefault was requested but no freeze key is set; freeze default will be skipped.',
-      );
-    }
-
-    const pauseKeys = await this.tokenKeysService.resolveOptionalKeys(
-      tokenDefinition.pauseKey,
-      keyManager,
-      'token:pause',
-    );
-
-    const feeScheduleKeys = await this.tokenKeysService.resolveOptionalKeys(
-      tokenDefinition.feeScheduleKey,
-      keyManager,
-      'token:feeSchedule',
-    );
-
-    const metadataKeys = await this.tokenKeysService.resolveOptionalKeys(
-      tokenDefinition.metadataKey,
-      keyManager,
-      'token:metadata',
-    );
-
-    return {
-      treasury,
-      adminKeys,
-      supplyKeys,
-      wipeKeys,
-      kycKeys,
-      freezeKeys,
-      pauseKeys,
-      feeScheduleKeys,
-      metadataKeys,
-      keyRefIds,
-    };
   }
 }
 

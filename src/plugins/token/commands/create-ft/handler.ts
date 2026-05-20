@@ -1,8 +1,4 @@
-import type { CommandHandlerArgs, CommandResult, CoreApi } from '@/core';
-import type {
-  ResolvedAccountCredential,
-  ResolvedPublicKey,
-} from '@/core/services/key-resolver/types';
+import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { TokenKeysService } from '@/plugins/token/services/token-keys.service.interface';
 import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
@@ -79,7 +75,12 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
       pause,
       feeSchedule,
       metadata,
-    } = await this.resolveKeys(api, validArgs, keyManager);
+    } = await this.tokenKeysService.resolveCreateFtKeys(validArgs, keyManager);
+    if (validArgs.freezeDefault && freeze.length === 0) {
+      api.logger.warn(
+        'freezeDefault was requested but no freeze key is set; freeze default will be skipped.',
+      );
+    }
 
     const autoRenewPeriodSeconds = validArgs.autoRenewPeriod;
     const autoRenewAccountCredential = validArgs.autoRenewAccount
@@ -351,95 +352,6 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
     };
 
     return { result: outputData };
-  }
-
-  private async resolveKeys(
-    api: CoreApi,
-    validArgs: TokenCreateFtInput,
-    keyManager: KeyManager,
-  ): Promise<{
-    treasury: ResolvedAccountCredential;
-    admin: ResolvedPublicKey[];
-    supply: ResolvedPublicKey[];
-    freeze: ResolvedPublicKey[];
-    wipe: ResolvedPublicKey[];
-    kyc: ResolvedPublicKey[];
-    pause: ResolvedPublicKey[];
-    feeSchedule: ResolvedPublicKey[];
-    metadata: ResolvedPublicKey[];
-  }> {
-    const treasury = await api.keyResolver.resolveAccountCredentials(
-      validArgs.treasury,
-      keyManager,
-      true,
-      ['token:treasury'],
-    );
-
-    const admin = await this.tokenKeysService.resolveOptionalKeys(
-      validArgs.adminKey,
-      keyManager,
-      'token:admin',
-    );
-
-    const supply = await this.tokenKeysService.resolveOptionalKeys(
-      validArgs.supplyKey,
-      keyManager,
-      'token:supply',
-    );
-
-    const freeze = await this.tokenKeysService.resolveOptionalKeys(
-      validArgs.freezeKey,
-      keyManager,
-      'token:freeze',
-    );
-
-    if (validArgs.freezeDefault && freeze.length === 0) {
-      api.logger.warn(
-        'freezeDefault was requested but no freeze key is set; freeze default will be skipped.',
-      );
-    }
-
-    const wipe = await this.tokenKeysService.resolveOptionalKeys(
-      validArgs.wipeKey,
-      keyManager,
-      'token:wipe',
-    );
-
-    const kyc = await this.tokenKeysService.resolveOptionalKeys(
-      validArgs.kycKey,
-      keyManager,
-      'token:kyc',
-    );
-
-    const pause = await this.tokenKeysService.resolveOptionalKeys(
-      validArgs.pauseKey,
-      keyManager,
-      'token:pause',
-    );
-
-    const feeSchedule = await this.tokenKeysService.resolveOptionalKeys(
-      validArgs.feeScheduleKey,
-      keyManager,
-      'token:feeSchedule',
-    );
-
-    const metadata = await this.tokenKeysService.resolveOptionalKeys(
-      validArgs.metadataKey,
-      keyManager,
-      'token:metadata',
-    );
-
-    return {
-      treasury,
-      admin,
-      supply,
-      freeze,
-      wipe,
-      kyc,
-      pause,
-      feeSchedule,
-      metadata,
-    };
   }
 }
 
