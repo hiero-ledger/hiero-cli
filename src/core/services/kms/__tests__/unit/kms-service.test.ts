@@ -269,6 +269,7 @@ describe('KmsServiceImpl', () => {
     const localManager = getLocalKeyManager(KeyManager.local);
     const signer = {
       sign: jest.fn(),
+      signWithWallet: jest.fn(),
       getPublicKey: jest.fn(),
     } as unknown as Signer;
     localManager.createSigner.mockReturnValue(signer);
@@ -327,6 +328,7 @@ describe('KmsServiceImpl', () => {
     const signerHandle = {
       getPublicKey: jest.fn().mockReturnValue('sign-public'),
       sign: jest.fn().mockResolvedValue(new Uint8Array([9])),
+      signHashWithEcdsaKey: jest.fn(),
     };
     getLocalKeyManager(KeyManager.local).createSigner.mockReturnValue(
       signerHandle as Signer,
@@ -363,6 +365,7 @@ describe('KmsServiceImpl', () => {
     const signerHandle = {
       getPublicKey: jest.fn().mockReturnValue('sign-flow-public'),
       sign: jest.fn().mockResolvedValue(new Uint8Array([42])),
+      signHashWithEcdsaKey: jest.fn(),
     };
     getLocalKeyManager(KeyManager.local).createSigner.mockReturnValue(
       signerHandle as Signer,
