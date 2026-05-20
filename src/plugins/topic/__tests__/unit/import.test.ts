@@ -171,7 +171,10 @@ describe('topic plugin - import command (ADR-007)', () => {
         _type: MirrorNodeKeyType.ED25519,
         key: ED25519_DER_PUBLIC_KEY,
       },
-      submit_key: { _type: 'ECDSA_SECP256K1', key: ECDSA_DER_PUBLIC_KEY },
+      submit_key: {
+        _type: MirrorNodeKeyType.ECDSA_SECP256K1,
+        key: ECDSA_DER_PUBLIC_KEY,
+      },
     });
 
     const mirrorMock = makeMirrorMock() as Partial<HederaMirrornodeService> & {

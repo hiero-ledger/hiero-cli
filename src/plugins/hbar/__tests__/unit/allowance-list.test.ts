@@ -8,7 +8,10 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError } from '@/core/errors';
-import { EntityReferenceType } from '@/core/types/shared.types';
+import {
+  EntityReferenceType,
+  SupportedNetwork,
+} from '@/core/types/shared.types';
 import {
   hbarAllowanceList,
   HbarAllowanceListOutputSchema,
@@ -70,7 +73,7 @@ describe('hbarAllowanceList', () => {
     expect(identityResolution.resolveAccount).toHaveBeenCalledWith({
       accountReference: 'treasury',
       type: EntityReferenceType.ALIAS,
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
     expect(args.api.alias.resolve).not.toHaveBeenCalled();
   });
@@ -102,7 +105,7 @@ describe('hbarAllowanceList', () => {
     expect(identityResolution.resolveAccount).toHaveBeenCalledWith({
       accountReference: SPENDER_ID,
       type: EntityReferenceType.ENTITY_ID,
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
   });
 

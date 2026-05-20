@@ -8,7 +8,10 @@ import {
   MOCK_HEDERA_ENTITY_ID_1,
 } from '@/__tests__/mocks/fixtures';
 import { assertOutput } from '@/__tests__/utils/assert-output';
-import { EntityReferenceType } from '@/core/types/shared.types';
+import {
+  EntityReferenceType,
+  SupportedNetwork,
+} from '@/core/types/shared.types';
 import {
   tokenAllowanceNftList,
   TokenAllowanceNftListOutputSchema,
@@ -176,7 +179,7 @@ describe('tokenAllowanceNftList', () => {
     expect(resolveAccount).toHaveBeenCalledWith({
       accountReference: SPENDER_ID,
       type: EntityReferenceType.ENTITY_ID,
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
   });
 

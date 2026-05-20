@@ -14,6 +14,7 @@ import type { TokenStateService } from '@/plugins/token/services/token-state.ser
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import { NotFoundError } from '@/core/errors';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
+import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import {
   AliasType,
   EntityReferenceType,
@@ -225,7 +226,7 @@ describe('Token services', () => {
           decimals: '2',
           total_supply: '100',
           max_supply: '0',
-          type: 'FUNGIBLE_COMMON',
+          type: MirrorNodeTokenType.FUNGIBLE_COMMON,
           treasury_account_id: '0.0.2002',
           created_timestamp: '1.0',
           pause_status: 'NOT_APPLICABLE',
