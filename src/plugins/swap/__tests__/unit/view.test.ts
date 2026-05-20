@@ -11,7 +11,7 @@ import { HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION } from '@/core/shared/const
 import { swapView } from '@/plugins/swap/commands/view/handler';
 import { SwapViewOutputSchema } from '@/plugins/swap/commands/view/output';
 import { SwapTransferType } from '@/plugins/swap/schema';
-import { SwapStateHelper } from '@/plugins/swap/state-helper';
+import { SwapStateServiceImpl } from '@/plugins/swap/services/swap-state.service';
 
 import {
   HBAR_AMOUNT_STORED,
@@ -23,11 +23,11 @@ import {
 } from './helpers/fixtures';
 import { makeArgs, makeLogger, makeSwapApiMocks } from './helpers/mocks';
 
-jest.mock('../../state-helper', () => ({
-  SwapStateHelper: jest.fn(),
+jest.mock('../../services/swap-state.service', () => ({
+  SwapStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = SwapStateHelper as jest.Mock;
+const MockedSwapStateService = SwapStateServiceImpl as jest.Mock;
 
 describe('swap plugin - view command', () => {
   beforeEach(() => {
@@ -36,7 +36,7 @@ describe('swap plugin - view command', () => {
 
   test('returns swap name, memo, transferCount, and maxTransfers', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       getSwapOrThrow: jest.fn().mockReturnValue(mockSwapWithMultipleTransfers),
     }));
 
@@ -57,7 +57,7 @@ describe('swap plugin - view command', () => {
 
   test('maps HBAR transfer to display format with correct fields', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       getSwapOrThrow: jest.fn().mockReturnValue(mockSwapWithHbar),
     }));
 
@@ -78,7 +78,7 @@ describe('swap plugin - view command', () => {
 
   test('maps all three transfer types in a multi-transfer swap', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       getSwapOrThrow: jest.fn().mockReturnValue(mockSwapWithMultipleTransfers),
     }));
 
@@ -99,7 +99,7 @@ describe('swap plugin - view command', () => {
 
   test('assigns sequential 1-based index to each transfer', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       getSwapOrThrow: jest.fn().mockReturnValue(mockSwapWithMultipleTransfers),
     }));
 
@@ -117,7 +117,7 @@ describe('swap plugin - view command', () => {
 
   test('throws NotFoundError when swap does not exist', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       getSwapOrThrow: jest.fn().mockImplementation(() => {
         throw new NotFoundError(
           `Swap "${SWAP_NAME}" not found. Create it first with: hcli swap create -n ${SWAP_NAME}`,

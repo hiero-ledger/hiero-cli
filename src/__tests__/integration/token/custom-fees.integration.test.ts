@@ -8,7 +8,6 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
-import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import { tokenCreateFtFromFile } from '@/plugins/token';
@@ -70,8 +69,6 @@ describe('Token Custom Fees Integration Tests', () => {
     expect(output.tokenId).toBeDefined();
     expect(output.name).toBe(tokenFile.tokenName);
     expect(output.network).toBe(network);
-
-    await delay(5000);
   });
 
   it('should create FT with fractional fee', async () => {
@@ -116,8 +113,6 @@ describe('Token Custom Fees Integration Tests', () => {
     expect(output.tokenId).toBeDefined();
     expect(output.name).toBe(tokenFile.tokenName);
     expect(output.network).toBe(network);
-
-    await delay(5000);
   });
 
   it('should create FT with fixed TOKEN fee', async () => {
@@ -159,7 +154,5 @@ describe('Token Custom Fees Integration Tests', () => {
     expect(output.tokenId).toBeDefined();
     expect(output.name).toBe(tokenFile.tokenName);
     expect(output.network).toBe(network);
-
-    await delay(5000);
   });
 });

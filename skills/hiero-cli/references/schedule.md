@@ -64,17 +64,18 @@ The schedule record in local state is updated with the on-chain `scheduleId` and
 
 Add a signature to a pending scheduled transaction. Use when additional signers are required before the transaction can execute.
 
-| Option          | Short | Type   | Required | Default        | Description                                     |
-| --------------- | ----- | ------ | -------- | -------------- | ----------------------------------------------- |
-| `--schedule`    | `-s`  | string | **yes**  | —              | Schedule ID (`0.0.x`) or local schedule name    |
-| `--key`         | `-k`  | string | **yes**  | —              | Key to sign with. Must resolve to a private key |
-| `--key-manager` | `-K`  | string | no       | config default | Key manager: `local` or `local_encrypted`       |
+| Option          | Short | Type   | Required | Default        | Description                                                                                                   |
+| --------------- | ----- | ------ | -------- | -------------- | ------------------------------------------------------------------------------------------------------------- |
+| `--schedule`    | `-s`  | string | **yes**  | —              | Schedule ID (`0.0.x`) or local schedule name                                                                  |
+| `--key`         | `-k`  | string | no       | —              | Key to sign with. Repeat for multiple keys: `-k alice -k bob`. If omitted, matched from mirror node admin key |
+| `--key-manager` | `-K`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                                                     |
 
 **Example:**
 
 ```
 hcli schedule sign --schedule mySchedule --key alice
 hcli schedule sign --schedule 0.0.123456 --key 0.0.789:302e...
+hcli schedule sign --schedule mySchedule --key alice --key bob --key carol
 ```
 
 **Output:** `{ scheduleId, transactionId, network, name? }`
@@ -83,19 +84,20 @@ hcli schedule sign --schedule 0.0.123456 --key 0.0.789:302e...
 
 ### `hcli schedule delete`
 
-Delete a scheduled transaction from Hedera and remove it from local state. Admin key must be set.
+Delete a scheduled transaction from Hedera and remove it from local state. The schedule must have an admin key on-chain (`ScheduleDeleteTransaction` cannot delete keyless schedules).
 
-| Option          | Short | Type   | Required | Default        | Description                                                                          |
-| --------------- | ----- | ------ | -------- | -------------- | ------------------------------------------------------------------------------------ |
-| `--schedule`    | `-s`  | string | **yes**  | —              | Schedule ID (`0.0.x`) or local schedule name                                         |
-| `--admin-key`   | `-a`  | string | no       | —              | Admin key to sign the delete. If omitted, uses the stored admin key from local state |
-| `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                            |
+| Option          | Short | Type       | Required | Default        | Description                                                                                                                                     |
+| --------------- | ----- | ---------- | -------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--schedule`    | `-s`  | string     | **yes**  | —              | Schedule ID (`0.0.x`) or local schedule name                                                                                                    |
+| `--admin-key`   | `-a`  | repeatable | no       | —              | Admin credential(s) for the delete. Pass multiple times for KeyList/threshold admin keys; optional if KMS already matches on-chain requirements |
+| `--key-manager` | `-k`  | string     | no       | config default | Key manager: `local` or `local_encrypted`                                                                                                       |
 
 **Example:**
 
 ```
 hcli schedule delete --schedule mySchedule
 hcli schedule delete --schedule 0.0.123456 --admin-key alice
+hcli schedule delete --schedule 0.0.123456 --admin-key alice --admin-key bob
 ```
 
 **Output:** `{ name, scheduleId?, transactionId?, network }`

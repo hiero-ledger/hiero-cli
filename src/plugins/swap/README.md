@@ -16,7 +16,9 @@ Multi-party asset exchange plugin for the Hiero CLI. Allows building a swap step
 src/plugins/swap/
 ├── manifest.ts              # Plugin manifest with command definitions
 ├── schema.ts                # Swap state schemas and SwapTransferType enum
-├── state-helper.ts          # SwapStateHelper class for swap state management
+├── services/
+│   ├── swap-state.service.interface.ts
+│   └── swap-state.service.ts
 ├── commands/
 │   ├── create/              # Create a new named swap
 │   ├── add-hbar/            # Add an HBAR transfer to a swap
@@ -168,6 +170,7 @@ hcli swap execute -n exchange
 ## State
 
 Swaps are stored per-network in `~/.hiero-cli/state/swap-storage.json`. Each swap is a separate key in the `swap` namespace.
+State access is encapsulated in `SwapStateService`, a plugin service following ADR-013.
 
 ## Core API Integration
 

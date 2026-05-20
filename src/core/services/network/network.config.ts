@@ -19,8 +19,8 @@ export const DEFAULT_NETWORK: SupportedNetwork = SupportedNetwork.TESTNET;
 
 export const DEFAULT_NETWORKS: Record<string, DefaultNetworkConfig> = {
   localnet: {
-    rpcUrl: 'http://localhost:7546',
-    mirrorNodeUrl: 'http://localhost:5551/api/v1',
+    rpcUrl: 'http://localhost:37546',
+    mirrorNodeUrl: 'http://localhost:38081/api/v1',
   },
   testnet: {
     rpcUrl: 'https://testnet.hashio.io/api',
@@ -37,7 +37,7 @@ export const DEFAULT_NETWORKS: Record<string, DefaultNetworkConfig> = {
 };
 
 export const DEFAULT_LOCALNET_NODE: DefaultLocalnetNode = {
-  localNodeAddress: '127.0.0.1:50211',
+  localNodeAddress: '127.0.0.1:35211',
   localNodeAccountId: '0.0.3',
-  localNodeMirrorAddressGRPC: '127.0.0.1:5600',
+  localNodeMirrorAddressGRPC: '127.0.0.1:35600',
 };

@@ -13,7 +13,7 @@ import { SupportedNetwork } from '@/core/types/shared.types';
 import { swapExecute } from '@/plugins/swap/commands/execute/handler';
 import { SwapExecuteOutputSchema } from '@/plugins/swap/commands/execute/output';
 import { SwapTransferType } from '@/plugins/swap/schema';
-import { SwapStateHelper } from '@/plugins/swap/state-helper';
+import { SwapStateServiceImpl } from '@/plugins/swap/services/swap-state.service';
 
 import {
   FROM_KEY_REF_ID,
@@ -25,11 +25,11 @@ import {
 } from './helpers/fixtures';
 import { makeArgs, makeLogger, makeSwapApiMocks } from './helpers/mocks';
 
-jest.mock('../../state-helper', () => ({
-  SwapStateHelper: jest.fn(),
+jest.mock('../../services/swap-state.service', () => ({
+  SwapStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = SwapStateHelper as jest.Mock;
+const MockedSwapStateService = SwapStateServiceImpl as jest.Mock;
 
 describe('swap plugin - execute command', () => {
   beforeEach(() => {
@@ -39,7 +39,7 @@ describe('swap plugin - execute command', () => {
   test('executes HBAR swap successfully and deletes it from state', async () => {
     const logger = makeLogger();
     const deleteSwapMock = jest.fn();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       getSwapOrThrow: jest.fn().mockReturnValue(mockSwapWithHbar),
       deleteSwap: deleteSwapMock,
     }));
@@ -78,7 +78,7 @@ describe('swap plugin - execute command', () => {
 
   test('signs with all unique keyRefIds from from-accounts', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       getSwapOrThrow: jest.fn().mockReturnValue(mockSwapWithHbar),
       deleteSwap: jest.fn(),
     }));
@@ -107,7 +107,7 @@ describe('swap plugin - execute command', () => {
 
   test('deduplicates keyRefIds when same account appears in multiple transfers', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       getSwapOrThrow: jest.fn().mockReturnValue(mockSwapWithMultipleTransfers),
       deleteSwap: jest.fn(),
     }));
@@ -135,7 +135,7 @@ describe('swap plugin - execute command', () => {
 
   test('executes NFT swap with correct transfer entries', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       getSwapOrThrow: jest.fn().mockReturnValue(mockSwapWithNft),
       deleteSwap: jest.fn(),
     }));
@@ -161,7 +161,7 @@ describe('swap plugin - execute command', () => {
 
   test('throws ValidationError when swap has no transfers', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       getSwapOrThrow: jest.fn().mockReturnValue(mockEmptySwap),
       deleteSwap: jest.fn(),
     }));
@@ -175,7 +175,7 @@ describe('swap plugin - execute command', () => {
 
   test('throws NotFoundError when swap does not exist', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       getSwapOrThrow: jest.fn().mockImplementation(() => {
         throw new NotFoundError(`Swap "${SWAP_NAME}" not found.`);
       }),
@@ -192,7 +192,7 @@ describe('swap plugin - execute command', () => {
   test('throws TransactionError and does not delete swap when execution fails', async () => {
     const logger = makeLogger();
     const deleteSwapMock = jest.fn();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       getSwapOrThrow: jest.fn().mockReturnValue(mockSwapWithHbar),
       deleteSwap: deleteSwapMock,
     }));

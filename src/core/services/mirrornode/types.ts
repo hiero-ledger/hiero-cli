@@ -11,7 +11,7 @@ export const NetworkToBaseUrl = new Map<SupportedNetwork, string>([
   [SupportedNetwork.MAINNET, 'https://mainnet-public.mirrornode.hedera.com'],
   [SupportedNetwork.TESTNET, 'https://testnet.mirrornode.hedera.com'],
   [SupportedNetwork.PREVIEWNET, 'https://previewnet.mirrornode.hedera.com'],
-  [SupportedNetwork.LOCALNET, 'http://localhost:5551'],
+  [SupportedNetwork.LOCALNET, 'http://localhost:38081'],
 ]);
 
 export enum MirrorNodeKeyType {

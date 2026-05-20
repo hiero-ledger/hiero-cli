@@ -5,6 +5,7 @@ import type {
   NftSwapTransfer,
   SwapTransfer,
 } from '@/plugins/swap/schema';
+import type { SwapStateService } from '@/plugins/swap/services/swap-state.service.interface';
 import type { SwapExecuteOutput, SwapTransferSummary } from './output';
 import type {
   SwapExecuteBuildTransactionResult,
@@ -21,7 +22,7 @@ import {
   NftTransferEntry,
 } from '@/core/services/transfer';
 import { SwapTransferType } from '@/plugins/swap/schema';
-import { SwapStateHelper } from '@/plugins/swap/state-helper';
+import { SwapStateServiceImpl } from '@/plugins/swap/services/swap-state.service';
 
 import { SwapExecuteInputSchema } from './input';
 
@@ -33,7 +34,7 @@ export class SwapExecuteCommand extends BaseTransactionCommand<
   SwapExecuteSignTransactionResult,
   SwapExecuteExecuteTransactionResult
 > {
-  constructor() {
+  constructor(private readonly swapState: SwapStateService) {
     super(SWAP_EXECUTE_COMMAND_NAME);
   }
 
@@ -45,8 +46,7 @@ export class SwapExecuteCommand extends BaseTransactionCommand<
     const validArgs = SwapExecuteInputSchema.parse(args.args);
     const { name } = validArgs;
 
-    const helper = new SwapStateHelper(api.state);
-    const swap = helper.getSwapOrThrow(name);
+    const swap = this.swapState.getSwapOrThrow(name);
 
     if (swap.transfers.length === 0) {
       throw new ValidationError(
@@ -108,8 +108,7 @@ export class SwapExecuteCommand extends BaseTransactionCommand<
       );
     }
 
-    const helper = new SwapStateHelper(api.state);
-    helper.deleteSwap(normalisedParams.name);
+    this.swapState.deleteSwap(normalisedParams.name);
 
     return { transactionResult: result };
   }
@@ -193,5 +192,6 @@ export class SwapExecuteCommand extends BaseTransactionCommand<
 export async function swapExecute(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new SwapExecuteCommand().execute(args);
+  const swapState = new SwapStateServiceImpl(args.api.state);
+  return new SwapExecuteCommand(swapState).execute(args);
 }

@@ -88,32 +88,38 @@ hcli schedule create --name my-schedule --admin-key alice --admin-key bob --admi
 
 ### Schedule Sign
 
-Add a signature to an existing scheduled transaction (`ScheduleSignTransaction`).
+Add a signature (or multiple signatures) to an existing scheduled transaction (`ScheduleSignTransaction`).
 
 ```bash
 hcli schedule sign --schedule my-schedule --key bob
 
 hcli schedule sign --schedule 0.0.1234567 --key 0.0.111:302e020100300506032b657004220420...
+
+# Multiple signers in a single call
+hcli schedule sign --schedule my-schedule --key alice --key bob --key carol
 ```
 
 **Parameters:**
 
 - `--schedule` / `-s`: Schedule ID (`0.0.x`) or local schedule name — **Required**
-- `--key` / `-k`: Key whose signature to add — **Required**
+- `--key` / `-k`: Key whose signature to add. Repeat the flag for multiple keys. If omitted, the admin key from the mirror node is matched against the key manager.
 - `--key-manager` / `-K`: Key manager (optional; defaults to config)
 
 ### Schedule Delete
 
-Delete a scheduled transaction on chain and optionally clear local state when applicable.
+Delete a scheduled transaction on chain and optionally clear local state when applicable. Pass `--admin-key` multiple times when the schedule admin key is a KeyList or threshold key and KMS cannot supply every required credential automatically.
 
 ```bash
 hcli schedule delete --schedule my-schedule --admin-key alice
+
+# Threshold admin on-chain: explicit credentials for each required signer
+hcli schedule delete --schedule my-schedule --admin-key alice --admin-key bob
 ```
 
 **Parameters:**
 
 - `--schedule` / `-s`: Schedule ID or local name — **Required**
-- `--admin-key` / `-a`: Admin key to sign the delete (optional if stored in state)
+- `--admin-key` / `-a`: Admin credential(s) to sign the delete. **Repeatable** for KeyList/threshold admin keys. Optional when the key manager already holds matching key(s).
 - `--key-manager` / `-k`: Key manager (optional; defaults to config)
 
 ### Schedule Verify
@@ -188,7 +194,7 @@ The plugin uses Core API services such as:
 - `api.kms` — Key material access where applicable
 - `api.txSign` / `api.txExecute` — Sign and execute transactions
 - `api.schedule` — Build `ScheduleCreate`, `ScheduleSign`, `ScheduleDelete` transactions
-- `api.mirror` — `getScheduled` for verify flow
+- `api.mirror` — `getScheduled` for verify and for resolving on-chain schedule admin keys (e.g. `schedule delete`)
 - `api.logger` — Logging
 
 ## State Management
