@@ -17,6 +17,7 @@ import {
   makeTxExecuteMock,
   makeTxSignMock,
 } from '@/__tests__/mocks/mocks';
+import { SupportedNetwork } from '@/core/types/shared.types';
 
 import { mockTransferTransactionResults } from './fixtures';
 
@@ -46,7 +47,7 @@ export const makeAllowanceServiceMock = (
 interface ApiMocksConfig {
   transferImpl?: jest.Mock;
   signAndExecuteImpl?: jest.Mock;
-  network?: 'testnet' | 'mainnet' | 'previewnet';
+  network?: SupportedNetwork;
 }
 
 export const makeApiMocks = (config?: ApiMocksConfig) => {
@@ -67,7 +68,9 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
   const txExecute = makeTxExecuteMock({
     executeImpl: config?.signAndExecuteImpl,
   });
-  const networkMock = makeNetworkMock(config?.network || 'testnet');
+  const networkMock = makeNetworkMock(
+    config?.network || SupportedNetwork.TESTNET,
+  );
   const kms = makeKmsMock();
   const alias = makeAliasMock();
 
@@ -83,7 +86,7 @@ interface SetupTransferTestOptions {
   defaultCredentials?: {
     accountId: string;
     privateKey: string;
-    network: 'testnet' | 'mainnet' | 'previewnet';
+    network: SupportedNetwork;
     isDefault: boolean;
   };
 }

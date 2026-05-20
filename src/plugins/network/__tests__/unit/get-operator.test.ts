@@ -11,6 +11,7 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, ValidationError } from '@/core/errors';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import {
   networkGetOperator,
   NetworkGetOperatorOutputSchema,
@@ -41,7 +42,7 @@ describe('network plugin - get-operator command', () => {
       updatedAt: new Date().toISOString(),
     };
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     const kmsService = makeKmsMock();
 
     networkService.getOperator.mockReturnValue({
@@ -59,13 +60,15 @@ describe('network plugin - get-operator command', () => {
     const result = await networkGetOperator(args);
 
     const output = assertOutput(result.result, NetworkGetOperatorOutputSchema);
-    expect(output.network).toBe('testnet');
+    expect(output.network).toBe(SupportedNetwork.TESTNET);
     expect(output.operator).toEqual({
       accountId: '0.0.123456',
       keyRefId: 'kr_test123',
       publicKey: 'pub-key-test',
     });
-    expect(networkService.getOperator).toHaveBeenCalledWith('testnet');
+    expect(networkService.getOperator).toHaveBeenCalledWith(
+      SupportedNetwork.TESTNET,
+    );
     expect(kmsService.get).toHaveBeenCalledWith('kr_test123');
   });
 
@@ -79,7 +82,7 @@ describe('network plugin - get-operator command', () => {
       updatedAt: new Date().toISOString(),
     };
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     const kmsService = makeKmsMock();
 
     networkService.getOperator.mockReturnValue({
@@ -91,25 +94,27 @@ describe('network plugin - get-operator command', () => {
     const args = makeArgs(
       { network: networkService, kms: kmsService },
       logger,
-      { network: 'mainnet' },
+      { network: SupportedNetwork.MAINNET },
     );
 
     const result = await networkGetOperator(args);
 
     const output = assertOutput(result.result, NetworkGetOperatorOutputSchema);
-    expect(output.network).toBe('mainnet');
+    expect(output.network).toBe(SupportedNetwork.MAINNET);
     expect(output.operator).toEqual({
       accountId: '0.0.789012',
       keyRefId: 'kr_mainnet',
       publicKey: 'pub-key-mainnet',
     });
-    expect(networkService.getOperator).toHaveBeenCalledWith('mainnet');
+    expect(networkService.getOperator).toHaveBeenCalledWith(
+      SupportedNetwork.MAINNET,
+    );
     expect(kmsService.get).toHaveBeenCalledWith('kr_mainnet');
   });
 
   test('returns output without operator when no operator configured', async () => {
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     const kmsService = makeKmsMock();
 
     networkService.getOperator.mockReturnValue(null);
@@ -123,15 +128,17 @@ describe('network plugin - get-operator command', () => {
     const result = await networkGetOperator(args);
 
     const output = assertOutput(result.result, NetworkGetOperatorOutputSchema);
-    expect(output.network).toBe('testnet');
+    expect(output.network).toBe(SupportedNetwork.TESTNET);
     expect(output.operator).toBeUndefined();
-    expect(networkService.getOperator).toHaveBeenCalledWith('testnet');
+    expect(networkService.getOperator).toHaveBeenCalledWith(
+      SupportedNetwork.TESTNET,
+    );
     expect(kmsService.get).not.toHaveBeenCalled();
   });
 
   test('handles missing public key gracefully', async () => {
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     const kmsService = makeKmsMock();
 
     networkService.getOperator.mockReturnValue({
@@ -149,41 +156,45 @@ describe('network plugin - get-operator command', () => {
     const result = await networkGetOperator(args);
 
     const output = assertOutput(result.result, NetworkGetOperatorOutputSchema);
-    expect(output.network).toBe('testnet');
+    expect(output.network).toBe(SupportedNetwork.TESTNET);
     expect(output.operator).toEqual({
       accountId: '0.0.123456',
       keyRefId: 'kr_test123',
       publicKey: undefined,
     });
-    expect(networkService.getOperator).toHaveBeenCalledWith('testnet');
+    expect(networkService.getOperator).toHaveBeenCalledWith(
+      SupportedNetwork.TESTNET,
+    );
     expect(kmsService.get).toHaveBeenCalledWith('kr_test123');
   });
 
   test('throws ValidationError when network is not available', async () => {
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     const kmsService = makeKmsMock();
 
     networkService.isNetworkAvailable.mockReturnValue(false);
     networkService.getAvailableNetworks.mockReturnValue([
-      'testnet',
-      'mainnet',
-      'previewnet',
+      SupportedNetwork.TESTNET,
+      SupportedNetwork.MAINNET,
+      SupportedNetwork.PREVIEWNET,
     ]);
 
     const args = makeArgs(
       { network: networkService, kms: kmsService },
       logger,
-      { network: 'mainnet' },
+      { network: SupportedNetwork.MAINNET },
     );
 
     await expect(networkGetOperator(args)).rejects.toThrow(ValidationError);
-    expect(networkService.isNetworkAvailable).toHaveBeenCalledWith('mainnet');
+    expect(networkService.isNetworkAvailable).toHaveBeenCalledWith(
+      SupportedNetwork.MAINNET,
+    );
   });
 
   test('throws when network service fails', async () => {
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     const kmsService = makeKmsMock();
 
     networkService.getOperator.mockImplementation(() => {
@@ -203,7 +214,7 @@ describe('network plugin - get-operator command', () => {
 
   test('throws when KMS service fails', async () => {
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     const kmsService = makeKmsMock();
 
     networkService.getOperator.mockReturnValue({
@@ -234,7 +245,7 @@ describe('network plugin - get-operator command', () => {
     };
 
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     const kmsService = makeKmsMock();
 
     networkService.isNetworkAvailable.mockReturnValue(true);
@@ -247,17 +258,19 @@ describe('network plugin - get-operator command', () => {
     const args = makeArgs(
       { network: networkService, kms: kmsService },
       logger,
-      { network: 'previewnet' },
+      { network: SupportedNetwork.PREVIEWNET },
     );
 
     const result = await networkGetOperator(args);
 
     const output = assertOutput(result.result, NetworkGetOperatorOutputSchema);
     expect(networkService.isNetworkAvailable).toHaveBeenCalledWith(
-      'previewnet',
+      SupportedNetwork.PREVIEWNET,
     );
-    expect(networkService.getOperator).toHaveBeenCalledWith('previewnet');
-    expect(output.network).toBe('previewnet');
+    expect(networkService.getOperator).toHaveBeenCalledWith(
+      SupportedNetwork.PREVIEWNET,
+    );
+    expect(output.network).toBe(SupportedNetwork.PREVIEWNET);
   });
 
   test('displays all operator information when found', async () => {
@@ -271,7 +284,7 @@ describe('network plugin - get-operator command', () => {
     };
 
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     const kmsService = makeKmsMock();
 
     networkService.getOperator.mockReturnValue({
@@ -289,7 +302,7 @@ describe('network plugin - get-operator command', () => {
     const result = await networkGetOperator(args);
 
     const output = assertOutput(result.result, NetworkGetOperatorOutputSchema);
-    expect(output.network).toBe('testnet');
+    expect(output.network).toBe(SupportedNetwork.TESTNET);
     expect(output.operator).toEqual({
       accountId: '0.0.999999',
       keyRefId: 'kr_special',

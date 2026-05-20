@@ -1,6 +1,7 @@
 import type { TransferTransaction } from '@hiero-ledger/sdk';
 import type { TransferEntry } from '@/core/services/transfer/transfer-entries/transfer-entry.interface';
 
+import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { TransferServiceImpl } from '@/core/services/transfer/transfer-service';
 
 const makeMockTx = () =>
@@ -13,8 +14,8 @@ const mockTxInstance = makeMockTx();
 jest.mock('@hiero-ledger/sdk', () => ({
   TransferTransaction: jest.fn(() => mockTxInstance),
   TokenType: {
-    NonFungibleUnique: 'NON_FUNGIBLE_UNIQUE',
-    FungibleCommon: 'FUNGIBLE_COMMON',
+    NonFungibleUnique: MirrorNodeTokenType.NON_FUNGIBLE_UNIQUE,
+    FungibleCommon: MirrorNodeTokenType.FUNGIBLE_COMMON,
   },
 }));
 

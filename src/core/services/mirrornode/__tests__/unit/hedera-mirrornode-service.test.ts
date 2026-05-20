@@ -145,7 +145,9 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
         `${TESTNET_API_URL}/accounts/${TEST_ACCOUNT_ID}`,
       );
 
-      networkService.getCurrentNetwork = jest.fn().mockReturnValue('mainnet');
+      networkService.getCurrentNetwork = jest
+        .fn()
+        .mockReturnValue(SupportedNetwork.MAINNET);
       await service.getAccount(TEST_ACCOUNT_ID);
       expect(global.fetch).toHaveBeenCalledWith(
         `${MAINNET_API_URL}/accounts/${TEST_ACCOUNT_ID}`,

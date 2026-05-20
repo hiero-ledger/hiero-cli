@@ -36,7 +36,7 @@ describe('Transfer Token Integration Tests', () => {
     const createAccountArgs: Record<string, unknown> = {
       name: alias,
       balance: 1,
-      'key-type': 'ecdsa',
+      'key-type': KeyAlgorithm.ECDSA,
       'auto-associations': 10,
     };
     const createAccountResult = await accountCreate({

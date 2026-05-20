@@ -12,6 +12,7 @@ import {
   makeTxSignMock,
 } from '@/__tests__/mocks/mocks';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
+import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
 import { BATCH_KEY_REF_ID, OPERATOR_KEY_REF_ID } from './fixtures';
@@ -45,7 +46,7 @@ export const makeBatchApiMocks = (
     keyRefId: BATCH_KEY_REF_ID,
     publicKey: ECDSA_HEX_PUBLIC_KEY,
     keyManager: KeyManager.local,
-    keyAlgorithm: 'ECDSA',
+    keyAlgorithm: KeyAlgorithm.ECDSA,
     createdAt: '2024-01-01T00:00:00.000Z',
     updatedAt: '2024-01-01T00:00:00.000Z',
   });

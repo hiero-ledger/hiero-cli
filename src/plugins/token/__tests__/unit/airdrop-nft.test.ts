@@ -8,12 +8,13 @@ import {
   MOCK_HEDERA_ENTITY_ID_1,
 } from '@/__tests__/mocks/fixtures';
 import { assertOutput } from '@/__tests__/utils/assert-output';
-import { SupportedNetwork } from '@/core';
+import { AliasType, SupportedNetwork } from '@/core';
 import {
   NotFoundError,
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import {
   tokenAirdropNft,
   TokenAirdropNftOutputSchema,
@@ -29,7 +30,9 @@ const SENDER_PRIVATE_KEY =
 
 const SENDER_WITH_KEY = `${SENDER_ACCOUNT_ID}:${SENDER_PRIVATE_KEY}`;
 
-function makeNftMirrorMock(type = 'NON_FUNGIBLE_UNIQUE') {
+function makeNftMirrorMock(
+  type: MirrorNodeTokenType = MirrorNodeTokenType.NON_FUNGIBLE_UNIQUE,
+) {
   return {
     getTokenInfo: jest.fn().mockResolvedValue({ type }),
   };
@@ -190,7 +193,7 @@ describe('tokenAirdropNft', () => {
         mirror: makeNftMirrorMock(),
         alias: {
           resolve: jest.fn().mockImplementation((alias, type) => {
-            if (type === 'account' && alias === 'alice') {
+            if (type === AliasType.Account && alias === 'alice') {
               return {
                 entityId: '0.0.200000',
                 keyRefId: 'alice-key-ref-id',
@@ -230,7 +233,7 @@ describe('tokenAirdropNft', () => {
         mirror: makeNftMirrorMock(),
         alias: {
           resolve: jest.fn().mockImplementation((alias, type) => {
-            if (type === 'token' && alias === 'my-nft-collection') {
+            if (type === AliasType.Token && alias === 'my-nft-collection') {
               return { entityId: '0.0.54321' };
             }
             return null;
@@ -325,7 +328,7 @@ describe('tokenAirdropNft', () => {
         mirror: {
           getTokenInfo: jest
             .fn()
-            .mockResolvedValue({ type: 'FUNGIBLE_COMMON' }),
+            .mockResolvedValue({ type: MirrorNodeTokenType.FUNGIBLE_COMMON }),
         },
         alias: { resolve: jest.fn().mockReturnValue(null) },
       });
@@ -372,7 +375,7 @@ describe('tokenAirdropNft', () => {
         mirror: makeNftMirrorMock(),
         alias: {
           resolve: jest.fn().mockImplementation((alias, type) => {
-            if (type === 'token') return null;
+            if (type === AliasType.Token) return null;
             if (alias === 'unknown-account') return null;
             return null;
           }),

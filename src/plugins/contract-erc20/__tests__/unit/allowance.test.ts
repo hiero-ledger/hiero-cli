@@ -5,6 +5,7 @@ import { ZodError } from 'zod';
 import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError, StateError } from '@/core/errors';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import { makeContractErc20CallCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { ContractErc20CallAllowanceOutputSchema } from '@/plugins/contract-erc20/commands/allowance';
@@ -69,7 +70,7 @@ describe('contract-erc20 plugin - allowance command (unit)', () => {
     expect(parsed.owner).toBe(OWNER_EVM);
     expect(parsed.spender).toBe(SPENDER_EVM);
     expect(parsed.allowance).toBe('1000');
-    expect(parsed.network).toBe('testnet');
+    expect(parsed.network).toBe(SupportedNetwork.TESTNET);
 
     expect(args.api.contractQuery.queryContractFunction).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -120,12 +121,12 @@ describe('contract-erc20 plugin - allowance command (unit)', () => {
     expect(args.api.identityResolution.resolveAccount).toHaveBeenCalledWith({
       accountReference: 'owner-alias',
       type: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
     expect(args.api.identityResolution.resolveAccount).toHaveBeenCalledWith({
       accountReference: 'spender-alias',
       type: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
     expect(args.api.contractQuery.queryContractFunction).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -164,12 +165,12 @@ describe('contract-erc20 plugin - allowance command (unit)', () => {
     expect(args.api.identityResolution.resolveAccount).toHaveBeenCalledWith({
       accountReference: OWNER_ACCOUNT_ID,
       type: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
     expect(args.api.identityResolution.resolveAccount).toHaveBeenCalledWith({
       accountReference: SPENDER_ACCOUNT_ID,
       type: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
   });
 

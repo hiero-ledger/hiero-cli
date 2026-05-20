@@ -11,7 +11,10 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { createMockTokenInfo } from '@/core/services/mirrornode/__tests__/unit/mocks';
-import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
+import {
+  MirrorNodeKeyType,
+  MirrorNodeTokenType,
+} from '@/core/services/mirrornode/types';
 import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 import { TokenImportOutputSchema } from '@/plugins/token/commands/import';
 import { tokenImport } from '@/plugins/token/commands/import/handler';
@@ -47,8 +50,8 @@ describe('token plugin - import command (ADR-007)', () => {
       max_supply: '1000000',
       treasury_account_id: '0.0.100',
       memo: 'Imported token memo',
-      admin_key: { _type: 'ED25519', key: 'admin-key-123' },
-      supply_key: { _type: 'ED25519', key: 'supply-key-456' },
+      admin_key: { _type: MirrorNodeKeyType.ED25519, key: 'admin-key-123' },
+      supply_key: { _type: MirrorNodeKeyType.ED25519, key: 'supply-key-456' },
     });
 
     const mirrorMock = makeMirrorMock() as Partial<HederaMirrornodeService> & {

@@ -14,6 +14,7 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { AliasType } from '@/core/types/shared.types';
 import {
   tokenDeleteAllowanceNft,
@@ -28,7 +29,9 @@ import {
 
 const OWNER_ACCOUNT = `${MOCK_ACCOUNT_ID}:${ED25519_DER_PRIVATE_KEY}`;
 
-function makeNftMirrorMock(type = 'NON_FUNGIBLE_UNIQUE') {
+function makeNftMirrorMock(
+  type: MirrorNodeTokenType = MirrorNodeTokenType.NON_FUNGIBLE_UNIQUE,
+) {
   return {
     getTokenInfo: jest.fn().mockResolvedValue({ type }),
   };
@@ -210,7 +213,7 @@ describe('tokenDeleteAllowanceNft', () => {
     test('throws ValidationError when token is not an NFT', async () => {
       const { api } = makeDeleteAllowanceSuccessMocks();
       (api.mirror.getTokenInfo as jest.Mock).mockResolvedValue({
-        type: 'FUNGIBLE_COMMON',
+        type: MirrorNodeTokenType.FUNGIBLE_COMMON,
       });
 
       const args: CommandHandlerArgs = {

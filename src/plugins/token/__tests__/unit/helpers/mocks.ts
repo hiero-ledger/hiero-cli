@@ -28,7 +28,6 @@ import type { TopicService } from '@/core/services/topic/topic-transaction-servi
 import type { TransferService } from '@/core/services/transfer/transfer-service.interface';
 import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
 import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
-import type { SupportedNetwork } from '@/core/types/shared.types';
 
 import {
   ED25519_HEX_PUBLIC_KEY,
@@ -43,8 +42,11 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { InternalError, KeyAlgorithm } from '@/core';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
-import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
-import { AliasType } from '@/core/types/shared.types';
+import {
+  MirrorNodeKeyType,
+  MirrorNodeTokenType,
+} from '@/core/services/mirrornode/types';
+import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 
 import { mockTransactionResults } from './fixtures';
 
@@ -338,7 +340,7 @@ interface ApiMocksConfig {
   alias?: Partial<jest.Mocked<AliasService>>;
   state?: Partial<jest.Mocked<StateService>>;
   mirror?: Record<string, jest.Mock>;
-  network?: string;
+  network?: SupportedNetwork;
   createTransferImpl?: jest.Mock;
   keyResolver?: Partial<jest.Mocked<KeyResolverService>>;
   contract?: Partial<jest.Mocked<ContractTransactionService>>;
@@ -365,7 +367,9 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
   const account = makeAccountTransactionServiceMock();
 
   const networkMock = {
-    getCurrentNetwork: jest.fn().mockReturnValue(config?.network || 'testnet'),
+    getCurrentNetwork: jest
+      .fn()
+      .mockReturnValue(config?.network || SupportedNetwork.TESTNET),
     getOperator: jest.fn().mockReturnValue({
       accountId: MOCK_OPERATOR_ACCOUNT_ID,
       keyRefId: 'operator-key-ref-id',
@@ -407,7 +411,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
       setOperator: jest.fn(),
     } as unknown as NetworkService,
     config: {
-      getOption: jest.fn().mockReturnValue('local'),
+      getOption: jest.fn().mockReturnValue(KeyManager.local),
       setOption: jest.fn(),
       listOptions: jest.fn().mockReturnValue([]),
     } as unknown as ConfigService,
@@ -468,7 +472,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
             const resolved = alias.resolve(
               accountReference,
               AliasType.Account,
-              (config?.network || 'testnet') as SupportedNetwork,
+              config?.network || SupportedNetwork.TESTNET,
             );
             return {
               accountId: resolved?.entityId ?? accountReference,
@@ -729,7 +733,7 @@ export const makeDeleteApiMocks = (
   const resolveError = config?.resolveReferenceToEntityOrEvmAddressError;
 
   return makeApiMocks({
-    network: 'testnet',
+    network: SupportedNetwork.TESTNET,
     alias: {
       list: jest.fn().mockReturnValue([]),
       ...config?.alias,
@@ -871,7 +875,8 @@ export const makeMintNftSuccessMocks = (overrides?: {
     mirror: {
       getTokenInfo: jest.fn().mockResolvedValue({
         decimals: overrides?.tokenInfo?.decimals ?? '0',
-        type: overrides?.tokenInfo?.type ?? 'NON_FUNGIBLE_UNIQUE',
+        type:
+          overrides?.tokenInfo?.type ?? MirrorNodeTokenType.NON_FUNGIBLE_UNIQUE,
         supply_key: supplyKeyFromMirror,
         total_supply: overrides?.tokenInfo?.total_supply ?? '0',
         max_supply: overrides?.tokenInfo?.max_supply ?? '0',
@@ -924,7 +929,7 @@ export const makeDeleteSuccessMocks = (overrides?: {
           overrides?.tokenInfo && 'admin_key' in overrides.tokenInfo
             ? overrides.tokenInfo.admin_key
             : {
-                _type: 'ED25519',
+                _type: MirrorNodeKeyType.ED25519,
                 key: overrides?.adminKeyPublicKey ?? defaultMirrorAdminHex,
               },
         name: overrides?.tokenInfo?.name ?? 'TestToken',
@@ -1151,7 +1156,7 @@ export const makeBurnNftSuccessMocks = (overrides?: {
     mirror: {
       getTokenInfo: jest.fn().mockResolvedValue({
         decimals: '0',
-        type: 'NON_FUNGIBLE_UNIQUE',
+        type: MirrorNodeTokenType.NON_FUNGIBLE_UNIQUE,
         supply_key: overrides?.tokenInfo?.supply_key ?? {
           key: defaultSupplyKeyPublicKey,
         },
@@ -1268,7 +1273,8 @@ export const makeUpdateNftMetadataSuccessMocks = (overrides?: {
     mirror: {
       getTokenInfo: jest.fn().mockResolvedValue({
         decimals: '0',
-        type: overrides?.tokenInfo?.type ?? 'NON_FUNGIBLE_UNIQUE',
+        type:
+          overrides?.tokenInfo?.type ?? MirrorNodeTokenType.NON_FUNGIBLE_UNIQUE,
         metadata_key:
           overrides?.tokenInfo && 'metadata_key' in overrides.tokenInfo
             ? overrides.tokenInfo.metadata_key

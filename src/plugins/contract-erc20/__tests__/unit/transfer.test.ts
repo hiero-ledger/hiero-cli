@@ -5,6 +5,7 @@ import { ZodError } from 'zod';
 import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError, TransactionError } from '@/core/errors';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import { makeContractErc20ExecuteCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { ContractErc20CallTransferOutputSchema } from '@/plugins/contract-erc20/commands/transfer';
@@ -91,18 +92,18 @@ describe('contract-erc20 plugin - transfer command (unit)', () => {
     );
 
     expect(parsed.contractId).toBe(CONTRACT_ID);
-    expect(parsed.network).toBe('testnet');
+    expect(parsed.network).toBe(SupportedNetwork.TESTNET);
     expect(parsed.transactionId).toBe(TX_ID);
 
     expect(args.api.identityResolution.resolveContract).toHaveBeenCalledWith({
       contractReference: 'my-contract',
       type: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
     expect(args.api.identityResolution.resolveAccount).toHaveBeenCalledWith({
       accountReference: 'bob',
       type: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
     expect(mockAddAddress).toHaveBeenCalledWith(EVM_ADDRESS);
     expect(mockAddUint256).toHaveBeenCalledWith(100);
@@ -134,12 +135,12 @@ describe('contract-erc20 plugin - transfer command (unit)', () => {
     expect(args.api.identityResolution.resolveContract).toHaveBeenCalledWith({
       contractReference: '0.0.9999',
       type: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
     expect(args.api.identityResolution.resolveAccount).toHaveBeenCalledWith({
       accountReference: '0.0.8888',
       type: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
   });
 

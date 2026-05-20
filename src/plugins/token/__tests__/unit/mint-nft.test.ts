@@ -8,9 +8,16 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
-import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
+import {
+  MirrorNodeKeyType,
+  MirrorNodeTokenType,
+} from '@/core/services/mirrornode/types';
 import { HederaTokenType } from '@/core/shared/constants';
-import { AliasType, SupplyType } from '@/core/types/shared.types';
+import {
+  AliasType,
+  SupplyType,
+  SupportedNetwork,
+} from '@/core/types/shared.types';
 import {
   tokenMintNft,
   TokenMintNftOutputSchema,
@@ -136,7 +143,7 @@ describe('tokenMintNftHandler', () => {
           resolve: jest.fn().mockReturnValue({
             entityId: '0.0.123456',
             type: AliasType.Token,
-            network: 'testnet',
+            network: SupportedNetwork.TESTNET,
             createdAt: '2024-01-01T00:00:00.000Z',
           }),
         },
@@ -171,7 +178,7 @@ describe('tokenMintNftHandler', () => {
       expect(api.alias.resolve).toHaveBeenCalledWith(
         'my-nft-collection',
         AliasType.Token,
-        'testnet',
+        SupportedNetwork.TESTNET,
       );
     });
   });
@@ -247,7 +254,7 @@ describe('tokenMintNftHandler', () => {
         mirror: {
           getTokenInfo: jest.fn().mockResolvedValue({
             decimals: '2',
-            type: 'FUNGIBLE_COMMON',
+            type: MirrorNodeTokenType.FUNGIBLE_COMMON,
             supply_key: {
               _type: MirrorNodeKeyType.ED25519,
               key: ED25519_HEX_PUBLIC_KEY,

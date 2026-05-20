@@ -16,6 +16,7 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { TransactionError } from '@/core/errors';
 import { TxExecuteServiceImpl } from '@/core/services/tx-execute/tx-execute-service';
+import { SupportedNetwork } from '@/core/types/shared.types';
 
 jest.mock('@hiero-ledger/sdk', () => {
   const actual = jest.requireActual('@hiero-ledger/sdk');
@@ -37,7 +38,7 @@ const MOCK_ACCOUNT_ID = '0.0.5555';
 const MOCK_TOKEN_ID = '0.0.6666';
 const MOCK_TOPIC_ID = '0.0.7777';
 const MOCK_TOPIC_SEQ = 42;
-const NETWORK = 'testnet';
+const NETWORK = SupportedNetwork.TESTNET;
 
 const setupService = () => {
   const logger = makeLogger();

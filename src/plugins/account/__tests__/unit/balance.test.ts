@@ -14,7 +14,7 @@ import {
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, NotFoundError, StateError } from '@/core/errors';
 import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
-import { AliasType } from '@/core/types/shared.types';
+import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 import { AccountBalanceOutputSchema } from '@/plugins/account/commands/balance';
 import { accountBalance } from '@/plugins/account/commands/balance/handler';
 import { AccountStateServiceImpl } from '@/plugins/account/services/account-state.service';
@@ -45,7 +45,7 @@ describe('account plugin - balance command (ADR-003)', () => {
         resolve: jest.fn().mockReturnValue({
           alias: 'token-account',
           type: AliasType.Account,
-          network: 'testnet',
+          network: SupportedNetwork.TESTNET,
           entityId: '0.0.1234',
         }),
       } as unknown as AliasService,
@@ -94,13 +94,13 @@ describe('account plugin - balance command (ADR-003)', () => {
           .mockReturnValueOnce({
             alias: 'token-account',
             type: AliasType.Account,
-            network: 'testnet',
+            network: SupportedNetwork.TESTNET,
             entityId: '0.0.1234',
           })
           .mockReturnValueOnce({
             alias: 'token-alias',
             type: AliasType.Token,
-            network: 'testnet',
+            network: SupportedNetwork.TESTNET,
             entityId: '0.0.7777',
           }),
       } as unknown as AliasService,
@@ -143,7 +143,7 @@ describe('account plugin - balance command (ADR-003)', () => {
         resolve: jest.fn().mockReturnValue({
           alias: 'test-account',
           type: AliasType.Account,
-          network: 'testnet',
+          network: SupportedNetwork.TESTNET,
           entityId: '0.0.1001',
         }),
       } as unknown as AliasService,
@@ -182,7 +182,7 @@ describe('account plugin - balance command (ADR-003)', () => {
         resolve: jest.fn().mockReturnValue({
           alias: 'acc2',
           type: AliasType.Account,
-          network: 'testnet',
+          network: SupportedNetwork.TESTNET,
           entityId: '0.0.2002',
         }),
       } as unknown as AliasService,
@@ -229,7 +229,7 @@ describe('account plugin - balance command (ADR-003)', () => {
     (alias.resolve as jest.Mock).mockReturnValue({
       alias: 'acc777',
       type: AliasType.Account,
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
       entityId: '0.0.7777',
       createdAt: new Date().toISOString(),
     });
@@ -263,7 +263,7 @@ describe('account plugin - balance command (ADR-003)', () => {
         resolve: jest.fn().mockReturnValue({
           alias: 'acc3',
           type: AliasType.Account,
-          network: 'testnet',
+          network: SupportedNetwork.TESTNET,
           entityId: '0.0.5005',
         }),
       } as unknown as AliasService,
@@ -294,7 +294,7 @@ describe('account plugin - balance command (ADR-003)', () => {
         resolve: jest.fn().mockReturnValue({
           alias: 'acc4',
           type: AliasType.Account,
-          network: 'testnet',
+          network: SupportedNetwork.TESTNET,
           entityId: '0.0.6006',
         }),
       } as unknown as AliasService,
@@ -342,7 +342,7 @@ describe('account plugin - balance command (ADR-003)', () => {
         resolve: jest.fn().mockReturnValue({
           alias: 'test-acc',
           type: AliasType.Account,
-          network: 'testnet',
+          network: SupportedNetwork.TESTNET,
           entityId: '0.0.1111',
         }),
       } as unknown as AliasService,
@@ -377,7 +377,7 @@ describe('account plugin - balance command (ADR-003)', () => {
         resolve: jest.fn().mockReturnValue({
           alias: 'test-acc',
           type: AliasType.Account,
-          network: 'testnet',
+          network: SupportedNetwork.TESTNET,
           entityId: '0.0.2002',
         }),
       } as unknown as AliasService,
@@ -435,7 +435,7 @@ describe('account plugin - balance command (ADR-003)', () => {
         resolve: jest.fn().mockReturnValue({
           alias: 'acc-nft',
           type: AliasType.Account,
-          network: 'testnet',
+          network: SupportedNetwork.TESTNET,
           entityId: '0.0.1234',
         }),
       } as unknown as AliasService,
@@ -491,7 +491,7 @@ describe('account plugin - balance command (ADR-003)', () => {
         resolve: jest.fn().mockReturnValue({
           alias: 'acc-mixed',
           type: AliasType.Account,
-          network: 'testnet',
+          network: SupportedNetwork.TESTNET,
           entityId: '0.0.5005',
         }),
       } as unknown as AliasService,
@@ -535,7 +535,7 @@ describe('account plugin - balance command (ADR-003)', () => {
         resolve: jest.fn().mockReturnValue({
           alias: 'acc-nft',
           type: AliasType.Account,
-          network: 'testnet',
+          network: SupportedNetwork.TESTNET,
           entityId: '0.0.1234',
         }),
       } as unknown as AliasService,
@@ -564,7 +564,7 @@ describe('account plugin - balance command (ADR-003)', () => {
         resolve: jest.fn().mockReturnValue({
           alias: 'acc-empty',
           type: AliasType.Account,
-          network: 'testnet',
+          network: SupportedNetwork.TESTNET,
           entityId: '0.0.1001',
         }),
       } as unknown as AliasService,
@@ -588,7 +588,7 @@ describe('account plugin - balance command (ADR-003)', () => {
         resolve: jest.fn().mockReturnValue({
           alias: 'acc-hbar',
           type: AliasType.Account,
-          network: 'testnet',
+          network: SupportedNetwork.TESTNET,
           entityId: '0.0.1001',
         }),
       } as unknown as AliasService,
@@ -625,7 +625,7 @@ describe('account plugin - balance command (ADR-003)', () => {
         resolve: jest.fn().mockReturnValue({
           alias: 'acc-many',
           type: AliasType.Account,
-          network: 'testnet',
+          network: SupportedNetwork.TESTNET,
           entityId: '0.0.1234',
         }),
       } as unknown as AliasService,
@@ -660,7 +660,7 @@ describe('account plugin - balance command (ADR-003)', () => {
         resolve: jest.fn().mockReturnValue({
           alias: 'test-acc',
           type: AliasType.Account,
-          network: 'testnet',
+          network: SupportedNetwork.TESTNET,
           entityId: '0.0.2002',
         }),
       } as unknown as AliasService,

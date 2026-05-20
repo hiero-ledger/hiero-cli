@@ -18,6 +18,7 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { StateError } from '@/core/errors';
 import { TxSignServiceImpl } from '@/core/services/tx-sign/tx-sign-service';
+import { SupportedNetwork } from '@/core/types/shared.types';
 
 jest.mock('@hiero-ledger/sdk', () => {
   const actual = jest.requireActual('@hiero-ledger/sdk');
@@ -31,7 +32,7 @@ jest.mock('@hiero-ledger/sdk', () => {
 
 const MOCK_KEY_REF_1 = 'kr_test1';
 const MOCK_KEY_REF_2 = 'kr_test2';
-const NETWORK = 'testnet';
+const NETWORK = SupportedNetwork.TESTNET;
 
 const setupService = () => {
   const logger = makeLogger();

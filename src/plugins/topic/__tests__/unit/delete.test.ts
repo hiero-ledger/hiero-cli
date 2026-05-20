@@ -29,6 +29,7 @@ import {
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, TransactionError, ValidationError } from '@/core';
 import { createMockTopicInfo } from '@/core/services/mirrornode/__tests__/unit/mocks';
+import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
 import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 import { TopicDeleteOutputSchema } from '@/plugins/topic/commands/delete';
 import { topicDelete } from '@/plugins/topic/commands/delete/handler';
@@ -43,7 +44,10 @@ const MockedHelper = ZustandTopicStateHelper as jest.Mock;
 function topicMirrorInfo(topicId: string) {
   return createMockTopicInfo({
     topic_id: topicId,
-    admin_key: { _type: 'ED25519', key: ED25519_DER_PUBLIC_KEY },
+    admin_key: {
+      _type: MirrorNodeKeyType.ED25519,
+      key: ED25519_DER_PUBLIC_KEY,
+    },
     deleted: false,
   });
 }

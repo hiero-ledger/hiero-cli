@@ -8,6 +8,7 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import {
   tokenFreeze,
   TokenFreezeOutputSchema,
@@ -43,7 +44,7 @@ describe('tokenFreeze', () => {
       expect(output.transactionId).toBe('0.0.123@1234567890.123456789');
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.accountId).toBe('0.0.5678');
-      expect(output.network).toBe('testnet');
+      expect(output.network).toBe(SupportedNetwork.TESTNET);
     });
 
     test('freezes account resolved from token alias', async () => {

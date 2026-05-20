@@ -295,7 +295,7 @@ describe('AliasServiceImpl', () => {
       const result = aliasService.list({ network: SupportedNetwork.TESTNET });
 
       expect(result).toHaveLength(1);
-      expect(result[0].network).toBe('testnet');
+      expect(result[0].network).toBe(SupportedNetwork.TESTNET);
     });
 
     it('should filter by type', () => {

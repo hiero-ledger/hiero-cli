@@ -6,6 +6,7 @@ import { makeHederaSdkContractMock } from '@/__tests__/mocks/hedera-sdk-contract
 import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError, StateError } from '@/core/errors';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import { makeContractErc20CallCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { ContractErc20CallBalanceOfOutputSchema } from '@/plugins/contract-erc20/commands/balance-of';
@@ -67,14 +68,14 @@ describe('contract-erc20 plugin - balanceOf command (unit)', () => {
     expect(parsed.contractId).toBe('0.0.1234');
     expect(parsed.account).toBe(accountAddress);
     expect(parsed.balance).toBe('5000000000000000000');
-    expect(parsed.network).toBe('testnet');
+    expect(parsed.network).toBe(SupportedNetwork.TESTNET);
 
     expect(
       args.api.identityResolution.resolveReferenceToEntityOrEvmAddress,
     ).toHaveBeenCalledWith({
       entityReference: 'some-alias-or-id',
       referenceType: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
       aliasType: expect.any(String),
     });
     expect(args.api.contractQuery.queryContractFunction).toHaveBeenCalledWith(
@@ -147,7 +148,7 @@ describe('contract-erc20 plugin - balanceOf command (unit)', () => {
     expect(args.api.identityResolution.resolveAccount).toHaveBeenCalledWith({
       accountReference: 'my-account-alias',
       type: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
     expect(args.api.contractQuery.queryContractFunction).toHaveBeenCalledWith(
       expect.objectContaining({

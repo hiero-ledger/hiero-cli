@@ -7,6 +7,7 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import {
@@ -142,7 +143,7 @@ describe('tokenBurnNftHandler', () => {
             supply_key: { key: 'supply-public-key' },
             total_supply: '1000000',
             max_supply: '0',
-            type: 'FUNGIBLE_COMMON',
+            type: MirrorNodeTokenType.FUNGIBLE_COMMON,
           }),
         },
         alias: {
@@ -218,7 +219,7 @@ describe('tokenBurnNftHandler', () => {
             supply_key: null,
             total_supply: '10',
             max_supply: '0',
-            type: 'NON_FUNGIBLE_UNIQUE',
+            type: MirrorNodeTokenType.NON_FUNGIBLE_UNIQUE,
           }),
         },
         alias: {

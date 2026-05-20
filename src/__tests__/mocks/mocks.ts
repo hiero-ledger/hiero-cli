@@ -99,26 +99,26 @@ export const makeLogger = (): jest.Mocked<Logger> => ({
  * Create a mocked NetworkService
  */
 export const makeNetworkMock = (
-  network:
-    | SupportedNetwork
-    | 'testnet'
-    | 'mainnet'
-    | 'previewnet'
-    | 'localnet' = SupportedNetwork.TESTNET,
+  network: SupportedNetwork = SupportedNetwork.TESTNET,
 ): jest.Mocked<NetworkService> => ({
   getCurrentNetwork: jest.fn().mockReturnValue(network),
   setNetwork: jest.fn(),
   getAvailableNetworks: jest
     .fn()
-    .mockReturnValue(['localnet', 'testnet', 'previewnet', 'mainnet']),
+    .mockReturnValue([
+      SupportedNetwork.LOCALNET,
+      SupportedNetwork.TESTNET,
+      SupportedNetwork.PREVIEWNET,
+      SupportedNetwork.MAINNET,
+    ]),
   switchNetwork: jest.fn(),
-  getNetworkConfig: jest.fn().mockImplementation((name: string) => ({
+  getNetworkConfig: jest.fn().mockImplementation((name: SupportedNetwork) => ({
     name,
     rpcUrl: `https://${name}.hashio.io/api`,
     mirrorNodeUrl: `https://${name}.mirrornode.hedera.com/api/v1`,
-    chainId: name === 'mainnet' ? '0x127' : '0x128',
+    chainId: name === SupportedNetwork.MAINNET ? '0x127' : '0x128',
     explorerUrl: `https://hashscan.io/${name}`,
-    isTestnet: name !== 'mainnet',
+    isTestnet: name !== SupportedNetwork.MAINNET,
   })),
   isNetworkAvailable: jest.fn().mockReturnValue(true),
   getLocalnetConfig: jest.fn().mockReturnValue({
@@ -250,7 +250,7 @@ export const makeAliasMock = (): jest.Mocked<AliasService> => ({
     entityId: '0.0.1234',
     alias: 'default',
     type: AliasType.Contract,
-    network: 'testnet',
+    network: SupportedNetwork.TESTNET,
     createdAt: '2024-01-01T00:00:00.000Z',
   }),
   resolveByEvmAddress: jest.fn().mockReturnValue(null),
@@ -549,7 +549,7 @@ const makeContractCompilerServiceMock = (): ContractCompilerService =>
  */
 export const makeConfigMock = (): jest.Mocked<ConfigService> => ({
   listOptions: jest.fn().mockReturnValue([]),
-  getOption: jest.fn().mockReturnValue('local'), // Default key manager
+  getOption: jest.fn().mockReturnValue(KeyManager.local),
   setOption: jest.fn(),
 });
 

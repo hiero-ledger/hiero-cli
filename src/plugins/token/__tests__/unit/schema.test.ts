@@ -3,7 +3,7 @@
  * Tests the token data validation and schema functionality
  */
 import { HederaTokenType } from '@/core/shared/constants';
-import { SupplyType } from '@/core/types/shared.types';
+import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 import { TokenCreateFtInputSchema } from '@/plugins/token/commands/create-ft/input';
 import {
   FungibleTokenFileSchema,
@@ -330,7 +330,7 @@ describe('Token Schema Validation', () => {
       treasuryKey: 'my-treasury',
       adminKey: 'my-admin',
       memo: '',
-      tokenType: 'FungibleCommon',
+      tokenType: HederaTokenType.FUNGIBLE_COMMON,
     };
 
     test('should accept up to 10 custom fees', () => {
@@ -571,7 +571,7 @@ describe('Token Schema Validation', () => {
         maxSupply: 10000,
         treasuryId: '0.0.789012',
         associations: [],
-        network: 'testnet',
+        network: SupportedNetwork.TESTNET,
         customFees: [],
         tokenType: HederaTokenType.FUNGIBLE_COMMON,
       };
@@ -591,7 +591,7 @@ describe('Token Schema Validation', () => {
         maxSupply: 0,
         treasuryId: '0.0.789012',
         associations: [],
-        network: 'testnet',
+        network: SupportedNetwork.TESTNET,
         customFees: [],
         tokenType: HederaTokenType.FUNGIBLE_COMMON,
       };
@@ -612,7 +612,7 @@ describe('Token Schema Validation', () => {
         maxSupply: 10000,
         treasuryId: '0.0.789012',
         associations: [],
-        network: 'testnet',
+        network: SupportedNetwork.TESTNET,
         customFees: [],
         tokenType: HederaTokenType.FUNGIBLE_COMMON,
       };
@@ -633,7 +633,7 @@ describe('Token Schema Validation', () => {
         maxSupply: 10000,
         treasuryId: '0.0.789012',
         associations: [],
-        network: 'testnet',
+        network: SupportedNetwork.TESTNET,
         customFees: [],
       };
 

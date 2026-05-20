@@ -75,7 +75,7 @@ describe('account plugin - create command (ADR-003)', () => {
 
     expect(kms.createLocalPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
-      'local',
+      KeyManager.local,
       ['account:create', 'account:myAccount'],
     );
     expect(account.createAccount).toHaveBeenCalledWith({
@@ -88,7 +88,7 @@ describe('account plugin - create command (ADR-003)', () => {
       expect.objectContaining({
         alias: 'myAccount',
         type: AliasType.Account,
-        network: 'testnet',
+        network: SupportedNetwork.TESTNET,
         entityId: '0.0.9999',
         publicKey: 'pub-key-test',
         keyRefId: 'kr_test123',
@@ -100,7 +100,7 @@ describe('account plugin - create command (ADR-003)', () => {
         name: 'myAccount',
         accountId: '0.0.9999',
         type: KeyAlgorithm.ECDSA,
-        network: 'testnet',
+        network: SupportedNetwork.TESTNET,
         keyRefId: 'kr_test123',
         evmAddress: ACCOUNT_ID_EVM_ADDRESS_9999,
       }),
@@ -111,7 +111,7 @@ describe('account plugin - create command (ADR-003)', () => {
     expect(output.accountId).toBe('0.0.9999');
     expect(output.name).toBe('myAccount');
     expect(output.type).toBe(KeyAlgorithm.ECDSA);
-    expect(output.network).toBe('testnet');
+    expect(output.network).toBe(SupportedNetwork.TESTNET);
     expect(output.transactionId).toBe('0.0.1234@1234567890.000000000');
     expect(output.evmAddress).toBe(ACCOUNT_ID_EVM_ADDRESS_9999);
     expect(output.publicKey).toBe(ECDSA_HEX_PUBLIC_KEY);
@@ -220,7 +220,7 @@ describe('account plugin - create command (ADR-003)', () => {
 
     expect(kms.createLocalPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
-      'local',
+      KeyManager.local,
       ['account:create', 'account:ecdsaAccount'],
     );
     expect(account.createAccount).toHaveBeenCalledWith(
@@ -457,7 +457,7 @@ describe('account plugin - create command (ADR-003)', () => {
 
     expect(kms.createLocalPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ED25519,
-      'local',
+      KeyManager.local,
       ['account:create', 'account:ed25519Account'],
     );
     expect(account.createAccount).toHaveBeenCalledWith(

@@ -18,6 +18,7 @@ import { ConfigurationError, NotFoundError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { KmsServiceImpl } from '@/core/services/kms/kms-service';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
+import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
@@ -98,8 +99,8 @@ jest.mock('@hiero-ledger/sdk', () => ({
     forNetwork: jest.fn(() => buildClient()),
   },
   TokenType: {
-    NonFungibleUnique: 'NON_FUNGIBLE_UNIQUE',
-    FungibleCommon: 'FUNGIBLE_COMMON',
+    NonFungibleUnique: MirrorNodeTokenType.NON_FUNGIBLE_UNIQUE,
+    FungibleCommon: MirrorNodeTokenType.FUNGIBLE_COMMON,
   },
 }));
 

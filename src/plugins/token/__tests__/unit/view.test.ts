@@ -7,9 +7,16 @@ import {
   MOCK_ACCOUNT_ID,
 } from '@/__tests__/mocks/fixtures';
 import { assertOutput } from '@/__tests__/utils/assert-output';
-import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
+import {
+  MirrorNodeKeyType,
+  MirrorNodeTokenType,
+} from '@/core/services/mirrornode/types';
 import { DAY_IN_SECONDS } from '@/core/shared/constants';
-import { AliasType } from '@/core/types/shared.types';
+import {
+  AliasType,
+  SupplyType,
+  SupportedNetwork,
+} from '@/core/types/shared.types';
 import {
   tokenView,
   TokenViewOutputSchema,
@@ -38,8 +45,8 @@ describe('tokenViewHandler', () => {
         decimals: '2',
         total_supply: '1000000',
         max_supply: '0',
-        type: 'FUNGIBLE_COMMON',
-        supply_type: 'INFINITE',
+        type: MirrorNodeTokenType.FUNGIBLE_COMMON,
+        supply_type: SupplyType.INFINITE,
         treasury_account_id: MOCK_ACCOUNT_ID,
         freeze_default: true,
         auto_renew_period: 30 * DAY_IN_SECONDS,
@@ -72,7 +79,7 @@ describe('tokenViewHandler', () => {
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
       expect(output.symbol).toBe('TEST');
-      expect(output.type).toBe('FUNGIBLE_COMMON');
+      expect(output.type).toBe(MirrorNodeTokenType.FUNGIBLE_COMMON);
       expect(output.freezeDefault).toBe(true);
       expect(output.treasury).toBe(MOCK_ACCOUNT_ID);
       expect(output.autoRenewPeriodSeconds).toBe(30 * DAY_IN_SECONDS);
@@ -87,8 +94,8 @@ describe('tokenViewHandler', () => {
         decimals: '2',
         total_supply: '1000000',
         max_supply: '0',
-        type: 'FUNGIBLE_COMMON',
-        supply_type: 'INFINITE',
+        type: MirrorNodeTokenType.FUNGIBLE_COMMON,
+        supply_type: SupplyType.INFINITE,
         treasury_account_id: MOCK_ACCOUNT_ID,
         freeze_default: false,
         admin_key: {
@@ -131,8 +138,8 @@ describe('tokenViewHandler', () => {
         decimals: '2',
         total_supply: '1000000',
         max_supply: '0',
-        type: 'FUNGIBLE_COMMON',
-        supply_type: 'INFINITE',
+        type: MirrorNodeTokenType.FUNGIBLE_COMMON,
+        supply_type: SupplyType.INFINITE,
         treasury_account_id: MOCK_ACCOUNT_ID,
         admin_key: null,
         supply_key: null,
@@ -169,7 +176,7 @@ describe('tokenViewHandler', () => {
       expect(alias.resolve).toHaveBeenCalledWith(
         'my-token',
         AliasType.Token,
-        'testnet',
+        SupportedNetwork.TESTNET,
       );
     });
   });

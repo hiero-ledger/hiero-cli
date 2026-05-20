@@ -4,6 +4,7 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { ValidationError } from '@/core/errors';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import {
   batchCreate,
   BatchCreateOutputSchema,
@@ -111,7 +112,9 @@ describe('batch plugin - create command', () => {
     }));
 
     const { networkMock, kmsMock, configMock } = makeBatchApiMocks();
-    configMock.getOption = jest.fn().mockReturnValue('local_encrypted');
+    configMock.getOption = jest
+      .fn()
+      .mockReturnValue(KeyManager.local_encrypted);
 
     const api: Partial<CoreApi> = {
       network: networkMock,
@@ -131,7 +134,7 @@ describe('batch plugin - create command', () => {
 
     expect(resolveSigningKeyMock).toHaveBeenCalledWith(
       expect.anything(),
-      'local_encrypted',
+      KeyManager.local_encrypted,
       true,
       ['batch:signer'],
     );

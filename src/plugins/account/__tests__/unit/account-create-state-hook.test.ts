@@ -11,7 +11,7 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 import { ACCOUNT_CREATE_COMMAND_NAME } from '@/plugins/account/commands/create';
 import { AccountCreateStateHook } from '@/plugins/account/hooks/account-create-state';
 import { AccountStateServiceImpl } from '@/plugins/account/services/account-state.service';
@@ -318,7 +318,7 @@ describe('account plugin - account-create-state hook', () => {
     expect(result.breakFlow).toBe(false);
     expect(registerMock).toHaveBeenCalledWith({
       alias: 'my-account-alias',
-      type: 'account',
+      type: AliasType.Account,
       network: SupportedNetwork.TESTNET,
       entityId: '0.0.8888',
       evmAddress: '0x00000000000000000000000000000000000022b8',

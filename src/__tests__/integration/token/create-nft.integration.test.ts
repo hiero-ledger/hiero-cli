@@ -28,7 +28,7 @@ describe('Create NFT Integration Tests', () => {
     const createAccountArgs: Record<string, unknown> = {
       name: 'account-create-nft',
       balance: 1,
-      'key-type': 'ecdsa',
+      'key-type': KeyAlgorithm.ECDSA,
       'auto-associations': 10,
     };
     const createAccountResult = await accountCreate({

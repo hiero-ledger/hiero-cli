@@ -6,6 +6,7 @@ import { makeHederaSdkContractMock } from '@/__tests__/mocks/hedera-sdk-contract
 import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { StateError } from '@/core/errors';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import { makeContractErc20CallCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { ContractErc20CallSymbolOutputSchema } from '@/plugins/contract-erc20/commands/symbol';
@@ -45,14 +46,14 @@ describe('contract-erc20 plugin - symbol command (unit)', () => {
 
     expect(parsed.contractId).toBe('0.0.1234');
     expect(parsed.contractSymbol).toBe('HBAR');
-    expect(parsed.network).toBe('testnet');
+    expect(parsed.network).toBe(SupportedNetwork.TESTNET);
 
     expect(
       args.api.identityResolution.resolveReferenceToEntityOrEvmAddress,
     ).toHaveBeenCalledWith({
       entityReference: 'some-alias-or-id',
       referenceType: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
       aliasType: expect.any(String),
     });
     expect(args.api.contractQuery.queryContractFunction).toHaveBeenCalledWith(

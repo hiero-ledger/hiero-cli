@@ -7,6 +7,7 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import {
@@ -158,7 +159,7 @@ describe('tokenUpdateNftMetadataHandler', () => {
         mirror: {
           getTokenInfo: jest.fn().mockResolvedValue({
             decimals: '2',
-            type: 'FUNGIBLE_COMMON',
+            type: MirrorNodeTokenType.FUNGIBLE_COMMON,
             metadata_key: { key: 'some-key' },
           }),
         },

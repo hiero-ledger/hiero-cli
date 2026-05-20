@@ -15,6 +15,7 @@ import {
 import { makeLogger } from '@/__tests__/mocks/mocks';
 import { ValidationError } from '@/core/errors';
 import { AccountServiceImpl } from '@/core/services/account/account-transaction-service';
+import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 
 import {
   createMockAccountCreateTransaction,
@@ -48,8 +49,8 @@ jest.mock('@hiero-ledger/sdk', () => ({
     fromTinybars: jest.fn(() => mockHbarInstance),
   },
   TokenType: {
-    NonFungibleUnique: 'NON_FUNGIBLE_UNIQUE',
-    FungibleCommon: 'FUNGIBLE_COMMON',
+    NonFungibleUnique: MirrorNodeTokenType.NON_FUNGIBLE_UNIQUE,
+    FungibleCommon: MirrorNodeTokenType.FUNGIBLE_COMMON,
   },
 }));
 

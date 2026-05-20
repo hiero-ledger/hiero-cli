@@ -9,6 +9,7 @@ import * as os from 'os';
 import * as path from 'path';
 
 import { makeLogger } from '@/__tests__/mocks/mocks';
+import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { ZustandGenericStateServiceImpl } from '@/core/services/state/state-service';
 
 const NAMESPACE_FOO = 'foo-namespace';
@@ -33,8 +34,8 @@ jest.mock('path', () => ({
 
 jest.mock('@hiero-ledger/sdk', () => ({
   TokenType: {
-    NonFungibleUnique: 'NON_FUNGIBLE_UNIQUE',
-    FungibleCommon: 'FUNGIBLE_COMMON',
+    NonFungibleUnique: MirrorNodeTokenType.NON_FUNGIBLE_UNIQUE,
+    FungibleCommon: MirrorNodeTokenType.FUNGIBLE_COMMON,
   },
 }));
 

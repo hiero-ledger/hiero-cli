@@ -3,7 +3,8 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import '@/core/utils/json-serialize';
 
 import { assertOutput } from '@/__tests__/utils/assert-output';
-import { SupplyType } from '@/core/types/shared.types';
+import { HederaTokenType } from '@/core/shared/constants';
+import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 import {
   tokenList,
   TokenListOutputSchema,
@@ -49,11 +50,11 @@ describe('tokenListHandler', () => {
             symbol: 'TTK',
             decimals: 2,
             supplyType: SupplyType.INFINITE,
-            tokenType: 'FungibleCommon',
+            tokenType: HederaTokenType.FUNGIBLE_COMMON,
             maxSupply: 0,
             associationCount: 0,
             treasuryId: '0.0.111',
-            network: 'testnet',
+            network: SupportedNetwork.TESTNET,
           },
         ]),
         getTokensWithStats: jest.fn().mockReturnValue({
@@ -90,11 +91,11 @@ describe('tokenListHandler', () => {
             symbol: 'MNT',
             decimals: 8,
             supplyType: SupplyType.FINITE,
-            tokenType: 'FungibleCommon',
+            tokenType: HederaTokenType.FUNGIBLE_COMMON,
             maxSupply: 0,
             associationCount: 0,
             treasuryId: '0.0.222',
-            network: 'mainnet',
+            network: SupportedNetwork.MAINNET,
           },
         ]),
         getTokensWithStats: jest.fn().mockReturnValue({
@@ -110,7 +111,7 @@ describe('tokenListHandler', () => {
       const { api } = makeApiMocks();
 
       const args: CommandHandlerArgs = {
-        args: { network: 'mainnet' },
+        args: { network: SupportedNetwork.MAINNET },
         api,
       };
 
@@ -119,7 +120,7 @@ describe('tokenListHandler', () => {
       const output = assertOutput(result.result, TokenListOutputSchema);
       expect(output.tokens).toHaveLength(1);
       expect(output.tokens[0].tokenId).toBe('0.0.99999');
-      expect(output.tokens[0].network).toBe('mainnet');
+      expect(output.tokens[0].network).toBe(SupportedNetwork.MAINNET);
     });
   });
 

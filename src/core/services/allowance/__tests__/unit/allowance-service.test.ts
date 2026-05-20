@@ -11,6 +11,7 @@ import {
 } from '@/__tests__/mocks/fixtures';
 import { ValidationError } from '@/core/errors';
 import { AllowanceServiceImpl } from '@/core/services/allowance/allowance-service';
+import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 
 const mockApproveDeleteAllSerials = jest.fn().mockReturnThis();
 const mockDeleteAllTokenNftAllowances = jest.fn().mockReturnThis();
@@ -41,8 +42,8 @@ jest.mock('@hiero-ledger/sdk', () => ({
     fromString: jest.fn().mockReturnValue({}),
   },
   TokenType: {
-    NonFungibleUnique: 'NON_FUNGIBLE_UNIQUE',
-    FungibleCommon: 'FUNGIBLE_COMMON',
+    NonFungibleUnique: MirrorNodeTokenType.NON_FUNGIBLE_UNIQUE,
+    FungibleCommon: MirrorNodeTokenType.FUNGIBLE_COMMON,
   },
 }));
 

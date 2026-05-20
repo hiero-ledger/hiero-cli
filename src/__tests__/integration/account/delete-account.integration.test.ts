@@ -11,6 +11,7 @@ import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
+import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import {
   accountBalance,
@@ -107,7 +108,7 @@ describe('Delete Account Integration Tests', () => {
           args: {
             name: 'account-network-delete',
             balance: 1,
-            'key-type': 'ecdsa',
+            'key-type': KeyAlgorithm.ECDSA,
             'auto-associations': 10,
           },
           api: coreApi,
@@ -120,7 +121,7 @@ describe('Delete Account Integration Tests', () => {
           args: {
             name: 'beneficiary-network-delete',
             balance: 1,
-            'key-type': 'ecdsa',
+            'key-type': KeyAlgorithm.ECDSA,
             'auto-associations': 10,
           },
           api: coreApi,

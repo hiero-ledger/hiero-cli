@@ -29,7 +29,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
     const createAccountArgs: Record<string, unknown> = {
       name: alias,
       balance: 1,
-      'key-type': 'ecdsa',
+      'key-type': KeyAlgorithm.ECDSA,
       'auto-associations': 10,
     };
     const createAccountResult = await accountCreate({
@@ -85,7 +85,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
     const accountFromArgs: Record<string, unknown> = {
       name: aliasFrom,
       balance: 1,
-      'key-type': 'ecdsa',
+      'key-type': KeyAlgorithm.ECDSA,
       'auto-associations': 10,
     };
     const accountFromResult = await accountCreate({
@@ -101,7 +101,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
     const accountToArgs: Record<string, unknown> = {
       name: aliasTo,
       balance: 1,
-      'key-type': 'ecdsa',
+      'key-type': KeyAlgorithm.ECDSA,
       'auto-associations': 10,
     };
     const accountToResult = await accountCreate({

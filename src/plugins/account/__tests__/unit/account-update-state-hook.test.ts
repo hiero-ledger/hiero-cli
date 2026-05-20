@@ -16,6 +16,7 @@ import {
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import {
+  AliasType,
   MirrorTransactionResult,
   SupportedNetwork,
 } from '@/core/types/shared.types';
@@ -284,7 +285,7 @@ describe('account plugin - account-update-state hook', () => {
 
     const aliasRecord = {
       alias: 'my-account',
-      type: 'account',
+      type: AliasType.Account,
       network: SupportedNetwork.TESTNET,
       entityId: MOCK_ACCOUNT_ID,
       publicKey: 'old-pk',
@@ -648,7 +649,7 @@ describe('account plugin - account-update-state hook (schedule path)', () => {
 
     const aliasRecord = {
       alias: 'my-account',
-      type: 'account',
+      type: AliasType.Account,
       network: SupportedNetwork.TESTNET,
       entityId: MOCK_ACCOUNT_ID,
       publicKey: 'old-pk',

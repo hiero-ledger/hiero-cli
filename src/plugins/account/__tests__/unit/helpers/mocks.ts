@@ -21,6 +21,7 @@ import {
   makeTxExecuteMock,
   makeTxSignMock,
 } from '@/__tests__/mocks/mocks';
+import { SupportedNetwork } from '@/core/types/shared.types';
 
 import {
   mockAccountData,
@@ -190,7 +191,7 @@ export function mockIdentityResolution(
 export interface ApiMocksConfig {
   createAccountImpl?: jest.Mock;
   executeImpl?: jest.Mock;
-  network?: 'testnet' | 'mainnet' | 'previewnet';
+  network?: SupportedNetwork;
   operatorBalance?: bigint;
   keyResolverGetPublicKeyImpl?: jest.Mock;
 }
@@ -206,7 +207,7 @@ export interface ApiMocksConfig {
 export const makeApiMocksForAccountCreate = ({
   createAccountImpl,
   executeImpl,
-  network = 'testnet',
+  network = SupportedNetwork.TESTNET,
   operatorBalance = OPERATOR_SUFFICIENT_BALANCE,
   keyResolverGetPublicKeyImpl,
 }: ApiMocksConfig) => {
@@ -270,13 +271,13 @@ export const makeApiMocksForAccountCreate = ({
 export interface ApiMocksDeleteConfig {
   deleteAccountImpl?: jest.Mock;
   executeImpl?: jest.Mock;
-  network?: 'testnet' | 'mainnet' | 'previewnet';
+  network?: SupportedNetwork;
 }
 
 export const makeApiMocksForAccountDelete = ({
   deleteAccountImpl,
   executeImpl,
-  network = 'testnet',
+  network = SupportedNetwork.TESTNET,
 }: ApiMocksDeleteConfig) => {
   const account: jest.Mocked<AccountService> = {
     createAccount: jest.fn(),

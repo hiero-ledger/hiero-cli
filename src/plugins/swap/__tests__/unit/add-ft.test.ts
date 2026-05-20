@@ -13,6 +13,7 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { ValidationError } from '@/core/errors';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION } from '@/core/shared/constants';
 import { swapAddFt } from '@/plugins/swap/commands/add-ft/handler';
 import { SwapAddFtOutputSchema } from '@/plugins/swap/commands/add-ft/output';
@@ -231,7 +232,9 @@ describe('swap plugin - add-ft command', () => {
     }));
 
     const { networkMock, configMock, mirrorMock } = makeSwapApiMocks();
-    configMock.getOption = jest.fn().mockReturnValue('local_encrypted');
+    configMock.getOption = jest
+      .fn()
+      .mockReturnValue(KeyManager.local_encrypted);
 
     const api: Partial<CoreApi> = {
       network: networkMock,
@@ -255,7 +258,7 @@ describe('swap plugin - add-ft command', () => {
 
     expect(resolveAccountCredentialsMock).toHaveBeenCalledWith(
       expect.anything(),
-      'local_encrypted',
+      KeyManager.local_encrypted,
       true,
       expect.any(Array),
     );
