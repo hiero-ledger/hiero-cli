@@ -4,21 +4,19 @@ import { ZodError } from 'zod';
 
 import {
   MOCK_ACCOUNT_ID,
+  MOCK_ACCOUNT_ID_TO,
   MOCK_CONTRACT_ID,
+  MOCK_CONTRACT_ID_UNKNOWN,
   MOCK_EVM_ADDRESS,
   MOCK_EVM_ADDRESS_ALT,
   MOCK_EVM_ADDRESS_ALT_2,
+  MOCK_HEDERA_ENTITY_ID_1,
   MOCK_TX_ID,
 } from '@/__tests__/mocks/fixtures';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError, TransactionError } from '@/core/errors';
 import { SupportedNetwork } from '@/core/types/shared.types';
-import {
-  makeContractErc721ExecuteCommandArgs,
-  MOCK_ACCOUNT_ID_FROM,
-  MOCK_ACCOUNT_ID_TO,
-  MOCK_CONTRACT_ID_ALT,
-} from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
+import { makeContractErc721ExecuteCommandArgs } from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
 import {
   makeApiMocks,
   makeLogger,
@@ -139,8 +137,8 @@ describe('contract-erc721 plugin - transferFrom command (unit)', () => {
       api,
       logger,
       args: {
-        contract: MOCK_CONTRACT_ID_ALT,
-        from: MOCK_ACCOUNT_ID_FROM,
+        contract: MOCK_CONTRACT_ID_UNKNOWN,
+        from: MOCK_HEDERA_ENTITY_ID_1,
         to: MOCK_ACCOUNT_ID_TO,
         gas: 7210000,
         tokenId: 50,
@@ -151,12 +149,12 @@ describe('contract-erc721 plugin - transferFrom command (unit)', () => {
 
     expect(result.result).toBeDefined();
     expect(args.api.identityResolution.resolveContract).toHaveBeenCalledWith({
-      contractReference: MOCK_CONTRACT_ID_ALT,
+      contractReference: MOCK_CONTRACT_ID_UNKNOWN,
       type: expect.any(String),
       network: SupportedNetwork.TESTNET,
     });
     expect(args.api.identityResolution.resolveAccount).toHaveBeenCalledWith({
-      accountReference: MOCK_ACCOUNT_ID_FROM,
+      accountReference: MOCK_HEDERA_ENTITY_ID_1,
       type: expect.any(String),
       network: SupportedNetwork.TESTNET,
     });

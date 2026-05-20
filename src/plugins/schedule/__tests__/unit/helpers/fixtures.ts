@@ -5,9 +5,6 @@ export const SCHEDULE_COMPOSED_KEY = `${SupportedNetwork.TESTNET}:${SCHEDULE_NAM
 export const ADMIN_KEY_REF = 'kr_admintest123';
 export const PAYER_ACCOUNT_ID = '0.0.5555555';
 export const PAYER_KEY_REF_ID = 'kr_payertest123';
-/** Valid ECDSA compressed public key (matches PublicKeyDefinitionSchema). */
-export const ADMIN_PUBLIC_KEY =
-  '0230a1f42abc4794541e4a4389ec7e822666b8a7693c4cc3dedd2746b32f9c015b';
 
 /** On-chain schedule entity id (for delete / sign flows). */
 export const ON_CHAIN_SCHEDULE_ID = '0.0.8888888';

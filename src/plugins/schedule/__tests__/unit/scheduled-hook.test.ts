@@ -7,6 +7,7 @@ import type { ScheduledNormalizedParams } from '@/plugins/schedule/hooks/schedul
 
 import { PublicKey } from '@hiero-ledger/sdk';
 
+import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
   makeArgs,
@@ -32,7 +33,6 @@ import { ZustandScheduleStateHelper } from '@/plugins/schedule/zustand-state-hel
 
 import {
   ADMIN_KEY_REF,
-  ADMIN_PUBLIC_KEY,
   COMMAND_SIGNER_KEY_REF,
   DELETE_SUCCESS_TX_ID,
   ON_CHAIN_SCHEDULE_ID,
@@ -184,7 +184,7 @@ describe('schedule plugin — scheduled hook', () => {
       keyManager: KeyManager.local,
       scheduled: false,
       executed: false,
-      adminPublicKeys: [ADMIN_PUBLIC_KEY],
+      adminPublicKeys: [ECDSA_HEX_PUBLIC_KEY],
       adminKeyRefIds: [ADMIN_KEY_REF],
       payerKeyRefId: PAYER_KEY_REF_ID,
       payerAccountId: '0.0.3',

@@ -1,6 +1,7 @@
 import type { CoreApi, KeyResolverService, TransactionResult } from '@/core';
 import type { ScheduleInfo } from '@/core/services/mirrornode/types';
 
+import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
   makeArgs,
@@ -23,7 +24,6 @@ import { ZustandScheduleStateHelper } from '@/plugins/schedule/zustand-state-hel
 
 import {
   ADMIN_KEY_REF,
-  ADMIN_PUBLIC_KEY,
   DELETE_SUCCESS_TX_ID,
   ON_CHAIN_SCHEDULE_ID,
   SCHEDULE_COMPOSED_KEY,
@@ -56,7 +56,7 @@ function resolvedSchedule(overrides: Record<string, unknown> = {}) {
 function makeScheduleInfo(
   adminKey: ScheduleInfo['admin_key'] = {
     _type: 'ED25519',
-    key: ADMIN_PUBLIC_KEY,
+    key: ECDSA_HEX_PUBLIC_KEY,
   },
 ): Partial<ScheduleInfo> {
   return {
@@ -200,7 +200,7 @@ describe('schedule plugin — delete command', () => {
     const getScheduledMock = jest
       .fn()
       .mockResolvedValue(
-        makeScheduleInfo({ _type: 'ED25519', key: ADMIN_PUBLIC_KEY }),
+        makeScheduleInfo({ _type: 'ED25519', key: ECDSA_HEX_PUBLIC_KEY }),
       );
 
     const api: Partial<CoreApi> = {
@@ -223,7 +223,7 @@ describe('schedule plugin — delete command', () => {
     expect(getScheduledMock).toHaveBeenCalledWith(ON_CHAIN_SCHEDULE_ID);
     expect(resolveSigningKeysMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        mirrorRoleKey: { _type: 'ED25519', key: ADMIN_PUBLIC_KEY },
+        mirrorRoleKey: { _type: 'ED25519', key: ECDSA_HEX_PUBLIC_KEY },
         explicitCredentials: [],
       }),
     );
@@ -344,7 +344,7 @@ describe('schedule plugin — delete command', () => {
     const getScheduledMock = jest
       .fn()
       .mockResolvedValue(
-        makeScheduleInfo({ _type: 'ED25519', key: ADMIN_PUBLIC_KEY }),
+        makeScheduleInfo({ _type: 'ED25519', key: ECDSA_HEX_PUBLIC_KEY }),
       );
 
     const api: Partial<CoreApi> = {

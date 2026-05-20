@@ -5,6 +5,7 @@ import { ZodError } from 'zod';
 import {
   MOCK_ACCOUNT_ID,
   MOCK_CONTRACT_ID,
+  MOCK_CONTRACT_ID_UNKNOWN,
   MOCK_EVM_ADDRESS,
 } from '@/__tests__/mocks/fixtures';
 import { makeHederaSdkContractMock } from '@/__tests__/mocks/hedera-sdk-contract-mock';
@@ -12,10 +13,7 @@ import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { StateError } from '@/core/errors';
 import { SupportedNetwork } from '@/core/types/shared.types';
-import {
-  makeContractErc721CallCommandArgs,
-  MOCK_CONTRACT_ID_ALT,
-} from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
+import { makeContractErc721CallCommandArgs } from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
 import {
   contractErc721BalanceOf,
@@ -137,7 +135,7 @@ describe('contract-erc721 plugin - balanceOf command (unit)', () => {
 
     (args.api.identityResolution.resolveAccount as jest.Mock).mockResolvedValue(
       {
-        accountId: MOCK_CONTRACT_ID_ALT,
+        accountId: MOCK_CONTRACT_ID_UNKNOWN,
         accountPublicKey: 'pub-key-alias',
         evmAddress: MOCK_EVM_ADDRESS,
       },

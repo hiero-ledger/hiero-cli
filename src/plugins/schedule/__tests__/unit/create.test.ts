@@ -1,6 +1,7 @@
 import type { KeyResolverService } from '@/core';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 
+import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
 import { makeConfigMock, makeNetworkMock } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { ValidationError } from '@/core/errors';
@@ -14,7 +15,6 @@ import { ZustandScheduleStateHelper } from '@/plugins/schedule/zustand-state-hel
 
 import {
   ADMIN_KEY_REF,
-  ADMIN_PUBLIC_KEY,
   PAYER_ACCOUNT_ID,
   PAYER_KEY_REF_ID,
   SCHEDULE_COMPOSED_KEY,
@@ -123,7 +123,7 @@ describe('schedule plugin — create command', () => {
 
     const resolveSigningKeyMock = jest.fn().mockResolvedValue({
       keyRefId: ADMIN_KEY_REF,
-      publicKey: ADMIN_PUBLIC_KEY,
+      publicKey: ECDSA_HEX_PUBLIC_KEY,
     });
 
     const networkMock = makeNetworkMock(SupportedNetwork.TESTNET);
@@ -157,7 +157,7 @@ describe('schedule plugin — create command', () => {
       SCHEDULE_COMPOSED_KEY,
       expect.objectContaining({
         adminKeyRefIds: [ADMIN_KEY_REF],
-        adminPublicKeys: [ADMIN_PUBLIC_KEY],
+        adminPublicKeys: [ECDSA_HEX_PUBLIC_KEY],
       }),
     );
 
@@ -177,7 +177,7 @@ describe('schedule plugin — create command', () => {
     const resolveAccountCredentialsMock = jest.fn().mockResolvedValue({
       keyRefId: PAYER_KEY_REF_ID,
       accountId: PAYER_ACCOUNT_ID,
-      publicKey: ADMIN_PUBLIC_KEY,
+      publicKey: ECDSA_HEX_PUBLIC_KEY,
     });
 
     const networkMock = makeNetworkMock(SupportedNetwork.TESTNET);

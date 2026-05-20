@@ -3,6 +3,7 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 
 import { PublicKey } from '@hiero-ledger/sdk';
 
+import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
 import { NotFoundError, ValidationError } from '@/core/errors';
 import { BatchifySetBatchKeyHook } from '@/plugins/batch/hooks/batchify-set-batch-key/handler';
@@ -12,7 +13,6 @@ import {
   BATCH_COMPOSED_KEY,
   BATCH_KEY_REF_ID,
   BATCH_NAME,
-  BATCH_PUBLIC_KEY,
   mockBatchData,
   mockExecutedBatchData,
 } from './helpers/fixtures';
@@ -158,7 +158,7 @@ describe('batch plugin - BatchifySetBatchKeyHook', () => {
     expect(result.breakFlow).toBe(false);
     expect(setBatchKey).toHaveBeenCalledTimes(1);
     expect(setBatchKey).toHaveBeenCalledWith(
-      PublicKey.fromString(BATCH_PUBLIC_KEY),
+      PublicKey.fromString(ECDSA_HEX_PUBLIC_KEY),
     );
   });
 });

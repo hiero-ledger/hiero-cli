@@ -1,5 +1,6 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 
+import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
@@ -11,7 +12,6 @@ import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
 import {
   BATCH_KEY_REF_ID,
   BATCH_NAME,
-  BATCH_PUBLIC_KEY,
   mockBatchData,
   mockBatchDataWithTransactions,
   mockExecutedBatchData,
@@ -83,7 +83,7 @@ describe('batch plugin - list command', () => {
     const result = await batchList(args);
 
     const output = assertOutput(result.result, BatchListOutputSchema);
-    expect(output.batches[0].batchKey).toBe(BATCH_PUBLIC_KEY);
+    expect(output.batches[0].batchKey).toBe(ECDSA_HEX_PUBLIC_KEY);
     expect(kmsMock.get).toHaveBeenCalledWith(BATCH_KEY_REF_ID);
   });
 
