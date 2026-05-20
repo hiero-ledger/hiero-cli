@@ -674,6 +674,46 @@ When using `--all-serials`:
 }
 ```
 
+### Token Allowance NFT List
+
+List NFT allowances granted by an owner account using Mirror Node data. Results are grouped by token and spender.
+
+```bash
+hcli token allowance-nft-list --account alice
+hcli token allowance-nft-list --account alice --token PositionNFT --spender bot
+hcli token allowance-nft-list --account 0.0.111111 --show-all --raw
+```
+
+**Parameters:**
+
+- `--account` / `-a`: Owner account ID or alias to query - **Required**
+- `--token` / `-T`: Optional NFT token ID or alias filter
+- `--spender` / `-s`: Optional spender account ID or alias filter
+- `--show-all`: Fetch all pages instead of the first page
+- `--raw`: Skip token metadata enrichment
+
+**Output:**
+
+```json
+{
+  "accountId": "0.0.111111",
+  "network": "testnet",
+  "raw": false,
+  "allowances": [
+    {
+      "tokenId": "0.0.123456",
+      "tokenName": "Position NFT",
+      "tokenSymbol": "PNFT",
+      "spenderAccountId": "0.0.222222",
+      "approvedForAll": false,
+      "serialNumbers": [1, 2, 3]
+    }
+  ],
+  "total": 1,
+  "hasMore": false
+}
+```
+
 ### Delete Token Allowance NFT
 
 Delete NFT allowances. Supports two modes:
@@ -1177,6 +1217,47 @@ hcli token allowance-ft \
 ```
 
 **Note:** Amount in the output is always in base units (raw). The token must have been associated with the spender account before the allowance can be used.
+
+### Token Allowance FT List
+
+List fungible token allowances granted by an owner account using Mirror Node data.
+
+```bash
+hcli token allowance-ft-list --account alice
+hcli token allowance-ft-list --account alice --token USDC --spender bot --show-all
+hcli token allowance-ft-list --account 0.0.111111 --raw
+```
+
+**Parameters:**
+
+- `--account` / `-a`: Owner account ID or alias to query - **Required**
+- `--token` / `-T`: Optional token ID or alias filter
+- `--spender` / `-s`: Optional spender account ID or alias filter
+- `--show-all`: Fetch all pages instead of the first page
+- `--raw`: Skip token metadata enrichment
+
+**Output:**
+
+```json
+{
+  "accountId": "0.0.111111",
+  "network": "testnet",
+  "raw": false,
+  "allowances": [
+    {
+      "tokenId": "0.0.123456",
+      "tokenName": "USD Coin",
+      "tokenSymbol": "USDC",
+      "decimals": 6,
+      "spenderAccountId": "0.0.222222",
+      "amount": "100000000",
+      "amountDisplay": "100"
+    }
+  ],
+  "total": 1,
+  "hasMore": false
+}
+```
 
 ### Token Delete
 

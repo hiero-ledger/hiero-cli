@@ -118,6 +118,21 @@ hcli hbar allowance \
 - `-o, --owner <string>` - Owner account (optional, defaults to operator)
 - `--key-manager <string>` - Key manager type (optional, defaults to config setting)
 
+### HBAR Allowance List
+
+List HBAR allowances granted by an owner account using Mirror Node data.
+
+```bash
+hcli hbar allowance-list --account alice
+hcli hbar allowance-list --account 0.0.123456 --spender bob --show-all
+```
+
+**Options:**
+
+- `-a, --account <string>` - Owner account ID or alias to query (required)
+- `-s, --spender <string>` - Optional spender account ID or alias filter
+- `--show-all` - Fetch all pages instead of the first page
+
 ### HBAR Allowance Revoke
 
 Revoke a previously approved HBAR spending allowance for a spender.
