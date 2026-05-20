@@ -12,7 +12,6 @@ import {
   MOCK_ACCOUNT_ID,
 } from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
-import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { TokenServiceImpl } from '@/core/services/token/token-service';
 import { DAY_IN_SECONDS, HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
@@ -89,12 +88,12 @@ jest.mock('@hiero-ledger/sdk', () => ({
     fromStringDer: jest.fn(() => mockPrivateKeyInstance),
   },
   TokenSupplyType: {
-    Finite: SupplyType.FINITE,
-    Infinite: SupplyType.INFINITE,
+    Finite: 'FINITE',
+    Infinite: 'INFINITE',
   },
   TokenType: {
-    NonFungibleUnique: MirrorNodeTokenType.NON_FUNGIBLE_UNIQUE,
-    FungibleCommon: MirrorNodeTokenType.FUNGIBLE_COMMON,
+    NonFungibleUnique: 'NON_FUNGIBLE_UNIQUE',
+    FungibleCommon: 'FUNGIBLE_COMMON',
   },
   Hbar: {
     fromTinybars: jest.fn(() => mockHbarInstance),

@@ -18,7 +18,6 @@ import { ConfigurationError, NotFoundError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { KmsServiceImpl } from '@/core/services/kms/kms-service';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
-import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
@@ -78,7 +77,9 @@ const buildClient = () => ({
 jest.mock('@hiero-ledger/sdk', () => ({
   PrivateKey: {
     fromStringECDSA: jest.fn(() => ({
-      publicKey: { toStringRaw: jest.fn().mockReturnValue('ecdsa-public-key') },
+      publicKey: {
+        toStringRaw: jest.fn().mockReturnValue('ecdsa-public-key'),
+      },
     })),
     fromStringED25519: jest.fn(() => ({
       publicKey: {
@@ -99,8 +100,8 @@ jest.mock('@hiero-ledger/sdk', () => ({
     forNetwork: jest.fn(() => buildClient()),
   },
   TokenType: {
-    NonFungibleUnique: MirrorNodeTokenType.NON_FUNGIBLE_UNIQUE,
-    FungibleCommon: MirrorNodeTokenType.FUNGIBLE_COMMON,
+    NonFungibleUnique: 'NON_FUNGIBLE_UNIQUE',
+    FungibleCommon: 'FUNGIBLE_COMMON',
   },
 }));
 
