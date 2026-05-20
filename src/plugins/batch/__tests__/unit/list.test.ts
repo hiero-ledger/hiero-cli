@@ -3,10 +3,9 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
-  batchList,
+  BatchListCommand,
   BatchListOutputSchema,
 } from '@/plugins/batch/commands/list';
-import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
 
 import {
   BATCH_KEY_REF_ID,
@@ -16,13 +15,11 @@ import {
   mockBatchDataWithTransactions,
   mockExecutedBatchData,
 } from './helpers/fixtures';
-import { makeArgs, makeBatchApiMocks } from './helpers/mocks';
-
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandBatchStateHelper: jest.fn(),
-}));
-
-const MockedHelper = ZustandBatchStateHelper as jest.Mock;
+import {
+  makeArgs,
+  makeBatchApiMocks,
+  makeBatchStateServiceMock,
+} from './helpers/mocks';
 
 describe('batch plugin - list command', () => {
   beforeEach(() => {
@@ -31,15 +28,15 @@ describe('batch plugin - list command', () => {
 
   test('returns empty list when no batches exist', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    const batchState = makeBatchStateServiceMock({
       listBatches: jest.fn().mockReturnValue([]),
-    }));
+    });
 
     const { networkMock, kmsMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
 
     const args = makeArgs(api, logger, {});
-    const result = await batchList(args);
+    const result = await new BatchListCommand(batchState).execute(args);
 
     const output = assertOutput(result.result, BatchListOutputSchema);
     expect(output.batches).toHaveLength(0);
@@ -48,17 +45,17 @@ describe('batch plugin - list command', () => {
 
   test('lists batches with correct data', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    const batchState = makeBatchStateServiceMock({
       listBatches: jest
         .fn()
         .mockReturnValue([mockBatchData, mockBatchDataWithTransactions]),
-    }));
+    });
 
     const { networkMock, kmsMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
 
     const args = makeArgs(api, logger, {});
-    const result = await batchList(args);
+    const result = await new BatchListCommand(batchState).execute(args);
 
     const output = assertOutput(result.result, BatchListOutputSchema);
     expect(output.batches).toHaveLength(2);
@@ -72,15 +69,15 @@ describe('batch plugin - list command', () => {
 
   test('shows batch key from kms', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    const batchState = makeBatchStateServiceMock({
       listBatches: jest.fn().mockReturnValue([mockBatchData]),
-    }));
+    });
 
     const { networkMock, kmsMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
 
     const args = makeArgs(api, logger, {});
-    const result = await batchList(args);
+    const result = await new BatchListCommand(batchState).execute(args);
 
     const output = assertOutput(result.result, BatchListOutputSchema);
     expect(output.batches[0].batchKey).toBe(BATCH_PUBLIC_KEY);
@@ -89,15 +86,15 @@ describe('batch plugin - list command', () => {
 
   test('shows executed batch status', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    const batchState = makeBatchStateServiceMock({
       listBatches: jest.fn().mockReturnValue([mockExecutedBatchData]),
-    }));
+    });
 
     const { networkMock, kmsMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
 
     const args = makeArgs(api, logger, {});
-    const result = await batchList(args);
+    const result = await new BatchListCommand(batchState).execute(args);
 
     const output = assertOutput(result.result, BatchListOutputSchema);
     expect(output.batches[0].executed).toBe(true);
@@ -106,16 +103,16 @@ describe('batch plugin - list command', () => {
 
   test('handles missing kms key gracefully', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    const batchState = makeBatchStateServiceMock({
       listBatches: jest.fn().mockReturnValue([mockBatchData]),
-    }));
+    });
 
     const { networkMock, kmsMock } = makeBatchApiMocks();
     kmsMock.get = jest.fn().mockReturnValue(undefined);
     const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
 
     const args = makeArgs(api, logger, {});
-    const result = await batchList(args);
+    const result = await new BatchListCommand(batchState).execute(args);
 
     const output = assertOutput(result.result, BatchListOutputSchema);
     expect(output.batches[0].batchKey).toBeUndefined();

@@ -6,21 +6,20 @@ import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError, ValidationError } from '@/core/errors';
 import {
-  batchExecute,
+  BatchExecuteCommand,
   BatchExecuteOutputSchema,
 } from '@/plugins/batch/commands/execute';
-import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
 
 import {
   BATCH_NAME,
   mockBatchDataWithTransactions,
   mockExecutedBatchData,
 } from './helpers/fixtures';
-import { makeArgs, makeBatchApiMocks } from './helpers/mocks';
-
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandBatchStateHelper: jest.fn(),
-}));
+import {
+  makeArgs,
+  makeBatchApiMocks,
+  makeBatchStateServiceMock,
+} from './helpers/mocks';
 
 jest.mock('@hiero-ledger/sdk', () => {
   const actual = jest.requireActual('@hiero-ledger/sdk');
@@ -37,8 +36,6 @@ jest.mock('@hiero-ledger/sdk', () => {
   };
 });
 
-const MockedHelper = ZustandBatchStateHelper as jest.Mock;
-
 describe('batch plugin - execute command', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -47,13 +44,13 @@ describe('batch plugin - execute command', () => {
   test('executes batch successfully', async () => {
     const logger = makeLogger();
     const saveBatchMock = jest.fn();
-    MockedHelper.mockImplementation(() => ({
+    const batchState = makeBatchStateServiceMock({
       getBatch: jest.fn().mockReturnValue({
         ...mockBatchDataWithTransactions,
         transactions: [...mockBatchDataWithTransactions.transactions],
       }),
       saveBatch: saveBatchMock,
-    }));
+    });
 
     const { networkMock, kmsMock, txSignMock, txExecuteMock } =
       makeBatchApiMocks();
@@ -80,7 +77,7 @@ describe('batch plugin - execute command', () => {
     };
 
     const args = makeArgs(api, logger, { name: BATCH_NAME });
-    const result = await batchExecute(args);
+    const result = await new BatchExecuteCommand(batchState).execute(args);
 
     expect(saveBatchMock).toHaveBeenCalledWith(
       expect.any(String),
@@ -100,13 +97,13 @@ describe('batch plugin - execute command', () => {
   test('marks batch as failed when execution fails', async () => {
     const logger = makeLogger();
     const saveBatchMock = jest.fn();
-    MockedHelper.mockImplementation(() => ({
+    const batchState = makeBatchStateServiceMock({
       getBatch: jest.fn().mockReturnValue({
         ...mockBatchDataWithTransactions,
         transactions: [...mockBatchDataWithTransactions.transactions],
       }),
       saveBatch: saveBatchMock,
-    }));
+    });
 
     const { networkMock, kmsMock, txSignMock, txExecuteMock } =
       makeBatchApiMocks();
@@ -133,7 +130,7 @@ describe('batch plugin - execute command', () => {
     };
 
     const args = makeArgs(api, logger, { name: BATCH_NAME });
-    const result = await batchExecute(args);
+    const result = await new BatchExecuteCommand(batchState).execute(args);
 
     expect(saveBatchMock).toHaveBeenCalledWith(
       expect.any(String),
@@ -149,79 +146,75 @@ describe('batch plugin - execute command', () => {
 
   test('throws NotFoundError when batch does not exist', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    const batchState = makeBatchStateServiceMock({
       getBatch: jest.fn().mockReturnValue(null),
-    }));
+    });
 
     const { networkMock, kmsMock } = makeBatchApiMocks();
-    const api: Partial<CoreApi> = {
-      network: networkMock,
-      kms: kmsMock,
-    };
+    const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
 
     const args = makeArgs(api, logger, { name: BATCH_NAME });
 
-    await expect(batchExecute(args)).rejects.toThrow(NotFoundError);
+    await expect(
+      new BatchExecuteCommand(batchState).execute(args),
+    ).rejects.toThrow(NotFoundError);
   });
 
   test('throws ValidationError when batch already executed', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    const batchState = makeBatchStateServiceMock({
       getBatch: jest.fn().mockReturnValue({ ...mockExecutedBatchData }),
-    }));
+    });
 
     const { networkMock, kmsMock } = makeBatchApiMocks();
-    const api: Partial<CoreApi> = {
-      network: networkMock,
-      kms: kmsMock,
-    };
+    const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
 
     const args = makeArgs(api, logger, { name: BATCH_NAME });
 
-    await expect(batchExecute(args)).rejects.toThrow(ValidationError);
+    await expect(
+      new BatchExecuteCommand(batchState).execute(args),
+    ).rejects.toThrow(ValidationError);
   });
 
   test('throws NotFoundError when operator not found', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    const batchState = makeBatchStateServiceMock({
       getBatch: jest.fn().mockReturnValue({
         ...mockBatchDataWithTransactions,
         transactions: [...mockBatchDataWithTransactions.transactions],
       }),
-    }));
+    });
 
     const { networkMock, kmsMock } = makeBatchApiMocks();
     networkMock.getOperator = jest.fn().mockReturnValue(null);
 
-    const api: Partial<CoreApi> = {
-      network: networkMock,
-      kms: kmsMock,
-    };
+    const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
 
     const args = makeArgs(api, logger, { name: BATCH_NAME });
 
-    await expect(batchExecute(args)).rejects.toThrow(NotFoundError);
+    await expect(
+      new BatchExecuteCommand(batchState).execute(args),
+    ).rejects.toThrow(NotFoundError);
   });
 
   test('throws NotFoundError when batch key not found in kms', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    const batchState = makeBatchStateServiceMock({
       getBatch: jest.fn().mockReturnValue({
         ...mockBatchDataWithTransactions,
         transactions: [...mockBatchDataWithTransactions.transactions],
       }),
-    }));
+    });
 
     const { networkMock, kmsMock } = makeBatchApiMocks();
     kmsMock.get = jest.fn().mockReturnValue(undefined);
 
-    const api: Partial<CoreApi> = {
-      network: networkMock,
-      kms: kmsMock,
-    };
+    const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
 
     const args = makeArgs(api, logger, { name: BATCH_NAME });
 
-    await expect(batchExecute(args)).rejects.toThrow(NotFoundError);
+    await expect(
+      new BatchExecuteCommand(batchState).execute(args),
+    ).rejects.toThrow(NotFoundError);
   });
 });

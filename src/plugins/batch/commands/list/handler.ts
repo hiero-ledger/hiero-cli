@@ -1,28 +1,23 @@
-/**
- * Account List Command Handler
- * Handles listing all accounts using the Core API
- * Follows ADR-003 contract: returns CommandExecutionResult
- */
 import type { Command } from '@/core/commands/command.interface';
 import type {
   CommandHandlerArgs,
   CommandResult,
 } from '@/core/plugins/plugin.interface';
+import type { BatchStateService } from '@/plugins/batch/services/batch-state.service.interface';
 import type { BatchListOutput } from './output';
 
-import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
+import { BatchStateServiceImpl } from '@/plugins/batch/services/batch-state.service';
 
 export class BatchListCommand implements Command {
+  constructor(private readonly batchState: BatchStateService) {}
+
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
 
-    const batchState = new ZustandBatchStateHelper(api.state, api.logger);
-
     api.logger.info('Listing all batches...');
 
-    const batches = batchState.listBatches();
+    const batches = this.batchState.listBatches();
 
-    // Prepare output data
     const outputData: BatchListOutput = {
       batches: batches.map((batch) => ({
         name: batch.name,
@@ -41,5 +36,7 @@ export class BatchListCommand implements Command {
 export async function batchList(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new BatchListCommand().execute(args);
+  const { api } = args;
+  const batchState = new BatchStateServiceImpl(api.state, api.logger);
+  return new BatchListCommand(batchState).execute(args);
 }

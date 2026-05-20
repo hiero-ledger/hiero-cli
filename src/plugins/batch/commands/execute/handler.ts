@@ -1,6 +1,3 @@
-/**
- * Batch Execute Command Handler
- */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type {
   BatchBuildTransactionResult,
@@ -8,6 +5,7 @@ import type {
   BatchNormalisedParams,
   BatchSignTransactionResult,
 } from '@/plugins/batch/commands/execute/types';
+import type { BatchStateService } from '@/plugins/batch/services/batch-state.service.interface';
 import type { BatchExecuteOutput } from './output';
 
 import { Transaction } from '@hiero-ledger/sdk';
@@ -17,7 +15,7 @@ import { BaseTransactionCommand } from '@/core/commands/command';
 import { NotFoundError } from '@/core/errors';
 import { OrchestratorSource } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
-import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
+import { BatchStateServiceImpl } from '@/plugins/batch/services/batch-state.service';
 
 import { BatchExecuteInputSchema } from './input';
 
@@ -29,7 +27,7 @@ export class BatchExecuteCommand extends BaseTransactionCommand<
   BatchSignTransactionResult,
   BatchExecuteTransactionResult
 > {
-  constructor() {
+  constructor(private readonly batchState: BatchStateService) {
     super(BATCH_EXECUTE_COMMAND_NAME);
   }
 
@@ -46,26 +44,29 @@ export class BatchExecuteCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
   ): Promise<BatchNormalisedParams> {
     const { api } = args;
-    const batchState = new ZustandBatchStateHelper(api.state, api.logger);
     const validArgs = BatchExecuteInputSchema.parse(args.args);
     const name = validArgs.name;
     const network = api.network.getCurrentNetwork();
     const key = composeKey(network, name);
-    const batchData = batchState.getBatch(key);
+
+    const batchData = this.batchState.getBatch(key);
     if (!batchData) {
       throw new NotFoundError(`Batch not found: ${name}`);
     }
     if (batchData.executed) {
       throw new ValidationError(`Batch "${name}" has been already executed `);
     }
+
     const operator = api.network.getOperator(network);
     if (!operator) {
       throw new NotFoundError(`Operator not found current network ${network}`);
     }
+
     const batchKey = api.kms.get(batchData.keyRefId);
     if (!batchKey) {
       throw new NotFoundError(`Batch key not found ${batchData.keyRefId}`);
     }
+
     return {
       name,
       network,
@@ -75,6 +76,7 @@ export class BatchExecuteCommand extends BaseTransactionCommand<
       operatorKeyRefId: operator.keyRefId,
     };
   }
+
   async buildTransaction(
     args: CommandHandlerArgs,
     normalisedParams: BatchNormalisedParams,
@@ -82,7 +84,6 @@ export class BatchExecuteCommand extends BaseTransactionCommand<
     const { api } = args;
     const batchKey = normalisedParams.batchKey;
     const operatorKeyRefId = normalisedParams.operatorKeyRefId;
-
     const signingKeys = [batchKey.keyRefId, operatorKeyRefId];
 
     const innerTransactions = await Promise.all(
@@ -102,12 +103,14 @@ export class BatchExecuteCommand extends BaseTransactionCommand<
           return api.txSign.sign(transaction, [...uniqueKeyRefs]);
         }),
     );
+
     const result = api.batch.createBatchTransaction({
       transactions: innerTransactions,
       batchKey: batchKey.publicKey,
     });
     return { transaction: result.transaction };
   }
+
   async signTransaction(
     args: CommandHandlerArgs,
     normalisedParams: BatchNormalisedParams,
@@ -119,10 +122,9 @@ export class BatchExecuteCommand extends BaseTransactionCommand<
       buildTransactionResult.transaction,
       [batchKey],
     );
-    return {
-      signedTransaction: signedTransaction,
-    };
+    return { signedTransaction };
   }
+
   async executeTransaction(
     args: CommandHandlerArgs,
     normalisedParams: BatchNormalisedParams,
@@ -130,30 +132,24 @@ export class BatchExecuteCommand extends BaseTransactionCommand<
     signTransactionResult: BatchSignTransactionResult,
   ): Promise<BatchExecuteTransactionResult> {
     const { api } = args;
-    const batchState = new ZustandBatchStateHelper(api.state, api.logger);
     const result = await api.txExecute.execute(
       signTransactionResult.signedTransaction,
     );
-    let updatedBatchData = normalisedParams.batchData;
-    if (!result.success) {
-      updatedBatchData = {
-        ...updatedBatchData,
-        success: false,
-        executed: true,
-      };
-    } else {
-      updatedBatchData = {
-        ...updatedBatchData,
-        success: true,
-        executed: true,
-      };
-    }
-    batchState.saveBatch(normalisedParams.batchId, updatedBatchData);
+
+    const updatedBatchData = {
+      ...normalisedParams.batchData,
+      success: result.success,
+      executed: true,
+    };
+
+    this.batchState.saveBatch(normalisedParams.batchId, updatedBatchData);
+
     return {
       transactionResult: result,
       updatedBatchData,
     };
   }
+
   async outputPreparation(
     _args: CommandHandlerArgs,
     normalisedParams: BatchNormalisedParams,
@@ -176,5 +172,7 @@ export class BatchExecuteCommand extends BaseTransactionCommand<
 export async function batchExecute(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new BatchExecuteCommand().execute(args);
+  const { api } = args;
+  const batchState = new BatchStateServiceImpl(api.state, api.logger);
+  return new BatchExecuteCommand(batchState).execute(args);
 }
