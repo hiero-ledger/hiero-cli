@@ -1,5 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
 import type { TokenAssociateOutput } from './output';
 import type {
   AssociateBuildTransactionResult,
@@ -15,7 +16,7 @@ import {
   ValidationError,
 } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
-import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
 
 import { TokenAssociateInputSchema } from './input';
 
@@ -27,7 +28,7 @@ export class TokenAssociateCommand extends BaseTransactionCommand<
   AssociateSignTransactionResult,
   AssociateExecuteTransactionResult
 > {
-  constructor() {
+  constructor(private readonly tokenReferenceService: TokenReferenceService) {
     super(TOKEN_ASSOCIATE_COMMAND_NAME);
   }
 
@@ -40,7 +41,10 @@ export class TokenAssociateCommand extends BaseTransactionCommand<
       validArgs.keyManager ??
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
     const network = api.network.getCurrentNetwork();
-    const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
+    const resolvedToken = this.tokenReferenceService.resolveToken(
+      validArgs.token,
+      network,
+    );
 
     if (!resolvedToken) {
       throw new NotFoundError('Token not found', {
@@ -159,5 +163,8 @@ export class TokenAssociateCommand extends BaseTransactionCommand<
 export async function tokenAssociate(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenAssociateCommand().execute(args);
+  const { api } = args;
+  return new TokenAssociateCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+  ).execute(args);
 }

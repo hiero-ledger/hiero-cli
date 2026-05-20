@@ -2,6 +2,7 @@ import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { MirrorNodeKey } from '@/core/services/mirrornode/types';
 import type { TokenData } from '@/plugins/token/schema';
+import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 import type { TokenImportOutput } from './output';
 import type { ImportTokenNormalizedParams } from './types';
 
@@ -14,11 +15,13 @@ import {
 } from '@/core/utils/extract-public-keys';
 import { composeKey } from '@/core/utils/key-composer';
 import { matchPublicKeysToKmsRefIds } from '@/core/utils/match-keys-to-kms';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { TokenImportInputSchema } from './input';
 
 export class TokenImportCommand implements Command {
+  constructor(private readonly tokenStateService: TokenStateService) {}
+
   private importKeyRole(
     mirrorKey: MirrorNodeKey | undefined | null,
     findByPublicKey: (pk: string) => { keyRefId: string } | undefined,
@@ -37,7 +40,6 @@ export class TokenImportCommand implements Command {
 
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     const parsedArgs = TokenImportInputSchema.parse(args.args);
     const validArgs: ImportTokenNormalizedParams = {
       tokenId: parsedArgs.token,
@@ -49,7 +51,7 @@ export class TokenImportCommand implements Command {
     if (validArgs.alias) {
       api.alias.availableOrThrow(validArgs.alias, network);
     }
-    if (tokenState.getToken(key)) {
+    if (this.tokenStateService.getToken(key)) {
       throw new ValidationError(
         `Token with ID '${validArgs.tokenId}' already exists in state`,
       );
@@ -125,7 +127,7 @@ export class TokenImportCommand implements Command {
       memo: tokenInfo.memo || undefined,
     };
 
-    tokenState.saveToken(key, tokenData);
+    this.tokenStateService.saveToken(key, tokenData);
 
     const result: TokenImportOutput = {
       tokenId: validArgs.tokenId,
@@ -146,5 +148,8 @@ export class TokenImportCommand implements Command {
 export async function tokenImport(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenImportCommand().execute(args);
+  const { api } = args;
+  return new TokenImportCommand(
+    new TokenStateServiceImpl(api.state, api.logger),
+  ).execute(args);
 }

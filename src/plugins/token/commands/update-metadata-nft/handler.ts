@@ -1,5 +1,7 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
+import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 import type { TokenUpdateNftMetadataOutput } from './output';
 import type {
   UpdateNftMetadataBuildTransactionResult,
@@ -18,8 +20,8 @@ import { ConfigOptionKey } from '@/core/services/config/config-service.interface
 import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { HederaTokenType } from '@/core/shared/constants';
 import { MAX_NFT_METADATA_BYTES } from '@/plugins/token/constants';
-import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { TokenUpdateNftMetadataInputSchema } from './input';
 
@@ -32,7 +34,10 @@ export class TokenUpdateNftMetadataCommand extends BaseTransactionCommand<
   UpdateNftMetadataSignTransactionResult,
   UpdateNftMetadataExecuteTransactionResult
 > {
-  constructor() {
+  constructor(
+    private readonly tokenReferenceService: TokenReferenceService,
+    private readonly tokenStateService: TokenStateService,
+  ) {
     super(TOKEN_UPDATE_NFT_METADATA_COMMAND_NAME);
   }
 
@@ -40,13 +45,15 @@ export class TokenUpdateNftMetadataCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
   ): Promise<UpdateNftMetadataNormalizedParams> {
     const { api } = args;
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     const validArgs = TokenUpdateNftMetadataInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ||
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
     const network = api.network.getCurrentNetwork();
-    const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
+    const resolvedToken = this.tokenReferenceService.resolveToken(
+      validArgs.token,
+      network,
+    );
 
     if (!resolvedToken) {
       throw new NotFoundError(`Token not found: ${validArgs.token}`, {
@@ -66,7 +73,7 @@ export class TokenUpdateNftMetadataCommand extends BaseTransactionCommand<
 
     const tokenInfo = await api.mirror.getTokenInfo(tokenId);
 
-    const tokenData = tokenState.getToken(tokenId);
+    const tokenData = this.tokenStateService.getToken(tokenId);
     const isNftByState =
       tokenData !== null &&
       tokenData.tokenType === HederaTokenType.NON_FUNGIBLE_TOKEN;
@@ -167,5 +174,9 @@ export class TokenUpdateNftMetadataCommand extends BaseTransactionCommand<
 export async function tokenUpdateNftMetadata(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenUpdateNftMetadataCommand().execute(args);
+  const { api } = args;
+  return new TokenUpdateNftMetadataCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+    new TokenStateServiceImpl(api.state, api.logger),
+  ).execute(args);
 }

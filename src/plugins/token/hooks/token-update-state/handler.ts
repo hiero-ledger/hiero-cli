@@ -2,16 +2,19 @@ import type { CoreApi } from '@/core';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
 import type { BatchDataItem } from '@/core/types/shared.types';
+import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 
 import { OrchestratorSource } from '@/core';
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
 import { TOKEN_UPDATE_COMMAND_NAME } from '@/plugins/token/commands/update/handler';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 import { buildUpdatedTokenData } from '@/plugins/token/utils/token-data-builders';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { TokenUpdateNormalisedParamsSchema } from './types';
 
 export class TokenUpdateStateHook implements Hook<PostOutputPreparationHookParams> {
+  constructor(private readonly tokenStateService: TokenStateService) {}
+
   execute(params: PostOutputPreparationHookParams): Promise<HookResult> {
     const parsed = OrchestratorResultSchema.safeParse(
       params.executeTransactionResult,
@@ -48,12 +51,20 @@ export class TokenUpdateStateHook implements Hook<PostOutputPreparationHookParam
     }
 
     const p = parseResult.data;
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
-    const existing = tokenState.getToken(p.stateKey);
+    const existing = this.tokenStateService.getToken(p.stateKey);
 
     const tokenData = buildUpdatedTokenData(p, p.tokenInfo, existing);
 
-    tokenState.saveToken(p.stateKey, tokenData);
+    this.tokenStateService.saveToken(p.stateKey, tokenData);
     api.logger.info(`   Token update state saved for ${p.tokenId}`);
   }
 }
+
+export const tokenUpdateStateHook: Hook<PostOutputPreparationHookParams> = {
+  execute: (params: PostOutputPreparationHookParams) => {
+    const { api } = params.args;
+    return new TokenUpdateStateHook(
+      new TokenStateServiceImpl(api.state, api.logger),
+    ).execute(params);
+  },
+};

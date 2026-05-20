@@ -1,5 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
 import type { TokenRevokeKycOutput } from './output';
 import type {
   RevokeKycBuildTransactionResult,
@@ -15,7 +16,7 @@ import {
   ValidationError,
 } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
-import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
 import { isNoKycKeyError } from '@/plugins/token/utils/transaction-error-receipt-status';
 
 import { TokenRevokeKycInputSchema } from './input';
@@ -28,7 +29,7 @@ export class TokenRevokeKycCommand extends BaseTransactionCommand<
   RevokeKycSignTransactionResult,
   RevokeKycExecuteTransactionResult
 > {
-  constructor() {
+  constructor(private readonly tokenReferenceService: TokenReferenceService) {
     super(TOKEN_REVOKE_KYC_COMMAND_NAME);
   }
 
@@ -45,7 +46,10 @@ export class TokenRevokeKycCommand extends BaseTransactionCommand<
 
     const network = api.network.getCurrentNetwork();
 
-    const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
+    const resolvedToken = this.tokenReferenceService.resolveToken(
+      validArgs.token,
+      network,
+    );
     if (!resolvedToken) {
       throw new NotFoundError('Token not found', {
         context: { token: validArgs.token },
@@ -163,5 +167,8 @@ export class TokenRevokeKycCommand extends BaseTransactionCommand<
 export async function tokenRevokeKyc(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenRevokeKycCommand().execute(args);
+  const { api } = args;
+  return new TokenRevokeKycCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+  ).execute(args);
 }

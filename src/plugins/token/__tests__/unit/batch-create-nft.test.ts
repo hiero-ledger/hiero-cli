@@ -10,14 +10,14 @@ import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 import { TOKEN_CREATE_NFT_COMMAND_NAME } from '@/plugins/token/commands/create-nft';
-import { TokenCreateNftStateHook } from '@/plugins/token/hooks/token-create-nft-state';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { tokenCreateNftStateHook } from '@/plugins/token/hooks/token-create-nft-state';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandTokenStateHelper: jest.fn(),
+jest.mock('../../services/token-state.service', () => ({
+  TokenStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = ZustandTokenStateHelper as jest.Mock;
+const MockedHelper = TokenStateServiceImpl as jest.Mock;
 
 const createNftBatchDataItem = (
   overrides: Partial<BatchDataItem> = {},
@@ -62,11 +62,10 @@ const createNftBatchDataItem = (
 });
 
 describe('token plugin - batch-create-nft hook', () => {
-  let hook: TokenCreateNftStateHook;
+  const hook = tokenCreateNftStateHook;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    hook = new TokenCreateNftStateHook();
     MockedHelper.mockImplementation(() => ({
       saveToken: jest.fn(),
     }));

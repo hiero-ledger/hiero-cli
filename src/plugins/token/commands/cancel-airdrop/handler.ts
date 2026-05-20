@@ -1,5 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
 import type { TokenCancelAirdropOutput } from './output';
 import type {
   CancelAirdropBuildTransactionResult,
@@ -11,10 +12,7 @@ import type {
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { TransactionError, ValidationError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
-import {
-  resolveDestinationAccountParameter,
-  resolveTokenParameter,
-} from '@/plugins/token/resolver-helper';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
 
 import { TokenCancelAirdropInputSchema } from './input';
 
@@ -26,7 +24,7 @@ export class TokenCancelAirdropCommand extends BaseTransactionCommand<
   CancelAirdropSignTransactionResult,
   CancelAirdropExecuteTransactionResult
 > {
-  constructor() {
+  constructor(private readonly tokenReferenceService: TokenReferenceService) {
     super(TOKEN_CANCEL_AIRDROP_COMMAND_NAME);
   }
 
@@ -50,17 +48,20 @@ export class TokenCancelAirdropCommand extends BaseTransactionCommand<
 
     const network = api.network.getCurrentNetwork();
 
-    const resolvedToken = resolveTokenParameter(tokenIdOrAlias, api, network);
+    const resolvedToken = this.tokenReferenceService.resolveToken(
+      tokenIdOrAlias,
+      network,
+    );
     if (!resolvedToken?.tokenId) {
       throw new ValidationError(`Failed to resolve token: ${tokenIdOrAlias}`);
     }
     const tokenId = resolvedToken.tokenId;
 
-    const resolvedReceiver = resolveDestinationAccountParameter(
-      receiver,
-      api,
-      network,
-    );
+    const resolvedReceiver =
+      await this.tokenReferenceService.resolveDestinationAccount(
+        receiver,
+        network,
+      );
     if (!resolvedReceiver?.accountId) {
       throw new ValidationError(`Failed to resolve receiver: ${receiver}`);
     }
@@ -179,5 +180,8 @@ export class TokenCancelAirdropCommand extends BaseTransactionCommand<
 export async function tokenCancelAirdrop(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenCancelAirdropCommand().execute(args);
+  const { api } = args;
+  return new TokenCancelAirdropCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+  ).execute(args);
 }

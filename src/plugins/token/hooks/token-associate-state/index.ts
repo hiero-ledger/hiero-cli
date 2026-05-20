@@ -1,1 +1,1 @@
-export { TokenAssociateStateHook } from './handler';
+export { TokenAssociateStateHook, tokenAssociateStateHook } from './handler';

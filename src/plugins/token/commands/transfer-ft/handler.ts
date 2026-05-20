@@ -1,5 +1,7 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
+import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 import type { TokenTransferFtOutput } from './output';
 import type {
   TokenTransferFtBuildTransactionResult,
@@ -14,11 +16,8 @@ import { ConfigOptionKey } from '@/core/services/config/config-service.interface
 import { FtTransferEntry } from '@/core/services/transfer';
 import { isRawUnits } from '@/core/utils/amount-helpers';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
-import {
-  resolveDestinationAccountParameter,
-  resolveTokenParameter,
-} from '@/plugins/token/resolver-helper';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { TokenTransferFtInputSchema } from './input';
 
@@ -30,7 +29,10 @@ export class TokenTransferFtCommand extends BaseTransactionCommand<
   TokenTransferFtSignTransactionResult,
   TokenTransferFtExecuteTransactionResult
 > {
-  constructor() {
+  constructor(
+    private readonly tokenReferenceService: TokenReferenceService,
+    private readonly tokenStateService: TokenStateService,
+  ) {
     super(TOKEN_TRANSFER_FT_COMMAND_NAME);
   }
 
@@ -38,8 +40,6 @@ export class TokenTransferFtCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
   ): Promise<TokenTransferFtNormalizedParams> {
     const { api } = args;
-
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
 
     const validArgs = TokenTransferFtInputSchema.parse(args.args);
 
@@ -54,7 +54,10 @@ export class TokenTransferFtCommand extends BaseTransactionCommand<
 
     const network = api.network.getCurrentNetwork();
 
-    const resolvedToken = resolveTokenParameter(tokenIdOrAlias, api, network);
+    const resolvedToken = this.tokenReferenceService.resolveToken(
+      tokenIdOrAlias,
+      network,
+    );
 
     if (!resolvedToken) {
       throw new NotFoundError(`Token not found: ${tokenIdOrAlias}`, {
@@ -68,7 +71,7 @@ export class TokenTransferFtCommand extends BaseTransactionCommand<
 
     let tokenDecimals = 0;
     if (!isRawUnits(userAmountInput)) {
-      const tokenInfoStorage = tokenState.getToken(tokenId);
+      const tokenInfoStorage = this.tokenStateService.getToken(tokenId);
 
       if (tokenInfoStorage) {
         tokenDecimals = tokenInfoStorage.decimals;
@@ -93,11 +96,8 @@ export class TokenTransferFtCommand extends BaseTransactionCommand<
     api.logger.info(`🔑 Using from account: ${fromAccountId}`);
     api.logger.info(`🔑 Will sign with from account key`);
 
-    const resolvedToAccount = resolveDestinationAccountParameter(
-      to,
-      api,
-      network,
-    );
+    const resolvedToAccount =
+      await this.tokenReferenceService.resolveDestinationAccount(to, network);
 
     if (!resolvedToAccount) {
       throw new NotFoundError(`Destination account not found: ${to}`, {
@@ -202,5 +202,9 @@ export class TokenTransferFtCommand extends BaseTransactionCommand<
 export async function tokenTransferFt(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenTransferFtCommand().execute(args);
+  const { api } = args;
+  return new TokenTransferFtCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+    new TokenStateServiceImpl(api.state, api.logger),
+  ).execute(args);
 }

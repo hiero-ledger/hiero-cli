@@ -6,6 +6,8 @@ import type {
   BurnFtNormalizedParams,
   BurnFtSignTransactionResult,
 } from '@/plugins/token/commands/burn-ft/types';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
+import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 import type { TokenBurnFtOutput } from './output';
 
 import { BaseTransactionCommand } from '@/core/commands/command';
@@ -19,8 +21,8 @@ import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { HederaTokenType } from '@/core/shared/constants';
 import { isRawUnits } from '@/core/utils/amount-helpers';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
-import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { TokenBurnFtInputSchema } from './input';
 
@@ -32,7 +34,10 @@ export class TokenBurnFtCommand extends BaseTransactionCommand<
   BurnFtSignTransactionResult,
   BurnFtExecuteTransactionResult
 > {
-  constructor() {
+  constructor(
+    private readonly tokenReferenceService: TokenReferenceService,
+    private readonly tokenStateService: TokenStateService,
+  ) {
     super(TOKEN_BURN_FT_COMMAND_NAME);
   }
 
@@ -40,8 +45,6 @@ export class TokenBurnFtCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
   ): Promise<BurnFtNormalizedParams> {
     const { api } = args;
-
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
 
     const validArgs = TokenBurnFtInputSchema.parse(args.args);
 
@@ -55,7 +58,10 @@ export class TokenBurnFtCommand extends BaseTransactionCommand<
 
     const network = api.network.getCurrentNetwork();
 
-    const resolvedToken = resolveTokenParameter(tokenIdOrAlias, api, network);
+    const resolvedToken = this.tokenReferenceService.resolveToken(
+      tokenIdOrAlias,
+      network,
+    );
 
     if (!resolvedToken) {
       throw new NotFoundError(`Token not found: ${tokenIdOrAlias}`, {
@@ -69,7 +75,7 @@ export class TokenBurnFtCommand extends BaseTransactionCommand<
 
     const tokenInfo = await api.mirror.getTokenInfo(tokenId);
 
-    const tokenData = tokenState.getToken(tokenId);
+    const tokenData = this.tokenStateService.getToken(tokenId);
 
     const isNftByState =
       tokenData !== null &&
@@ -198,5 +204,9 @@ export class TokenBurnFtCommand extends BaseTransactionCommand<
 export async function tokenBurnFt(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenBurnFtCommand().execute(args);
+  const { api } = args;
+  return new TokenBurnFtCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+    new TokenStateServiceImpl(api.state, api.logger),
+  ).execute(args);
 }

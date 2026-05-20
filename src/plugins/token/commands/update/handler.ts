@@ -1,4 +1,4 @@
-import type { CommandHandlerArgs, CommandResult, CoreApi } from '@/core';
+import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type {
   ResolvedAccountCredential,
   ResolvedPublicKey,
@@ -8,6 +8,9 @@ import type {
   KeyManager,
 } from '@/core/services/kms/kms-types.interface';
 import type { TokenData } from '@/plugins/token/schema';
+import type { TokenKeysService } from '@/plugins/token/services/token-keys.service.interface';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
+import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 import type { TokenUpdateOutput } from './output';
 import type {
   TokenUpdateBuildTransactionResult,
@@ -17,19 +20,15 @@ import type {
 } from './types';
 
 import { BaseTransactionCommand } from '@/core/commands/command';
-import {
-  NotFoundError,
-  TransactionError,
-  ValidationError,
-} from '@/core/errors';
+import { NotFoundError, TransactionError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { NULL_TOKEN } from '@/core/shared/constants';
 import { composeKey } from '@/core/utils/key-composer';
 import { toNullableHederaKey } from '@/core/utils/keys-to-hedera-key';
-import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
+import { TokenKeysServiceImpl } from '@/plugins/token/services/token-keys.service';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 import { buildUpdatedTokenData } from '@/plugins/token/utils/token-data-builders';
-import { resolveOptionalKeys } from '@/plugins/token/utils/token-key-resolver';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { TokenUpdateInputSchema } from './input';
 
@@ -41,7 +40,11 @@ export class TokenUpdateCommand extends BaseTransactionCommand<
   TokenUpdateSignTransactionResult,
   TokenUpdateExecuteTransactionResult
 > {
-  constructor() {
+  constructor(
+    private readonly tokenReferenceService: TokenReferenceService,
+    private readonly tokenStateService: TokenStateService,
+    private readonly tokenKeysService: TokenKeysService,
+  ) {
     super(TOKEN_UPDATE_COMMAND_NAME);
   }
 
@@ -56,7 +59,10 @@ export class TokenUpdateCommand extends BaseTransactionCommand<
       validArgs.keyManager ??
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
-    const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
+    const resolvedToken = this.tokenReferenceService.resolveToken(
+      validArgs.token,
+      network,
+    );
     if (!resolvedToken) {
       throw new NotFoundError(`Token not found: ${validArgs.token}`, {
         context: { token: validArgs.token },
@@ -105,7 +111,6 @@ export class TokenUpdateCommand extends BaseTransactionCommand<
     let newTreasuryAccountId: string | undefined;
     if (validArgs.treasury) {
       const treasuryCredential = await this.resolveTreasuryKeyRefId(
-        api,
         validArgs.currentTreasuryKey,
         tokenInfo.treasury_account_id,
         keyManager,
@@ -114,13 +119,12 @@ export class TokenUpdateCommand extends BaseTransactionCommand<
       newTreasuryAccountKeyRefId = treasuryCredential.keyRefId;
       signerKeyRefIds.add(treasuryCredential.keyRefId);
     }
-
     const resolveUpdateableKeys = async (
       input: Credential[] | null,
       tag: string,
     ): Promise<ResolvedPublicKey[] | null> => {
       if (input === null) return null;
-      return resolveOptionalKeys(input, keyManager, api.keyResolver, tag);
+      return this.tokenKeysService.resolveOptionalKeys(input, keyManager, tag);
     };
 
     const [
@@ -299,12 +303,11 @@ export class TokenUpdateCommand extends BaseTransactionCommand<
   ): Promise<CommandResult> {
     const { transactionResult } = executeTransactionResult;
     const { api } = args;
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     const tokenInfo = normalisedParams.tokenInfo;
 
     const updatedFields = this.buildUpdatedFields(normalisedParams);
 
-    const existing = tokenState.getToken(normalisedParams.stateKey);
+    const existing = this.tokenStateService.getToken(normalisedParams.stateKey);
 
     const tokenData: TokenData = buildUpdatedTokenData(
       normalisedParams,
@@ -312,7 +315,7 @@ export class TokenUpdateCommand extends BaseTransactionCommand<
       existing,
     );
 
-    tokenState.saveToken(normalisedParams.stateKey, tokenData);
+    this.tokenStateService.saveToken(normalisedParams.stateKey, tokenData);
     api.logger.info('Token data saved to state');
 
     const outputData: TokenUpdateOutput = {
@@ -410,49 +413,25 @@ export class TokenUpdateCommand extends BaseTransactionCommand<
   }
 
   private async resolveTreasuryKeyRefId(
-    api: CoreApi,
     explicitKey: Credential | undefined,
     treasuryAccountId: string,
     keyManager: KeyManager,
   ): Promise<ResolvedAccountCredential> {
-    if (explicitKey) {
-      const resolved = await api.keyResolver.resolveAccountCredentials(
-        explicitKey,
-        keyManager,
-        false,
-        ['token:treasury'],
-      );
-      return resolved;
-    }
-
-    const treasuryAccountInfo = await api.mirror.getAccount(treasuryAccountId);
-    if (!treasuryAccountInfo) {
-      throw new ValidationError(
-        `Account ${treasuryAccountId} not found on mirror node`,
-        { context: { treasuryAccountId } },
-      );
-    }
-
-    const kmsRecord = api.kms.findByPublicKey(
-      treasuryAccountInfo.accountPublicKey,
-    );
-    if (!kmsRecord) {
-      throw new ValidationError(
-        'Treasury key not found in key manager. Provide --current-treasury-key.',
-        { context: { treasuryAccountId } },
-      );
-    }
-
-    return {
-      accountId: treasuryAccountInfo.accountId,
-      keyRefId: kmsRecord.keyRefId,
-      publicKey: kmsRecord.publicKey,
-    };
+    return this.tokenKeysService.resolveUpdatedTreasury({
+      explicitKey,
+      treasuryAccountId,
+      keyManager,
+    });
   }
 }
 
 export async function tokenUpdate(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenUpdateCommand().execute(args);
+  const { api } = args;
+  return new TokenUpdateCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+    new TokenStateServiceImpl(api.state, api.logger),
+    new TokenKeysServiceImpl(api.keyResolver, api.mirror, api.kms),
+  ).execute(args);
 }

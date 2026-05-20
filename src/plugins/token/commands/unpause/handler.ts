@@ -1,5 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
 import type { TokenUnpauseOutput } from './output';
 import type {
   UnpauseBuildTransactionResult,
@@ -15,7 +16,7 @@ import {
   ValidationError,
 } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
-import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
 import { isNoPauseKeyError } from '@/plugins/token/utils/transaction-error-receipt-status';
 
 import { TokenUnpauseInputSchema } from './input';
@@ -28,7 +29,7 @@ export class TokenUnpauseCommand extends BaseTransactionCommand<
   UnpauseSignTransactionResult,
   UnpauseExecuteTransactionResult
 > {
-  constructor() {
+  constructor(private readonly tokenReferenceService: TokenReferenceService) {
     super(TOKEN_UNPAUSE_COMMAND_NAME);
   }
 
@@ -45,7 +46,10 @@ export class TokenUnpauseCommand extends BaseTransactionCommand<
 
     const network = api.network.getCurrentNetwork();
 
-    const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
+    const resolvedToken = this.tokenReferenceService.resolveToken(
+      validArgs.token,
+      network,
+    );
     if (!resolvedToken) {
       throw new NotFoundError('Token not found', {
         context: { token: validArgs.token },
@@ -152,5 +156,8 @@ export class TokenUnpauseCommand extends BaseTransactionCommand<
 export async function tokenUnpause(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenUnpauseCommand().execute(args);
+  const { api } = args;
+  return new TokenUnpauseCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+  ).execute(args);
 }

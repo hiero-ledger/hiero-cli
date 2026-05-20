@@ -1,5 +1,7 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
+import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 import type { TokenDeleteInput } from './input';
 import type { TokenDeleteOutput } from './output';
 import type {
@@ -18,8 +20,8 @@ import {
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
-import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { TokenDeleteInputSchema } from './input';
 
@@ -31,7 +33,10 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
   TokenDeleteSignTransactionResult,
   TokenDeleteExecuteTransactionResult
 > {
-  constructor() {
+  constructor(
+    private readonly tokenReferenceService: TokenReferenceService,
+    private readonly tokenStateService: TokenStateService,
+  ) {
     super(TOKEN_DELETE_COMMAND_NAME);
   }
 
@@ -56,9 +61,11 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
     }
 
     const network = api.network.getCurrentNetwork();
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
 
-    const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
+    const resolvedToken = this.tokenReferenceService.resolveToken(
+      validArgs.token,
+      network,
+    );
     if (!resolvedToken) {
       throw new NotFoundError('Token not found', {
         context: { token: validArgs.token },
@@ -67,7 +74,7 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
     const tokenId = resolvedToken.tokenId;
     const key = composeKey(network, tokenId);
 
-    const tokenInState = tokenState.getToken(key);
+    const tokenInState = this.tokenStateService.getToken(key);
     if (!tokenInState) {
       throw new NotFoundError('Token not found in state', {
         context: { token: validArgs.token },
@@ -84,7 +91,7 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
       removedAliases.push(`${rec.alias} (${network})`);
     }
 
-    tokenState.removeToken(key);
+    this.tokenStateService.removeToken(key);
 
     const outputData: TokenDeleteOutput = {
       deletedToken: {
@@ -114,7 +121,10 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
 
     const network = api.network.getCurrentNetwork();
 
-    const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
+    const resolvedToken = this.tokenReferenceService.resolveToken(
+      validArgs.token,
+      network,
+    );
     if (!resolvedToken) {
       throw new NotFoundError('Token not found', {
         context: { token: validArgs.token },
@@ -123,10 +133,8 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
     const tokenId = resolvedToken.tokenId;
 
     const tokenInfo = await api.mirror.getTokenInfo(tokenId);
-
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     const stateKey = composeKey(network, tokenId);
-    const tokenInState = tokenState.getToken(stateKey);
+    const tokenInState = this.tokenStateService.getToken(stateKey);
 
     const { keyRefIds } = await api.keyResolver.resolveSigningKeys({
       mirrorRoleKey: tokenInfo.admin_key,
@@ -207,26 +215,23 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
     executeTransactionResult: TokenDeleteExecuteTransactionResult,
   ): Promise<CommandResult> {
     const { transactionResult } = executeTransactionResult;
-    const { api } = args;
     const { network, tokenId, tokenName } = normalisedParams;
-
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     const key = composeKey(network, tokenId);
-    const tokenInState = tokenState.getToken(key);
+    const tokenInState = this.tokenStateService.getToken(key);
 
     const removedAliases: string[] = [];
 
     if (tokenInState) {
-      const aliasesForToken = api.alias
+      const aliasesForToken = args.api.alias
         .list({ network, type: AliasType.Token })
         .filter((rec) => rec.entityId === tokenId);
 
       for (const rec of aliasesForToken) {
-        api.alias.remove(rec.alias, network);
+        args.api.alias.remove(rec.alias, network);
         removedAliases.push(`${rec.alias} (${network})`);
       }
 
-      tokenState.removeToken(key);
+      this.tokenStateService.removeToken(key);
     }
 
     const outputData: TokenDeleteOutput = {
@@ -246,5 +251,9 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
 export async function tokenDelete(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenDeleteCommand().execute(args);
+  const { api } = args;
+  return new TokenDeleteCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+    new TokenStateServiceImpl(api.state, api.logger),
+  ).execute(args);
 }

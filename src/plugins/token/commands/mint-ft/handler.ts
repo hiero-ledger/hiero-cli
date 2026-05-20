@@ -6,6 +6,8 @@ import type {
   MintFtNormalizedParams,
   MintFtSignTransactionResult,
 } from '@/plugins/token/commands/mint-ft/types';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
+import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 import type { TokenMintFtOutput } from './output';
 
 import { BaseTransactionCommand } from '@/core/commands/command';
@@ -18,8 +20,8 @@ import { ConfigOptionKey } from '@/core/services/config/config-service.interface
 import { HederaTokenType } from '@/core/shared/constants';
 import { isRawUnits } from '@/core/utils/amount-helpers';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
-import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { TokenMintFtInputSchema } from './input';
 
@@ -31,7 +33,10 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
   MintFtSignTransactionResult,
   MintFtExecuteTransactionResult
 > {
-  constructor() {
+  constructor(
+    private readonly tokenReferenceService: TokenReferenceService,
+    private readonly tokenStateService: TokenStateService,
+  ) {
     super(TOKEN_MINT_FT_COMMAND_NAME);
   }
 
@@ -39,8 +44,6 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
   ): Promise<MintFtNormalizedParams> {
     const { api } = args;
-
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
 
     const validArgs = TokenMintFtInputSchema.parse(args.args);
 
@@ -54,7 +57,10 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
 
     const network = api.network.getCurrentNetwork();
 
-    const resolvedToken = resolveTokenParameter(tokenIdOrAlias, api, network);
+    const resolvedToken = this.tokenReferenceService.resolveToken(
+      tokenIdOrAlias,
+      network,
+    );
 
     if (!resolvedToken) {
       throw new NotFoundError(`Token not found: ${tokenIdOrAlias}`, {
@@ -68,9 +74,14 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
 
     const tokenInfo = await api.mirror.getTokenInfo(tokenId);
 
-    const tokenData = tokenState.getToken(tokenId);
+    const tokenData = this.tokenStateService.getToken(tokenId);
 
-    if (tokenData && tokenData.tokenType !== HederaTokenType.FUNGIBLE_COMMON) {
+    const tokenInfoType = String(tokenInfo.type);
+    if (
+      tokenData?.tokenType === HederaTokenType.NON_FUNGIBLE_TOKEN ||
+      tokenInfoType === 'NON_FUNGIBLE_UNIQUE' ||
+      tokenInfoType === 'NON_FUNGIBLE_TOKEN'
+    ) {
       throw new ValidationError('Token is not fungible', {
         context: { tokenId },
       });
@@ -191,5 +202,9 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
 export async function tokenMintFt(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenMintFtCommand().execute(args);
+  const { api } = args;
+  return new TokenMintFtCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+    new TokenStateServiceImpl(api.state, api.logger),
+  ).execute(args);
 }

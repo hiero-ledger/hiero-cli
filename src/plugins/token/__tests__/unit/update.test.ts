@@ -1,4 +1,7 @@
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+import type { TokenKeysService } from '@/plugins/token/services/token-keys.service.interface';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
+import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 
 import '@/core/utils/json-serialize';
 
@@ -16,11 +19,11 @@ import {
   TokenUpdateCommand,
 } from '@/plugins/token/commands/update';
 import { TokenUpdateOutputSchema } from '@/plugins/token/commands/update/output';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { makeApiMocks, makeTransactionResult } from './helpers/mocks';
 
-jest.mock('@/plugins/token/zustand-state-helper');
+jest.mock('@/plugins/token/services/token-state.service');
 
 const DEFAULT_TOKEN_INFO = {
   token_id: '0.0.123456',
@@ -101,7 +104,7 @@ describe('tokenUpdate', () => {
     mockSaveToken = jest.fn();
     mockGetToken = jest.fn().mockReturnValue(null);
 
-    (ZustandTokenStateHelper as jest.Mock).mockImplementation(() => ({
+    (TokenStateServiceImpl as jest.Mock).mockImplementation(() => ({
       saveToken: mockSaveToken,
       getToken: mockGetToken,
       addToken: jest.fn(),
@@ -115,7 +118,13 @@ describe('tokenUpdate', () => {
     });
 
     test('TokenUpdateCommand is instantiable', () => {
-      expect(new TokenUpdateCommand()).toBeInstanceOf(TokenUpdateCommand);
+      expect(
+        new TokenUpdateCommand(
+          {} as TokenReferenceService,
+          {} as TokenStateService,
+          {} as TokenKeysService,
+        ),
+      ).toBeInstanceOf(TokenUpdateCommand);
     });
   });
 

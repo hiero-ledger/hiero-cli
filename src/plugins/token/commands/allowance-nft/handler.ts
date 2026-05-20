@@ -1,5 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
 import type { TokenAllowanceNftOutput } from './output';
 import type {
   AllowanceNftBuildTransactionResult,
@@ -17,10 +18,7 @@ import {
 import { NftAllowanceEntry } from '@/core/services/allowance';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
-import {
-  resolveDestinationAccountParameter,
-  resolveTokenParameter,
-} from '@/plugins/token/resolver-helper';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
 
 import { TokenAllowanceNftInputSchema } from './input';
 
@@ -32,7 +30,7 @@ export class TokenAllowanceNftCommand extends BaseTransactionCommand<
   AllowanceNftSignTransactionResult,
   AllowanceNftExecuteTransactionResult
 > {
-  constructor() {
+  constructor(private readonly tokenReferenceService: TokenReferenceService) {
     super(TOKEN_ALLOWANCE_NFT_COMMAND_NAME);
   }
 
@@ -46,7 +44,10 @@ export class TokenAllowanceNftCommand extends BaseTransactionCommand<
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
     const network = api.network.getCurrentNetwork();
 
-    const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
+    const resolvedToken = this.tokenReferenceService.resolveToken(
+      validArgs.token,
+      network,
+    );
     if (!resolvedToken) {
       throw new NotFoundError(`Token not found: ${validArgs.token}`, {
         context: { tokenIdOrAlias: validArgs.token },
@@ -68,11 +69,11 @@ export class TokenAllowanceNftCommand extends BaseTransactionCommand<
       ['token:owner'],
     );
 
-    const resolvedSpender = resolveDestinationAccountParameter(
-      validArgs.spender,
-      api,
-      network,
-    );
+    const resolvedSpender =
+      await this.tokenReferenceService.resolveDestinationAccount(
+        validArgs.spender,
+        network,
+      );
     if (!resolvedSpender) {
       throw new NotFoundError(
         `Spender account not found: ${validArgs.spender}`,
@@ -181,5 +182,8 @@ export class TokenAllowanceNftCommand extends BaseTransactionCommand<
 export async function tokenAllowanceNft(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenAllowanceNftCommand().execute(args);
+  const { api } = args;
+  return new TokenAllowanceNftCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+  ).execute(args);
 }

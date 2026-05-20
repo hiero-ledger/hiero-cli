@@ -9,14 +9,14 @@ import {
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { TOKEN_ASSOCIATE_COMMAND_NAME } from '@/plugins/token/commands/associate';
-import { TokenAssociateStateHook } from '@/plugins/token/hooks/token-associate-state';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { tokenAssociateStateHook } from '@/plugins/token/hooks/token-associate-state';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandTokenStateHelper: jest.fn(),
+jest.mock('../../services/token-state.service', () => ({
+  TokenStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = ZustandTokenStateHelper as jest.Mock;
+const MockedHelper = TokenStateServiceImpl as jest.Mock;
 
 const createAssociateBatchDataItem = (
   overrides: Partial<BatchDataItem> = {},
@@ -41,11 +41,10 @@ const createAssociateBatchDataItem = (
 });
 
 describe('token plugin - batch-associate hook', () => {
-  let hook: TokenAssociateStateHook;
+  const hook = tokenAssociateStateHook;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    hook = new TokenAssociateStateHook();
     MockedHelper.mockImplementation(() => ({
       getToken: jest.fn().mockReturnValue({ tokenId: '0.0.123456' }),
       addTokenAssociation: jest.fn(),

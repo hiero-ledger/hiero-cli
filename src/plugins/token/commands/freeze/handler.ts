@@ -1,5 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
 import type { TokenFreezeOutput } from './output';
 import type {
   FreezeBuildTransactionResult,
@@ -15,7 +16,7 @@ import {
   ValidationError,
 } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
-import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
 import { isNoFreezeKeyError } from '@/plugins/token/utils/transaction-error-receipt-status';
 
 import { TokenFreezeInputSchema } from './input';
@@ -28,7 +29,7 @@ export class TokenFreezeCommand extends BaseTransactionCommand<
   FreezeSignTransactionResult,
   FreezeExecuteTransactionResult
 > {
-  constructor() {
+  constructor(private readonly tokenReferenceService: TokenReferenceService) {
     super(TOKEN_FREEZE_COMMAND_NAME);
   }
 
@@ -45,7 +46,10 @@ export class TokenFreezeCommand extends BaseTransactionCommand<
 
     const network = api.network.getCurrentNetwork();
 
-    const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
+    const resolvedToken = this.tokenReferenceService.resolveToken(
+      validArgs.token,
+      network,
+    );
     if (!resolvedToken) {
       throw new NotFoundError('Token not found', {
         context: { token: validArgs.token },
@@ -163,5 +167,8 @@ export class TokenFreezeCommand extends BaseTransactionCommand<
 export async function tokenFreeze(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenFreezeCommand().execute(args);
+  const { api } = args;
+  return new TokenFreezeCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+  ).execute(args);
 }

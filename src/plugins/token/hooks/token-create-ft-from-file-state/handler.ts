@@ -1,23 +1,30 @@
 import type { CoreApi } from '@/core';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
+import type { TokenAssociationsService } from '@/plugins/token/services/token-associations.service.interface';
+import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
-import { AliasType } from '@/core/types/shared.types';
 import {
+  AliasType,
   type BatchDataItem,
   OrchestratorSource,
   type TransactionResult,
 } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { TOKEN_CREATE_FT_FROM_FILE_COMMAND_NAME } from '@/plugins/token/commands/create-ft-from-file';
-import { processTokenAssociations } from '@/plugins/token/utils/token-associations';
+import { TokenAssociationsServiceImpl } from '@/plugins/token/services/token-associations.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 import { buildTokenDataFromFile } from '@/plugins/token/utils/token-data-builders';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { CreateFtFromFileNormalizedParamsSchema } from './types';
 
 export class TokenCreateFtFromFileStateHook implements Hook<PostOutputPreparationHookParams> {
+  constructor(
+    private readonly tokenStateService: TokenStateService,
+    private readonly tokenAssociationsService: TokenAssociationsService,
+  ) {}
+
   async execute(params: PostOutputPreparationHookParams): Promise<HookResult> {
     const parsed = OrchestratorResultSchema.safeParse(
       params.executeTransactionResult,
@@ -77,19 +84,18 @@ export class TokenCreateFtFromFileStateHook implements Hook<PostOutputPreparatio
       normalisedParams,
     );
 
-    tokenData.associations = await processTokenAssociations(
-      innerTransactionResult.tokenId,
-      normalisedParams.associations,
-      api,
-      normalisedParams.keyManager,
-    );
+    tokenData.associations =
+      await this.tokenAssociationsService.processTokenAssociations(
+        innerTransactionResult.tokenId,
+        normalisedParams.associations,
+        normalisedParams.keyManager,
+      );
 
     const key = composeKey(
       normalisedParams.network,
       innerTransactionResult.tokenId,
     );
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
-    tokenState.saveToken(key, tokenData);
+    this.tokenStateService.saveToken(key, tokenData);
     api.logger.info('   Token data saved to state');
 
     if (normalisedParams.alias) {
@@ -110,3 +116,25 @@ export class TokenCreateFtFromFileStateHook implements Hook<PostOutputPreparatio
     }
   }
 }
+
+export const tokenCreateFtFromFileStateHook: Hook<PostOutputPreparationHookParams> =
+  {
+    execute: (params: PostOutputPreparationHookParams) => {
+      const { api } = params.args;
+      const tokenStateService = new TokenStateServiceImpl(
+        api.state,
+        api.logger,
+      );
+      return new TokenCreateFtFromFileStateHook(
+        tokenStateService,
+        new TokenAssociationsServiceImpl(
+          api.keyResolver,
+          api.token,
+          api.txSign,
+          api.txExecute,
+          tokenStateService,
+          api.logger,
+        ),
+      ).execute(params);
+    },
+  };
