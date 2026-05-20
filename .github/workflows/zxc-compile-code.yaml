@@ -145,28 +145,19 @@ jobs:
         env:
           INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
         if: ${{ inputs.enable-integration-tests && env.INTEGRATION_TESTS_NETWORK == 'localnet' && !cancelled() && !failure() }}
-        run: npm install -g @hashgraph/solo@0.63.0
+        run: npm run test:solo:install
 
-      - name: Setup Local Node using solo (Integration Tests) (if tests are performed on localnet)
-        id: setup-local-node
+      - name: Deploy solo (Integration Tests) (if tests are performed on localnet)
         env:
           INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
         if: ${{ inputs.enable-integration-tests && env.INTEGRATION_TESTS_NETWORK == 'localnet' && !cancelled() && !failure() }}
-        run: |
-          export SOLO_CLUSTER_NAME=solo
-          export SOLO_NAMESPACE=solo
-          export SOLO_CLUSTER_SETUP_NAMESPACE=solo-cluster
-          export SOLO_DEPLOYMENT=solo-deployment
-          solo one-shot single deploy
-          RESULT=$(kubectl get pods --all-namespaces --no-headers -o custom-columns=":metadata.namespace,:metadata.name" | grep '^.* mirror-1-rest' | head -n1)
-          if [ -z "$RESULT" ]; then
-            echo "No pod found with prefix 'mirror-1-rest'"
-            exit 1
-          fi
-          NAMESPACE=$(echo $RESULT | awk '{print $1}')
-          POD=$(echo $RESULT | awk '{print $2}')
-          echo "Forwarding port 5551:5551 to pod $POD in namespace $NAMESPACE"
-          kubectl port-forward -n $NAMESPACE pod/$POD 5551:5551 >/dev/null 2>&1 &
+        run: npm run test:solo:deploy
+
+      - name: Wait for Solo endpoints (Integration Tests) (if tests are performed on localnet)
+        env:
+          INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
+        if: ${{ inputs.enable-integration-tests && env.INTEGRATION_TESTS_NETWORK == 'localnet' && !cancelled() && !failure() }}
+        run: npm run test:solo:check
 
       - name: Configure Integration Tests
         env:
@@ -184,15 +175,11 @@ jobs:
         if: ${{ inputs.enable-integration-tests && !cancelled() && !failure() }}
         run: npm run test:integration
 
-      - name: Teardown Local Node (Integration Tests) (if tests are performed on localnet)
+      - name: Destroy solo instance (Integration Tests) (if tests are performed on localnet)
         env:
           INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
-        if: ${{ inputs.enable-integration-tests && env.INTEGRATION_TESTS_NETWORK == 'localnet' && steps.setup-local-node.conclusion == 'success'  }}
-        run: |
-          pkill -f "kubectl port-forward.*mirror-1-rest"
-          solo one-shot single destroy
-          kind get clusters | grep '^solo' | while read cluster; do   kind delete cluster -n "$cluster"; done
-          sudo rm -rf ~/.solo
+        if: ${{ always() && inputs.enable-integration-tests && env.INTEGRATION_TESTS_NETWORK == 'localnet' }}
+        run: npm run test:solo:destroy
 
       - name: Publish Integration Test Report
         uses: step-security/publish-unit-test-result-action@c8537a200a435e2560109a6a8ed9cac838b62656 # v2.20.5

@@ -7,7 +7,7 @@ import type { HbarTransferOutput } from '@/plugins/hbar/commands/transfer';
 import '@/core/utils/json-serialize';
 
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
-import { delay } from '@/__tests__/utils/common-utils';
+import { waitFor } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
@@ -43,7 +43,10 @@ describe('HBAR Transfer Account Integration Tests', () => {
     expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
     expect(createAccountOutput.network).toBe(network);
 
-    await delay(5000);
+    await waitFor(
+      () => accountView({ args: { account: alias }, api: coreApi }),
+      (result) => (result.result as AccountViewOutput).balance === 100000000n,
+    );
 
     const transferAccountArgs: Record<string, unknown> = {
       amount: '1',
@@ -62,15 +65,13 @@ describe('HBAR Transfer Account Integration Tests', () => {
     expect(transferHbarOutput.network).toBe(network);
     expect(transferHbarOutput.amountTinybar).toBe(100000000n);
 
-    await delay(5000);
-
     const viewAccountArgs: Record<string, unknown> = {
       account: alias,
     };
-    const viewAccountResult = await accountView({
-      args: viewAccountArgs,
-      api: coreApi,
-    });
+    const viewAccountResult = await waitFor(
+      () => accountView({ args: viewAccountArgs, api: coreApi }),
+      (result) => (result.result as AccountViewOutput).balance === 200000000n,
+    );
     const viewAccountOutput = viewAccountResult.result as AccountViewOutput;
     expect(viewAccountOutput.accountId).toBe(createAccountOutput.accountId);
     expect(viewAccountOutput.balance).toBe(200000000n); // result in tinybars
@@ -114,7 +115,10 @@ describe('HBAR Transfer Account Integration Tests', () => {
     expect(accountToOutput.type).toBe(KeyAlgorithm.ECDSA);
     expect(accountToOutput.network).toBe(network);
 
-    await delay(5000);
+    await waitFor(
+      () => accountView({ args: { account: aliasTo }, api: coreApi }),
+      (result) => !!(result.result as AccountViewOutput).accountId,
+    );
 
     const transferAccountArgs: Record<string, unknown> = {
       amount: '1',
@@ -132,15 +136,13 @@ describe('HBAR Transfer Account Integration Tests', () => {
     expect(transferHbarOutput.network).toBe(network);
     expect(transferHbarOutput.amountTinybar).toBe(100000000n);
 
-    await delay(5000);
-
     const viewAccountFromArgs: Record<string, unknown> = {
       account: aliasFrom,
     };
-    const viewAccountFromResult = await accountView({
-      args: viewAccountFromArgs,
-      api: coreApi,
-    });
+    const viewAccountFromResult = await waitFor(
+      () => accountView({ args: viewAccountFromArgs, api: coreApi }),
+      (result) => !!(result.result as AccountViewOutput).accountId,
+    );
     const viewAccountFromOutput =
       viewAccountFromResult.result as AccountViewOutput;
     expect(viewAccountFromOutput.accountId).toBe(accountFromOutput.accountId);
@@ -149,10 +151,10 @@ describe('HBAR Transfer Account Integration Tests', () => {
     const viewAccountToArgs: Record<string, unknown> = {
       account: aliasTo,
     };
-    const viewAccountToResult = await accountView({
-      args: viewAccountToArgs,
-      api: coreApi,
-    });
+    const viewAccountToResult = await waitFor(
+      () => accountView({ args: viewAccountToArgs, api: coreApi }),
+      (result) => (result.result as AccountViewOutput).balance === 200000000n,
+    );
     const viewAccountToOutput = viewAccountToResult.result as AccountViewOutput;
     expect(viewAccountToOutput.accountId).toBe(accountToOutput.accountId);
     expect(viewAccountToOutput.balance).toBe(200000000n); // result in tinybars

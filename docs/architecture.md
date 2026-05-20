@@ -55,6 +55,7 @@ The Hiero CLI is built on a plugin-based architecture designed to be extensible,
 │  ├── Contract Plugin                                        │
 │  ├── Contract ERC-20 Plugin                                 │
 │  ├── Contract ERC-721 Plugin                                │
+│  ├── EIP-712 Plugin                                         │
 │  └── [Custom Plugins]                                       │
 └─────────────────────────────────────────────────────────────┘
 ```
