@@ -1,5 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TopicStateService } from '@/plugins/topic/services/topic-state.service.interface';
 import type { TopicCreateOutput } from './output';
 import type {
   CreateTopicBuildTransactionResult,
@@ -14,7 +15,7 @@ import { ConfigOptionKey } from '@/core/services/config/config-service.interface
 import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
-import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
+import { TopicStateServiceImpl } from '@/plugins/topic/services/topic-state.service';
 
 import { TopicCreateInputSchema } from './input';
 
@@ -26,7 +27,7 @@ export class TopicCreateCommand extends BaseTransactionCommand<
   CreateTopicSignTransactionResult,
   CreateTopicExecuteTransactionResult
 > {
-  constructor() {
+  constructor(private readonly topicState: TopicStateService) {
     super(TOPIC_CREATE_COMMAND_NAME);
   }
 
@@ -43,7 +44,7 @@ export class TopicCreateCommand extends BaseTransactionCommand<
     const keyManagerArg = validArgs.keyManager;
     const network = api.network.getCurrentNetwork();
 
-    api.alias.availableOrThrow(alias, network);
+    args.api.alias.availableOrThrow(alias, network);
 
     const keyManager =
       keyManagerArg ||
@@ -160,8 +161,6 @@ export class TopicCreateCommand extends BaseTransactionCommand<
     executeTransactionResult: CreateTopicExecuteTransactionResult,
   ): Promise<CommandResult> {
     const { transactionResult } = executeTransactionResult;
-    const { api } = args;
-    const topicState = new ZustandTopicStateHelper(api.state, api.logger);
     const topicId = transactionResult.topicId;
     if (!topicId) {
       throw new TransactionError(
@@ -186,7 +185,7 @@ export class TopicCreateCommand extends BaseTransactionCommand<
     };
 
     if (normalisedParams.alias) {
-      api.alias.register({
+      args.api.alias.register({
         alias: normalisedParams.alias,
         type: AliasType.Topic,
         network: normalisedParams.network,
@@ -196,7 +195,7 @@ export class TopicCreateCommand extends BaseTransactionCommand<
     }
 
     const key = composeKey(normalisedParams.network, topicId);
-    topicState.saveTopic(key, topicData);
+    this.topicState.saveTopic(key, topicData);
 
     const outputData: TopicCreateOutput = {
       topicId: topicData.topicId,
@@ -220,5 +219,8 @@ export class TopicCreateCommand extends BaseTransactionCommand<
 export async function topicCreate(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TopicCreateCommand().execute(args);
+  const { logger, state } = args.api;
+  const topicState = new TopicStateServiceImpl(state, logger);
+
+  return new TopicCreateCommand(topicState).execute(args);
 }

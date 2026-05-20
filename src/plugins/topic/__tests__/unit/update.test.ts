@@ -37,13 +37,13 @@ import { createMockTopicInfo } from '@/core/services/mirrornode/__tests__/unit/m
 import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
 import { TopicUpdateOutputSchema } from '@/plugins/topic/commands/update';
 import { topicUpdate } from '@/plugins/topic/commands/update/handler';
-import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
+import { TopicStateServiceImpl } from '@/plugins/topic/services/topic-state.service';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandTopicStateHelper: jest.fn(),
+jest.mock('../../services/topic-state.service', () => ({
+  TopicStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = ZustandTopicStateHelper as jest.Mock;
+const MockedHelper = TopicStateServiceImpl as jest.Mock;
 
 function mirrorWithAdminKey(topicId: string): HederaMirrornodeService {
   return {

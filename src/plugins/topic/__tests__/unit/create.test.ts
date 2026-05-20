@@ -26,13 +26,13 @@ import { TransactionError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { TopicCreateOutputSchema } from '@/plugins/topic/commands/create';
 import { topicCreate } from '@/plugins/topic/commands/create/handler';
-import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
+import { TopicStateServiceImpl } from '@/plugins/topic/services/topic-state.service';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandTopicStateHelper: jest.fn(),
+jest.mock('../../services/topic-state.service', () => ({
+  TopicStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = ZustandTopicStateHelper as jest.Mock;
+const MockedHelper = TopicStateServiceImpl as jest.Mock;
 
 const makeApiMocks = ({
   topicCreateImpl,

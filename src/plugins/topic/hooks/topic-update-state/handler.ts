@@ -1,13 +1,14 @@
-import type { CoreApi } from '@/core';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
+import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { BatchDataItem } from '@/core/types/shared.types';
+import type { TopicStateService } from '@/plugins/topic/services/topic-state.service.interface';
 
 import { OrchestratorSource } from '@/core';
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
 import { composeKey } from '@/core/utils/key-composer';
 import { TOPIC_UPDATE_COMMAND_NAME } from '@/plugins/topic/commands/update/handler';
-import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
+import { TopicStateServiceImpl } from '@/plugins/topic/services/topic-state.service';
 
 import { TopicUpdateNormalisedParamsSchema } from './types';
 
@@ -20,28 +21,32 @@ export class TopicUpdateStateHook implements Hook<PostOutputPreparationHookParam
       return Promise.resolve({ breakFlow: false });
     }
     const batchData = parsed.data.batchData;
-    const { api } = params.args;
+    const { logger, state } = params.args.api;
 
     if (!batchData.success) {
       return Promise.resolve({ breakFlow: false });
     }
 
+    const topicState = new TopicStateServiceImpl(state, logger);
     for (const batchDataItem of [...batchData.transactions].filter(
       (item) => item.command === TOPIC_UPDATE_COMMAND_NAME,
     )) {
-      this.updateTopicState(api, batchDataItem);
+      this.updateTopicState(batchDataItem, { logger, topicState });
     }
 
     return Promise.resolve({ breakFlow: false });
   }
 
-  private updateTopicState(api: CoreApi, batchDataItem: BatchDataItem): void {
+  private updateTopicState(
+    batchDataItem: BatchDataItem,
+    deps: { logger: Logger; topicState: TopicStateService },
+  ): void {
     const parseResult = TopicUpdateNormalisedParamsSchema.safeParse(
       batchDataItem.normalizedParams,
     );
 
     if (!parseResult.success) {
-      api.logger.warn(
+      deps.logger.warn(
         `There was a problem with parsing data schema. The saving will not be done`,
       );
       return;
@@ -105,7 +110,6 @@ export class TopicUpdateStateHook implements Hook<PostOutputPreparationHookParam
     };
 
     const stateKey = composeKey(p.network, p.topicId);
-    const topicState = new ZustandTopicStateHelper(api.state, api.logger);
-    topicState.saveTopic(stateKey, updatedTopicData);
+    deps.topicState.saveTopic(stateKey, updatedTopicData);
   }
 }
