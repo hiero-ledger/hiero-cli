@@ -1,5 +1,7 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
+import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 import type { TokenAirdropFtOutput } from './output';
 import type {
   AirdropFtRecipient,
@@ -14,11 +16,8 @@ import { TransactionError, ValidationError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { isRawUnits } from '@/core/utils/amount-helpers';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
-import {
-  resolveDestinationAccountParameter,
-  resolveTokenParameter,
-} from '@/plugins/token/resolver-helper';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { TokenAirdropFtInputSchema } from './input';
 
@@ -32,7 +31,10 @@ export class TokenAirdropFtCommand extends BaseTransactionCommand<
   TokenAirdropFtSignTransactionResult,
   TokenAirdropFtExecuteTransactionResult
 > {
-  constructor() {
+  constructor(
+    private readonly tokenReferenceService: TokenReferenceService,
+    private readonly tokenStateService: TokenStateService,
+  ) {
     super(TOKEN_AIRDROP_FT_COMMAND_NAME);
   }
 
@@ -40,8 +42,6 @@ export class TokenAirdropFtCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
   ): Promise<TokenAirdropFtNormalizedParams> {
     const { api } = args;
-
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     const validArgs = TokenAirdropFtInputSchema.parse(args.args);
 
     const {
@@ -64,7 +64,10 @@ export class TokenAirdropFtCommand extends BaseTransactionCommand<
 
     const network = api.network.getCurrentNetwork();
 
-    const resolvedToken = resolveTokenParameter(tokenIdOrAlias, api, network);
+    const resolvedToken = this.tokenReferenceService.resolveToken(
+      tokenIdOrAlias,
+      network,
+    );
     if (!resolvedToken?.tokenId) {
       throw new ValidationError(`Failed to resolve token: ${tokenIdOrAlias}`);
     }
@@ -73,7 +76,7 @@ export class TokenAirdropFtCommand extends BaseTransactionCommand<
     const needsDecimals = amounts.some((a) => !isRawUnits(a));
     let tokenDecimals = 0;
     if (needsDecimals) {
-      const tokenInfoStorage = tokenState.getToken(tokenId);
+      const tokenInfoStorage = this.tokenStateService.getToken(tokenId);
       if (tokenInfoStorage) {
         tokenDecimals = tokenInfoStorage.decimals;
       } else {
@@ -87,11 +90,11 @@ export class TokenAirdropFtCommand extends BaseTransactionCommand<
       const recipientInput = recipients[i];
       const amountInput = amounts[i];
 
-      const resolvedAccount = resolveDestinationAccountParameter(
-        recipientInput,
-        api,
-        network,
-      );
+      const resolvedAccount =
+        await this.tokenReferenceService.resolveDestinationAccount(
+          recipientInput,
+          network,
+        );
       if (!resolvedAccount?.accountId) {
         throw new ValidationError(
           `Failed to resolve recipient: ${recipientInput}`,
@@ -219,5 +222,9 @@ export class TokenAirdropFtCommand extends BaseTransactionCommand<
 export async function tokenAirdropFt(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenAirdropFtCommand().execute(args);
+  const { api } = args;
+  return new TokenAirdropFtCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+    new TokenStateServiceImpl(api.state, api.logger),
+  ).execute(args);
 }

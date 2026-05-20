@@ -162,14 +162,21 @@ src/plugins/token/
 │   └── token-dissociate-state/
 │       ├── handler.ts       # TokenDissociateStateHook - removes association from state after batch execution
 │       └── types.ts         # DissociateNormalizedParamsSchema for batch item validation
-├── utils/
-│   ├── token-build-output.ts  # NFT output builder utilities
-│   ├── token-amount-helpers.ts  # Token amount processing helpers
-│   ├── token-data-builders.ts   # Token data builders for create-from-file and update commands
-│   ├── token-associations.ts   # Token association processing
-│   └── [other utility files...]
-├── zustand-state-helper.ts  # State management helper
-├── resolver-helper.ts       # Token and account resolver utilities
+├── utils/                       # Pure functions only (no DI)
+│   ├── token-build-output.ts             # NFT output builder utilities
+│   ├── token-data-builders.ts            # Token data builders for create-from-file and update commands
+│   └── transaction-error-receipt-status.ts # Receipt status helpers for tx errors
+├── services/
+│   ├── token-state.service.ts              # Token state service
+│   ├── token-state.service.interface.ts
+│   ├── token-reference.service.ts          # Token and account reference resolution
+│   ├── token-reference.service.interface.ts
+│   ├── token-keys.service.ts               # Token key resolution
+│   ├── token-keys.service.interface.ts
+│   ├── token-file.service.ts               # Token definition file loading
+│   ├── token-file.service.interface.ts
+│   ├── token-associations.service.ts       # Token association processing
+│   └── token-associations.service.interface.ts
 ├── __tests__/               # Comprehensive test suite
 │   ├── unit/
 │   │   ├── adr007-compliance.test.ts  # Output structure compliance tests
@@ -664,6 +671,46 @@ When using `--all-serials`:
   "serials": null,
   "allSerials": true,
   "network": "testnet"
+}
+```
+
+### Token Allowance NFT List
+
+List NFT allowances granted by an owner account using Mirror Node data. Results are grouped by token and spender.
+
+```bash
+hcli token allowance-nft-list --account alice
+hcli token allowance-nft-list --account alice --token PositionNFT --spender bot
+hcli token allowance-nft-list --account 0.0.111111 --show-all --raw
+```
+
+**Parameters:**
+
+- `--account` / `-a`: Owner account ID or alias to query - **Required**
+- `--token` / `-T`: Optional NFT token ID or alias filter
+- `--spender` / `-s`: Optional spender account ID or alias filter
+- `--show-all`: Fetch all pages instead of the first page
+- `--raw`: Skip token metadata enrichment
+
+**Output:**
+
+```json
+{
+  "accountId": "0.0.111111",
+  "network": "testnet",
+  "raw": false,
+  "allowances": [
+    {
+      "tokenId": "0.0.123456",
+      "tokenName": "Position NFT",
+      "tokenSymbol": "PNFT",
+      "spenderAccountId": "0.0.222222",
+      "approvedForAll": false,
+      "serialNumbers": [1, 2, 3]
+    }
+  ],
+  "total": 1,
+  "hasMore": false
 }
 ```
 
@@ -1171,6 +1218,47 @@ hcli token allowance-ft \
 
 **Note:** Amount in the output is always in base units (raw). The token must have been associated with the spender account before the allowance can be used.
 
+### Token Allowance FT List
+
+List fungible token allowances granted by an owner account using Mirror Node data.
+
+```bash
+hcli token allowance-ft-list --account alice
+hcli token allowance-ft-list --account alice --token USDC --spender bot --show-all
+hcli token allowance-ft-list --account 0.0.111111 --raw
+```
+
+**Parameters:**
+
+- `--account` / `-a`: Owner account ID or alias to query - **Required**
+- `--token` / `-T`: Optional token ID or alias filter
+- `--spender` / `-s`: Optional spender account ID or alias filter
+- `--show-all`: Fetch all pages instead of the first page
+- `--raw`: Skip token metadata enrichment
+
+**Output:**
+
+```json
+{
+  "accountId": "0.0.111111",
+  "network": "testnet",
+  "raw": false,
+  "allowances": [
+    {
+      "tokenId": "0.0.123456",
+      "tokenName": "USD Coin",
+      "tokenSymbol": "USDC",
+      "decimals": 6,
+      "spenderAccountId": "0.0.222222",
+      "amount": "100000000",
+      "amountDisplay": "100"
+    }
+  ],
+  "total": 1,
+  "hasMore": false
+}
+```
+
 ### Token Delete
 
 Delete a token from the Hedera network and remove it from local state. The token must have an admin key to be deleted from the network.
@@ -1653,7 +1741,8 @@ The plugin uses the Core API services:
 - `api.token` - Token transaction creation and management
 - `api.txExecution` - Transaction signing and execution
 - `api.kms` - Account credentials and key management
-- `api.alias` - Account and token name resolution
+- `api.identityResolution` - Account and token reference resolution
+- `api.alias` - Token alias registration/list/removal via token alias service
 - `api.state` - Namespaced state management
 - `api.network` - Network information
 - `api.receipt` - Transaction receipt retrieval (used by batch-state hooks)

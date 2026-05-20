@@ -21,19 +21,19 @@ import {
   tokenView,
   TokenViewOutputSchema,
 } from '@/plugins/token/commands/view';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
-import { makeApiMocks, mockZustandTokenStateHelper } from './helpers/mocks';
+import { makeApiMocks, mockTokenStateServiceImpl } from './helpers/mocks';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandTokenStateHelper: jest.fn(),
+jest.mock('../../services/token-state.service', () => ({
+  TokenStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = ZustandTokenStateHelper as jest.Mock;
+const MockedHelper = TokenStateServiceImpl as jest.Mock;
 
 describe('tokenViewHandler', () => {
   beforeEach(() => {
-    mockZustandTokenStateHelper(MockedHelper);
+    mockTokenStateServiceImpl(MockedHelper);
   });
 
   describe('success scenarios', () => {

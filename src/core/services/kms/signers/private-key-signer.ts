@@ -2,8 +2,9 @@ import type { KmsCredentialSecret } from '@/core/services/kms/kms-types.interfac
 import type { Signer } from './signer.interface';
 
 import { PrivateKey } from '@hiero-ledger/sdk';
+import { SigningKey } from 'ethers';
 
-import { ConfigurationError } from '@/core/errors';
+import { ConfigurationError, ValidationError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
 
 /**
@@ -29,6 +30,22 @@ export class PrivateKeySigner implements Signer {
 
     const signature = privateKey.sign(bytes);
     return new Uint8Array(signature);
+  }
+
+  signHashWithEcdsaKey(hash: string): string {
+    if (!this.secret.privateKey) {
+      throw new ConfigurationError('Missing private key in secret');
+    }
+    if (this.algorithm !== KeyAlgorithm.ECDSA) {
+      throw new ValidationError(
+        'Wallet signing can be only done with ECDSA key',
+      );
+    }
+    const rawPrivateKey = PrivateKey.fromStringECDSA(
+      this.secret.privateKey,
+    ).toStringRaw();
+    const signingKey = new SigningKey(`0x${rawPrivateKey}`);
+    return signingKey.sign(hash).serialized;
   }
 
   getPublicKey(): string {

@@ -8,6 +8,7 @@
  */
 import type { Credential } from '@/core/services/kms/kms-types.interface';
 
+import { existsSync, readFileSync } from 'fs';
 import { z } from 'zod';
 
 import { ValidationError } from '@/core/errors';
@@ -25,6 +26,7 @@ import {
 } from '@/core/shared/constants';
 import {
   EntityReferenceType,
+  JsonInputType,
   SupplyType,
   SupportedNetwork,
 } from '@/core/types/shared.types';
@@ -390,6 +392,8 @@ export const AccountReferenceObjectSchema = z
     );
   })
   .describe('Account identifier (ID, EVM address, or alias)');
+
+export type AccountReference = z.infer<typeof AccountReferenceObjectSchema>;
 
 /**
  * Parsed token reference as a discriminated object by type (entity ID or alias).
@@ -794,6 +798,82 @@ export const FilePathSchema = z
   .trim()
   .min(1, 'File path cannot be empty')
   .describe('Filesystem path (absolute or relative)');
+
+/**
+ * JSON Input Schema
+ * Accepts either an inline JSON string (starts with { or [) or a filesystem path
+ * to a JSON file. Transforms to { type, value } where value is the parsed object.
+ */
+export const JsonInputSchema = z
+  .string()
+  .trim()
+  .min(1, 'JSON input cannot be empty')
+  .transform((val): { type: JsonInputType; value: unknown } => {
+    const trimmed = val.trim();
+    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+      try {
+        return { type: JsonInputType.INLINE, value: JSON.parse(trimmed) };
+      } catch {
+        throw new ValidationError(
+          `Invalid inline JSON: ${trimmed.slice(0, 80)}`,
+        );
+      }
+    }
+    if (!existsSync(trimmed)) {
+      throw new ValidationError(`File not found: ${trimmed}`);
+    }
+    try {
+      return {
+        type: JsonInputType.FILE,
+        value: JSON.parse(readFileSync(trimmed, 'utf-8')),
+      };
+    } catch {
+      throw new ValidationError(`Could not parse JSON from file: ${trimmed}`);
+    }
+  })
+  .describe('Inline JSON string or path to a JSON file');
+
+/**
+ * EIP-712 Ecdsa Signature
+ * 0x-prefixed 65-byte ECDSA signature (r + s + v)
+ */
+export const Eip712EcdsaSignatureSchema = z
+  .string()
+  .regex(
+    /^0x[0-9a-fA-F]{130}$/,
+    'Signature must be a 0x-prefixed 65-byte hex string',
+  )
+  .describe('EIP-712 signature (0x-prefixed 65-byte hex)');
+/**
+ * EIP-712 Signature
+ * 0x-prefixed 65-byte ECDSA signature (r + s + v)
+ */
+export const Eip712Ed25519SignatureSchema = z
+  .string()
+  .regex(
+    /^0x[0-9a-fA-F]{128}$/,
+    'Signature must be a 0x-prefixed 64-byte hex string',
+  )
+  .describe('EIP-712 signature (0x-prefixed 64-byte hex)');
+
+export const Eip712TypedDataFieldSchema = z.object({
+  name: z.string(),
+  type: z.string(),
+});
+
+export const Eip712DomainSchema = z
+  .object({
+    name: z.string().optional(),
+    version: z.string().optional(),
+    chainId: z.union([z.number(), z.bigint()]).optional(),
+    verifyingContract: z.string().optional(),
+    salt: z.string().optional(),
+  })
+  .describe('EIP-712 domain object');
+
+export const Eip712TypesSchema = z
+  .record(z.string(), z.array(Eip712TypedDataFieldSchema))
+  .describe('EIP-712 types definition');
 
 /**
  * Token Name

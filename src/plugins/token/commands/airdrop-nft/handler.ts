@@ -1,5 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
 import type { TokenAirdropNftOutput } from './output';
 import type {
   AirdropNftRecipient,
@@ -17,10 +18,7 @@ import {
 } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
-import {
-  resolveDestinationAccountParameter,
-  resolveTokenParameter,
-} from '@/plugins/token/resolver-helper';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
 
 import { TokenAirdropNftInputSchema } from './input';
 
@@ -34,7 +32,7 @@ export class TokenAirdropNftCommand extends BaseTransactionCommand<
   TokenAirdropNftSignTransactionResult,
   TokenAirdropNftExecuteTransactionResult
 > {
-  constructor() {
+  constructor(private readonly tokenReferenceService: TokenReferenceService) {
     super(TOKEN_AIRDROP_NFT_COMMAND_NAME);
   }
 
@@ -65,7 +63,10 @@ export class TokenAirdropNftCommand extends BaseTransactionCommand<
 
     const network = api.network.getCurrentNetwork();
 
-    const resolvedToken = resolveTokenParameter(tokenIdOrAlias, api, network);
+    const resolvedToken = this.tokenReferenceService.resolveToken(
+      tokenIdOrAlias,
+      network,
+    );
     if (!resolvedToken) {
       throw new NotFoundError(`Token not found: ${tokenIdOrAlias}`, {
         context: { tokenIdOrAlias },
@@ -86,11 +87,11 @@ export class TokenAirdropNftCommand extends BaseTransactionCommand<
       const recipientInput = toList[i];
       const recipientSerials = serials[i];
 
-      const resolvedAccount = resolveDestinationAccountParameter(
-        recipientInput,
-        api,
-        network,
-      );
+      const resolvedAccount =
+        await this.tokenReferenceService.resolveDestinationAccount(
+          recipientInput,
+          network,
+        );
 
       if (!resolvedAccount) {
         throw new NotFoundError(
@@ -210,5 +211,8 @@ export class TokenAirdropNftCommand extends BaseTransactionCommand<
 export async function tokenAirdropNft(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenAirdropNftCommand().execute(args);
+  const { api } = args;
+  return new TokenAirdropNftCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+  ).execute(args);
 }

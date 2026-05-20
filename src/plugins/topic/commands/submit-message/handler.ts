@@ -4,6 +4,7 @@ import type {
   KeyManager,
 } from '@/core/services/kms/kms-types.interface';
 import type { TopicInfo } from '@/core/services/mirrornode/types';
+import type { TopicResolutionService } from '@/plugins/topic/services/topic-resolution.service.interface';
 import type { TopicSubmitMessageOutput } from './output';
 import type {
   SubmitMessageBuildTransactionResult,
@@ -15,7 +16,7 @@ import type {
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { TransactionError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
-import { AliasType } from '@/core/types/shared.types';
+import { TopicResolutionServiceImpl } from '@/plugins/topic/services/topic-resolution.service';
 
 import { TopicSubmitMessageInputSchema } from './input';
 
@@ -27,7 +28,7 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
   SubmitMessageSignTransactionResult,
   SubmitMessageExecuteTransactionResult
 > {
-  constructor() {
+  constructor(private readonly topicResolution: TopicResolutionService) {
     super(TOPIC_SUBMIT_MESSAGE_COMMAND_NAME);
   }
 
@@ -74,15 +75,10 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
       keyManagerArg ||
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
-    let topicId = topicIdOrAlias;
-    const topicAliasResult = api.alias.resolve(
+    const topicId = this.topicResolution.resolveTopicId(
       topicIdOrAlias,
-      AliasType.Topic,
       currentNetwork,
     );
-    if (topicAliasResult?.entityId) {
-      topicId = topicAliasResult.entityId;
-    }
     api.logger.info(`Submitting message to topic: ${topicId}`);
 
     const topicInfo = await api.mirror.getTopicInfo(topicId);
@@ -180,5 +176,8 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
 export async function topicSubmitMessage(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TopicSubmitMessageCommand().execute(args);
+  const { alias } = args.api;
+  const topicResolution = new TopicResolutionServiceImpl(alias);
+
+  return new TopicSubmitMessageCommand(topicResolution).execute(args);
 }

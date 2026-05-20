@@ -10,7 +10,7 @@ import {
   tokenCreateFt,
   TokenCreateFtOutputSchema,
 } from '@/plugins/token/commands/create-ft';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import {
   expectedTokenTransactionParams,
@@ -20,11 +20,11 @@ import {
 } from './helpers/fixtures';
 import { makeApiMocks, makeTransactionResult } from './helpers/mocks';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandTokenStateHelper: jest.fn(),
+jest.mock('../../services/token-state.service', () => ({
+  TokenStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = ZustandTokenStateHelper as jest.Mock;
+const MockedHelper = TokenStateServiceImpl as jest.Mock;
 
 describe('createTokenHandler', () => {
   beforeEach(() => {

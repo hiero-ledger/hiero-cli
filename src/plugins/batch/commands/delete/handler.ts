@@ -1,29 +1,26 @@
-/**
- * Batch Delete Command Handler
- * Deletes a whole batch by name or a single transaction by name and order
- */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
+import type { BatchStateService } from '@/plugins/batch/services/batch-state.service.interface';
 import type { BatchDeleteOutput } from './output';
 
 import { NotFoundError } from '@/core/errors';
 import { composeKey } from '@/core/utils/key-composer';
-import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
+import { BatchStateServiceImpl } from '@/plugins/batch/services/batch-state.service';
 
 import { BatchDeleteInputSchema } from './input';
 
 export class BatchDeleteCommand implements Command {
+  constructor(private readonly batchState: BatchStateService) {}
+
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
-
-    const batchState = new ZustandBatchStateHelper(api.state, api.logger);
     const validArgs = BatchDeleteInputSchema.parse(args.args);
     const name = validArgs.name;
     const order = validArgs.order;
     const network = api.network.getCurrentNetwork();
     const key = composeKey(network, name);
 
-    const batch = batchState.getBatch(key);
+    const batch = this.batchState.getBatch(key);
     if (!batch) {
       throw new NotFoundError(`Batch not found: ${name}`, {
         context: { name },
@@ -31,7 +28,6 @@ export class BatchDeleteCommand implements Command {
     }
 
     if (order) {
-      // Delete single transaction by order
       const transactionIndex = batch.transactions.findIndex(
         (tx) => tx.order === order,
       );
@@ -43,7 +39,7 @@ export class BatchDeleteCommand implements Command {
       }
 
       batch.transactions.splice(transactionIndex, 1);
-      batchState.saveBatch(key, batch);
+      this.batchState.saveBatch(key, batch);
 
       api.logger.info(
         `Removed transaction at order ${order} from batch '${name}'`,
@@ -56,8 +52,7 @@ export class BatchDeleteCommand implements Command {
       return { result: outputData };
     }
 
-    // Delete whole batch
-    batchState.deleteBatch(key);
+    this.batchState.deleteBatch(key);
     api.logger.info(`Deleted batch '${name}'`);
 
     const outputData: BatchDeleteOutput = {
@@ -70,5 +65,7 @@ export class BatchDeleteCommand implements Command {
 export async function batchDelete(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new BatchDeleteCommand().execute(args);
+  const { api } = args;
+  const batchState = new BatchStateServiceImpl(api.state, api.logger);
+  return new BatchDeleteCommand(batchState).execute(args);
 }

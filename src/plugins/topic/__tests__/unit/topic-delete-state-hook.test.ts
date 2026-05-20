@@ -11,13 +11,13 @@ import {
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { TOPIC_DELETE_COMMAND_NAME } from '@/plugins/topic/commands/delete/handler';
 import { TopicDeleteStateHook } from '@/plugins/topic/hooks/topic-delete-state';
-import { TopicHelper } from '@/plugins/topic/topic-helper';
+import { TopicCleanupServiceImpl } from '@/plugins/topic/services/topic-cleanup.service';
 
-jest.mock('../../topic-helper', () => ({
-  TopicHelper: jest.fn(),
+jest.mock('../../services/topic-cleanup.service', () => ({
+  TopicCleanupServiceImpl: jest.fn(),
 }));
 
-const MockedTopicHelper = TopicHelper as jest.Mock;
+const MockedTopicCleanupService = TopicCleanupServiceImpl as jest.Mock;
 
 const baseTopicToDelete = (): TopicData => ({
   topicId: '0.0.9999',
@@ -56,7 +56,7 @@ describe('topic plugin - TopicDeleteStateHook', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     removeTopicFromLocalStateMock = jest.fn();
-    MockedTopicHelper.mockImplementation(() => ({
+    MockedTopicCleanupService.mockImplementation(() => ({
       removeTopicFromLocalState: removeTopicFromLocalStateMock,
     }));
     hook = new TopicDeleteStateHook();
@@ -160,7 +160,7 @@ describe('topic plugin - TopicDeleteStateHook', () => {
     expect(removeTopicFromLocalStateMock).not.toHaveBeenCalled();
   });
 
-  test('calls TopicHelper.removeTopicFromLocalState when delete succeeds', async () => {
+  test('calls TopicCleanupService.removeTopicFromLocalState when delete succeeds', async () => {
     const logger = makeLogger();
     const api = {
       state: makeStateMock(),

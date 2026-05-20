@@ -15,6 +15,8 @@ export interface Signer {
    */
   sign(bytes: Uint8Array): Uint8Array;
 
+  signHashWithEcdsaKey(hash: string): string;
+
   /**
    * Returns the public key associated with this signer.
    *

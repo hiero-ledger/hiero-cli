@@ -28,10 +28,20 @@ import {
   TokenAllowanceFtOutputSchema,
 } from './commands/allowance-ft';
 import {
+  TOKEN_ALLOWANCE_FT_LIST_TEMPLATE,
+  tokenAllowanceFtList,
+  TokenAllowanceFtListOutputSchema,
+} from './commands/allowance-ft-list';
+import {
   TOKEN_ALLOWANCE_NFT_TEMPLATE,
   tokenAllowanceNft,
   TokenAllowanceNftOutputSchema,
 } from './commands/allowance-nft';
+import {
+  TOKEN_ALLOWANCE_NFT_LIST_TEMPLATE,
+  tokenAllowanceNftList,
+  TokenAllowanceNftListOutputSchema,
+} from './commands/allowance-nft-list';
 import {
   TOKEN_ASSOCIATE_TEMPLATE,
   tokenAssociate,
@@ -172,14 +182,14 @@ import {
   tokenView,
   TokenViewOutputSchema,
 } from './commands/view';
-import { TokenAssociateStateHook } from './hooks/token-associate-state';
-import { TokenCreateFtFromFileStateHook } from './hooks/token-create-ft-from-file-state';
-import { TokenCreateFtStateHook } from './hooks/token-create-ft-state';
-import { TokenCreateNftFromFileStateHook } from './hooks/token-create-nft-from-file-state';
-import { TokenCreateNftStateHook } from './hooks/token-create-nft-state';
-import { TokenDeleteStateHook } from './hooks/token-delete-state';
-import { TokenDissociateStateHook } from './hooks/token-dissociate-state/handler';
-import { TokenUpdateStateHook } from './hooks/token-update-state';
+import { tokenAssociateStateHook } from './hooks/token-associate-state';
+import { tokenCreateFtFromFileStateHook } from './hooks/token-create-ft-from-file-state';
+import { tokenCreateFtStateHook } from './hooks/token-create-ft-state';
+import { tokenCreateNftFromFileStateHook } from './hooks/token-create-nft-from-file-state';
+import { tokenCreateNftStateHook } from './hooks/token-create-nft-state';
+import { tokenDeleteStateHook } from './hooks/token-delete-state';
+import { tokenDissociateStateHook } from './hooks/token-dissociate-state/handler';
+import { tokenUpdateStateHook } from './hooks/token-update-state';
 
 export const tokenPluginManifest: PluginManifest = {
   name: 'token',
@@ -189,42 +199,42 @@ export const tokenPluginManifest: PluginManifest = {
   hooks: [
     {
       name: 'token-create-ft-state',
-      hook: new TokenCreateFtStateHook(),
+      hook: tokenCreateFtStateHook,
       options: [],
     },
     {
       name: 'token-create-ft-from-file-state',
-      hook: new TokenCreateFtFromFileStateHook(),
+      hook: tokenCreateFtFromFileStateHook,
       options: [],
     },
     {
       name: 'token-create-nft-state',
-      hook: new TokenCreateNftStateHook(),
+      hook: tokenCreateNftStateHook,
       options: [],
     },
     {
       name: 'token-create-nft-from-file-state',
-      hook: new TokenCreateNftFromFileStateHook(),
+      hook: tokenCreateNftFromFileStateHook,
       options: [],
     },
     {
       name: 'token-associate-state',
-      hook: new TokenAssociateStateHook(),
+      hook: tokenAssociateStateHook,
       options: [],
     },
     {
       name: 'token-dissociate-state',
-      hook: new TokenDissociateStateHook(),
+      hook: tokenDissociateStateHook,
       options: [],
     },
     {
       name: 'token-delete-state',
-      hook: new TokenDeleteStateHook(),
+      hook: tokenDeleteStateHook,
       options: [],
     },
     {
       name: 'token-update-state',
-      hook: new TokenUpdateStateHook(),
+      hook: tokenUpdateStateHook,
       options: [],
     },
   ],
@@ -1395,6 +1405,52 @@ export const tokenPluginManifest: PluginManifest = {
       },
     },
     {
+      name: 'allowance-ft-list',
+      summary: 'List fungible token allowances',
+      description:
+        'List fungible token allowances granted by an owner account using Mirror Node data',
+      options: [
+        {
+          name: 'account',
+          short: 'a',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Owner account ID or alias to query',
+        },
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Optional token ID or alias filter',
+        },
+        {
+          name: 'spender',
+          short: 's',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Optional spender account ID or alias filter',
+        },
+        {
+          name: 'show-all',
+          type: OptionType.BOOLEAN,
+          required: false,
+          description: 'Fetch all pages instead of the first page',
+        },
+        {
+          name: 'raw',
+          type: OptionType.BOOLEAN,
+          required: false,
+          description: 'Skip token metadata enrichment',
+        },
+      ],
+      handler: tokenAllowanceFtList,
+      output: {
+        schema: TokenAllowanceFtListOutputSchema,
+        humanTemplate: TOKEN_ALLOWANCE_FT_LIST_TEMPLATE,
+      },
+    },
+    {
       name: 'list',
       summary: 'List all tokens',
       description:
@@ -2016,6 +2072,52 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: TokenAllowanceNftOutputSchema,
         humanTemplate: TOKEN_ALLOWANCE_NFT_TEMPLATE,
+      },
+    },
+    {
+      name: 'allowance-nft-list',
+      summary: 'List NFT allowances',
+      description:
+        'List NFT allowances granted by an owner account using Mirror Node data',
+      options: [
+        {
+          name: 'account',
+          short: 'a',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Owner account ID or alias to query',
+        },
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Optional NFT token ID or alias filter',
+        },
+        {
+          name: 'spender',
+          short: 's',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Optional spender account ID or alias filter',
+        },
+        {
+          name: 'show-all',
+          type: OptionType.BOOLEAN,
+          required: false,
+          description: 'Fetch all pages instead of the first page',
+        },
+        {
+          name: 'raw',
+          type: OptionType.BOOLEAN,
+          required: false,
+          description: 'Skip token metadata enrichment',
+        },
+      ],
+      handler: tokenAllowanceNftList,
+      output: {
+        schema: TokenAllowanceNftListOutputSchema,
+        humanTemplate: TOKEN_ALLOWANCE_NFT_LIST_TEMPLATE,
       },
     },
     {

@@ -2,23 +2,30 @@ import type { CoreApi } from '@/core';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
 import type { Credential } from '@/core/services/kms/kms-types.interface';
+import type { TokenAssociationsService } from '@/plugins/token/services/token-associations.service.interface';
+import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
-import { AliasType } from '@/core/types/shared.types';
 import {
+  AliasType,
   type BatchDataItem,
   OrchestratorSource,
   type TransactionResult,
 } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { TOKEN_CREATE_NFT_FROM_FILE_COMMAND_NAME } from '@/plugins/token/commands/create-nft-from-file';
-import { processTokenAssociations } from '@/plugins/token/utils/token-associations';
+import { TokenAssociationsServiceImpl } from '@/plugins/token/services/token-associations.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 import { buildNftTokenDataFromFile } from '@/plugins/token/utils/token-data-builders';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { CreateNftFromFileNormalizedParamsSchema } from './types';
 
 export class TokenCreateNftFromFileStateHook implements Hook<PostOutputPreparationHookParams> {
+  constructor(
+    private readonly tokenStateService: TokenStateService,
+    private readonly tokenAssociationsService: TokenAssociationsService,
+  ) {}
+
   async execute(params: PostOutputPreparationHookParams): Promise<HookResult> {
     const parsed = OrchestratorResultSchema.safeParse(
       params.executeTransactionResult,
@@ -78,19 +85,18 @@ export class TokenCreateNftFromFileStateHook implements Hook<PostOutputPreparati
       normalisedParams,
     );
 
-    tokenData.associations = await processTokenAssociations(
-      innerTransactionResult.tokenId,
-      normalisedParams.associations as Credential[],
-      api,
-      normalisedParams.keyManager,
-    );
+    tokenData.associations =
+      await this.tokenAssociationsService.processTokenAssociations(
+        innerTransactionResult.tokenId,
+        normalisedParams.associations as Credential[],
+        normalisedParams.keyManager,
+      );
 
     const key = composeKey(
       normalisedParams.network,
       innerTransactionResult.tokenId,
     );
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
-    tokenState.saveToken(key, tokenData);
+    this.tokenStateService.saveToken(key, tokenData);
     api.logger.info('   Non-fungible token data saved to state');
 
     if (normalisedParams.alias) {
@@ -111,3 +117,25 @@ export class TokenCreateNftFromFileStateHook implements Hook<PostOutputPreparati
     }
   }
 }
+
+export const tokenCreateNftFromFileStateHook: Hook<PostOutputPreparationHookParams> =
+  {
+    execute: (params: PostOutputPreparationHookParams) => {
+      const { api } = params.args;
+      const tokenStateService = new TokenStateServiceImpl(
+        api.state,
+        api.logger,
+      );
+      return new TokenCreateNftFromFileStateHook(
+        tokenStateService,
+        new TokenAssociationsServiceImpl(
+          api.keyResolver,
+          api.token,
+          api.txSign,
+          api.txExecute,
+          tokenStateService,
+          api.logger,
+        ),
+      ).execute(params);
+    },
+  };

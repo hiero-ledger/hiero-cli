@@ -7,7 +7,7 @@ import type { TokenCreateNftOutput } from '@/plugins/token/commands/create-nft';
 import '@/core/utils/json-serialize';
 
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
-import { delay } from '@/__tests__/utils/common-utils';
+import { waitFor } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
@@ -42,15 +42,13 @@ describe('Create NFT Integration Tests', () => {
     expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
     expect(createAccountOutput.network).toBe(network);
 
-    await delay(5000);
-
     const viewAccountArgs: Record<string, unknown> = {
       account: 'account-create-nft',
     };
-    const viewAccountResult = await accountView({
-      args: viewAccountArgs,
-      api: coreApi,
-    });
+    const viewAccountResult = await waitFor(
+      () => accountView({ args: viewAccountArgs, api: coreApi }),
+      (result) => !!(result.result as AccountViewOutput).accountId,
+    );
     const viewAccountOutput = viewAccountResult.result as AccountViewOutput;
     expect(viewAccountOutput.accountId).toBe(createAccountOutput.accountId);
     expect(viewAccountOutput.balance).toBe(100000000n); // result in tinybars

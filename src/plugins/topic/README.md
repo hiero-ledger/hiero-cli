@@ -57,23 +57,26 @@ src/plugins/topic/
 │       ├── output.ts
 │       └── index.ts
 ├── hooks/
-│   ├── batch-create/
-│   │   ├── handler.ts       # TopicCreateBatchStateHook - persists topic state after batch execution
+│   ├── topic-create-state/
+│   │   ├── handler.ts       # Persists topic state after batch execution
 │   │   ├── types.ts         # TopicCreateNormalisedParamsSchema for batch item validation
 │   │   └── index.ts         # Hook exports
-│   ├── batch-update/
-│   │   ├── handler.ts       # TopicUpdateBatchStateHook - updates state after batched topic update
+│   ├── topic-update-state/
+│   │   ├── handler.ts       # Updates state after batched topic update
 │   │   ├── types.ts         # TopicUpdateNormalisedParamsSchema for batch item validation
 │   │   └── index.ts
-│   └── batch-delete/
-│       ├── handler.ts       # TopicDeleteBatchStateHook - updates state after batched topic delete
+│   └── topic-delete-state/
+│       ├── handler.ts       # Updates state after batched topic delete
 │       ├── types.ts         # TopicDeleteNormalisedParamsSchema for batch item validation
 │       └── index.ts
+├── services/
+│   ├── topic-alias.service.ts
+│   ├── topic-cleanup.service.ts
+│   ├── topic-resolution.service.ts
+│   └── topic-state.service.ts
 ├── utils/
 │   ├── message-helpers.ts   # Message handling utilities
-│   ├── messageFilters.ts    # Message filter helpers
-│   └── topicResolver.ts     # Topic resolution utilities
-├── zustand-state-helper.ts  # Helper around `api.state`
+│   └── messageFilters.ts    # Message filter helpers
 ├── __tests__/unit/          # Unit tests
 └── index.ts                 # Plugin exports
 ```
@@ -255,7 +258,7 @@ The `--batch` option is automatically injected by the batchify hook. See the [Ba
 ## 📝 Parameter Formats
 
 - **Topic reference**: alias registered in the CLI or explicit `0.0.x` ID
-- **Keys**: account alias (resolved via `api.alias`) or raw private key string (imported into KMS and referenced via `keyRefId`).
+- **Keys**: account alias resolved by the Core key resolver or raw private key string (imported into KMS and referenced via `keyRefId`).
 - **Messages**: UTF-8 strings; mirror results are automatically Base64-decoded
 - **Sequence filters**: `--sequence-gt`, `--sequence-gte`, `--sequence-lt`, `--sequence-lte`, `--sequence-eq` (short forms: `-g`, `-G`, `-l`, `-L`, `-e`)
 
@@ -263,10 +266,10 @@ The `--batch` option is automatically injected by the batchify hook. See the [Ba
 
 - `api.topic` – topic creation + message submission transactions
 - `api.txExecution` – signing with operator, admin, or submit keys
-- `api.alias` – resolve/register topic aliases and key references
+- `api.alias` – topic alias dependency wrapped by Topic plugin services
 - `api.kms` – secure private key import for admin/submit keys
 - `api.mirror` – query messages via Hedera Mirror Node
-- `api.state` – namespaced topic storage through `ZustandTopicStateHelper`
+- `api.state` – namespaced topic storage through `TopicStateService`
 - `api.network` – current network resolution for IDs and filters
 - `api.receipt` – transaction receipt retrieval (used by `TopicCreateBatchStateHook`)
 - `api.logger` – progress logging (suppressed automatically in `--script` mode)
@@ -317,4 +320,4 @@ Validation is enforced via Zod at runtime and the generated JSON Schema is embed
 - Handlers are unit-tested in isolation with mocked Core API services.
 - Schema parsing is covered through `TopicDataSchema`.
 - Output structure compliance tests ensure every handler returns a valid `CommandResult`.
-- Topic creation in batch (batch-create hook) is covered by `account-create-state-hook.test.ts`.
+- Topic creation in batch is covered by `topic-create-state-hook.test.ts`.

@@ -4,23 +4,16 @@ import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError } from '@/core/errors';
 import {
-  batchDelete,
+  BatchDeleteCommand,
   BatchDeleteOutputSchema,
 } from '@/plugins/batch/commands/delete';
-import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
 
 import {
   BATCH_NAME,
   mockBatchData,
   mockBatchDataWithTransactions,
 } from './helpers/fixtures';
-import { makeBatchApiMocks } from './helpers/mocks';
-
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandBatchStateHelper: jest.fn(),
-}));
-
-const MockedHelper = ZustandBatchStateHelper as jest.Mock;
+import { makeBatchApiMocks, makeBatchStateServiceMock } from './helpers/mocks';
 
 describe('batch plugin - delete command', () => {
   beforeEach(() => {
@@ -30,16 +23,16 @@ describe('batch plugin - delete command', () => {
   test('deletes whole batch successfully', async () => {
     const logger = makeLogger();
     const deleteBatchMock = jest.fn();
-    MockedHelper.mockImplementation(() => ({
+    const batchState = makeBatchStateServiceMock({
       getBatch: jest.fn().mockReturnValue({ ...mockBatchData }),
       deleteBatch: deleteBatchMock,
-    }));
+    });
 
     const { networkMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
 
     const args = makeArgs(api, logger, { name: BATCH_NAME });
-    const result = await batchDelete(args);
+    const result = await new BatchDeleteCommand(batchState).execute(args);
 
     expect(deleteBatchMock).toHaveBeenCalled();
 
@@ -55,16 +48,16 @@ describe('batch plugin - delete command', () => {
       ...mockBatchDataWithTransactions,
       transactions: [...mockBatchDataWithTransactions.transactions],
     };
-    MockedHelper.mockImplementation(() => ({
+    const batchState = makeBatchStateServiceMock({
       getBatch: jest.fn().mockReturnValue(batchCopy),
       saveBatch: saveBatchMock,
-    }));
+    });
 
     const { networkMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
 
     const args = makeArgs(api, logger, { name: BATCH_NAME, order: 1 });
-    const result = await batchDelete(args);
+    const result = await new BatchDeleteCommand(batchState).execute(args);
 
     expect(saveBatchMock).toHaveBeenCalledWith(
       expect.any(String),
@@ -82,33 +75,36 @@ describe('batch plugin - delete command', () => {
 
   test('throws NotFoundError when batch does not exist', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    const batchState = makeBatchStateServiceMock({
       getBatch: jest.fn().mockReturnValue(null),
-    }));
+    });
 
     const { networkMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
 
     const args = makeArgs(api, logger, { name: BATCH_NAME });
 
-    await expect(batchDelete(args)).rejects.toThrow(NotFoundError);
+    await expect(
+      new BatchDeleteCommand(batchState).execute(args),
+    ).rejects.toThrow(NotFoundError);
   });
 
   test('throws NotFoundError when transaction order not found', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    const batchState = makeBatchStateServiceMock({
       getBatch: jest.fn().mockReturnValue({
         ...mockBatchDataWithTransactions,
         transactions: [...mockBatchDataWithTransactions.transactions],
       }),
-      saveBatch: jest.fn(),
-    }));
+    });
 
     const { networkMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
 
     const args = makeArgs(api, logger, { name: BATCH_NAME, order: 999 });
 
-    await expect(batchDelete(args)).rejects.toThrow(NotFoundError);
+    await expect(
+      new BatchDeleteCommand(batchState).execute(args),
+    ).rejects.toThrow(NotFoundError);
   });
 });

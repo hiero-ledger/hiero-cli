@@ -14,15 +14,15 @@ import { tokenTransferFt } from '@/plugins/token';
 import { tokenAssociate } from '@/plugins/token/commands/associate';
 import { tokenCreateFt } from '@/plugins/token/commands/create-ft';
 import { tokenCreateFtFromFile } from '@/plugins/token/commands/create-ft-from-file';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
-import { makeApiMocks, mockZustandTokenStateHelper } from './helpers/mocks';
+import { makeApiMocks, mockTokenStateServiceImpl } from './helpers/mocks';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandTokenStateHelper: jest.fn(),
+jest.mock('../../services/token-state.service', () => ({
+  TokenStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = ZustandTokenStateHelper as jest.Mock;
+const MockedHelper = TokenStateServiceImpl as jest.Mock;
 
 interface AliasData {
   entityId: string;
@@ -61,7 +61,7 @@ const makeTestAliasService = () => ({
 
 describe('Token Plugin Error Handling', () => {
   beforeEach(() => {
-    mockZustandTokenStateHelper(MockedHelper);
+    mockTokenStateServiceImpl(MockedHelper);
   });
 
   describe('network and connectivity errors', () => {
@@ -515,7 +515,7 @@ describe('Token Plugin Error Handling', () => {
         throw new InternalError('State service unavailable');
       });
 
-      mockZustandTokenStateHelper(MockedHelper, {
+      mockTokenStateServiceImpl(MockedHelper, {
         saveToken: mockSaveToken,
       });
 

@@ -159,6 +159,11 @@ export enum MirrorTransactionResult {
   FAILURE = 'FAILURE',
 }
 
+export enum JsonInputType {
+  INLINE = 'INLINE',
+  FILE = 'FILE',
+}
+
 export interface TransactionStatus {
   status: 'pending' | 'success' | 'failed';
   transactionId: string;
@@ -219,4 +224,23 @@ export interface ScheduledData {
 
 export interface ScheduledDataVerifyResult {
   scheduledData: ScheduledData;
+}
+
+export interface Eip712Domain {
+  name?: string;
+  version?: string;
+  chainId?: number | bigint;
+  verifyingContract?: string;
+  salt?: string;
+}
+
+export interface Eip712TypedDataField {
+  name: string;
+  type: string;
+}
+
+export interface EcdsaSignatureComponents {
+  r: string;
+  s: string;
+  v: 27 | 28;
 }

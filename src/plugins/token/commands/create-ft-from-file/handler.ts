@@ -1,11 +1,10 @@
-import type { CommandHandlerArgs, CommandResult, CoreApi } from '@/core';
-import type {
-  ResolvedAccountCredential,
-  ResolvedPublicKey,
-} from '@/core/services/key-resolver/types';
+import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { SupplyType } from '@/core/types/shared.types';
-import type { FungibleTokenFileDefinition } from '@/plugins/token/schema';
+import type { TokenAssociationsService } from '@/plugins/token/services/token-associations.service.interface';
+import type { TokenFileService } from '@/plugins/token/services/token-file.service.interface';
+import type { TokenKeysService } from '@/plugins/token/services/token-keys.service.interface';
+import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 import type { TokenCreateFtFromFileOutput } from './output';
 import type {
   TokenCreateFtFromFileAssociationOutput,
@@ -21,11 +20,11 @@ import { ConfigOptionKey } from '@/core/services/config/config-service.interface
 import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
-import { processTokenAssociations } from '@/plugins/token/utils/token-associations';
+import { TokenAssociationsServiceImpl } from '@/plugins/token/services/token-associations.service';
+import { TokenFileServiceImpl } from '@/plugins/token/services/token-file.service';
+import { TokenKeysServiceImpl } from '@/plugins/token/services/token-keys.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 import { buildTokenDataFromFile } from '@/plugins/token/utils/token-data-builders';
-import { readAndValidateTokenFile } from '@/plugins/token/utils/token-file-helpers';
-import { resolveOptionalKeys } from '@/plugins/token/utils/token-key-resolver';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { TokenCreateFtFromFileInputSchema } from './input';
 
@@ -38,7 +37,12 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
   TokenCreateFtFromFileSignTransactionResult,
   TokenCreateFtFromFileExecuteTransactionResult
 > {
-  constructor() {
+  constructor(
+    private readonly tokenStateService: TokenStateService,
+    private readonly tokenFileService: TokenFileService,
+    private readonly tokenAssociationsService: TokenAssociationsService,
+    private readonly tokenKeysService: TokenKeysService,
+  ) {
     super(TOKEN_CREATE_FT_FROM_FILE_COMMAND_NAME);
   }
 
@@ -53,10 +57,8 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
 
     api.logger.info(`Creating fungible token from file: ${validArgs.file}`);
 
-    const tokenDefinition = await readAndValidateTokenFile(
-      validArgs.file,
-      api.logger,
-    );
+    const tokenDefinition =
+      await this.tokenFileService.readAndValidateFtTokenFile(validArgs.file);
     const network = api.network.getCurrentNetwork();
     api.alias.availableOrThrow(tokenDefinition.name, network);
 
@@ -71,7 +73,18 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
       feeScheduleKeys,
       metadataKeys,
       keyRefIds,
-    } = await this.resolveKeys(api, tokenDefinition, keyManager);
+    } = await this.tokenKeysService.resolveCreateFtFromFileKeys(
+      tokenDefinition,
+      keyManager,
+    );
+    if (adminKeys.length > 0) {
+      api.logger.info('🔑 Resolved admin key for signing');
+    }
+    if (tokenDefinition.freezeDefault && freezeKeys.length === 0) {
+      api.logger.warn(
+        'freezeDefault was requested but no freeze key is set; freeze default will be skipped.',
+      );
+    }
 
     const autoRenewPeriodSeconds = tokenDefinition.autoRenewPeriod;
     const autoRenewAccountCredential = tokenDefinition.autoRenewAccount
@@ -263,21 +276,20 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
     executeTransactionResult: TokenCreateFtFromFileExecuteTransactionResult,
   ): Promise<CommandResult> {
     const { api } = args;
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     const result = executeTransactionResult.transactionResult;
     const tokenData = buildTokenDataFromFile(result, normalisedParams);
 
     const tokenId = result.tokenId ?? '';
-    const successfulAssociations = await processTokenAssociations(
-      tokenId,
-      normalisedParams.associations,
-      api,
-      normalisedParams.keyManager,
-    );
+    const successfulAssociations =
+      await this.tokenAssociationsService.processTokenAssociations(
+        tokenId,
+        normalisedParams.associations,
+        normalisedParams.keyManager,
+      );
     tokenData.associations = successfulAssociations;
 
     const key = composeKey(normalisedParams.network, tokenId);
-    tokenState.saveToken(key, tokenData);
+    this.tokenStateService.saveToken(key, tokenData);
     api.logger.info('   Token data saved to state');
 
     if (normalisedParams.alias && result.tokenId) {
@@ -317,116 +329,24 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
 
     return { result: outputData };
   }
-
-  private async resolveKeys(
-    api: CoreApi,
-    tokenDefinition: FungibleTokenFileDefinition,
-    keyManager: KeyManager,
-  ): Promise<{
-    treasury: ResolvedAccountCredential;
-    adminKeys: ResolvedPublicKey[];
-    supplyKeys: ResolvedPublicKey[];
-    wipeKeys: ResolvedPublicKey[];
-    kycKeys: ResolvedPublicKey[];
-    freezeKeys: ResolvedPublicKey[];
-    pauseKeys: ResolvedPublicKey[];
-    feeScheduleKeys: ResolvedPublicKey[];
-    metadataKeys: ResolvedPublicKey[];
-    keyRefIds: string[];
-  }> {
-    const treasury = await api.keyResolver.resolveAccountCredentials(
-      tokenDefinition.treasuryKey,
-      keyManager,
-      false,
-      ['token:treasury'],
-    );
-
-    const adminKeys = await resolveOptionalKeys(
-      tokenDefinition.adminKey,
-      keyManager,
-      api.keyResolver,
-      'token:admin',
-    );
-    if (adminKeys.length > 0) {
-      api.logger.info('🔑 Resolved admin key for signing');
-    }
-
-    const keyRefIds: string[] = [
-      treasury.keyRefId,
-      ...adminKeys.map((k) => k.keyRefId),
-    ];
-
-    const supplyKeys = await resolveOptionalKeys(
-      tokenDefinition.supplyKey,
-      keyManager,
-      api.keyResolver,
-      'token:supply',
-    );
-
-    const wipeKeys = await resolveOptionalKeys(
-      tokenDefinition.wipeKey,
-      keyManager,
-      api.keyResolver,
-      'token:wipe',
-    );
-
-    const kycKeys = await resolveOptionalKeys(
-      tokenDefinition.kycKey,
-      keyManager,
-      api.keyResolver,
-      'token:kyc',
-    );
-
-    const freezeKeys = await resolveOptionalKeys(
-      tokenDefinition.freezeKey,
-      keyManager,
-      api.keyResolver,
-      'token:freeze',
-    );
-    if (tokenDefinition.freezeDefault && freezeKeys.length === 0) {
-      api.logger.warn(
-        'freezeDefault was requested but no freeze key is set; freeze default will be skipped.',
-      );
-    }
-
-    const pauseKeys = await resolveOptionalKeys(
-      tokenDefinition.pauseKey,
-      keyManager,
-      api.keyResolver,
-      'token:pause',
-    );
-
-    const feeScheduleKeys = await resolveOptionalKeys(
-      tokenDefinition.feeScheduleKey,
-      keyManager,
-      api.keyResolver,
-      'token:feeSchedule',
-    );
-
-    const metadataKeys = await resolveOptionalKeys(
-      tokenDefinition.metadataKey,
-      keyManager,
-      api.keyResolver,
-      'token:metadata',
-    );
-
-    return {
-      treasury,
-      adminKeys,
-      supplyKeys,
-      wipeKeys,
-      kycKeys,
-      freezeKeys,
-      pauseKeys,
-      feeScheduleKeys,
-      metadataKeys,
-      keyRefIds,
-    };
-  }
 }
 
 export async function tokenCreateFtFromFile(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenCreateFtFromFileCommand().execute(args);
+  const { api } = args;
+  const tokenStateService = new TokenStateServiceImpl(api.state, api.logger);
+  return new TokenCreateFtFromFileCommand(
+    tokenStateService,
+    new TokenFileServiceImpl(api.logger),
+    new TokenAssociationsServiceImpl(
+      api.keyResolver,
+      api.token,
+      api.txSign,
+      api.txExecute,
+      tokenStateService,
+      api.logger,
+    ),
+    new TokenKeysServiceImpl(api.keyResolver),
+  ).execute(args);
 }

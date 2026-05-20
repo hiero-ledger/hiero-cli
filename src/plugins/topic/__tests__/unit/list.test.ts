@@ -11,13 +11,13 @@ import { InternalError } from '@/core';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { TopicListOutputSchema } from '@/plugins/topic/commands/list';
 import { topicList } from '@/plugins/topic/commands/list/handler';
-import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
+import { TopicStateServiceImpl } from '@/plugins/topic/services/topic-state.service';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandTopicStateHelper: jest.fn(),
+jest.mock('../../services/topic-state.service', () => ({
+  TopicStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = ZustandTopicStateHelper as jest.Mock;
+const MockedHelper = TopicStateServiceImpl as jest.Mock;
 
 describe('topic plugin - list command', () => {
   beforeEach(() => {

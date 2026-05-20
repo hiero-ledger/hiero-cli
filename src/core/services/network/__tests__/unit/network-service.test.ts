@@ -148,8 +148,8 @@ describe('NetworkServiceImpl', () => {
       const config = networkService.getNetworkConfig(NETWORK_LOCALNET);
 
       expect(config.name).toBe(NETWORK_LOCALNET);
-      expect(config.rpcUrl).toBe('http://localhost:7546');
-      expect(config.mirrorNodeUrl).toBe('http://localhost:5551/api/v1');
+      expect(config.rpcUrl).toBe('http://localhost:37546');
+      expect(config.mirrorNodeUrl).toBe('http://localhost:38081/api/v1');
       expect(config.chainId).toBe('0x12a');
       expect(config.isTestnet).toBe(true);
     });
@@ -185,9 +185,9 @@ describe('NetworkServiceImpl', () => {
     it('should return localnet configuration', () => {
       const config = networkService.getLocalnetConfig();
 
-      expect(config.localNodeAddress).toBe('127.0.0.1:50211');
+      expect(config.localNodeAddress).toBe('127.0.0.1:35211');
       expect(config.localNodeAccountId).toBe('0.0.3');
-      expect(config.localNodeMirrorAddressGRPC).toBe('127.0.0.1:5600');
+      expect(config.localNodeMirrorAddressGRPC).toBe('127.0.0.1:35600');
       expect(loggerMock.debug).toHaveBeenCalledWith(
         '[NETWORK] Getting localnet configuration',
       );

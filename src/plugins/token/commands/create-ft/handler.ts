@@ -1,9 +1,7 @@
-import type { CommandHandlerArgs, CommandResult, CoreApi } from '@/core';
-import type {
-  ResolvedAccountCredential,
-  ResolvedPublicKey,
-} from '@/core/services/key-resolver/types';
+import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenKeysService } from '@/plugins/token/services/token-keys.service.interface';
+import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 import type { TokenCreateFtInput } from './input';
 import type { TokenCreateFtOutput } from './output';
 import type {
@@ -21,12 +19,12 @@ import { AliasType, SupplyType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
+import { TokenKeysServiceImpl } from '@/plugins/token/services/token-keys.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 import {
   buildTokenData,
   determineFiniteMaxSupply,
 } from '@/plugins/token/utils/token-data-builders';
-import { resolveOptionalKeys } from '@/plugins/token/utils/token-key-resolver';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { TokenCreateFtInputSchema } from './input';
 
@@ -38,7 +36,10 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
   TokenCreateFtSignTransactionResult,
   TokenCreateFtExecuteTransactionResult
 > {
-  constructor() {
+  constructor(
+    private readonly tokenStateService: TokenStateService,
+    private readonly tokenKeysService: TokenKeysService,
+  ) {
     super(TOKEN_CREATE_FT_COMMAND_NAME);
   }
 
@@ -74,7 +75,12 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
       pause,
       feeSchedule,
       metadata,
-    } = await this.resolveKeys(api, validArgs, keyManager);
+    } = await this.tokenKeysService.resolveCreateFtKeys(validArgs, keyManager);
+    if (validArgs.freezeDefault && freeze.length === 0) {
+      api.logger.warn(
+        'freezeDefault was requested but no freeze key is set; freeze default will be skipped.',
+      );
+    }
 
     const autoRenewPeriodSeconds = validArgs.autoRenewPeriod;
     const autoRenewAccountCredential = validArgs.autoRenewAccount
@@ -282,7 +288,6 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
     executeTransactionResult: TokenCreateFtExecuteTransactionResult,
   ): Promise<CommandResult> {
     const { api } = args;
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     const result = executeTransactionResult.transactionResult;
 
     const tokenData = buildTokenData(result, {
@@ -316,7 +321,7 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
 
     const tokenId = result.tokenId ?? '';
     const key = composeKey(normalisedParams.network, tokenId);
-    tokenState.saveToken(key, tokenData);
+    this.tokenStateService.saveToken(key, tokenData);
     api.logger.info('   Token data saved to state');
 
     if (normalisedParams.alias) {
@@ -348,107 +353,14 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
 
     return { result: outputData };
   }
-
-  private async resolveKeys(
-    api: CoreApi,
-    validArgs: TokenCreateFtInput,
-    keyManager: KeyManager,
-  ): Promise<{
-    treasury: ResolvedAccountCredential;
-    admin: ResolvedPublicKey[];
-    supply: ResolvedPublicKey[];
-    freeze: ResolvedPublicKey[];
-    wipe: ResolvedPublicKey[];
-    kyc: ResolvedPublicKey[];
-    pause: ResolvedPublicKey[];
-    feeSchedule: ResolvedPublicKey[];
-    metadata: ResolvedPublicKey[];
-  }> {
-    const treasury = await api.keyResolver.resolveAccountCredentials(
-      validArgs.treasury,
-      keyManager,
-      true,
-      ['token:treasury'],
-    );
-
-    const admin = await resolveOptionalKeys(
-      validArgs.adminKey,
-      keyManager,
-      api.keyResolver,
-      'token:admin',
-    );
-
-    const supply = await resolveOptionalKeys(
-      validArgs.supplyKey,
-      keyManager,
-      api.keyResolver,
-      'token:supply',
-    );
-
-    const freeze = await resolveOptionalKeys(
-      validArgs.freezeKey,
-      keyManager,
-      api.keyResolver,
-      'token:freeze',
-    );
-
-    if (validArgs.freezeDefault && freeze.length === 0) {
-      api.logger.warn(
-        'freezeDefault was requested but no freeze key is set; freeze default will be skipped.',
-      );
-    }
-
-    const wipe = await resolveOptionalKeys(
-      validArgs.wipeKey,
-      keyManager,
-      api.keyResolver,
-      'token:wipe',
-    );
-
-    const kyc = await resolveOptionalKeys(
-      validArgs.kycKey,
-      keyManager,
-      api.keyResolver,
-      'token:kyc',
-    );
-
-    const pause = await resolveOptionalKeys(
-      validArgs.pauseKey,
-      keyManager,
-      api.keyResolver,
-      'token:pause',
-    );
-
-    const feeSchedule = await resolveOptionalKeys(
-      validArgs.feeScheduleKey,
-      keyManager,
-      api.keyResolver,
-      'token:feeSchedule',
-    );
-
-    const metadata = await resolveOptionalKeys(
-      validArgs.metadataKey,
-      keyManager,
-      api.keyResolver,
-      'token:metadata',
-    );
-
-    return {
-      treasury,
-      admin,
-      supply,
-      freeze,
-      wipe,
-      kyc,
-      pause,
-      feeSchedule,
-      metadata,
-    };
-  }
 }
 
 export async function tokenCreateFt(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenCreateFtCommand().execute(args);
+  const { api } = args;
+  return new TokenCreateFtCommand(
+    new TokenStateServiceImpl(api.state, api.logger),
+    new TokenKeysServiceImpl(api.keyResolver),
+  ).execute(args);
 }

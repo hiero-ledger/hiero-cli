@@ -18,13 +18,13 @@ import {
 import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 import { TokenImportOutputSchema } from '@/plugins/token/commands/import';
 import { tokenImport } from '@/plugins/token/commands/import/handler';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandTokenStateHelper: jest.fn(),
+jest.mock('../../services/token-state.service', () => ({
+  TokenStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = ZustandTokenStateHelper as jest.Mock;
+const MockedHelper = TokenStateServiceImpl as jest.Mock;
 
 describe('token plugin - import command (ADR-007)', () => {
   beforeEach(() => {

@@ -1,5 +1,7 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
+import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 import type { TokenWipeNftOutput } from './output';
 import type {
   WipeNftBuildTransactionResult,
@@ -17,13 +19,13 @@ import {
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { HederaTokenType } from '@/core/shared/constants';
-import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 import {
   isAccountDoesNotOwnWipedNftError,
   isCannotWipeTreasuryError,
   isNoWipeKeyError,
 } from '@/plugins/token/utils/transaction-error-receipt-status';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { TokenWipeNftInputSchema } from './input';
 
@@ -35,7 +37,10 @@ export class TokenWipeNftCommand extends BaseTransactionCommand<
   WipeNftSignTransactionResult,
   WipeNftExecuteTransactionResult
 > {
-  constructor() {
+  constructor(
+    private readonly tokenReferenceService: TokenReferenceService,
+    private readonly tokenStateService: TokenStateService,
+  ) {
     super(TOKEN_WIPE_NFT_COMMAND_NAME);
   }
 
@@ -43,8 +48,6 @@ export class TokenWipeNftCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
   ): Promise<WipeNftNormalizedParams> {
     const { api } = args;
-
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     const validArgs = TokenWipeNftInputSchema.parse(args.args);
 
     const keyManager =
@@ -53,7 +56,10 @@ export class TokenWipeNftCommand extends BaseTransactionCommand<
 
     const network = api.network.getCurrentNetwork();
 
-    const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
+    const resolvedToken = this.tokenReferenceService.resolveToken(
+      validArgs.token,
+      network,
+    );
     if (!resolvedToken) {
       throw new NotFoundError(`Token not found: ${validArgs.token}`, {
         context: { token: validArgs.token },
@@ -62,7 +68,7 @@ export class TokenWipeNftCommand extends BaseTransactionCommand<
 
     const tokenId = resolvedToken.tokenId;
     const tokenInfo = await api.mirror.getTokenInfo(tokenId);
-    const tokenData = tokenState.getToken(tokenId);
+    const tokenData = this.tokenStateService.getToken(tokenId);
 
     const isNftByState =
       tokenData !== null &&
@@ -210,5 +216,9 @@ export class TokenWipeNftCommand extends BaseTransactionCommand<
 export async function tokenWipeNft(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenWipeNftCommand().execute(args);
+  const { api } = args;
+  return new TokenWipeNftCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+    new TokenStateServiceImpl(api.state, api.logger),
+  ).execute(args);
 }

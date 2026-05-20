@@ -14,7 +14,7 @@ import {
   tokenCreateFtFromFile,
   TokenCreateFtFromFileOutputSchema,
 } from '@/plugins/token/commands/create-ft-from-file';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import {
   expectedTokenTransactionParamsFromFile,
@@ -42,11 +42,11 @@ jest.mock('path', () => ({
   resolve: jest.fn(),
 }));
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandTokenStateHelper: jest.fn(),
+jest.mock('../../services/token-state.service', () => ({
+  TokenStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = ZustandTokenStateHelper as jest.Mock;
+const MockedHelper = TokenStateServiceImpl as jest.Mock;
 const mockFs = fs as jest.Mocked<typeof fs>;
 const mockPath = path as jest.Mocked<typeof path>;
 
@@ -554,7 +554,7 @@ describe('tokenCreateFtFromFileHandler', () => {
 
       // Act & Assert
       await expect(tokenCreateFtFromFile(args)).rejects.toThrow(
-        'Invalid token definition file',
+        'Invalid fungible token definition file',
       );
     });
 
@@ -596,7 +596,7 @@ describe('tokenCreateFtFromFileHandler', () => {
 
       // Act & Assert
       await expect(tokenCreateFtFromFile(args)).rejects.toThrow(
-        'Invalid token definition file',
+        'Invalid fungible token definition file',
       );
     });
 
@@ -617,7 +617,7 @@ describe('tokenCreateFtFromFileHandler', () => {
 
       // Act & Assert
       await expect(tokenCreateFtFromFile(args)).rejects.toThrow(
-        'Invalid token definition file',
+        'Invalid fungible token definition file',
       );
     });
   });

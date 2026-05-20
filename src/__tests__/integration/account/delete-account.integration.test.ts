@@ -8,7 +8,7 @@ import type { AccountViewOutput } from '@/plugins/account/commands/view';
 import '@/core/utils/json-serialize';
 
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
-import { delay } from '@/__tests__/utils/common-utils';
+import { waitFor } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
@@ -41,14 +41,14 @@ describe('Delete Account Integration Tests', () => {
     await setDefaultOperatorForNetwork(coreApi);
     network = coreApi.network.getCurrentNetwork();
     accountId =
-      network === SupportedNetwork.LOCALNET ? '0.0.1003' : '0.0.7300370';
+      network === SupportedNetwork.LOCALNET ? '0.0.1004' : '0.0.7300370';
     accountKey =
       network === SupportedNetwork.LOCALNET
-        ? '3030020100300706052b8104000a042204200e2161b2e6f2d801ef364042e6c0792aa10e07fa38680de06d4db0036c44f4b6'
+        ? '3030020100300706052b8104000a0422042045a5a7108a18dd5013cf2d5857a28144beadc9c70b3bdbd914e38df4e804b8d8'
         : '3030020100300706052b8104000a042204206790ef7f62d1b4a2d2fdcf4e0fc0882b86786dfbb1efc9ace8a2e3656adea122';
     evmAddress =
       network === SupportedNetwork.LOCALNET
-        ? '0x00000000000000000000000000000000000003eb'
+        ? '0x927e41ff8307835a1c081e0d7fd250625f2d4d0e'
         : '0x91d9247415c979a289aa178c4c67181e11d38872';
   });
 
@@ -130,16 +130,18 @@ describe('Delete Account Integration Tests', () => {
           createBeneficiaryResult.result as AccountCreateOutput
         ).accountId;
 
-        await delay(5000);
-
-        const balanceBeneficiaryBeforeResult = await accountBalance({
-          args: {
-            account: beneficiaryAccountId,
-            raw: true,
-            'hbar-only': true,
-          },
-          api: coreApi,
-        });
+        const balanceBeneficiaryBeforeResult = await waitFor(
+          () =>
+            accountBalance({
+              args: {
+                account: beneficiaryAccountId,
+                raw: true,
+                'hbar-only': true,
+              },
+              api: coreApi,
+            }),
+          (result) => !!(result.result as AccountBalanceOutput).accountId,
+        );
         const beneficiaryBefore = tinybarsFromBalanceResult(
           balanceBeneficiaryBeforeResult.result as AccountBalanceOutput,
         );
@@ -160,16 +162,20 @@ describe('Delete Account Integration Tests', () => {
         expect(deleteAccountOutput.transactionId).toBeDefined();
         expect(deleteAccountOutput.stateOnly).toBe(false);
 
-        await delay(5000);
-
-        const balanceBeneficiaryAfterResult = await accountBalance({
-          args: {
-            account: beneficiaryAccountId,
-            raw: true,
-            'hbar-only': true,
-          },
-          api: coreApi,
-        });
+        const balanceBeneficiaryAfterResult = await waitFor(
+          () =>
+            accountBalance({
+              args: {
+                account: beneficiaryAccountId,
+                raw: true,
+                'hbar-only': true,
+              },
+              api: coreApi,
+            }),
+          (result) =>
+            tinybarsFromBalanceResult(result.result as AccountBalanceOutput) >
+            beneficiaryBefore,
+        );
         const beneficiaryAfter = tinybarsFromBalanceResult(
           balanceBeneficiaryAfterResult.result as AccountBalanceOutput,
         );

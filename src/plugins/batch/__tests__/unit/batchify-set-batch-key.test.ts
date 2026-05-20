@@ -7,7 +7,7 @@ import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
 import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { NotFoundError, ValidationError } from '@/core/errors';
 import { BatchifySetBatchKeyHook } from '@/plugins/batch/hooks/batchify-set-batch-key/handler';
-import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
+import { BatchStateServiceImpl } from '@/plugins/batch/services/batch-state.service';
 
 import {
   BATCH_COMPOSED_KEY,
@@ -18,11 +18,11 @@ import {
 } from './helpers/fixtures';
 import { makeBatchApiMocks } from './helpers/mocks';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandBatchStateHelper: jest.fn(),
+jest.mock('../../services/batch-state.service', () => ({
+  BatchStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = ZustandBatchStateHelper as jest.Mock;
+const MockedService = BatchStateServiceImpl as jest.Mock;
 
 describe('batch plugin - BatchifySetBatchKeyHook', () => {
   let hook: BatchifySetBatchKeyHook;
@@ -58,7 +58,7 @@ describe('batch plugin - BatchifySetBatchKeyHook', () => {
   test('throws NotFoundError when batch does not exist in state', () => {
     const logger = makeLogger();
     const getBatchMock = jest.fn().mockReturnValue(null);
-    MockedHelper.mockImplementation(() => ({
+    MockedService.mockImplementation(() => ({
       getBatch: getBatchMock,
     }));
 
@@ -84,7 +84,7 @@ describe('batch plugin - BatchifySetBatchKeyHook', () => {
 
   test('throws ValidationError when batch was already executed', () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    MockedService.mockImplementation(() => ({
       getBatch: jest.fn().mockReturnValue(mockExecutedBatchData),
     }));
 
@@ -108,7 +108,7 @@ describe('batch plugin - BatchifySetBatchKeyHook', () => {
 
   test('throws NotFoundError when batch key credential is missing from KMS', () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    MockedService.mockImplementation(() => ({
       getBatch: jest.fn().mockReturnValue(mockBatchData),
     }));
 
@@ -136,7 +136,7 @@ describe('batch plugin - BatchifySetBatchKeyHook', () => {
 
   test('sets batch public key on transaction before signing', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    MockedService.mockImplementation(() => ({
       getBatch: jest.fn().mockReturnValue(mockBatchData),
     }));
 

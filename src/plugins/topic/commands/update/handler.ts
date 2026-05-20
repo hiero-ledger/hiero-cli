@@ -6,6 +6,8 @@ import type {
   KeyManager,
 } from '@/core/services/kms/kms-types.interface';
 import type { TopicData } from '@/plugins/topic/schema';
+import type { TopicResolutionService } from '@/plugins/topic/services/topic-resolution.service.interface';
+import type { TopicStateService } from '@/plugins/topic/services/topic-state.service.interface';
 import type { TopicUpdateOutput } from './output';
 import type {
   UpdateTopicBuildTransactionResult,
@@ -23,8 +25,8 @@ import { composeKey } from '@/core/utils/key-composer';
 import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
 import { matchPublicKeysToKmsRefIds } from '@/core/utils/match-keys-to-kms';
 import { resolveFieldUpdate } from '@/core/utils/resolve-field-update';
-import { resolveTopicId } from '@/plugins/topic/utils/topicResolver';
-import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
+import { TopicResolutionServiceImpl } from '@/plugins/topic/services/topic-resolution.service';
+import { TopicStateServiceImpl } from '@/plugins/topic/services/topic-state.service';
 
 import { TopicUpdateInputSchema } from './input';
 
@@ -36,7 +38,10 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
   UpdateTopicSignTransactionResult,
   UpdateTopicExecuteTransactionResult
 > {
-  constructor() {
+  constructor(
+    private readonly topicState: TopicStateService,
+    private readonly topicResolution: TopicResolutionService,
+  ) {
     super(TOPIC_UPDATE_COMMAND_NAME);
   }
 
@@ -47,11 +52,13 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
     const validArgs = TopicUpdateInputSchema.parse(args.args);
 
     const network = api.network.getCurrentNetwork();
-    const topicId = resolveTopicId(validArgs.topic, api.alias, network);
+    const topicId = this.topicResolution.resolveTopicId(
+      validArgs.topic,
+      network,
+    );
 
     const stateKey = composeKey(network, topicId);
-    const topicState = new ZustandTopicStateHelper(api.state, api.logger);
-    const storedTopicData = topicState.loadTopic(stateKey);
+    const storedTopicData = this.topicState.loadTopic(stateKey);
 
     const topicInfo = await api.mirror.getTopicInfo(topicId);
 
@@ -278,15 +285,13 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
   }
 
   async outputPreparation(
-    args: CommandHandlerArgs,
+    _args: CommandHandlerArgs,
     normalisedParams: UpdateTopicNormalisedParams,
     _buildTransactionResult: UpdateTopicBuildTransactionResult,
     _signTransactionResult: UpdateTopicSignTransactionResult,
     executeTransactionResult: UpdateTopicExecuteTransactionResult,
   ): Promise<CommandResult> {
     const { transactionResult } = executeTransactionResult;
-    const { api } = args;
-    const topicState = new ZustandTopicStateHelper(api.state, api.logger);
     const existing = normalisedParams.existingTopicData;
 
     const updatedFields: string[] = [];
@@ -375,7 +380,7 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
       createdAt: existing.createdAt,
     };
 
-    topicState.saveTopic(normalisedParams.stateKey, updatedTopicData);
+    this.topicState.saveTopic(normalisedParams.stateKey, updatedTopicData);
 
     const adminKeyCount = updatedAdminKeyRefIds.length;
     const submitKeyCount = updatedSubmitKeyRefIds.length;
@@ -405,5 +410,9 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
 export async function topicUpdate(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TopicUpdateCommand().execute(args);
+  const { alias, logger, state } = args.api;
+  const topicState = new TopicStateServiceImpl(state, logger);
+  const topicResolution = new TopicResolutionServiceImpl(alias);
+
+  return new TopicUpdateCommand(topicState, topicResolution).execute(args);
 }

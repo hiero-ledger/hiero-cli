@@ -14,9 +14,17 @@ export {
   tokenAirdropNft,
 } from './commands/airdrop-nft';
 export {
+  TOKEN_ALLOWANCE_FT_LIST_COMMAND_NAME,
+  tokenAllowanceFtList,
+} from './commands/allowance-ft-list';
+export {
   TOKEN_ALLOWANCE_NFT_COMMAND_NAME,
   tokenAllowanceNft,
 } from './commands/allowance-nft';
+export {
+  TOKEN_ALLOWANCE_NFT_LIST_COMMAND_NAME,
+  tokenAllowanceNftList,
+} from './commands/allowance-nft-list';
 export { tokenAssociate } from './commands/associate';
 export { tokenCreateFt } from './commands/create-ft';
 export { tokenCreateFtFromFile } from './commands/create-ft-from-file';

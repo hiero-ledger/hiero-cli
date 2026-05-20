@@ -1,3 +1,5 @@
+import type { BatchStateService } from '@/plugins/batch/services/batch-state.service.interface';
+
 import {
   ECDSA_HEX_PUBLIC_KEY,
   MOCK_OPERATOR_ACCOUNT_ID,
@@ -17,13 +19,9 @@ import { SupportedNetwork } from '@/core/types/shared.types';
 
 import { BATCH_KEY_REF_ID, OPERATOR_KEY_REF_ID } from './fixtures';
 
-export const makeBatchStateHelperMock = (overrides?: {
-  saveBatch?: jest.Mock;
-  getBatch?: jest.Mock;
-  listBatches?: jest.Mock;
-  hasBatch?: jest.Mock;
-  deleteBatch?: jest.Mock;
-}) => ({
+export const makeBatchStateServiceMock = (
+  overrides?: Partial<Record<keyof BatchStateService, jest.Mock>>,
+): jest.Mocked<BatchStateService> => ({
   saveBatch: jest.fn(),
   getBatch: jest.fn().mockReturnValue(null),
   listBatches: jest.fn().mockReturnValue([]),

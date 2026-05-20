@@ -1,6 +1,10 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { SupplyType } from '@/core/types/shared.types';
+import type { TokenAssociationsService } from '@/plugins/token/services/token-associations.service.interface';
+import type { TokenFileService } from '@/plugins/token/services/token-file.service.interface';
+import type { TokenKeysService } from '@/plugins/token/services/token-keys.service.interface';
+import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 import type { TokenCreateNftFromFileOutput } from './output';
 import type {
   TokenCreateNftFromFileAssociationOutput,
@@ -17,11 +21,11 @@ import { HederaTokenType } from '@/core/shared/constants';
 import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
-import { processTokenAssociations } from '@/plugins/token/utils/token-associations';
+import { TokenAssociationsServiceImpl } from '@/plugins/token/services/token-associations.service';
+import { TokenFileServiceImpl } from '@/plugins/token/services/token-file.service';
+import { TokenKeysServiceImpl } from '@/plugins/token/services/token-keys.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 import { buildNftTokenDataFromFile } from '@/plugins/token/utils/token-data-builders';
-import { readAndValidateNftTokenFile } from '@/plugins/token/utils/token-file-helpers';
-import { resolveOptionalKeys } from '@/plugins/token/utils/token-key-resolver';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { TokenCreateNftFromFileInputSchema } from './input';
 
@@ -34,7 +38,12 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
   TokenCreateNftFromFileSignTransactionResult,
   TokenCreateNftFromFileExecuteTransactionResult
 > {
-  constructor() {
+  constructor(
+    private readonly tokenStateService: TokenStateService,
+    private readonly tokenFileService: TokenFileService,
+    private readonly tokenAssociationsService: TokenAssociationsService,
+    private readonly tokenKeysService: TokenKeysService,
+  ) {
     super(TOKEN_CREATE_NFT_FROM_FILE_COMMAND_NAME);
   }
 
@@ -48,11 +57,8 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     api.logger.info(`Creating NFT token from file: ${validArgs.file}`);
-
-    const tokenDefinition = await readAndValidateNftTokenFile(
-      validArgs.file,
-      api.logger,
-    );
+    const tokenDefinition =
+      await this.tokenFileService.readAndValidateNftTokenFile(validArgs.file);
     const network = api.network.getCurrentNetwork();
     api.alias.availableOrThrow(tokenDefinition.name, network);
 
@@ -63,54 +69,47 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
       ['token:treasury'],
     );
 
-    const adminKeys = await resolveOptionalKeys(
+    const adminKeys = await this.tokenKeysService.resolveOptionalKeys(
       tokenDefinition.adminKey,
       keyManager,
-      api.keyResolver,
       'token:admin',
     );
     api.logger.info(`Resolved ${adminKeys.length} admin key(s) for signing`);
 
-    const supplyKeys = await resolveOptionalKeys(
+    const supplyKeys = await this.tokenKeysService.resolveOptionalKeys(
       tokenDefinition.supplyKey,
       keyManager,
-      api.keyResolver,
       'token:supply',
     );
     api.logger.info(`Resolved ${supplyKeys.length} supply key(s)`);
 
-    const wipeKeys = await resolveOptionalKeys(
+    const wipeKeys = await this.tokenKeysService.resolveOptionalKeys(
       tokenDefinition.wipeKey,
       keyManager,
-      api.keyResolver,
       'token:wipe',
     );
 
-    const kycKeys = await resolveOptionalKeys(
+    const kycKeys = await this.tokenKeysService.resolveOptionalKeys(
       tokenDefinition.kycKey,
       keyManager,
-      api.keyResolver,
       'token:kyc',
     );
 
-    const freezeKeys = await resolveOptionalKeys(
+    const freezeKeys = await this.tokenKeysService.resolveOptionalKeys(
       tokenDefinition.freezeKey,
       keyManager,
-      api.keyResolver,
       'token:freeze',
     );
 
-    const pauseKeys = await resolveOptionalKeys(
+    const pauseKeys = await this.tokenKeysService.resolveOptionalKeys(
       tokenDefinition.pauseKey,
       keyManager,
-      api.keyResolver,
       'token:pause',
     );
 
-    const feeScheduleKeys = await resolveOptionalKeys(
+    const feeScheduleKeys = await this.tokenKeysService.resolveOptionalKeys(
       tokenDefinition.feeScheduleKey,
       keyManager,
-      api.keyResolver,
       'token:feeSchedule',
     );
 
@@ -244,21 +243,20 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
     executeTransactionResult: TokenCreateNftFromFileExecuteTransactionResult,
   ): Promise<CommandResult> {
     const { api } = args;
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     const result = executeTransactionResult.transactionResult;
     const tokenData = buildNftTokenDataFromFile(result, normalisedParams);
 
     const tokenId = result.tokenId ?? '';
-    const successfulAssociations = await processTokenAssociations(
-      tokenId,
-      normalisedParams.associations,
-      api,
-      normalisedParams.keyManager,
-    );
+    const successfulAssociations =
+      await this.tokenAssociationsService.processTokenAssociations(
+        tokenId,
+        normalisedParams.associations,
+        normalisedParams.keyManager,
+      );
     tokenData.associations = successfulAssociations;
 
     const key = composeKey(normalisedParams.network, tokenId);
-    tokenState.saveToken(key, tokenData);
+    this.tokenStateService.saveToken(key, tokenData);
     api.logger.info('   Token data saved to state');
 
     if (normalisedParams.alias && result.tokenId) {
@@ -300,5 +298,19 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
 export async function tokenCreateNftFromFile(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenCreateNftFromFileCommand().execute(args);
+  const { api } = args;
+  const tokenStateService = new TokenStateServiceImpl(api.state, api.logger);
+  return new TokenCreateNftFromFileCommand(
+    tokenStateService,
+    new TokenFileServiceImpl(api.logger),
+    new TokenAssociationsServiceImpl(
+      api.keyResolver,
+      api.token,
+      api.txSign,
+      api.txExecute,
+      tokenStateService,
+      api.logger,
+    ),
+    new TokenKeysServiceImpl(api.keyResolver),
+  ).execute(args);
 }

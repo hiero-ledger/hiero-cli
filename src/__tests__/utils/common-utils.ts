@@ -14,8 +14,12 @@ export async function waitFor<T>(
 ): Promise<T> {
   const deadline = Date.now() + timeout;
   while (Date.now() < deadline) {
-    const result = await fn();
-    if (condition(result)) return result;
+    try {
+      const result = await fn();
+      if (condition(result)) return result;
+    } catch {
+      // mirror node may not have indexed the data yet — retry
+    }
     await delay(interval);
   }
   throw new InternalError(`waitFor timed out after ${timeout}ms`);

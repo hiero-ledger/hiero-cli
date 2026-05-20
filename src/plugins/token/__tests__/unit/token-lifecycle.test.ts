@@ -8,24 +8,24 @@ import { AliasType, SupplyType } from '@/core/types/shared.types';
 import { tokenAssociate } from '@/plugins/token/commands/associate';
 import { tokenCreateFt } from '@/plugins/token/commands/create-ft';
 import { tokenTransferFt } from '@/plugins/token/commands/transfer-ft';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import {
   mockAccountIds,
   mockKeys,
   mockTransactionResults,
 } from './helpers/fixtures';
-import { makeApiMocks, mockZustandTokenStateHelper } from './helpers/mocks';
+import { makeApiMocks, mockTokenStateServiceImpl } from './helpers/mocks';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandTokenStateHelper: jest.fn(),
+jest.mock('../../services/token-state.service', () => ({
+  TokenStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = ZustandTokenStateHelper as jest.Mock;
+const MockedHelper = TokenStateServiceImpl as jest.Mock;
 
 describe('Token Lifecycle Integration', () => {
   beforeEach(() => {
-    mockZustandTokenStateHelper(MockedHelper);
+    mockTokenStateServiceImpl(MockedHelper);
   });
 
   describe('complete token lifecycle', () => {
@@ -38,7 +38,7 @@ describe('Token Lifecycle Integration', () => {
       const treasuryKey = mockKeys.treasury;
       const userKey = mockKeys.association;
 
-      mockZustandTokenStateHelper(MockedHelper, {
+      mockTokenStateServiceImpl(MockedHelper, {
         addToken: mockAddToken,
         addAssociation: mockAddAssociation,
       });
@@ -195,7 +195,7 @@ describe('Token Lifecycle Integration', () => {
       const treasuryKey = mockKeys.treasury;
       const userKey = mockKeys.kyc;
 
-      mockZustandTokenStateHelper(MockedHelper, {
+      mockTokenStateServiceImpl(MockedHelper, {
         addToken: mockAddToken,
         addAssociation: jest.fn(),
       });
@@ -284,7 +284,7 @@ describe('Token Lifecycle Integration', () => {
       const userKey1 = mockKeys.freeze;
       const userKey2 = mockKeys.pause;
 
-      mockZustandTokenStateHelper(MockedHelper, {
+      mockTokenStateServiceImpl(MockedHelper, {
         addToken: mockAddToken,
         addAssociation: mockAddAssociation,
       });

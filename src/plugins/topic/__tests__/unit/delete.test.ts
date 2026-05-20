@@ -33,13 +33,13 @@ import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
 import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 import { TopicDeleteOutputSchema } from '@/plugins/topic/commands/delete';
 import { topicDelete } from '@/plugins/topic/commands/delete/handler';
-import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
+import { TopicStateServiceImpl } from '@/plugins/topic/services/topic-state.service';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandTopicStateHelper: jest.fn(),
+jest.mock('../../services/topic-state.service', () => ({
+  TopicStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = ZustandTopicStateHelper as jest.Mock;
+const MockedHelper = TopicStateServiceImpl as jest.Mock;
 
 function topicMirrorInfo(topicId: string) {
   return createMockTopicInfo({
@@ -95,7 +95,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
       alias: 'topic1',
       entityId: MOCK_HEDERA_ENTITY_ID_1,
     };
-    alias.resolveOrThrow = jest.fn().mockReturnValue(aliasMock);
+    alias.resolve = jest.fn().mockReturnValue(aliasMock);
     alias.list = jest.fn().mockReturnValue([aliasMock]);
     const network = makeNetworkMock(SupportedNetwork.TESTNET);
 
@@ -195,6 +195,13 @@ describe('topic plugin - delete command (ADR-007)', () => {
     }));
 
     const alias = makeAliasMock();
+    alias.resolve = jest.fn().mockReturnValue({
+      alias: 'missingTopic',
+      entityId: MOCK_HEDERA_ENTITY_ID_3,
+      type: AliasType.Topic,
+      network: SupportedNetwork.TESTNET,
+      createdAt: '2024-01-01T00:00:00.000Z',
+    });
     alias.list = jest.fn().mockReturnValue([]);
     const network = makeNetworkMock(SupportedNetwork.TESTNET);
 
@@ -259,6 +266,13 @@ describe('topic plugin - delete command (ADR-007)', () => {
     }));
 
     const alias = makeAliasMock();
+    alias.resolve = jest.fn().mockReturnValue({
+      alias: 'topic5',
+      entityId: MOCK_HEDERA_ENTITY_ID_2,
+      type: AliasType.Topic,
+      network: SupportedNetwork.TESTNET,
+      createdAt: '2024-01-01T00:00:00.000Z',
+    });
     alias.list = jest.fn().mockReturnValue([]);
     const network = makeNetworkMock(SupportedNetwork.TESTNET);
 
@@ -287,6 +301,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
     }));
 
     const alias = makeAliasMock();
+    alias.resolve = jest.fn().mockReturnValue(mockTopicAliasRecord);
     alias.list = jest.fn().mockReturnValue([mockTopicAliasRecord]);
 
     const network = makeNetworkMock(SupportedNetwork.TESTNET);
@@ -357,7 +372,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
       }));
 
       const alias = makeAliasMock();
-      alias.resolveOrThrow = jest.fn().mockReturnValue({
+      alias.resolve = jest.fn().mockReturnValue({
         entityId: MOCK_HEDERA_ENTITY_ID_1,
       });
       alias.list = jest.fn().mockReturnValue([]);

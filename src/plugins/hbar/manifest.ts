@@ -8,6 +8,11 @@ import {
   HbarAllowanceOutputSchema,
 } from './commands/allowance';
 import {
+  HBAR_ALLOWANCE_LIST_TEMPLATE,
+  hbarAllowanceList,
+  HbarAllowanceListOutputSchema,
+} from './commands/allowance-list';
+import {
   HBAR_ALLOWANCE_REVOKE_TEMPLATE,
   hbarAllowanceRevoke,
   HbarAllowanceRevokeOutputSchema,
@@ -125,6 +130,39 @@ export const hbarPluginManifest: PluginManifest = {
       output: {
         schema: HbarAllowanceOutputSchema,
         humanTemplate: HBAR_ALLOWANCE_TEMPLATE,
+      },
+    },
+    {
+      name: 'allowance-list',
+      summary: 'List HBAR allowances for an account',
+      description:
+        'List HBAR allowances granted by an owner account using Mirror Node data',
+      options: [
+        {
+          name: 'account',
+          short: 'a',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Owner account ID or alias to query',
+        },
+        {
+          name: 'spender',
+          short: 's',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Optional spender account ID or alias filter',
+        },
+        {
+          name: 'show-all',
+          type: OptionType.BOOLEAN,
+          required: false,
+          description: 'Fetch all pages instead of the first page',
+        },
+      ],
+      handler: hbarAllowanceList,
+      output: {
+        schema: HbarAllowanceListOutputSchema,
+        humanTemplate: HBAR_ALLOWANCE_LIST_TEMPLATE,
       },
     },
     {

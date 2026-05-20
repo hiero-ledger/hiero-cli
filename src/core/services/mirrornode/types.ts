@@ -11,7 +11,7 @@ export const NetworkToBaseUrl = new Map<SupportedNetwork, string>([
   [SupportedNetwork.MAINNET, 'https://mainnet-public.mirrornode.hedera.com'],
   [SupportedNetwork.TESTNET, 'https://testnet.mirrornode.hedera.com'],
   [SupportedNetwork.PREVIEWNET, 'https://previewnet.mirrornode.hedera.com'],
-  [SupportedNetwork.LOCALNET, 'http://localhost:5551'],
+  [SupportedNetwork.LOCALNET, 'http://localhost:38081'],
 ]);
 
 export enum MirrorNodeKeyType {
@@ -68,6 +68,53 @@ export interface TokenBalancesResponse {
   links?: {
     next?: string | null;
   };
+}
+
+export interface MirrorNodePageParams {
+  limit?: number;
+  cursor?: string;
+}
+
+export type MirrorNodeAllowanceAmount = bigint;
+
+export interface HbarAllowanceInfo {
+  owner: string;
+  spender: string;
+  amount: MirrorNodeAllowanceAmount;
+}
+
+export interface TokenAllowanceInfo {
+  owner: string;
+  spender: string;
+  token_id: string;
+  amount: MirrorNodeAllowanceAmount;
+}
+
+export interface NftAllowanceInfo {
+  owner: string;
+  spender: string;
+  token_id: string;
+  serial_number?: number | null;
+  approved_for_all?: boolean | null;
+}
+
+export interface MirrorNodePagedLinks {
+  next?: string | null;
+}
+
+export interface HbarAllowancesResponse {
+  allowances: HbarAllowanceInfo[];
+  links?: MirrorNodePagedLinks;
+}
+
+export interface TokenAllowancesResponse {
+  allowances: TokenAllowanceInfo[];
+  links?: MirrorNodePagedLinks;
+}
+
+export interface NftAllowancesResponse {
+  allowances: NftAllowanceInfo[];
+  links?: MirrorNodePagedLinks;
 }
 
 export type MirrorNodeKey = {
@@ -439,4 +486,13 @@ export interface ContractCallResponse {
    * Hex-encoded result of the EVM execution.
    */
   result: string;
+}
+
+export type AllowanceType = 'crypto' | 'tokens' | 'nfts';
+
+export interface AllowancePage<T> {
+  allowances: T[];
+  links?: {
+    next?: string | null;
+  };
 }

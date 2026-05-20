@@ -1,13 +1,13 @@
 /**
  * Tests for Token State Management
- * Tests the ZustandTokenStateHelper functionality
+ * Tests the TokenStateServiceImpl functionality
  */
 
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 
 import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { mockMultipleTokens, mockStateTokenData } from './helpers/fixtures';
 
@@ -16,7 +16,7 @@ jest.mock('../../../../core/services/state/state-service.interface');
 jest.mock('../../../../core/services/logger/logger-service.interface');
 
 describe('Token State Management', () => {
-  let stateHelper: ZustandTokenStateHelper;
+  let stateHelper: TokenStateServiceImpl;
   let mockStateService: jest.Mocked<StateService>;
   let mockLogger: jest.Mocked<Logger>;
 
@@ -46,7 +46,7 @@ describe('Token State Management', () => {
       setLevel: jest.fn(),
     } as jest.Mocked<Logger>;
 
-    stateHelper = new ZustandTokenStateHelper(mockStateService, mockLogger);
+    stateHelper = new TokenStateServiceImpl(mockStateService, mockLogger);
   });
 
   describe('saveToken', () => {

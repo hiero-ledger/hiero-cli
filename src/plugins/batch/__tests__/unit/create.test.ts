@@ -6,23 +6,16 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import { ValidationError } from '@/core/errors';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import {
-  batchCreate,
+  BatchCreateCommand,
   BatchCreateOutputSchema,
 } from '@/plugins/batch/commands/create';
-import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
 
 import {
   BATCH_COMPOSED_KEY,
   BATCH_KEY_REF_ID,
   BATCH_NAME,
 } from './helpers/fixtures';
-import { makeBatchApiMocks } from './helpers/mocks';
-
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandBatchStateHelper: jest.fn(),
-}));
-
-const MockedHelper = ZustandBatchStateHelper as jest.Mock;
+import { makeBatchApiMocks, makeBatchStateServiceMock } from './helpers/mocks';
 
 describe('batch plugin - create command', () => {
   beforeEach(() => {
@@ -32,10 +25,10 @@ describe('batch plugin - create command', () => {
   test('creates batch successfully', async () => {
     const logger = makeLogger();
     const saveBatchMock = jest.fn();
-    MockedHelper.mockImplementation(() => ({
+    const batchState = makeBatchStateServiceMock({
       hasBatch: jest.fn().mockReturnValue(false),
       saveBatch: saveBatchMock,
-    }));
+    });
 
     const { networkMock, kmsMock, configMock } = makeBatchApiMocks();
 
@@ -56,7 +49,7 @@ describe('batch plugin - create command', () => {
       key: BATCH_KEY_REF_ID,
     });
 
-    const result = await batchCreate(args);
+    const result = await new BatchCreateCommand(batchState).execute(args);
 
     expect(saveBatchMock).toHaveBeenCalledWith(
       BATCH_COMPOSED_KEY,
@@ -76,10 +69,9 @@ describe('batch plugin - create command', () => {
 
   test('throws ValidationError when batch already exists', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    const batchState = makeBatchStateServiceMock({
       hasBatch: jest.fn().mockReturnValue(true),
-      saveBatch: jest.fn(),
-    }));
+    });
 
     const { networkMock, kmsMock, configMock } = makeBatchApiMocks();
 
@@ -97,7 +89,9 @@ describe('batch plugin - create command', () => {
       key: BATCH_KEY_REF_ID,
     });
 
-    await expect(batchCreate(args)).rejects.toThrow(ValidationError);
+    await expect(
+      new BatchCreateCommand(batchState).execute(args),
+    ).rejects.toThrow(ValidationError);
   });
 
   test('uses default key manager from config when not specified', async () => {
@@ -106,10 +100,9 @@ describe('batch plugin - create command', () => {
       keyRefId: BATCH_KEY_REF_ID,
       publicKey: 'batch-pub-key-test',
     });
-    MockedHelper.mockImplementation(() => ({
+    const batchState = makeBatchStateServiceMock({
       hasBatch: jest.fn().mockReturnValue(false),
-      saveBatch: jest.fn(),
-    }));
+    });
 
     const { networkMock, kmsMock, configMock } = makeBatchApiMocks();
     configMock.getOption = jest
@@ -130,7 +123,7 @@ describe('batch plugin - create command', () => {
       key: BATCH_KEY_REF_ID,
     });
 
-    await batchCreate(args);
+    await new BatchCreateCommand(batchState).execute(args);
 
     expect(resolveSigningKeyMock).toHaveBeenCalledWith(
       expect.anything(),

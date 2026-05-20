@@ -7,6 +7,8 @@ import type {
   TokenCreateNftNormalizedParams,
   TokenCreateNftSignTransactionResult,
 } from '@/plugins/token/commands/create-nft/types';
+import type { TokenKeysService } from '@/plugins/token/services/token-keys.service.interface';
+import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { StateError } from '@/core/errors';
@@ -17,12 +19,12 @@ import { composeKey } from '@/core/utils/key-composer';
 import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import { TokenCreateNftInputSchema } from '@/plugins/token/commands/create-nft/input';
+import { TokenKeysServiceImpl } from '@/plugins/token/services/token-keys.service';
+import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 import {
   buildTokenData,
   determineFiniteMaxSupply,
 } from '@/plugins/token/utils/token-data-builders';
-import { resolveOptionalKeys } from '@/plugins/token/utils/token-key-resolver';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 export const TOKEN_CREATE_NFT_COMMAND_NAME = 'token_create-nft';
 
@@ -32,7 +34,10 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
   TokenCreateNftSignTransactionResult,
   TokenCreateNftExecuteTransactionResult
 > {
-  constructor() {
+  constructor(
+    private readonly tokenStateService: TokenStateService,
+    private readonly tokenKeysService: TokenKeysService,
+  ) {
     super(TOKEN_CREATE_NFT_COMMAND_NAME);
   }
 
@@ -58,59 +63,51 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
       ['token:treasury'],
     );
 
-    const admin = await resolveOptionalKeys(
+    const admin = await this.tokenKeysService.resolveOptionalKeys(
       validArgs.adminKey,
       keyManager,
-      api.keyResolver,
       'token:admin',
     );
 
-    const supply = await resolveOptionalKeys(
+    const supply = await this.tokenKeysService.resolveOptionalKeys(
       validArgs.supplyKey,
       keyManager,
-      api.keyResolver,
       'token:supply',
     );
 
-    const freeze = await resolveOptionalKeys(
+    const freeze = await this.tokenKeysService.resolveOptionalKeys(
       validArgs.freezeKey,
       keyManager,
-      api.keyResolver,
       'token:freeze',
     );
 
-    const wipe = await resolveOptionalKeys(
+    const wipe = await this.tokenKeysService.resolveOptionalKeys(
       validArgs.wipeKey,
       keyManager,
-      api.keyResolver,
       'token:wipe',
     );
 
-    const kyc = await resolveOptionalKeys(
+    const kyc = await this.tokenKeysService.resolveOptionalKeys(
       validArgs.kycKey,
       keyManager,
-      api.keyResolver,
       'token:kyc',
     );
 
-    const pause = await resolveOptionalKeys(
+    const pause = await this.tokenKeysService.resolveOptionalKeys(
       validArgs.pauseKey,
       keyManager,
-      api.keyResolver,
       'token:pause',
     );
 
-    const feeSchedule = await resolveOptionalKeys(
+    const feeSchedule = await this.tokenKeysService.resolveOptionalKeys(
       validArgs.feeScheduleKey,
       keyManager,
-      api.keyResolver,
       'token:feeSchedule',
     );
 
-    const metadata = await resolveOptionalKeys(
+    const metadata = await this.tokenKeysService.resolveOptionalKeys(
       validArgs.metadataKey,
       keyManager,
-      api.keyResolver,
       'token:metadata',
     );
 
@@ -289,7 +286,6 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
     executeTransactionResult: TokenCreateNftExecuteTransactionResult,
   ): Promise<CommandResult> {
     const { api } = args;
-    const tokenState = new ZustandTokenStateHelper(api.state, api.logger);
     const result = executeTransactionResult.transactionResult;
     const tokenId = result.tokenId ?? '';
 
@@ -323,7 +319,7 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
     });
 
     const key = composeKey(normalisedParams.network, tokenId);
-    tokenState.saveToken(key, tokenData);
+    this.tokenStateService.saveToken(key, tokenData);
     api.logger.info('   Non-fungible token data saved to state');
 
     if (normalisedParams.alias) {
@@ -363,5 +359,9 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
 export async function tokenCreateNft(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenCreateNftCommand().execute(args);
+  const { api } = args;
+  return new TokenCreateNftCommand(
+    new TokenStateServiceImpl(api.state, api.logger),
+    new TokenKeysServiceImpl(api.keyResolver),
+  ).execute(args);
 }

@@ -11,9 +11,13 @@ import type {
   ExchangeRateResponse,
   GetAccountsQueryParams,
   GetAccountsResponse,
+  HbarAllowancesResponse,
+  MirrorNodePageParams,
+  NftAllowancesResponse,
   NftInfo,
   ScheduleInfo,
   TokenAirdropsResponse,
+  TokenAllowancesResponse,
   TokenBalancesResponse,
   TokenInfo,
   TopicInfo,
@@ -41,6 +45,36 @@ export interface HederaMirrornodeService {
     accountId: string,
     tokenId?: string,
   ): Promise<TokenBalancesResponse>;
+
+  /**
+   * Get HBAR allowances granted by an account
+   */
+  getHbarAllowances(
+    accountId: string,
+    params?: MirrorNodePageParams,
+  ): Promise<HbarAllowancesResponse>;
+
+  getAllHbarAllowances(accountId: string): Promise<HbarAllowancesResponse>;
+
+  /**
+   * Get fungible token allowances granted by an account
+   */
+  getTokenAllowances(
+    accountId: string,
+    params?: MirrorNodePageParams,
+  ): Promise<TokenAllowancesResponse>;
+
+  getAllTokenAllowances(accountId: string): Promise<TokenAllowancesResponse>;
+
+  /**
+   * Get NFT allowances granted by an account
+   */
+  getNftAllowances(
+    accountId: string,
+    params?: MirrorNodePageParams,
+  ): Promise<NftAllowancesResponse>;
+
+  getAllNftAllowances(accountId: string): Promise<NftAllowancesResponse>;
 
   /**
    * List account entities on network with optional filters and pagination

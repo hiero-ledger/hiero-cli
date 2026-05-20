@@ -1,6 +1,9 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { TopicData } from '@/plugins/topic/schema';
+import type { TopicCleanupService } from '@/plugins/topic/services/topic-cleanup.service.interface';
+import type { TopicResolutionService } from '@/plugins/topic/services/topic-resolution.service.interface';
+import type { TopicStateService } from '@/plugins/topic/services/topic-state.service.interface';
 import type { TopicDeleteOutput } from './output';
 import type {
   DeleteTopicBuildTransactionResult,
@@ -17,10 +20,10 @@ import {
 } from '@/core/errors';
 import { EntityIdSchema } from '@/core/schemas';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
-import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
-import { TopicHelper } from '@/plugins/topic/topic-helper';
-import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
+import { TopicCleanupServiceImpl } from '@/plugins/topic/services/topic-cleanup.service';
+import { TopicResolutionServiceImpl } from '@/plugins/topic/services/topic-resolution.service';
+import { TopicStateServiceImpl } from '@/plugins/topic/services/topic-state.service';
 
 import { TopicDeleteInputSchema } from './input';
 
@@ -32,7 +35,11 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
   DeleteTopicSignTransactionResult,
   DeleteTopicExecuteTransactionResult
 > {
-  constructor() {
+  constructor(
+    private readonly topicState: TopicStateService,
+    private readonly topicCleanup: TopicCleanupService,
+    private readonly topicResolution: TopicResolutionService,
+  ) {
     super(TOPIC_DELETE_COMMAND_NAME);
   }
 
@@ -47,10 +54,8 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
   private async executeStateOnlyDelete(
     args: CommandHandlerArgs,
   ): Promise<CommandResult> {
-    const { api } = args;
     const params = await this.resolveStateTopicForDelete(args);
-    const topicHelper = new TopicHelper(api.alias, api.state, api.logger);
-    const removedAliases = topicHelper.removeTopicFromLocalState(
+    const removedAliases = this.topicCleanup.removeTopicFromLocalState(
       params.topicToDelete,
       params.network,
     );
@@ -72,7 +77,6 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
   ): Promise<DeleteTopicNormalisedParams> {
     const { api } = args;
-    const topicState = new ZustandTopicStateHelper(api.state, api.logger);
     const validArgs = TopicDeleteInputSchema.parse(args.args);
     const topicRef = validArgs.topic;
     const isEntityId = EntityIdSchema.safeParse(topicRef).success;
@@ -82,20 +86,14 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
     if (isEntityId) {
       key = composeKey(network, topicRef);
     } else {
-      const topicAlias = api.alias.resolveOrThrow(
+      const topicEntityId = this.topicResolution.resolveTopicId(
         topicRef,
-        AliasType.Topic,
         network,
       );
-      if (!topicAlias.entityId) {
-        throw new NotFoundError(
-          `Alias for topic ${topicRef} is missing entity ID in its record`,
-        );
-      }
-      key = composeKey(network, topicAlias.entityId);
+      key = composeKey(network, topicEntityId);
     }
 
-    const topicToDelete = topicState.loadTopic(key);
+    const topicToDelete = this.topicState.loadTopic(key);
     if (!topicToDelete) {
       throw new NotFoundError(`Topic with identifier '${topicRef}' not found`);
     }
@@ -111,26 +109,15 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
   }
 
   private resolveTopicEntityId(
-    args: CommandHandlerArgs,
+    _args: CommandHandlerArgs,
     topicRef: string,
     isEntityId: boolean,
+    network: DeleteTopicNormalisedParams['network'],
   ): string {
-    const { api } = args;
-    const network = api.network.getCurrentNetwork();
     if (isEntityId) {
       return EntityIdSchema.parse(topicRef);
     }
-    const topicAlias = api.alias.resolveOrThrow(
-      topicRef,
-      AliasType.Topic,
-      network,
-    );
-    if (!topicAlias.entityId) {
-      throw new NotFoundError(
-        `Alias for topic ${topicRef} is missing entity ID in its record`,
-      );
-    }
-    return topicAlias.entityId;
+    return this.topicResolution.resolveTopicId(topicRef, network);
   }
 
   async normalizeParams(
@@ -141,15 +128,19 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
     const network = api.network.getCurrentNetwork();
     const topicRef = validArgs.topic;
     const isEntityId = EntityIdSchema.safeParse(topicRef).success;
-    const topicState = new ZustandTopicStateHelper(api.state, api.logger);
     const keyManager =
       validArgs.keyManager ||
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
-    const topicEntityId = this.resolveTopicEntityId(args, topicRef, isEntityId);
+    const topicEntityId = this.resolveTopicEntityId(
+      args,
+      topicRef,
+      isEntityId,
+      network,
+    );
     const key = composeKey(network, topicEntityId);
 
-    const loaded = topicState.loadTopic(key);
+    const loaded = this.topicState.loadTopic(key);
 
     const topicInfo = await api.mirror.getTopicInfo(topicEntityId);
     if (topicInfo.deleted) {
@@ -250,14 +241,13 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
   }
 
   async outputPreparation(
-    args: CommandHandlerArgs,
+    _args: CommandHandlerArgs,
     normalisedParams: DeleteTopicNormalisedParams,
     _buildTransactionResult: DeleteTopicBuildTransactionResult,
     _signTransactionResult: DeleteTopicSignTransactionResult,
     executeTransactionResult: DeleteTopicExecuteTransactionResult,
   ): Promise<CommandResult> {
     const { transactionResult } = executeTransactionResult;
-    const { api } = args;
 
     if (!transactionResult.success) {
       throw new TransactionError(
@@ -272,8 +262,7 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
       );
     }
 
-    const topicHelper = new TopicHelper(api.alias, api.state, api.logger);
-    const removedAliases = topicHelper.removeTopicFromLocalState(
+    const removedAliases = this.topicCleanup.removeTopicFromLocalState(
       normalisedParams.topicToDelete,
       normalisedParams.network,
     );
@@ -296,5 +285,14 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
 export async function topicDelete(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TopicDeleteCommand().execute(args);
+  const { alias, logger, state } = args.api;
+  const topicState = new TopicStateServiceImpl(state, logger);
+  const topicCleanup = new TopicCleanupServiceImpl(alias, topicState, logger);
+  const topicResolution = new TopicResolutionServiceImpl(alias);
+
+  return new TopicDeleteCommand(
+    topicState,
+    topicCleanup,
+    topicResolution,
+  ).execute(args);
 }

@@ -307,6 +307,7 @@ The Hiero CLI is built on a plugin architecture. The following default plugins a
 - **[Swap Plugin](src/plugins/swap/README.md)** - Build and execute multi-party HBAR/token swaps in a single transaction
 - **[Batch Plugin](src/plugins/batch/README.md)** - Group multiple transactions into a single atomic batch transaction
 - **[Schedule Plugin](src/plugins/schedule/README.md)** - Create, sign, delete, and manage Hedera scheduled transactions
+- **[EIP-712 Plugin](src/plugins/eip712/README.md)** - Sign and verify EIP-712 structured typed data using ECDSA keys managed by the CLI KMS
 
 Each plugin has its own README with detailed documentation about available commands, usage examples, and architecture details. Click on the plugin name above to learn more.
 
