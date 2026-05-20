@@ -20,6 +20,9 @@ To showcase how the structure of the new plugin should like I will take the test
 src/plugins/test/
 ├── manifest.ts              # Main file for registering plugin information, that holds information about commands, commands' options, namespace that plugin will use
 ├── schema.ts (optional)     # Optional schema with Zod validation, when declaring namespace for the plugin you can define zod types in here
+├── services/                # Plugin services with explicit Core service dependencies
+│   ├── memo-state.service.interface.ts
+│   └── memo-state.service.ts
 ├── commands/                # Inside the commands we would register command. Each command should be put inside separate directory.
 │   ├── foo/                 # Foo test command - basic plugin that prints message to the output
 │   │   ├── handler.ts       # Handler should hold of implemention logic the command would perform and use core services to achieve that
@@ -31,8 +34,7 @@ src/plugins/test/
 │   │   ├── input.ts         # Input schema and template are defined here for the command data input and validation
 │   │   ├── output.ts        # Output schema and template are defined here
 │   │   └── index.ts         # Command exports
-├── schemas.ts (optional)    # Optional schemas file for handling data model for state introduced by plugin. If no new namespace is introduced by the plugin it is not needed
-├── zustand-state-helper.ts (optional)  # Optional state management helper - we would create state helper if we would create our own namespace and need to handle state persistence for our new data models.
+├── schema.ts (optional)     # Optional schemas file for handling data model for state introduced by plugin. If no new namespace is introduced by the plugin it is not needed
 └── index.ts                # Plugin exports
 ```
 
