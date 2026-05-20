@@ -3,11 +3,8 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { ContractCreateOutput } from '@/plugins/contract/commands/create/output';
 
 import { MOCK_CONTRACT_ID, MOCK_TX_ID } from '@/__tests__/mocks/fixtures';
+import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { EvmAddressSchema } from '@/core/schemas';
-import {
-  makeArgs,
-  makeLogger,
-} from '@/plugins/account/__tests__/unit/helpers/mocks';
 import { CreateContractCommand } from '@/plugins/contract/commands/create/handler';
 import {
   DEFAULT_CONSTRUCTOR_PARAMS,

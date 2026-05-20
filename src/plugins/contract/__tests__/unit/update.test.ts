@@ -11,6 +11,8 @@ import {
 import {
   createMockContractInfo,
   createMockKmsRecord,
+  makeArgs,
+  makeLogger,
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { AliasType } from '@/core';
@@ -22,11 +24,7 @@ import {
 import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
-import {
-  makeAliasServiceMock,
-  makeArgs,
-  makeLogger,
-} from '@/plugins/account/__tests__/unit/helpers/mocks';
+import { makeAliasServiceMock } from '@/plugins/account/__tests__/unit/helpers/mocks';
 import {
   ERROR_NEW_ADMIN_KEY_NO_PRIVATE_KEY,
   makeContractData,

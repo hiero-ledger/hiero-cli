@@ -2,13 +2,11 @@ import type { CoreApi, Logger } from '@/core';
 
 import { ZodError } from 'zod';
 
+import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError, TransactionError } from '@/core/errors';
 import { makeContractErc20ExecuteCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
-import {
-  makeApiMocks,
-  makeLogger,
-} from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
+import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { ContractErc20CallTransferFromOutputSchema } from '@/plugins/contract-erc20/commands/transfer-from';
 import { contractErc20TransferFrom } from '@/plugins/contract-erc20/commands/transfer-from/handler';
 import { ContractErc20CallTransferFromInputSchema } from '@/plugins/contract-erc20/commands/transfer-from/input';

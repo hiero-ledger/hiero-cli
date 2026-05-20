@@ -13,14 +13,12 @@ import {
   MOCK_HEDERA_ENTITY_ID_1,
   MOCK_TX_ID,
 } from '@/__tests__/mocks/fixtures';
+import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError, TransactionError } from '@/core/errors';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { makeContractErc721ExecuteCommandArgs } from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
-import {
-  makeApiMocks,
-  makeLogger,
-} from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
+import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
 import {
   ContractErc721CallTransferFromOutputSchema,
   contractErc721TransferFrom,

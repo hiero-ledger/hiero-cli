@@ -5,13 +5,11 @@ import '@/core/utils/json-serialize';
 import { ZodError } from 'zod';
 
 import { makeHederaSdkContractMock } from '@/__tests__/mocks/hedera-sdk-contract-mock';
+import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { StateError } from '@/core/errors';
 import { makeContractErc20CallCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
-import {
-  makeApiMocks,
-  makeLogger,
-} from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
+import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { ContractErc20CallDecimalsOutputSchema } from '@/plugins/contract-erc20/commands/decimals';
 import { contractErc20Decimals } from '@/plugins/contract-erc20/commands/decimals/handler';
 import { ContractErc20CallDecimalsInputSchema } from '@/plugins/contract-erc20/commands/decimals/input';

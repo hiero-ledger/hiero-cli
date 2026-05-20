@@ -6,6 +6,11 @@ import {
   MOCK_ACCOUNT_ID_ALT,
   MOCK_HEDERA_ENTITY_ID_1,
 } from '@/__tests__/mocks/fixtures';
+import {
+  makeArgs,
+  makeIdentityResolutionServiceMock,
+  makeLogger,
+} from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { ValidationError } from '@/core/errors';
 import { HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION } from '@/core/shared/constants';
@@ -24,10 +29,8 @@ import {
   TOKEN_INPUT,
 } from './helpers/fixtures';
 import {
-  makeArgs,
-  makeIdentityResolutionServiceMock,
-  makeLogger,
   makeSwapApiMocks,
+  makeSwapIdentityResolutionMock,
 } from './helpers/mocks';
 
 jest.mock('../../services/swap-state.service', () => ({
@@ -62,10 +65,12 @@ describe('swap plugin - add-ft command', () => {
       addTransfer: addTransferMock,
     }));
 
-    const { networkMock, configMock } = makeSwapApiMocks();
+    const { networkMock, configMock, mirrorMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = {
       network: networkMock,
       config: configMock,
+      mirror: mirrorMock as unknown as CoreApi['mirror'],
+      identityResolution: makeSwapIdentityResolutionMock(),
       keyResolver: {
         resolveAccountCredentials: resolveAccountCredentialsMock,
         resolveDestination: resolveDestinationMock,
@@ -117,10 +122,11 @@ describe('swap plugin - add-ft command', () => {
       },
     );
 
-    const { networkMock, configMock } = makeSwapApiMocks();
+    const { networkMock, configMock, mirrorMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = {
       network: networkMock,
       config: configMock,
+      mirror: mirrorMock as unknown as CoreApi['mirror'],
       identityResolution: identityResolutionMock,
       keyResolver: {
         resolveAccountCredentials: resolveAccountCredentialsMock,
@@ -164,6 +170,7 @@ describe('swap plugin - add-ft command', () => {
         ...mirrorMock,
         getTokenInfo: getTokenInfoMock,
       } as unknown as CoreApi['mirror'],
+      identityResolution: makeSwapIdentityResolutionMock(),
       keyResolver: {
         resolveAccountCredentials: resolveAccountCredentialsMock,
         resolveDestination: resolveDestinationMock,
@@ -223,12 +230,14 @@ describe('swap plugin - add-ft command', () => {
         .mockReturnValue({ ...mockEmptySwap, transfers: [{}] }),
     }));
 
-    const { networkMock, configMock } = makeSwapApiMocks();
+    const { networkMock, configMock, mirrorMock } = makeSwapApiMocks();
     configMock.getOption = jest.fn().mockReturnValue('local_encrypted');
 
     const api: Partial<CoreApi> = {
       network: networkMock,
       config: configMock,
+      mirror: mirrorMock as unknown as CoreApi['mirror'],
+      identityResolution: makeSwapIdentityResolutionMock(),
       keyResolver: {
         resolveAccountCredentials: resolveAccountCredentialsMock,
         resolveDestination: resolveDestinationMock,

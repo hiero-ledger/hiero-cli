@@ -1,5 +1,6 @@
 import '@/core/utils/json-serialize';
 
+import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
   NotFoundError,
@@ -18,7 +19,6 @@ import { makeBurnFtCommandArgs } from './helpers/fixtures';
 import {
   makeApiMocks,
   makeBurnFtSuccessMocks,
-  makeLogger,
   makeTransactionResult,
 } from './helpers/mocks';
 

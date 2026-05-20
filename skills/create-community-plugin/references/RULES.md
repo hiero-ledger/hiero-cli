@@ -545,14 +545,14 @@ For all config files **except `package.json`**, copy the current version directl
 
 Files to copy verbatim:
 
-| File                | Source path in hiero-ledger/hiero-cli |
-| ------------------- | ------------------------------------- |
-| `tsconfig.base.json`  | `tsconfig.base.json`                |
-| `tsconfig.json`       | `tsconfig.json`                     |
-| `tsconfig.test.json`  | `tsconfig.test.json`                |
-| `jest.config.js`      | `jest.config.js`                    |
-| `jest.unit.config.js` | `jest.unit.config.js`               |
-| `eslint.config.js`    | `eslint.config.js`                  |
+| File                  | Source path in hiero-ledger/hiero-cli |
+| --------------------- | ------------------------------------- |
+| `tsconfig.base.json`  | `tsconfig.base.json`                  |
+| `tsconfig.json`       | `tsconfig.json`                       |
+| `tsconfig.test.json`  | `tsconfig.test.json`                  |
+| `jest.config.js`      | `jest.config.js`                      |
+| `jest.unit.config.js` | `jest.unit.config.js`                 |
+| `eslint.config.js`    | `eslint.config.js`                    |
 
 If the user supplied a local `.tgz`, extract the source config files from it. Otherwise fetch the files from the published repository at the same tag as the resolved npm version.
 
@@ -640,11 +640,11 @@ Plugin-internal logic that is **reused across 2+ commands and depends on `@hiero
 
 **Decision rule:**
 
-| Logic                                         | Location                  |
-| --------------------------------------------- | ------------------------- |
-| Reused across commands + needs hiero-cli      | `services/` (this section)|
-| Reused across commands + pure (no deps)       | `utils/`                  |
-| Single command only + needs hiero-cli         | inline via `args.api.X`   |
+| Logic                                    | Location                   |
+| ---------------------------------------- | -------------------------- |
+| Reused across commands + needs hiero-cli | `services/` (this section) |
+| Reused across commands + pure (no deps)  | `utils/`                   |
+| Single command only + needs hiero-cli    | inline via `args.api.X`    |
 
 ### File layout
 

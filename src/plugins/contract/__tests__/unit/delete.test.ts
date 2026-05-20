@@ -16,15 +16,13 @@ import {
 import {
   createMockContractInfo,
   createMockKmsRecord,
+  makeArgs,
+  makeLogger,
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, NotFoundError, ValidationError } from '@/core';
 import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
-import {
-  makeAliasServiceMock,
-  makeArgs,
-  makeLogger,
-} from '@/plugins/account/__tests__/unit/helpers/mocks';
+import { makeAliasServiceMock } from '@/plugins/account/__tests__/unit/helpers/mocks';
 import {
   makeApiMocks,
   makeContractCleanupServiceMock,

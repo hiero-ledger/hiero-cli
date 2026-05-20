@@ -1,7 +1,7 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 
 import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
-import { makeLogger } from '@/__tests__/mocks/mocks';
+import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
   batchList,
@@ -16,7 +16,7 @@ import {
   mockBatchDataWithTransactions,
   mockExecutedBatchData,
 } from './helpers/fixtures';
-import { makeArgs, makeBatchApiMocks } from './helpers/mocks';
+import { makeBatchApiMocks } from './helpers/mocks';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandBatchStateHelper: jest.fn(),

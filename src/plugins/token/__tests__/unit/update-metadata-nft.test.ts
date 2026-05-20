@@ -1,5 +1,6 @@
 import '@/core/utils/json-serialize';
 
+import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
   NotFoundError,
@@ -17,7 +18,6 @@ import { TOKEN_NAMESPACE } from '@/plugins/token/constants';
 import { makeUpdateNftMetadataCommandArgs } from './helpers/fixtures';
 import {
   makeApiMocks,
-  makeLogger,
   makeTransactionResult,
   makeUpdateNftMetadataSuccessMocks,
 } from './helpers/mocks';

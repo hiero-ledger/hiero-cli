@@ -1,7 +1,7 @@
 import type { Transaction } from '@hiero-ledger/sdk';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 
-import { makeLogger } from '@/__tests__/mocks/mocks';
+import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError, ValidationError } from '@/core/errors';
 import { SupportedNetwork } from '@/core/types/shared.types';
@@ -15,7 +15,7 @@ import {
   mockBatchData,
   mockBatchDataWithTransactions,
 } from './helpers/fixtures';
-import { makeArgs, makeBatchApiMocks } from './helpers/mocks';
+import { makeBatchApiMocks } from './helpers/mocks';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandBatchStateHelper: jest.fn(),

@@ -1,7 +1,7 @@
 import type { KeyResolverService } from '@/core';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 
-import { makeLogger } from '@/__tests__/mocks/mocks';
+import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { ValidationError } from '@/core/errors';
 import {
@@ -15,7 +15,7 @@ import {
   BATCH_KEY_REF_ID,
   BATCH_NAME,
 } from './helpers/fixtures';
-import { makeArgs, makeBatchApiMocks } from './helpers/mocks';
+import { makeBatchApiMocks } from './helpers/mocks';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandBatchStateHelper: jest.fn(),

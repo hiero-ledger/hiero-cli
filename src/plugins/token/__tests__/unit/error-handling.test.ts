@@ -1,5 +1,6 @@
 import type { TransactionResult } from '@/core/types/shared.types';
 
+import { makeLogger } from '@/__tests__/mocks/mocks';
 import {
   InternalError,
   NetworkError,
@@ -15,11 +16,7 @@ import { tokenCreateFt } from '@/plugins/token/commands/create-ft';
 import { tokenCreateFtFromFile } from '@/plugins/token/commands/create-ft-from-file';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
-import {
-  makeApiMocks,
-  makeLogger,
-  mockZustandTokenStateHelper,
-} from './helpers/mocks';
+import { makeApiMocks, mockZustandTokenStateHelper } from './helpers/mocks';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTokenStateHelper: jest.fn(),

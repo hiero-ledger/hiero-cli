@@ -5,6 +5,7 @@ import '@/core/utils/json-serialize';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
+import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { FileError, StateError } from '@/core/errors';
 import { HederaTokenType } from '@/core/shared/constants';
@@ -27,7 +28,7 @@ import {
   mockTransactions,
   validTokenFile,
 } from './helpers/fixtures';
-import { makeApiMocks, makeLogger } from './helpers/mocks';
+import { makeApiMocks } from './helpers/mocks';
 
 // Mock fs/promises
 jest.mock('fs/promises', () => ({

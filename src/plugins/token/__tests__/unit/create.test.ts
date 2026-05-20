@@ -1,6 +1,7 @@
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { TransactionResult } from '@/core/types/shared.types';
 
+import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, StateError, ValidationError } from '@/core/errors';
 import { HederaTokenType } from '@/core/shared/constants';
@@ -17,11 +18,7 @@ import {
   mockAccountIds,
   mockTransactions,
 } from './helpers/fixtures';
-import {
-  makeApiMocks,
-  makeLogger,
-  makeTransactionResult,
-} from './helpers/mocks';
+import { makeApiMocks, makeTransactionResult } from './helpers/mocks';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTokenStateHelper: jest.fn(),

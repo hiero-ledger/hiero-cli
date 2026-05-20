@@ -2,15 +2,10 @@
  * Shared Mock Factory Functions for Account Plugin Tests
  * Provides reusable mocks for services, APIs, and common test utilities
  */
-import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { AccountService } from '@/core/services/account/account-transaction-service.interface';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { IdentityResolutionService } from '@/core/services/identity-resolution/identity-resolution-service.interface';
-import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
-import type { NetworkService } from '@/core/services/network/network-service.interface';
-import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
 import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
 import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
 import type { AccountData } from '@/plugins/account/schema';
@@ -26,7 +21,6 @@ import {
   makeTxExecuteMock,
   makeTxSignMock,
 } from '@/__tests__/mocks/mocks';
-import { SupportedNetwork } from '@/core/types/shared.types';
 
 import {
   mockAccountData,
@@ -37,17 +31,6 @@ import {
   OPERATOR_KEY_REF_ID,
   OPERATOR_SUFFICIENT_BALANCE,
 } from './fixtures';
-
-/**
- * Create a mocked Logger
- */
-export const makeLogger = (): jest.Mocked<Logger> => ({
-  info: jest.fn(),
-  error: jest.fn(),
-  debug: jest.fn(),
-  warn: jest.fn(),
-  setLevel: jest.fn(),
-});
 
 /**
  * Creates an AccountData object with default values and optional overrides
@@ -106,43 +89,6 @@ export const makeTxExecuteServiceMock = (
     .fn()
     .mockResolvedValue(mockTransactionResults.success),
   ...overrides,
-});
-
-/**
- * Creates mock NetworkService
- */
-export const makeNetworkServiceMock = (
-  network: SupportedNetwork = SupportedNetwork.TESTNET,
-): jest.Mocked<NetworkService> => ({
-  getCurrentNetwork: jest.fn().mockReturnValue(network),
-  setNetwork: jest.fn(),
-  getAvailableNetworks: jest
-    .fn()
-    .mockReturnValue(['localnet', 'testnet', 'previewnet', 'mainnet']),
-  switchNetwork: jest.fn(),
-  getNetworkConfig: jest.fn().mockImplementation((name: string) => ({
-    name,
-    rpcUrl: `https://${name}.hashio.io/api`,
-    mirrorNodeUrl: `https://${name}.mirrornode.hedera.com/api/v1`,
-    chainId: name === 'mainnet' ? '0x127' : '0x128',
-    explorerUrl: `https://hashscan.io/${name}`,
-    isTestnet: name !== 'mainnet',
-  })),
-  isNetworkAvailable: jest.fn().mockReturnValue(true),
-  getLocalnetConfig: jest.fn().mockReturnValue({
-    localNodeAddress: '127.0.0.1:50211',
-    localNodeAccountId: '0.0.3',
-    localNodeMirrorAddressGRPC: '127.0.0.1:5600',
-  }),
-  setOperator: jest.fn(),
-  getOperator: jest.fn().mockReturnValue(null),
-  getCurrentOperatorOrThrow: jest.fn().mockReturnValue({
-    accountId: '0.0.100000',
-    keyRefId: 'operator-key-ref-id',
-  }),
-  setPayer: jest.fn(),
-  getPayer: jest.fn().mockReturnValue(null),
-  hasAnyOperator: jest.fn().mockReturnValue(false),
 });
 
 /**
@@ -220,35 +166,6 @@ export const makeAliasServiceMock = (options?: {
     clear: jest.fn(),
   };
 };
-
-/**
- * Creates CommandHandlerArgs for testing command handlers
- */
-export const makeArgs = (
-  api: Partial<CoreApi>,
-  logger: jest.Mocked<Logger>,
-  args: Record<string, unknown>,
-): CommandHandlerArgs => ({
-  api: {
-    logger,
-    pluginManagement: {
-      listPlugins: jest.fn().mockReturnValue([]),
-      getPlugin: jest.fn(),
-      addPlugin: jest.fn(),
-      removePlugin: jest.fn(),
-      enablePlugin: jest.fn(),
-      disablePlugin: jest.fn(),
-      resetPlugins: jest.fn(),
-      savePluginState: jest.fn(),
-      getInitializedDefaults: jest.fn().mockReturnValue([]),
-      setInitializedDefaults: jest.fn(),
-      addToInitializedDefaults: jest.fn(),
-    } as PluginManagementService,
-    ...api,
-  } as CoreApi,
-  args,
-  hooks: new Map(),
-});
 
 export function mockIdentityResolution(
   entityId: string,

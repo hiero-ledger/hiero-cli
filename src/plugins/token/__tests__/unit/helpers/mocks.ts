@@ -49,17 +49,6 @@ import { AliasType } from '@/core/types/shared.types';
 import { mockTransactionResults } from './fixtures';
 
 /**
- * Create a mocked Logger
- */
-export const makeLogger = (): jest.Mocked<Logger> => ({
-  info: jest.fn(),
-  error: jest.fn(),
-  debug: jest.fn(),
-  warn: jest.fn(),
-  setLevel: jest.fn(),
-});
-
-/**
  * Create a mocked TokenService
  */
 export const makeTokenServiceMock = (

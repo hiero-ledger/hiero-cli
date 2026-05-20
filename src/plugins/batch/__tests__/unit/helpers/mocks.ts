@@ -1,7 +1,3 @@
-import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
-import type { Logger } from '@/core/services/logger/logger-service.interface';
-
 import {
   ECDSA_HEX_PUBLIC_KEY,
   MOCK_OPERATOR_ACCOUNT_ID,
@@ -10,7 +6,6 @@ import {
   makeAliasMock,
   makeConfigMock,
   makeKmsMock,
-  makeLogger as makeGlobalLogger,
   makeNetworkMock,
   makeStateMock,
   makeTxExecuteMock,
@@ -20,8 +15,6 @@ import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
 import { BATCH_KEY_REF_ID, OPERATOR_KEY_REF_ID } from './fixtures';
-
-export { makeGlobalLogger as makeLogger };
 
 export const makeBatchStateHelperMock = (overrides?: {
   saveBatch?: jest.Mock;
@@ -37,34 +30,6 @@ export const makeBatchStateHelperMock = (overrides?: {
   deleteBatch: jest.fn(),
   ...overrides,
 });
-
-export const makeArgs = (
-  api: Partial<CoreApi>,
-  logger: jest.Mocked<Logger>,
-  args: Record<string, unknown>,
-): CommandHandlerArgs => {
-  const network = api.network || makeNetworkMock(SupportedNetwork.TESTNET);
-  const kms = api.kms || makeKmsMock();
-  const alias = api.alias || makeAliasMock();
-
-  const apiObject = {
-    state: makeStateMock(),
-    network,
-    config: makeConfigMock(),
-    logger,
-    alias,
-    kms,
-    txSign: makeTxSignMock(),
-    txExecute: makeTxExecuteMock(),
-    ...api,
-  } as unknown as CoreApi;
-
-  return {
-    api: apiObject,
-    args,
-    hooks: new Map(),
-  };
-};
 
 export const makeBatchApiMocks = (
   network: SupportedNetwork = SupportedNetwork.TESTNET,

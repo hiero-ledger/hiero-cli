@@ -5,6 +5,7 @@ import type { ScheduledTransactionData } from '@/plugins/schedule/schema';
 import {
   createBatchExecuteParams,
   createScheduleVerifyParams,
+  makeArgs,
   makeLogger,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
@@ -14,8 +15,6 @@ import { SupportedNetwork } from '@/core/types/shared.types';
 import { ACCOUNT_CREATE_COMMAND_NAME } from '@/plugins/account/commands/create';
 import { AccountCreateStateHook } from '@/plugins/account/hooks/account-create-state';
 import { AccountStateServiceImpl } from '@/plugins/account/services/account-state.service';
-
-import { makeArgs } from './helpers/mocks';
 
 jest.mock('../../services/account-state.service', () => ({
   AccountStateServiceImpl: jest.fn(),

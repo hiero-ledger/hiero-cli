@@ -1,6 +1,7 @@
 import '@/core/utils/json-serialize';
 
 import { ED25519_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
+import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
   NotFoundError,
@@ -19,7 +20,6 @@ import { TOKEN_NAMESPACE } from '@/plugins/token/constants';
 import { makeTokenMintNftCommandArgs } from './helpers/fixtures';
 import {
   makeApiMocks,
-  makeLogger,
   makeMintNftSuccessMocks,
   makeTransactionResult,
 } from './helpers/mocks';

@@ -4,7 +4,7 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import { PublicKey } from '@hiero-ledger/sdk';
 
 import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
-import { makeLogger } from '@/__tests__/mocks/mocks';
+import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { NotFoundError, ValidationError } from '@/core/errors';
 import { BatchifySetBatchKeyHook } from '@/plugins/batch/hooks/batchify-set-batch-key/handler';
 import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
@@ -16,7 +16,7 @@ import {
   mockBatchData,
   mockExecutedBatchData,
 } from './helpers/fixtures';
-import { makeArgs, makeBatchApiMocks } from './helpers/mocks';
+import { makeBatchApiMocks } from './helpers/mocks';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandBatchStateHelper: jest.fn(),

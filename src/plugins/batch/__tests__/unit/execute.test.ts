@@ -2,7 +2,7 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { BatchTransactionService } from '@/core/services/batch/batch-transaction-service.interface';
 
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
-import { makeLogger } from '@/__tests__/mocks/mocks';
+import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError, ValidationError } from '@/core/errors';
 import {
@@ -16,7 +16,7 @@ import {
   mockBatchDataWithTransactions,
   mockExecutedBatchData,
 } from './helpers/fixtures';
-import { makeArgs, makeBatchApiMocks } from './helpers/mocks';
+import { makeBatchApiMocks } from './helpers/mocks';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandBatchStateHelper: jest.fn(),

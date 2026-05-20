@@ -5,6 +5,7 @@ import {
   MOCK_ACCOUNT_ID_ALT,
   MOCK_HEDERA_ENTITY_ID_1,
 } from '@/__tests__/mocks/fixtures';
+import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError } from '@/core/errors';
 import { HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION } from '@/core/shared/constants';
@@ -21,7 +22,7 @@ import {
   SWAP_MEMO,
   SWAP_NAME,
 } from './helpers/fixtures';
-import { makeArgs, makeLogger, makeSwapApiMocks } from './helpers/mocks';
+import { makeSwapApiMocks } from './helpers/mocks';
 
 jest.mock('../../services/swap-state.service', () => ({
   SwapStateServiceImpl: jest.fn(),
