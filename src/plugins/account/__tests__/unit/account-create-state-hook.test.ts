@@ -13,12 +13,12 @@ import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { ACCOUNT_CREATE_COMMAND_NAME } from '@/plugins/account/commands/create';
 import { AccountCreateStateHook } from '@/plugins/account/hooks/account-create-state';
-import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
+import { AccountStateServiceImpl } from '@/plugins/account/services/account-state.service';
 
 import { makeArgs } from './helpers/mocks';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandAccountStateHelper: jest.fn(),
+jest.mock('../../services/account-state.service', () => ({
+  AccountStateServiceImpl: jest.fn(),
 }));
 
 jest.mock('@hiero-ledger/sdk', () => {
@@ -37,7 +37,7 @@ jest.mock('@hiero-ledger/sdk', () => {
   };
 });
 
-const MockedHelper = ZustandAccountStateHelper as jest.Mock;
+const MockedHelper = AccountStateServiceImpl as jest.Mock;
 
 const createAccountBatchDataItem = (
   overrides: Partial<BatchDataItem> = {},
@@ -472,6 +472,8 @@ describe('account plugin - account-create-state hook (schedule path)', () => {
     name: 'my-schedule',
     network: SupportedNetwork.TESTNET,
     keyManager: KeyManager.local,
+    adminKeyRefIds: [],
+    adminPublicKeys: [],
     waitForExpiry: false,
     scheduled: false,
     executed: false,

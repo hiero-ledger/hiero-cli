@@ -25,7 +25,7 @@ export class ScheduleCreateCommand implements Command {
     const expirationTime = validArgs.expiration;
     const waitForExpiry = validArgs.waitForExpiry;
     const memo = validArgs.memo;
-    const adminKey = validArgs.adminKey;
+    const adminKey = validArgs.adminKey ?? [];
     const payer = validArgs.payerAccount;
     const keyManager =
       validArgs.keyManager ||
@@ -47,22 +47,24 @@ export class ScheduleCreateCommand implements Command {
       );
     }
 
-    let admin: ResolvedPublicKey | undefined;
-    if (adminKey) {
-      admin = await api.keyResolver.resolveSigningKey(
-        adminKey,
+    const adminKeys: ResolvedPublicKey[] = [];
+    for (const credential of adminKey) {
+      const resolved = await api.keyResolver.resolveSigningKey(
+        credential,
         keyManager,
         false,
         ['schedule:admin'],
       );
+      adminKeys.push(resolved);
     }
 
     scheduleState.saveScheduled(scheduleKey, {
       name,
       network,
       keyManager,
-      adminKeyRefId: admin?.keyRefId,
-      adminPublicKey: admin?.publicKey,
+      adminKeyRefIds: adminKeys.map((k) => k.keyRefId),
+      adminPublicKeys: adminKeys.map((k) => k.publicKey),
+      adminKeyThreshold: validArgs.adminKeyThreshold,
       payerAccountId: payerCredential?.accountId,
       payerKeyRefId: payerCredential?.keyRefId,
       memo,
@@ -77,7 +79,9 @@ export class ScheduleCreateCommand implements Command {
       name,
       network,
       payerAccountId: payerCredential?.accountId,
-      adminPublicKey: admin?.publicKey,
+      adminKeyPresent: adminKeys.length > 0,
+      adminKeyCount: adminKeys.length > 0 ? adminKeys.length : undefined,
+      adminKeyThreshold: validArgs.adminKeyThreshold,
       memo,
       expirationTime: expirationTime?.toISOString(),
       waitForExpiry,

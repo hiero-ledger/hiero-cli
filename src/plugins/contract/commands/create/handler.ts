@@ -1,7 +1,3 @@
-/**
- * Create Contract Command Handler
- * Manages smart contract creation by compiling, deploying and verification
- */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { ContractVerificationResult } from '@/core/services/contract-verifier/types';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
@@ -24,6 +20,8 @@ import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
 import { processBalanceInput } from '@/core/utils/process-balance-input';
+import { ContractStateServiceImpl } from '@/plugins/contract/services/contract-state.service';
+import { type ContractStateService } from '@/plugins/contract/services/contract-state.service.interface';
 import {
   DEFAULT_CONSTRUCTOR_PARAMS,
   getDefaultContractFilePath,
@@ -31,7 +29,6 @@ import {
   readContractFile,
   readContractNameFromFileContent,
 } from '@/plugins/contract/utils/contract-file-helpers';
-import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
 
 import { ContractCreateSchema } from './input';
 
@@ -43,7 +40,7 @@ export class CreateContractCommand extends BaseTransactionCommand<
   ContractCreateSignTransactionResult,
   ContractCreateExecuteTransactionResult
 > {
-  constructor() {
+  constructor(private readonly contractState: ContractStateService) {
     super(CONTRACT_CREATE_COMMAND_NAME);
   }
 
@@ -267,7 +264,6 @@ export class CreateContractCommand extends BaseTransactionCommand<
     }
 
     const contractEvmAddress = `0x${contractId.toEvmAddress()}`;
-    const contractState = new ZustandContractStateHelper(api.state, api.logger);
 
     const contractData = {
       contractId: transactionResult.contractId,
@@ -283,7 +279,7 @@ export class CreateContractCommand extends BaseTransactionCommand<
       normalisedParams.network,
       transactionResult.contractId,
     );
-    contractState.saveContract(contractKey, contractData);
+    this.contractState.saveContract(contractKey, contractData);
 
     if (normalisedParams.alias) {
       api.alias.register({
@@ -317,5 +313,9 @@ export class CreateContractCommand extends BaseTransactionCommand<
 export async function contractCreate(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new CreateContractCommand().execute(args);
+  const contractState = new ContractStateServiceImpl(
+    args.api.state,
+    args.api.logger,
+  );
+  return new CreateContractCommand(contractState).execute(args);
 }

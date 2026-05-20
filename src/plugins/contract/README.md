@@ -18,19 +18,31 @@ This plugin follows the plugin architecture principles:
 src/plugins/contract/
 ├── manifest.ts
 ├── schema.ts
-├── contract-helper.ts       # Local state cleanup after delete
 ├── commands/
 │   ├── create/
 │   ├── import/
 │   ├── list/
 │   ├── update/
 │   └── delete/
+├── services/
+│   ├── contract-state.service.interface.ts   # ContractStateService interface
+│   ├── contract-state.service.ts             # ContractStateServiceImpl
+│   ├── contract-cleanup.service.interface.ts # ContractCleanupService interface
+│   └── contract-cleanup.service.ts           # ContractCleanupServiceImpl
 ├── utils/
 │   └── contract-file-helpers.ts
-├── zustand-state-helper.ts
 ├── __tests__/unit/
 └── index.ts
 ```
+
+### Plugin Services
+
+| Service                  | Responsibility                                                              |
+| ------------------------ | --------------------------------------------------------------------------- |
+| `ContractStateService`   | Read/write contract data to Zustand state (namespace: `contract-contracts`) |
+| `ContractCleanupService` | Remove contract + associated aliases from local state                       |
+
+Services are constructed fresh on each command invocation in the wrapper function inside `handler.ts`. Commands receive services via constructor injection (`this.contractState`, `this.contractCleanup`).
 
 ## 🚀 Commands
 

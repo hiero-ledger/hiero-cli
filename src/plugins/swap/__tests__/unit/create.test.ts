@@ -5,16 +5,16 @@ import { ValidationError } from '@/core/errors';
 import { HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION } from '@/core/shared/constants';
 import { swapCreate } from '@/plugins/swap/commands/create/handler';
 import { SwapCreateOutputSchema } from '@/plugins/swap/commands/create/output';
-import { SwapStateHelper } from '@/plugins/swap/state-helper';
+import { SwapStateServiceImpl } from '@/plugins/swap/services/swap-state.service';
 
 import { SWAP_MEMO, SWAP_NAME } from './helpers/fixtures';
 import { makeArgs, makeLogger, makeSwapApiMocks } from './helpers/mocks';
 
-jest.mock('../../state-helper', () => ({
-  SwapStateHelper: jest.fn(),
+jest.mock('../../services/swap-state.service', () => ({
+  SwapStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = SwapStateHelper as jest.Mock;
+const MockedSwapStateService = SwapStateServiceImpl as jest.Mock;
 
 describe('swap plugin - create command', () => {
   beforeEach(() => {
@@ -24,7 +24,7 @@ describe('swap plugin - create command', () => {
   test('creates a new swap with empty transfers', async () => {
     const logger = makeLogger();
     const saveSwapMock = jest.fn();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       exists: jest.fn().mockReturnValue(false),
       saveSwap: saveSwapMock,
     }));
@@ -52,7 +52,7 @@ describe('swap plugin - create command', () => {
   test('creates a new swap with memo', async () => {
     const logger = makeLogger();
     const saveSwapMock = jest.fn();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       exists: jest.fn().mockReturnValue(false),
       saveSwap: saveSwapMock,
     }));
@@ -75,7 +75,7 @@ describe('swap plugin - create command', () => {
 
   test('throws ValidationError when a swap with the same name already exists', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       exists: jest.fn().mockReturnValue(true),
       saveSwap: jest.fn(),
     }));
@@ -90,7 +90,7 @@ describe('swap plugin - create command', () => {
   test('does not save swap when name already exists', async () => {
     const logger = makeLogger();
     const saveSwapMock = jest.fn();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       exists: jest.fn().mockReturnValue(true),
       saveSwap: saveSwapMock,
     }));

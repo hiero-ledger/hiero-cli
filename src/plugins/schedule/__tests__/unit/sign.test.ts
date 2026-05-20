@@ -1,14 +1,11 @@
-import type {
-  CoreApi,
-  HederaMirrornodeService,
-  KeyResolverService,
-  TransactionResult,
-} from '@/core';
+import type { CoreApi, TransactionResult } from '@/core';
 
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
+  createMirrorNodeMock,
   makeArgs,
   makeConfigMock,
+  makeKeyResolverMock,
   makeLogger,
   makeNetworkMock,
   makeScheduleTransactionServiceMock,
@@ -56,7 +53,6 @@ function resolvedSchedule(overrides: Record<string, unknown> = {}) {
   };
 }
 
-/** Minimal mirror payload for post-sign sync (executed_timestamp optional). */
 function mirrorSchedulePayload(executedTimestamp: string | null = null) {
   return {
     schedule_id: ON_CHAIN_SCHEDULE_ID,
@@ -92,14 +88,12 @@ describe('schedule plugin — sign command', () => {
     const api: Partial<CoreApi> = {
       network: makeNetworkMock(SupportedNetwork.TESTNET),
       config: makeConfigMock(),
-      keyResolver: {
-        resolveSigningKey: jest.fn(),
-      } as unknown as KeyResolverService,
+      keyResolver: makeKeyResolverMock(),
     };
 
     const args = makeArgs(api, logger, {
       schedule: SCHEDULE_NAME,
-      key: SIGNER_KEY_REF,
+      key: [SIGNER_KEY_REF],
     });
 
     await expect(scheduleSign(args)).rejects.toThrow(
@@ -116,14 +110,12 @@ describe('schedule plugin — sign command', () => {
     const api: Partial<CoreApi> = {
       network: makeNetworkMock(SupportedNetwork.TESTNET),
       config: makeConfigMock(),
-      keyResolver: {
-        resolveSigningKey: jest.fn(),
-      } as unknown as KeyResolverService,
+      keyResolver: makeKeyResolverMock(),
     };
 
     const args = makeArgs(api, logger, {
       schedule: SCHEDULE_NAME,
-      key: SIGNER_KEY_REF,
+      key: [SIGNER_KEY_REF],
     });
 
     await expect(scheduleSign(args)).rejects.toThrow(
@@ -144,14 +136,12 @@ describe('schedule plugin — sign command', () => {
     const api: Partial<CoreApi> = {
       network: makeNetworkMock(SupportedNetwork.TESTNET),
       config: makeConfigMock(),
-      keyResolver: {
-        resolveSigningKey: jest.fn(),
-      } as unknown as KeyResolverService,
+      keyResolver: makeKeyResolverMock(),
     };
 
     const args = makeArgs(api, logger, {
       schedule: SCHEDULE_NAME,
-      key: SIGNER_KEY_REF,
+      key: [SIGNER_KEY_REF],
     });
 
     await expect(scheduleSign(args)).rejects.toThrow(
@@ -163,9 +153,9 @@ describe('schedule plugin — sign command', () => {
     const logger = makeLogger();
     resolveScheduleMock.mockResolvedValue(resolvedSchedule());
 
-    const buildScheduleSignTransaction = jest.fn().mockReturnValue({
-      transaction: createMockTransaction(),
-    });
+    const buildScheduleSignTransaction = jest
+      .fn()
+      .mockReturnValue(createMockTransaction());
     const scheduleService = makeScheduleTransactionServiceMock();
     scheduleService.buildScheduleSignTransaction = buildScheduleSignTransaction;
 
@@ -194,9 +184,13 @@ describe('schedule plugin — sign command', () => {
       publicKey: ADMIN_PUBLIC_KEY,
     });
 
-    const getScheduledMirror = jest
+    const mirrorMock = createMirrorNodeMock();
+    mirrorMock.getScheduled = jest
       .fn()
       .mockResolvedValue(mirrorSchedulePayload(null));
+
+    const keyResolverMock = makeKeyResolverMock();
+    keyResolverMock.resolveSigningKey = resolveSigningKey;
 
     const api: Partial<CoreApi> = {
       network: makeNetworkMock(SupportedNetwork.TESTNET),
@@ -204,17 +198,13 @@ describe('schedule plugin — sign command', () => {
       schedule: scheduleService,
       txSign,
       txExecute,
-      mirror: {
-        getScheduled: getScheduledMirror,
-      } as unknown as HederaMirrornodeService,
-      keyResolver: {
-        resolveSigningKey,
-      } as unknown as KeyResolverService,
+      mirror: mirrorMock,
+      keyResolver: keyResolverMock,
     };
 
     const args = makeArgs(api, logger, {
       schedule: SCHEDULE_NAME,
-      key: SIGNER_KEY_REF,
+      key: [SIGNER_KEY_REF],
     });
 
     const result = await scheduleSign(args);
@@ -230,7 +220,7 @@ describe('schedule plugin — sign command', () => {
     );
     expect(txSign.sign).toHaveBeenCalled();
     expect(txExecute.execute).toHaveBeenCalled();
-    expect(getScheduledMirror).toHaveBeenCalledWith(ON_CHAIN_SCHEDULE_ID);
+    expect(mirrorMock.getScheduled).toHaveBeenCalledWith(ON_CHAIN_SCHEDULE_ID);
     expect(saveScheduledMock).not.toHaveBeenCalled();
 
     const output = assertOutput(result.result, ScheduleSignOutputSchema);
@@ -253,13 +243,14 @@ describe('schedule plugin — sign command', () => {
       executed: false,
     });
 
-    const getScheduledMirror = jest
+    const mirrorMock = createMirrorNodeMock();
+    mirrorMock.getScheduled = jest
       .fn()
       .mockResolvedValue(mirrorSchedulePayload(MIRROR_CONSENSUS_TS));
 
-    const buildScheduleSignTransaction = jest.fn().mockReturnValue({
-      transaction: createMockTransaction(),
-    });
+    const buildScheduleSignTransaction = jest
+      .fn()
+      .mockReturnValue(createMockTransaction());
     const scheduleService = makeScheduleTransactionServiceMock();
     scheduleService.buildScheduleSignTransaction = buildScheduleSignTransaction;
 
@@ -283,31 +274,30 @@ describe('schedule plugin — sign command', () => {
     const configMock = makeConfigMock();
     configMock.getOption = jest.fn().mockReturnValue(KeyManager.local);
 
+    const keyResolverMock = makeKeyResolverMock();
+    keyResolverMock.resolveSigningKey = jest.fn().mockResolvedValue({
+      keyRefId: SIGNER_KEY_REF,
+      publicKey: ADMIN_PUBLIC_KEY,
+    });
+
     const api: Partial<CoreApi> = {
       network: makeNetworkMock(SupportedNetwork.TESTNET),
       config: configMock,
       schedule: scheduleService,
       txSign,
       txExecute,
-      mirror: {
-        getScheduled: getScheduledMirror,
-      } as unknown as HederaMirrornodeService,
-      keyResolver: {
-        resolveSigningKey: jest.fn().mockResolvedValue({
-          keyRefId: SIGNER_KEY_REF,
-          publicKey: ADMIN_PUBLIC_KEY,
-        }),
-      } as unknown as KeyResolverService,
+      mirror: mirrorMock,
+      keyResolver: keyResolverMock,
     };
 
     const args = makeArgs(api, logger, {
       schedule: SCHEDULE_NAME,
-      key: SIGNER_KEY_REF,
+      key: [SIGNER_KEY_REF],
     });
 
     await scheduleSign(args);
 
-    expect(getScheduledMirror).toHaveBeenCalledWith(ON_CHAIN_SCHEDULE_ID);
+    expect(mirrorMock.getScheduled).toHaveBeenCalledWith(ON_CHAIN_SCHEDULE_ID);
     expect(saveScheduledMock).toHaveBeenCalledWith(
       SCHEDULE_COMPOSED_KEY,
       expect.objectContaining({
@@ -318,6 +308,75 @@ describe('schedule plugin — sign command', () => {
     );
   });
 
+  test('resolves all provided keys when multiple --key flags are given', async () => {
+    const SECOND_SIGNER_KEY_REF = 'kr_signertest456';
+    const logger = makeLogger();
+    resolveScheduleMock.mockResolvedValue(resolvedSchedule());
+
+    const mockTx = createMockTransaction();
+    const buildScheduleSignTransaction = jest.fn().mockReturnValue(mockTx);
+    const scheduleService = makeScheduleTransactionServiceMock();
+    scheduleService.buildScheduleSignTransaction = buildScheduleSignTransaction;
+
+    const txSign = makeTxSignMock();
+    txSign.sign = jest.fn().mockResolvedValue(createMockTransaction());
+
+    const txExecute = makeTxExecuteMock();
+    txExecute.execute = jest.fn().mockResolvedValue({
+      transactionId: SIGN_SUCCESS_TX_ID,
+      success: true,
+      receipt: {
+        status: { status: 'success', transactionId: SIGN_SUCCESS_TX_ID },
+      },
+      consensusTimestamp: '2024-01-01T00:00:00.000Z',
+    } satisfies TransactionResult);
+
+    const configMock = makeConfigMock();
+    configMock.getOption = jest.fn().mockReturnValue(KeyManager.local);
+
+    const resolveSigningKey = jest
+      .fn()
+      .mockResolvedValueOnce({
+        keyRefId: SIGNER_KEY_REF,
+        publicKey: ADMIN_PUBLIC_KEY,
+      })
+      .mockResolvedValueOnce({
+        keyRefId: SECOND_SIGNER_KEY_REF,
+        publicKey: ADMIN_PUBLIC_KEY,
+      });
+
+    const mirrorMock = createMirrorNodeMock();
+    mirrorMock.getScheduled = jest
+      .fn()
+      .mockResolvedValue(mirrorSchedulePayload(null));
+
+    const keyResolverMock = makeKeyResolverMock();
+    keyResolverMock.resolveSigningKey = resolveSigningKey;
+
+    const api: Partial<CoreApi> = {
+      network: makeNetworkMock(SupportedNetwork.TESTNET),
+      config: configMock,
+      schedule: scheduleService,
+      txSign,
+      txExecute,
+      mirror: mirrorMock,
+      keyResolver: keyResolverMock,
+    };
+
+    const args = makeArgs(api, logger, {
+      schedule: SCHEDULE_NAME,
+      key: [SIGNER_KEY_REF, SECOND_SIGNER_KEY_REF],
+    });
+
+    await scheduleSign(args);
+
+    expect(resolveSigningKey).toHaveBeenCalledTimes(2);
+    expect(txSign.sign).toHaveBeenCalledWith(mockTx, [
+      SIGNER_KEY_REF,
+      SECOND_SIGNER_KEY_REF,
+    ]);
+  });
+
   test('throws TransactionError when execution fails', async () => {
     const logger = makeLogger();
     resolveScheduleMock.mockResolvedValue(resolvedSchedule());
@@ -325,7 +384,7 @@ describe('schedule plugin — sign command', () => {
     const scheduleService = makeScheduleTransactionServiceMock();
     scheduleService.buildScheduleSignTransaction = jest
       .fn()
-      .mockReturnValue({ transaction: createMockTransaction() });
+      .mockReturnValue(createMockTransaction());
 
     const txSign = makeTxSignMock();
     txSign.sign = jest.fn().mockResolvedValue(createMockTransaction());
@@ -345,23 +404,24 @@ describe('schedule plugin — sign command', () => {
     const configMock = makeConfigMock();
     configMock.getOption = jest.fn().mockReturnValue(KeyManager.local);
 
+    const keyResolverMock = makeKeyResolverMock();
+    keyResolverMock.resolveSigningKey = jest.fn().mockResolvedValue({
+      keyRefId: SIGNER_KEY_REF,
+      publicKey: ADMIN_PUBLIC_KEY,
+    });
+
     const api: Partial<CoreApi> = {
       network: makeNetworkMock(SupportedNetwork.TESTNET),
       config: configMock,
       schedule: scheduleService,
       txSign,
       txExecute,
-      keyResolver: {
-        resolveSigningKey: jest.fn().mockResolvedValue({
-          keyRefId: SIGNER_KEY_REF,
-          publicKey: ADMIN_PUBLIC_KEY,
-        }),
-      } as unknown as KeyResolverService,
+      keyResolver: keyResolverMock,
     };
 
     const args = makeArgs(api, logger, {
       schedule: SCHEDULE_NAME,
-      key: SIGNER_KEY_REF,
+      key: [SIGNER_KEY_REF],
     });
 
     await expect(scheduleSign(args)).rejects.toThrow('Schedule sign failed');

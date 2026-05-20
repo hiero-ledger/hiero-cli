@@ -1,7 +1,3 @@
-/**
- * Delete Contract Command Handler
- * Removes contract from state and optionally submits ContractDeleteTransaction on Hedera
- */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
@@ -28,8 +24,10 @@ import { ConfigOptionKey } from '@/core/services/config/config-service.interface
 import { AliasType } from '@/core/types/shared.types';
 import { ensureEvmAddress0xPrefix } from '@/core/utils/evm-address';
 import { composeKey } from '@/core/utils/key-composer';
-import { ContractHelper } from '@/plugins/contract/contract-helper';
-import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
+import { ContractCleanupServiceImpl } from '@/plugins/contract/services/contract-cleanup.service';
+import { type ContractCleanupService } from '@/plugins/contract/services/contract-cleanup.service.interface';
+import { ContractStateServiceImpl } from '@/plugins/contract/services/contract-state.service';
+import { type ContractStateService } from '@/plugins/contract/services/contract-state.service.interface';
 
 import { ContractDeleteInputSchema } from './input';
 
@@ -41,7 +39,10 @@ export class DeleteContractCommand extends BaseTransactionCommand<
   ContractDeleteSignTransactionResult,
   ContractDeleteExecuteTransactionResult
 > {
-  constructor() {
+  constructor(
+    private readonly contractState: ContractStateService,
+    private readonly contractCleanup: ContractCleanupService,
+  ) {
     super(CONTRACT_DELETE_COMMAND_NAME);
   }
 
@@ -57,10 +58,8 @@ export class DeleteContractCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
     parsedInput: ContractDeleteInput,
   ): Promise<CommandResult> {
-    const { api } = args;
     const resolved = this.resolveContractFromState(args, parsedInput);
-    const contractHelper = new ContractHelper(api.state, api.logger, api.alias);
-    const removedAliases = contractHelper.removeContractFromLocalState(
+    const removedAliases = this.contractCleanup.removeContractFromLocalState(
       resolved.contractToDelete,
       resolved.network,
     );
@@ -116,7 +115,6 @@ export class DeleteContractCommand extends BaseTransactionCommand<
     contractRef: string;
   } {
     const { api } = args;
-    const contractState = new ZustandContractStateHelper(api.state, api.logger);
     const validArgs = parsedInput ?? ContractDeleteInputSchema.parse(args.args);
     const contractRef = validArgs.contract;
     const network = api.network.getCurrentNetwork();
@@ -126,7 +124,7 @@ export class DeleteContractCommand extends BaseTransactionCommand<
       api.alias,
     );
 
-    const contractToDelete = contractState.getContract(stateKey);
+    const contractToDelete = this.contractState.getContract(stateKey);
     if (!contractToDelete) {
       throw new NotFoundError(
         `Contract with identifier '${contractRef}' not found`,
@@ -147,7 +145,6 @@ export class DeleteContractCommand extends BaseTransactionCommand<
     mirrorContractInfo: ContractInfo | null;
   }> {
     const { api } = args;
-    const contractState = new ZustandContractStateHelper(api.state, api.logger);
     const validArgs = parsedInput ?? ContractDeleteInputSchema.parse(args.args);
     const contractRef = validArgs.contract;
     const network = api.network.getCurrentNetwork();
@@ -157,7 +154,7 @@ export class DeleteContractCommand extends BaseTransactionCommand<
       api.alias,
     );
 
-    const storedContract = contractState.getContract(stateKey);
+    const storedContract = this.contractState.getContract(stateKey);
     if (storedContract) {
       return {
         contractToDelete: storedContract,
@@ -386,7 +383,6 @@ export class DeleteContractCommand extends BaseTransactionCommand<
     executeTransactionResult: ContractDeleteExecuteTransactionResult,
   ): Promise<CommandResult> {
     const { transactionResult } = executeTransactionResult;
-    const { api } = args;
 
     if (!transactionResult.success) {
       throw new TransactionError(
@@ -401,8 +397,7 @@ export class DeleteContractCommand extends BaseTransactionCommand<
       );
     }
 
-    const contractHelper = new ContractHelper(api.state, api.logger, api.alias);
-    const removedAliases = contractHelper.removeContractFromLocalState(
+    const removedAliases = this.contractCleanup.removeContractFromLocalState(
       normalisedParams.contractToDelete,
       normalisedParams.network,
     );
@@ -425,5 +420,14 @@ export class DeleteContractCommand extends BaseTransactionCommand<
 export async function contractDelete(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new DeleteContractCommand().execute(args);
+  const { api } = args;
+  const contractState = new ContractStateServiceImpl(api.state, api.logger);
+  const contractCleanup = new ContractCleanupServiceImpl(
+    contractState,
+    api.alias,
+    api.logger,
+  );
+  return new DeleteContractCommand(contractState, contractCleanup).execute(
+    args,
+  );
 }

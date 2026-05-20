@@ -130,7 +130,7 @@ export const makeNetworkServiceMock = (
   })),
   isNetworkAvailable: jest.fn().mockReturnValue(true),
   getLocalnetConfig: jest.fn().mockReturnValue({
-    localNodeAddress: '127.0.0.1:50211',
+    localNodeAddress: '127.0.0.1:35211',
     localNodeAccountId: '0.0.3',
     localNodeMirrorAddressGRPC: '127.0.0.1:5600',
   }),
@@ -156,25 +156,38 @@ export const makeMirrorNodeMock = (
   ...overrides,
 });
 
-/**
- * Creates mock ZustandAccountStateHelper methods
- */
-export const makeAccountStateHelperMock = (overrides?: {
-  loadAccount?: jest.Mock;
+export const makeAccountStateServiceMock = (overrides?: {
+  getAccount?: jest.Mock;
   saveAccount?: jest.Mock;
   deleteAccount?: jest.Mock;
   listAccounts?: jest.Mock;
   clearAccounts?: jest.Mock;
   hasAccount?: jest.Mock;
-  hasAccountById?: jest.Mock;
 }) => ({
-  loadAccount: jest.fn(),
+  getAccount: jest.fn(),
   saveAccount: jest.fn(),
   deleteAccount: jest.fn(),
   listAccounts: jest.fn().mockReturnValue([]),
   clearAccounts: jest.fn(),
   hasAccount: jest.fn().mockReturnValue(false),
-  hasAccountById: jest.fn().mockReturnValue(false),
+  ...overrides,
+});
+
+export const makeAccountCleanupServiceMock = (overrides?: {
+  removeAccountFromLocalState?: jest.Mock;
+  removeKmsCredentialIfUnusedAfterAccountRemoved?: jest.Mock;
+}) => ({
+  removeAccountFromLocalState: jest.fn().mockReturnValue([]),
+  removeKmsCredentialIfUnusedAfterAccountRemoved: jest.fn(),
+  ...overrides,
+});
+
+export const makeAccountBalanceServiceMock = (overrides?: {
+  fetchTokenBalances?: jest.Mock;
+  fetchNftBalances?: jest.Mock;
+}) => ({
+  fetchTokenBalances: jest.fn().mockResolvedValue(undefined),
+  fetchNftBalances: jest.fn().mockResolvedValue(undefined),
   ...overrides,
 });
 

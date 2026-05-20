@@ -1,9 +1,9 @@
-import type { Transaction } from '@hiero-ledger/sdk';
+import type { Key, Transaction } from '@hiero-ledger/sdk';
 
 export interface ScheduleCreateParams {
   innerTransaction: Transaction;
   payerAccountId?: string;
-  adminKey?: string;
+  adminKey?: Key;
   scheduleMemo?: string;
   expirationTime?: Date;
   waitForExpiry: boolean;

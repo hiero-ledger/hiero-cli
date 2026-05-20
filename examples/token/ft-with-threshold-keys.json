@@ -1,0 +1,27 @@
+{
+  "name": "ft-threshold-example",
+  "tokenName": "FT Threshold Example",
+  "symbol": "FTTH",
+  "decimals": 2,
+  "supplyType": "finite",
+  "initialSupply": "1000",
+  "maxSupply": "1000000",
+  "treasuryKey": "<alias or accountId:privateKey>",
+
+  "adminKey": [
+    "<alias or accountId:privateKey>",
+    "<alias or accountId:privateKey>"
+  ],
+  "adminKeyThreshold": 1,
+
+  "supplyKey": "<alias or accountId:privateKey>",
+
+  "wipeKey": [
+    "<alias or accountId:privateKey>",
+    "<alias or accountId:privateKey>",
+    "<alias or accountId:privateKey>"
+  ],
+  "wipeKeyThreshold": 2,
+
+  "memo": "FT with threshold keys example"
+}

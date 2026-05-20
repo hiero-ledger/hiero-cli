@@ -6,6 +6,7 @@ import type { ScheduledNormalizedParams } from '@/plugins/schedule/hooks/schedul
 import { StateError, TransactionError } from '@/core';
 import { NotFoundError, ValidationError } from '@/core/errors';
 import { composeKey } from '@/core/utils/key-composer';
+import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
 import { ScheduledInputSchema } from '@/plugins/schedule/hooks/scheduled/input';
 import {
   SCHEDULED_TEMPLATE,
@@ -49,19 +50,24 @@ export class ScheduledHook implements Hook<
       throw new ValidationError('Transaction is already scheduled');
     }
 
+    const adminPublicKeys = scheduledRecord.adminPublicKeys ?? [];
+    const adminKey = toHederaKey(
+      adminPublicKeys.map((pk) => ({ keyRefId: '', publicKey: pk })),
+      scheduledRecord.adminKeyThreshold,
+    );
     const scheduleTx = api.schedule.buildScheduleCreateTransaction({
       innerTransaction: buildTransactionResult.transaction,
       payerAccountId: scheduledRecord.payerAccountId,
-      adminKey: scheduledRecord.adminPublicKey,
+      adminKey,
       scheduleMemo: scheduledRecord.memo,
       expirationTime: scheduledRecord.expirationTime
         ? new Date(scheduledRecord.expirationTime)
         : undefined,
       waitForExpiry: scheduledRecord.waitForExpiry,
     });
-    const keyRefIds = [];
-    if (scheduledRecord.adminKeyRefId) {
-      keyRefIds.push(scheduledRecord.adminKeyRefId);
+    const keyRefIds: string[] = [];
+    if (scheduledRecord.adminKeyRefIds?.length) {
+      keyRefIds.push(...scheduledRecord.adminKeyRefIds);
     }
     if (scheduledRecord.payerKeyRefId) {
       keyRefIds.push(scheduledRecord.payerKeyRefId);

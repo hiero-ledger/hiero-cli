@@ -70,12 +70,16 @@ hcli schedule create --name my-schedule --admin-key alice --payer-account alice
 hcli schedule create --name my-schedule --memo "proposal vote" --expiration "2026-12-31T23:59:59.000+01:00"
 
 hcli schedule create --name my-schedule --wait-for-expiry --key-manager local_encrypted
+
+# Multi-key admin (threshold key): 2-of-3
+hcli schedule create --name my-schedule --admin-key alice --admin-key bob --admin-key carol --admin-key-threshold 2
 ```
 
 **Parameters:**
 
 - `--name` / `-n`: Name of the schedule (local alias) — **Required**
-- `--admin-key` / `-a`: Admin key for the schedule on chain (optional)
+- `--admin-key` / `-a`: Admin key for the schedule on chain (optional). Repeat the flag for multiple keys (e.g. `-a alice -a bob`)
+- `--admin-key-threshold` / `-t`: M-of-N signing threshold for admin keys; required only when multiple admin keys are provided
 - `--payer-account` / `-p`: Payer account for the scheduled transaction; must resolve to an account with a private key; defaults to operator if omitted
 - `--memo` / `-m`: Public schedule memo (max 100 bytes)
 - `--expiration` / `-e`: Expiration time (ISO 8601; max 62 days from now)
@@ -84,32 +88,38 @@ hcli schedule create --name my-schedule --wait-for-expiry --key-manager local_en
 
 ### Schedule Sign
 
-Add a signature to an existing scheduled transaction (`ScheduleSignTransaction`).
+Add a signature (or multiple signatures) to an existing scheduled transaction (`ScheduleSignTransaction`).
 
 ```bash
 hcli schedule sign --schedule my-schedule --key bob
 
 hcli schedule sign --schedule 0.0.1234567 --key 0.0.111:302e020100300506032b657004220420...
+
+# Multiple signers in a single call
+hcli schedule sign --schedule my-schedule --key alice --key bob --key carol
 ```
 
 **Parameters:**
 
 - `--schedule` / `-s`: Schedule ID (`0.0.x`) or local schedule name — **Required**
-- `--key` / `-k`: Key whose signature to add — **Required**
+- `--key` / `-k`: Key whose signature to add. Repeat the flag for multiple keys. If omitted, the admin key from the mirror node is matched against the key manager.
 - `--key-manager` / `-K`: Key manager (optional; defaults to config)
 
 ### Schedule Delete
 
-Delete a scheduled transaction on chain and optionally clear local state when applicable.
+Delete a scheduled transaction on chain and optionally clear local state when applicable. Pass `--admin-key` multiple times when the schedule admin key is a KeyList or threshold key and KMS cannot supply every required credential automatically.
 
 ```bash
 hcli schedule delete --schedule my-schedule --admin-key alice
+
+# Threshold admin on-chain: explicit credentials for each required signer
+hcli schedule delete --schedule my-schedule --admin-key alice --admin-key bob
 ```
 
 **Parameters:**
 
 - `--schedule` / `-s`: Schedule ID or local name — **Required**
-- `--admin-key` / `-a`: Admin key to sign the delete (optional if stored in state)
+- `--admin-key` / `-a`: Admin credential(s) to sign the delete. **Repeatable** for KeyList/threshold admin keys. Optional when the key manager already holds matching key(s).
 - `--key-manager` / `-k`: Key manager (optional; defaults to config)
 
 ### Schedule Verify
@@ -151,8 +161,11 @@ Commands that register the `scheduled` hook (alongside `batchify` where applicab
 ### Example Workflow
 
 ```bash
-# 1. Register schedule options in local state
+# 1. Register schedule options in local state (single admin key)
 hcli schedule create --name team-vote --admin-key alice --expiration "2026-06-01T12:00:00.000+02:00"
+
+# Or with a 2-of-3 threshold admin key
+hcli schedule create --name team-vote --admin-key alice --admin-key bob --admin-key carol --admin-key-threshold 2 --expiration "2026-06-01T12:00:00.000+02:00"
 
 # 2. Run a command with --scheduled: inner tx becomes a ScheduleCreate, not an immediate execution
 hcli token transfer-ft --token MYTOKEN --from alice --to bob --amount 10 --scheduled team-vote
@@ -181,14 +194,16 @@ The plugin uses Core API services such as:
 - `api.kms` — Key material access where applicable
 - `api.txSign` / `api.txExecute` — Sign and execute transactions
 - `api.schedule` — Build `ScheduleCreate`, `ScheduleSign`, `ScheduleDelete` transactions
-- `api.mirror` — `getScheduled` for verify flow
+- `api.mirror` — `getScheduled` for verify and for resolving on-chain schedule admin keys (e.g. `schedule delete`)
 - `api.logger` — Logging
 
 ## State Management
 
 Schedule entries live under the namespace `schedule-transactions` (see `SCHEDULE_NAMESPACE` in `schema.ts`). Each entry is keyed by **network + schedule name** and validated with `ScheduledTransactionDataSchema`.
 
-Relevant fields include: name, optional `scheduledId`, network, key manager, admin/payer references, memo, expiration (ISO string with offset where used), `waitForExpiry`, `scheduled` / `executed` flags, and optional `normalizedParams` from the command that produced the scheduled transaction.
+Relevant fields include: name, optional `scheduledId`, network, key manager, `adminKeyRefIds` (array of key references), `adminPublicKeys` (array of public key strings), optional `adminKeyThreshold` (M-of-N threshold), payer references, memo, expiration (ISO string with offset where used), `waitForExpiry`, `scheduled` / `executed` flags, and optional `normalizedParams` from the command that produced the scheduled transaction.
+
+When a single admin key is stored, both arrays contain exactly one element and `adminKeyThreshold` is omitted. When multiple keys are stored, the `scheduled` hook builds a `ThresholdKey` (if threshold is set) or a `KeyList` and includes all `adminKeyRefIds` in the signing step.
 
 ## Hook Architecture
 

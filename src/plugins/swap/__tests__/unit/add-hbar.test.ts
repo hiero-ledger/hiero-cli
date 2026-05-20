@@ -11,7 +11,7 @@ import { HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION } from '@/core/shared/const
 import { swapAddHbar } from '@/plugins/swap/commands/add-hbar/handler';
 import { SwapAddHbarOutputSchema } from '@/plugins/swap/commands/add-hbar/output';
 import { SwapTransferType } from '@/plugins/swap/schema';
-import { SwapStateHelper } from '@/plugins/swap/state-helper';
+import { SwapStateServiceImpl } from '@/plugins/swap/services/swap-state.service';
 
 import {
   FROM_ACCOUNT_INPUT,
@@ -23,11 +23,11 @@ import {
 } from './helpers/fixtures';
 import { makeArgs, makeLogger, makeSwapApiMocks } from './helpers/mocks';
 
-jest.mock('../../state-helper', () => ({
-  SwapStateHelper: jest.fn(),
+jest.mock('../../services/swap-state.service', () => ({
+  SwapStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = SwapStateHelper as jest.Mock;
+const MockedSwapStateService = SwapStateServiceImpl as jest.Mock;
 
 describe('swap plugin - add-hbar command', () => {
   let resolveAccountCredentialsMock: jest.Mock;
@@ -50,7 +50,7 @@ describe('swap plugin - add-hbar command', () => {
     const addTransferMock = jest
       .fn()
       .mockReturnValue({ ...mockEmptySwap, transfers: [{}] });
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       assertCanAdd: jest.fn(),
       addTransfer: addTransferMock,
     }));
@@ -97,7 +97,7 @@ describe('swap plugin - add-hbar command', () => {
     const addTransferMock = jest
       .fn()
       .mockReturnValue({ ...mockEmptySwap, transfers: [{}] });
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       assertCanAdd: jest.fn(),
       addTransfer: addTransferMock,
     }));
@@ -144,7 +144,7 @@ describe('swap plugin - add-hbar command', () => {
 
   test('uses key manager from config when not specified in args', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       assertCanAdd: jest.fn(),
       addTransfer: jest
         .fn()
@@ -180,7 +180,7 @@ describe('swap plugin - add-hbar command', () => {
 
   test('throws ValidationError when swap transfer limit is reached', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       assertCanAdd: jest.fn().mockImplementation(() => {
         throw new ValidationError('Cannot add transfers: limit reached');
       }),
@@ -207,7 +207,7 @@ describe('swap plugin - add-hbar command', () => {
 
   test('throws NotFoundError when swap does not exist', async () => {
     const logger = makeLogger();
-    MockedHelper.mockImplementation(() => ({
+    MockedSwapStateService.mockImplementation(() => ({
       assertCanAdd: jest.fn().mockImplementation(() => {
         throw new NotFoundError(`Swap "${SWAP_NAME}" not found.`);
       }),

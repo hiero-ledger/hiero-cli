@@ -1,4 +1,5 @@
 import type { CoreApi, KeyResolverService, TransactionResult } from '@/core';
+import type { ScheduleInfo } from '@/core/services/mirrornode/types';
 
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
@@ -39,14 +40,34 @@ jest.mock('../../zustand-state-helper', () => ({
 const MockedScheduleHelper = ScheduleHelper as unknown as jest.Mock;
 const MockedZustand = ZustandScheduleStateHelper as unknown as jest.Mock;
 
+const ADMIN_KEY_REF_2 = 'kr_admintest456';
+
 function resolvedSchedule(overrides: Record<string, unknown> = {}) {
   return {
     name: SCHEDULE_NAME,
     scheduleId: ON_CHAIN_SCHEDULE_ID,
     scheduled: true,
     executed: false,
-    adminKeyRefId: ADMIN_KEY_REF,
+    adminKeyRefIds: [ADMIN_KEY_REF],
     ...overrides,
+  };
+}
+
+function makeScheduleInfo(
+  adminKey: ScheduleInfo['admin_key'] = {
+    _type: 'ED25519',
+    key: ADMIN_PUBLIC_KEY,
+  },
+): Partial<ScheduleInfo> {
+  return {
+    schedule_id: ON_CHAIN_SCHEDULE_ID,
+    admin_key: adminKey,
+    deleted: false,
+    wait_for_expiry: false,
+    consensus_timestamp: '1700000000.000000000',
+    creator_account_id: '0.0.1000',
+    payer_account_id: '0.0.1000',
+    memo: '',
   };
 }
 
@@ -138,7 +159,7 @@ describe('schedule plugin — delete command', () => {
     expect(deleteScheduledMock).not.toHaveBeenCalled();
   });
 
-  test('submits ScheduleDeleteTransaction when schedule is on-chain and not executed', async () => {
+  test('submits ScheduleDeleteTransaction using single key auto-detected from mirror node', async () => {
     const logger = makeLogger();
     resolveScheduleMock.mockResolvedValue(resolvedSchedule());
 
@@ -168,12 +189,19 @@ describe('schedule plugin — delete command', () => {
     const configMock = makeConfigMock();
     configMock.getOption = jest.fn().mockReturnValue(KeyManager.local);
 
+    const resolveSigningKeysMock = jest
+      .fn()
+      .mockResolvedValue({ keyRefIds: [ADMIN_KEY_REF], requiredSignatures: 1 });
+
     const keyResolver = {
-      resolveSigningKey: jest.fn().mockResolvedValue({
-        keyRefId: ADMIN_KEY_REF,
-        publicKey: ADMIN_PUBLIC_KEY,
-      }),
+      resolveSigningKeys: resolveSigningKeysMock,
     } as unknown as KeyResolverService;
+
+    const getScheduledMock = jest
+      .fn()
+      .mockResolvedValue(
+        makeScheduleInfo({ _type: 'ED25519', key: ADMIN_PUBLIC_KEY }),
+      );
 
     const api: Partial<CoreApi> = {
       network: makeNetworkMock(SupportedNetwork.TESTNET),
@@ -182,6 +210,9 @@ describe('schedule plugin — delete command', () => {
       txSign,
       txExecute,
       keyResolver,
+      mirror: {
+        getScheduled: getScheduledMock,
+      } as unknown as CoreApi['mirror'],
     };
 
     const args = makeArgs(api, logger, { schedule: SCHEDULE_NAME });
@@ -189,10 +220,19 @@ describe('schedule plugin — delete command', () => {
     const result = await scheduleDelete(args);
 
     expect(resolveScheduleMock).toHaveBeenCalledTimes(2);
+    expect(getScheduledMock).toHaveBeenCalledWith(ON_CHAIN_SCHEDULE_ID);
+    expect(resolveSigningKeysMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mirrorRoleKey: { _type: 'ED25519', key: ADMIN_PUBLIC_KEY },
+        explicitCredentials: [],
+      }),
+    );
     expect(buildScheduleDeleteTransaction).toHaveBeenCalledWith({
       scheduleId: ON_CHAIN_SCHEDULE_ID,
     });
-    expect(txSign.sign).toHaveBeenCalled();
+    expect(txSign.sign).toHaveBeenCalledWith(expect.anything(), [
+      ADMIN_KEY_REF,
+    ]);
     expect(txExecute.execute).toHaveBeenCalled();
     expect(deleteScheduledMock).toHaveBeenCalledWith(SCHEDULE_COMPOSED_KEY);
 
@@ -200,6 +240,81 @@ describe('schedule plugin — delete command', () => {
     expect(output.transactionId).toBe(DELETE_SUCCESS_TX_ID);
     expect(output.name).toBe(SCHEDULE_NAME);
     expect(output.scheduleId).toBe(ON_CHAIN_SCHEDULE_ID);
+  });
+
+  test('submits ScheduleDeleteTransaction with multiple explicit admin keys (threshold key scenario)', async () => {
+    const logger = makeLogger();
+    resolveScheduleMock.mockResolvedValue(resolvedSchedule());
+
+    const scheduleService = makeScheduleTransactionServiceMock();
+    scheduleService.buildScheduleDeleteTransaction = jest
+      .fn()
+      .mockReturnValue({ transaction: createMockTransaction() });
+
+    const txSign = makeTxSignMock();
+    txSign.sign = jest.fn().mockResolvedValue(createMockTransaction());
+    const txExecute = makeTxExecuteMock();
+    txExecute.execute = jest.fn().mockResolvedValue({
+      transactionId: DELETE_SUCCESS_TX_ID,
+      success: true,
+      receipt: {
+        status: { status: 'success', transactionId: DELETE_SUCCESS_TX_ID },
+      },
+      consensusTimestamp: '2024-01-01T00:00:00.000Z',
+    } satisfies TransactionResult);
+
+    const configMock = makeConfigMock();
+    configMock.getOption = jest.fn().mockReturnValue(KeyManager.local);
+
+    const resolveSigningKeysMock = jest.fn().mockResolvedValue({
+      keyRefIds: [ADMIN_KEY_REF, ADMIN_KEY_REF_2],
+      requiredSignatures: 2,
+    });
+
+    const keyResolver = {
+      resolveSigningKeys: resolveSigningKeysMock,
+    } as unknown as KeyResolverService;
+
+    const getScheduledMock = jest
+      .fn()
+      .mockResolvedValue(
+        makeScheduleInfo({ _type: 'ProtobufEncoded', key: '0xdeadbeef' }),
+      );
+
+    const api: Partial<CoreApi> = {
+      network: makeNetworkMock(SupportedNetwork.TESTNET),
+      config: configMock,
+      schedule: scheduleService,
+      txSign,
+      txExecute,
+      keyResolver,
+      mirror: {
+        getScheduled: getScheduledMock,
+      } as unknown as CoreApi['mirror'],
+    };
+
+    const args = makeArgs(api, logger, {
+      schedule: SCHEDULE_NAME,
+      adminKey: [ADMIN_KEY_REF, ADMIN_KEY_REF_2],
+    });
+
+    const result = await scheduleDelete(args);
+
+    expect(resolveSigningKeysMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        explicitCredentials: expect.arrayContaining([
+          expect.objectContaining({ keyReference: ADMIN_KEY_REF }),
+          expect.objectContaining({ keyReference: ADMIN_KEY_REF_2 }),
+        ]),
+      }),
+    );
+    expect(txSign.sign).toHaveBeenCalledWith(expect.anything(), [
+      ADMIN_KEY_REF,
+      ADMIN_KEY_REF_2,
+    ]);
+
+    const output = assertOutput(result.result, ScheduleDeleteOutputSchema);
+    expect(output.transactionId).toBe(DELETE_SUCCESS_TX_ID);
   });
 
   test('throws TransactionError when on-chain delete execution fails', async () => {
@@ -218,16 +333,19 @@ describe('schedule plugin — delete command', () => {
       transactionId: DELETE_SUCCESS_TX_ID,
       success: false,
       receipt: {
-        status: {
-          status: 'failed',
-          transactionId: DELETE_SUCCESS_TX_ID,
-        },
+        status: { status: 'failed', transactionId: DELETE_SUCCESS_TX_ID },
       },
       consensusTimestamp: '2024-01-01T00:00:00.000Z',
     } satisfies TransactionResult);
 
     const configMock = makeConfigMock();
     configMock.getOption = jest.fn().mockReturnValue(KeyManager.local);
+
+    const getScheduledMock = jest
+      .fn()
+      .mockResolvedValue(
+        makeScheduleInfo({ _type: 'ED25519', key: ADMIN_PUBLIC_KEY }),
+      );
 
     const api: Partial<CoreApi> = {
       network: makeNetworkMock(SupportedNetwork.TESTNET),
@@ -236,11 +354,14 @@ describe('schedule plugin — delete command', () => {
       txSign,
       txExecute,
       keyResolver: {
-        resolveSigningKey: jest.fn().mockResolvedValue({
-          keyRefId: ADMIN_KEY_REF,
-          publicKey: ADMIN_PUBLIC_KEY,
+        resolveSigningKeys: jest.fn().mockResolvedValue({
+          keyRefIds: [ADMIN_KEY_REF],
+          requiredSignatures: 1,
         }),
       } as unknown as KeyResolverService,
+      mirror: {
+        getScheduled: getScheduledMock,
+      } as unknown as CoreApi['mirror'],
     };
 
     const args = makeArgs(api, logger, { schedule: SCHEDULE_NAME });
@@ -251,35 +372,41 @@ describe('schedule plugin — delete command', () => {
     expect(deleteScheduledMock).not.toHaveBeenCalled();
   });
 
-  test('throws ValidationError when admin key cannot be resolved for on-chain delete', async () => {
+  test('throws ValidationError when schedule has no admin key on the network', async () => {
     const logger = makeLogger();
-    resolveScheduleMock.mockResolvedValue(
-      resolvedSchedule({
-        adminKeyRefId: undefined,
-      }),
-    );
+    resolveScheduleMock.mockResolvedValue(resolvedSchedule());
 
     const scheduleService = makeScheduleTransactionServiceMock();
-    scheduleService.buildScheduleDeleteTransaction = jest
-      .fn()
-      .mockReturnValue({ transaction: createMockTransaction() });
-
     const configMock = makeConfigMock();
     configMock.getOption = jest.fn().mockReturnValue(KeyManager.local);
+
+    const getScheduledMock = jest
+      .fn()
+      .mockResolvedValue(makeScheduleInfo(null));
 
     const api: Partial<CoreApi> = {
       network: makeNetworkMock(SupportedNetwork.TESTNET),
       config: configMock,
       schedule: scheduleService,
       keyResolver: {
-        resolveSigningKey: jest.fn(),
+        resolveSigningKeys: jest
+          .fn()
+          .mockRejectedValue(
+            new Error(
+              'Schedule has no admin key on the network; it cannot be deleted with ScheduleDeleteTransaction.',
+            ),
+          ),
       } as unknown as KeyResolverService,
+      mirror: {
+        getScheduled: getScheduledMock,
+      } as unknown as CoreApi['mirror'],
     };
 
     const args = makeArgs(api, logger, { schedule: SCHEDULE_NAME });
 
     await expect(scheduleDelete(args)).rejects.toThrow(
-      'Missing admin key to sign the transaction with',
+      'Schedule has no admin key on the network',
     );
+    expect(deleteScheduledMock).not.toHaveBeenCalled();
   });
 });

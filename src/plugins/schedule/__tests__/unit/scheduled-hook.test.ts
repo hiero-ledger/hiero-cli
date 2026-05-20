@@ -5,6 +5,8 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { BaseBuildTransactionResult } from '@/core/types/transaction.types';
 import type { ScheduledNormalizedParams } from '@/plugins/schedule/hooks/scheduled/types';
 
+import { PublicKey } from '@hiero-ledger/sdk';
+
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
   makeArgs,
@@ -182,8 +184,8 @@ describe('schedule plugin — scheduled hook', () => {
       keyManager: KeyManager.local,
       scheduled: false,
       executed: false,
-      adminPublicKey: ADMIN_PUBLIC_KEY,
-      adminKeyRefId: ADMIN_KEY_REF,
+      adminPublicKeys: [ADMIN_PUBLIC_KEY],
+      adminKeyRefIds: [ADMIN_KEY_REF],
       payerKeyRefId: PAYER_KEY_REF_ID,
       payerAccountId: '0.0.3',
       memo: 'memo',
@@ -220,7 +222,7 @@ describe('schedule plugin — scheduled hook', () => {
     expect(buildScheduleCreateTransaction).toHaveBeenCalledWith({
       innerTransaction: innerTx,
       payerAccountId: '0.0.3',
-      adminKey: ADMIN_PUBLIC_KEY,
+      adminKey: expect.any(PublicKey),
       scheduleMemo: 'memo',
       expirationTime: expect.any(Date),
       waitForExpiry: true,

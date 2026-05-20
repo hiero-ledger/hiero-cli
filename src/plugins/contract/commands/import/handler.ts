@@ -1,7 +1,3 @@
-/**
- * Import Contract Command Handler
- * Imports contract from Hedera network by contract ID or EVM address
- */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { ContractData } from '@/plugins/contract/schema';
@@ -13,15 +9,16 @@ import { ensureEvmAddress0xPrefix } from '@/core/utils/evm-address';
 import { extractPublicKeysFromMirrorNodeKey } from '@/core/utils/extract-public-keys';
 import { composeKey } from '@/core/utils/key-composer';
 import { matchPublicKeysToKmsRefIds } from '@/core/utils/match-keys-to-kms';
-import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
+import { ContractStateServiceImpl } from '@/plugins/contract/services/contract-state.service';
+import { type ContractStateService } from '@/plugins/contract/services/contract-state.service.interface';
 
 import { ContractImportInputSchema } from './input';
 
 export class ImportContractCommand implements Command {
+  constructor(private readonly contractState: ContractStateService) {}
+
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
-
-    const contractState = new ZustandContractStateHelper(api.state, api.logger);
 
     const validArgs = ContractImportInputSchema.parse(args.args);
 
@@ -50,7 +47,7 @@ export class ImportContractCommand implements Command {
 
     const contractKey = composeKey(network, contractId);
 
-    if (contractState.hasContract(contractKey)) {
+    if (this.contractState.hasContract(contractKey)) {
       throw new StateError(
         `Contract with ID '${contractId}' already exists in state`,
       );
@@ -97,7 +94,7 @@ export class ImportContractCommand implements Command {
       verified,
     };
 
-    contractState.saveContract(contractKey, contractData);
+    this.contractState.saveContract(contractKey, contractData);
 
     const result: ContractImportOutput = {
       contractId,
@@ -115,5 +112,9 @@ export class ImportContractCommand implements Command {
 export async function contractImport(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new ImportContractCommand().execute(args);
+  const contractState = new ContractStateServiceImpl(
+    args.api.state,
+    args.api.logger,
+  );
+  return new ImportContractCommand(contractState).execute(args);
 }

@@ -21,13 +21,13 @@ import {
 import { makeArgs } from '@/plugins/account/__tests__/unit/helpers/mocks';
 import { ACCOUNT_UPDATE_COMMAND_NAME } from '@/plugins/account/commands/update/handler';
 import { AccountUpdateStateHook } from '@/plugins/account/hooks/account-update-state';
-import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
+import { AccountStateServiceImpl } from '@/plugins/account/services/account-state.service';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandAccountStateHelper: jest.fn(),
+jest.mock('../../services/account-state.service', () => ({
+  AccountStateServiceImpl: jest.fn(),
 }));
 
-const MockedHelper = ZustandAccountStateHelper as jest.Mock;
+const MockedHelper = AccountStateServiceImpl as jest.Mock;
 
 const existingAccountData = {
   name: 'test-account',
@@ -441,6 +441,8 @@ describe('account plugin - account-update-state hook (schedule path)', () => {
     name: 'my-schedule',
     network: SupportedNetwork.TESTNET,
     keyManager: KeyManager.local,
+    adminKeyRefIds: [],
+    adminPublicKeys: [],
     waitForExpiry: false,
     scheduled: false,
     executed: false,

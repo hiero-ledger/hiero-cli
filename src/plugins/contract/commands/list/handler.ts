@@ -1,31 +1,20 @@
-/**
- * List Contracts Command Handler
- * Handles listing all smart contracts stored in the state
- */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { ContractListOutput } from './output';
 
-import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
+import { ContractStateServiceImpl } from '@/plugins/contract/services/contract-state.service';
+import { type ContractStateService } from '@/plugins/contract/services/contract-state.service.interface';
 
 export class ListContractsCommand implements Command {
+  constructor(private readonly contractState: ContractStateService) {}
+
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
 
-    const contractState = new ZustandContractStateHelper(api.state, api.logger);
-
-    api.logger.info('Listing contracts...');
-
-    const contracts = contractState.listContracts();
+    const contracts = this.contractState.listContracts();
     api.logger.debug(
       `[CONTRACT LIST] Retrieved ${contracts.length} contracts from state`,
     );
-
-    contracts.forEach((contract, index) => {
-      api.logger.debug(
-        `[CONTRACT LIST]   ${index + 1}. ${contract.name ?? contract.contractId} - ${contract.contractId} on ${contract.network}`,
-      );
-    });
 
     const outputData: ContractListOutput = {
       contracts: contracts.map((c) => ({
@@ -46,5 +35,9 @@ export class ListContractsCommand implements Command {
 export async function contractList(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new ListContractsCommand().execute(args);
+  const contractState = new ContractStateServiceImpl(
+    args.api.state,
+    args.api.logger,
+  );
+  return new ListContractsCommand(contractState).execute(args);
 }

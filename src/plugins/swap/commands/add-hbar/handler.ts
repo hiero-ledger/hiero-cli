@@ -1,6 +1,7 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { SwapStateService } from '@/plugins/swap/services/swap-state.service.interface';
 import type { SwapAddHbarOutput } from './output';
 
 import { ValidationError } from '@/core/errors';
@@ -11,11 +12,13 @@ import {
 } from '@/core/shared/constants';
 import { processBalanceInput } from '@/core/utils/process-balance-input';
 import { SwapTransferType } from '@/plugins/swap/schema';
-import { SwapStateHelper } from '@/plugins/swap/state-helper';
+import { SwapStateServiceImpl } from '@/plugins/swap/services/swap-state.service';
 
 import { SwapAddHbarInputSchema } from './input';
 
 export class SwapAddHbarCommand implements Command {
+  constructor(private readonly swapState: SwapStateService) {}
+
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
 
@@ -27,9 +30,7 @@ export class SwapAddHbarCommand implements Command {
       validArgs.keyManager ??
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
-    const helper = new SwapStateHelper(api.state);
-
-    helper.assertCanAdd(name, 1);
+    this.swapState.assertCanAdd(name, 1);
 
     const fromResolved = await api.keyResolver.resolveAccountCredentials(
       validArgs.from,
@@ -48,7 +49,7 @@ export class SwapAddHbarCommand implements Command {
     }
     const toDestination = toResolved.accountId;
 
-    const updated = helper.addTransfer(name, {
+    const updated = this.swapState.addTransfer(name, {
       type: SwapTransferType.HBAR,
       from: {
         accountId: fromResolved.accountId,
@@ -74,5 +75,6 @@ export class SwapAddHbarCommand implements Command {
 export async function swapAddHbar(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new SwapAddHbarCommand().execute(args);
+  const swapState = new SwapStateServiceImpl(args.api.state);
+  return new SwapAddHbarCommand(swapState).execute(args);
 }

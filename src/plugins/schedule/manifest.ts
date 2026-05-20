@@ -65,10 +65,18 @@ export const schedulePluginManifest: PluginManifest = {
         {
           name: 'admin-key',
           short: 'a',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
-            'Admin key for the schedule for managing scheduled transaction on Hedera chain',
+            'Admin key for the schedule. Repeat the flag for multiple keys.',
+        },
+        {
+          name: 'admin-key-threshold',
+          short: 't',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N signing threshold for admin keys (required when multiple admin keys are provided)',
         },
         {
           name: 'payer-account',
@@ -140,10 +148,10 @@ export const schedulePluginManifest: PluginManifest = {
         {
           name: 'key',
           short: 'k',
-          type: OptionType.STRING,
-          required: true,
+          type: OptionType.REPEATABLE,
+          required: false,
           description:
-            'Key whose signature to add to the schedule. Key must be resolved to private key',
+            'Key whose signature to add to the schedule. Repeat the flag for multiple keys. If omitted, the admin key from the mirror node is matched against the key manager.',
         },
         {
           name: 'key-manager',
@@ -176,10 +184,10 @@ export const schedulePluginManifest: PluginManifest = {
         {
           name: 'admin-key',
           short: 'a',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
-            'Admin key to sign the transaction. If not provided the admin key from state is used to perform this operation.',
+            'Admin credential(s) to sign the delete transaction. Pass multiple times for threshold keys. Auto-detected from the key manager if omitted.',
         },
         {
           name: 'key-manager',
