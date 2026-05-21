@@ -26,7 +26,6 @@ import {
   ScheduleVerifyOutputSchema,
 } from './commands/verify';
 import { ScheduledHook } from './hooks/scheduled/handler';
-import { ScheduleStateServiceImpl } from './services/schedule-state.service';
 
 export { SCHEDULE_NAMESPACE } from './schema';
 
@@ -38,9 +37,7 @@ export const schedulePluginManifest: PluginManifest = {
   hooks: [
     {
       name: 'scheduled',
-      hook: new ScheduledHook(
-        (api) => new ScheduleStateServiceImpl(api.state, api.logger),
-      ),
+      hook: new ScheduledHook(),
       options: [
         {
           name: 'scheduled',

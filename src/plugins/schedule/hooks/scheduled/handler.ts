@@ -1,9 +1,7 @@
 import type { BaseBuildTransactionResult } from '@/core';
-import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PreSignTransactionHookParams } from '@/core/hooks/types';
 import type { ScheduledNormalizedParams } from '@/plugins/schedule/hooks/scheduled/types';
-import type { ScheduleStateService } from '@/plugins/schedule/services/schedule-state.service.interface';
 
 import { StateError, TransactionError } from '@/core';
 import { NotFoundError, ValidationError } from '@/core/errors';
@@ -16,21 +14,12 @@ import {
 } from '@/plugins/schedule/hooks/scheduled/output';
 import { ScheduleStateServiceImpl } from '@/plugins/schedule/services/schedule-state.service';
 
-export type ScheduleStateServiceFactory = (
-  api: CoreApi,
-) => ScheduleStateService;
-
 export class ScheduledHook implements Hook<
   PreSignTransactionHookParams<
     ScheduledNormalizedParams,
     BaseBuildTransactionResult
   >
 > {
-  constructor(
-    private readonly createScheduleState: ScheduleStateServiceFactory = (api) =>
-      new ScheduleStateServiceImpl(api.state, api.logger),
-  ) {}
-
   async execute(
     params: PreSignTransactionHookParams<
       ScheduledNormalizedParams,
@@ -39,7 +28,7 @@ export class ScheduledHook implements Hook<
   ): Promise<HookResult> {
     const { args, commandName, buildTransactionResult } = params;
     const { api } = args;
-    const scheduleState = this.createScheduleState(api);
+    const scheduleState = new ScheduleStateServiceImpl(api.state, api.logger);
     const validArgs = ScheduledInputSchema.parse(args.args);
     const scheduledName = validArgs.scheduled;
     const network = api.network.getCurrentNetwork();
