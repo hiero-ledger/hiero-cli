@@ -17,7 +17,7 @@ import {
   scheduleVerify,
   ScheduleVerifyOutputSchema,
 } from '@/plugins/schedule/commands/verify';
-import { ZustandScheduleStateHelper } from '@/plugins/schedule/zustand-state-helper';
+import { ScheduleStateServiceImpl } from '@/plugins/schedule/services/schedule-state.service';
 
 import {
   INNER_TRANSACTION_ID,
@@ -27,11 +27,11 @@ import {
   SCHEDULE_NAME,
 } from './helpers/fixtures';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandScheduleStateHelper: jest.fn(),
+jest.mock('../../services/schedule-state.service', () => ({
+  ScheduleStateServiceImpl: jest.fn(),
 }));
 
-const MockedZustand = ZustandScheduleStateHelper as unknown as jest.Mock;
+const MockedScheduleState = ScheduleStateServiceImpl as unknown as jest.Mock;
 
 function baseMirrorSchedule(
   overrides: Partial<ScheduleInfo> = {},
@@ -60,7 +60,7 @@ describe('schedule plugin — verify command', () => {
     getScheduledMock = jest.fn();
     getScheduledStateMock = jest.fn();
     saveScheduledMock = jest.fn();
-    MockedZustand.mockImplementation(() => ({
+    MockedScheduleState.mockImplementation(() => ({
       getScheduled: getScheduledStateMock,
       saveScheduled: saveScheduledMock,
     }));

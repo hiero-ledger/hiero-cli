@@ -1,5 +1,8 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { ScheduleKeysService } from '@/plugins/schedule/services/schedule-keys.service.interface';
+import type { ScheduleResolverService } from '@/plugins/schedule/services/schedule-resolver.service.interface';
+import type { ScheduleStateService } from '@/plugins/schedule/services/schedule-state.service.interface';
 import type { ScheduleDeleteOutput } from './output';
 import type {
   ScheduleDeleteBuildTransactionResult,
@@ -13,8 +16,9 @@ import { BaseTransactionCommand } from '@/core/commands/command';
 import { TransactionError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
-import { ScheduleHelper } from '@/plugins/schedule/schedule-helper';
-import { ZustandScheduleStateHelper } from '@/plugins/schedule/zustand-state-helper';
+import { ScheduleKeysServiceImpl } from '@/plugins/schedule/services/schedule-keys.service';
+import { ScheduleResolverServiceImpl } from '@/plugins/schedule/services/schedule-resolver.service';
+import { ScheduleStateServiceImpl } from '@/plugins/schedule/services/schedule-state.service';
 
 import { ScheduleDeleteInputSchema } from './input';
 
@@ -26,25 +30,24 @@ export class ScheduleDeleteCommand extends BaseTransactionCommand<
   ScheduleDeleteSignTransactionResult,
   ScheduleDeleteExecuteTransactionResult
 > {
-  constructor() {
+  constructor(
+    private readonly scheduleState: ScheduleStateService,
+    private readonly scheduleResolver: ScheduleResolverService,
+    private readonly scheduleKeys: ScheduleKeysService,
+  ) {
     super(SCHEDULE_DELETE_COMMAND_NAME);
   }
 
   override async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const validArgs = ScheduleDeleteInputSchema.parse(args.args);
     const { api } = args;
-    const stateHelper = new ZustandScheduleStateHelper(api.state, api.logger);
-    const scheduleHelper = new ScheduleHelper(
-      api.state,
-      api.mirror,
-      api.logger,
-    );
     const network = api.network.getCurrentNetwork();
-    const schedule = await scheduleHelper.resolveScheduleIdByEntityReference({
-      scheduleReference: validArgs.schedule.value,
-      type: validArgs.schedule.type,
-      network,
-    });
+    const schedule =
+      await this.scheduleResolver.resolveScheduleIdByEntityReference({
+        scheduleReference: validArgs.schedule.value,
+        type: validArgs.schedule.type,
+        network,
+      });
 
     const submitOnChainDelete = schedule.scheduled && !schedule.executed;
 
@@ -57,7 +60,7 @@ export class ScheduleDeleteCommand extends BaseTransactionCommand<
           `Could not resolve schedule ID for ${validArgs.schedule.value}`,
         );
       }
-      stateHelper.deleteScheduled(composeKey(network, schedule.name));
+      this.scheduleState.deleteScheduled(composeKey(network, schedule.name));
       api.logger.info(
         `Removed local schedule record "${schedule.name}" without on-chain delete (scheduled=${String(schedule.scheduled)}, executed=${String(schedule.executed)}).`,
       );
@@ -85,36 +88,22 @@ export class ScheduleDeleteCommand extends BaseTransactionCommand<
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const currentNetwork = api.network.getCurrentNetwork();
-    const scheduleHelper = new ScheduleHelper(
-      api.state,
-      api.mirror,
-      api.logger,
-    );
-    const schedule = await scheduleHelper.resolveScheduleIdByEntityReference({
-      scheduleReference: validArgs.schedule.value,
-      type: validArgs.schedule.type,
-      network: currentNetwork,
-    });
+    const schedule =
+      await this.scheduleResolver.resolveScheduleIdByEntityReference({
+        scheduleReference: validArgs.schedule.value,
+        type: validArgs.schedule.type,
+        network: currentNetwork,
+      });
     if (!schedule.scheduleId) {
       throw new ValidationError(
         `Could not resolve schedule ID for ${validArgs.schedule.value}`,
       );
     }
-    const scheduleInfo = await api.mirror.getScheduled(schedule.scheduleId);
-    const { keyRefIds: adminKeyRefIds } =
-      await api.keyResolver.resolveSigningKeys({
-        mirrorRoleKey: scheduleInfo.admin_key ?? null,
-        explicitCredentials: validArgs.adminKey,
-        keyManager,
-        signingKeyLabels: ['schedule:admin'],
-        emptyMirrorRoleKeyMessage:
-          'Schedule has no admin key on the network; it cannot be deleted with ScheduleDeleteTransaction.',
-        insufficientKmsMatchesMessage:
-          'Not enough admin key(s) found in key manager for this schedule. Provide --admin-key.',
-        validationErrorOptions: {
-          context: { scheduleId: schedule.scheduleId },
-        },
-      });
+    const adminKeyRefIds = await this.scheduleKeys.resolveDeleteAdminKeyRefs(
+      schedule,
+      validArgs.adminKey,
+      keyManager,
+    );
 
     return {
       scheduleName: schedule.name,
@@ -174,17 +163,14 @@ export class ScheduleDeleteCommand extends BaseTransactionCommand<
   }
 
   async outputPreparation(
-    args: CommandHandlerArgs,
+    _args: CommandHandlerArgs,
     normalisedParams: ScheduleDeleteNormalisedParams,
     _buildTransactionResult: ScheduleDeleteBuildTransactionResult,
     _signTransactionResult: ScheduleDeleteSignTransactionResult,
     executeTransactionResult: ScheduleDeleteExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { api } = args;
-
     if (normalisedParams.scheduleName) {
-      const stateHelper = new ZustandScheduleStateHelper(api.state, api.logger);
-      stateHelper.deleteScheduled(
+      this.scheduleState.deleteScheduled(
         composeKey(normalisedParams.network, normalisedParams.scheduleName),
       );
     }
@@ -206,5 +192,17 @@ export class ScheduleDeleteCommand extends BaseTransactionCommand<
 export async function scheduleDelete(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new ScheduleDeleteCommand().execute(args);
+  const { api } = args;
+  const scheduleState = new ScheduleStateServiceImpl(api.state, api.logger);
+  const scheduleResolver = new ScheduleResolverServiceImpl(
+    scheduleState,
+    api.mirror,
+  );
+  const scheduleKeys = new ScheduleKeysServiceImpl(api.keyResolver, api.mirror);
+
+  return new ScheduleDeleteCommand(
+    scheduleState,
+    scheduleResolver,
+    scheduleKeys,
+  ).execute(args);
 }

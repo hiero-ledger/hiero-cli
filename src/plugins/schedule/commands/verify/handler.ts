@@ -2,31 +2,37 @@ import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { ScheduledTransactionData } from '@/plugins/schedule/schema';
+import type { ScheduleStateService } from '@/plugins/schedule/services/schedule-state.service.interface';
+import type { ScheduleSyncService } from '@/plugins/schedule/services/schedule-sync.service.interface';
 import type { ScheduleVerifyOutput } from './output';
 
-import { EntityReferenceType, KeyAlgorithm, NotFoundError } from '@/core';
+import { EntityReferenceType, NotFoundError } from '@/core';
 import {
   executePhaseHooks,
   processHookResult,
   resolveCommandHooks,
 } from '@/core/hooks/hook-executor';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
-import { CredentialType } from '@/core/services/kms/kms-types.interface';
-import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
 import { OrchestratorSource } from '@/core/types/shared.types';
 import { hederaTimestampToIso } from '@/core/utils/hedera-timestamp';
 import { composeKey } from '@/core/utils/key-composer';
-import { ZustandScheduleStateHelper } from '@/plugins/schedule/zustand-state-helper';
+import { ScheduleKeysServiceImpl } from '@/plugins/schedule/services/schedule-keys.service';
+import { ScheduleStateServiceImpl } from '@/plugins/schedule/services/schedule-state.service';
+import { ScheduleSyncServiceImpl } from '@/plugins/schedule/services/schedule-sync.service';
 
 import { ScheduleVerifyInputSchema } from './input';
 
 export const SCHEDULE_VERIFY_COMMAND_NAME = 'schedule_verify';
 
 export class ScheduleVerifyCommand implements Command {
+  constructor(
+    private readonly scheduleState: ScheduleStateService,
+    private readonly scheduleSync: ScheduleSyncService,
+  ) {}
+
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
     const validArgs = ScheduleVerifyInputSchema.parse(args.args);
-    const stateHelper = new ZustandScheduleStateHelper(api.state, api.logger);
     const keyManager =
       validArgs.keyManager ||
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
@@ -39,7 +45,7 @@ export class ScheduleVerifyCommand implements Command {
 
     if (scheduleRef.type === EntityReferenceType.ALIAS) {
       scheduleName = scheduleRef.value;
-      scheduleRecord = stateHelper.getScheduled(
+      scheduleRecord = this.scheduleState.getScheduled(
         composeKey(network, scheduleName),
       );
       if (!scheduleRecord) {
@@ -74,68 +80,18 @@ export class ScheduleVerifyCommand implements Command {
         scheduled: true,
         executed: !!scheduleResponse.executed_timestamp,
       };
-      stateHelper.saveScheduled(
+      this.scheduleState.saveScheduled(
         composeKey(network, scheduleRecord.name),
         updatedScheduledRecord,
       );
     } else if (scheduleName) {
-      let payer;
-      if (scheduleResponse.payer_account_id) {
-        payer = await api.keyResolver.getPublicKey(
-          {
-            type: CredentialType.ACCOUNT_ID,
-            accountId: scheduleResponse.payer_account_id,
-            rawValue: scheduleResponse.payer_account_id,
-          },
+      updatedScheduledRecord =
+        await this.scheduleSync.upsertNamedScheduleFromMirror(
+          scheduleName,
+          resolvedScheduleId,
+          network,
           keyManager,
-          false,
-          ['schedule:payer'],
         );
-      }
-      let admin;
-      if (
-        scheduleResponse.admin_key?.key &&
-        scheduleResponse.admin_key?._type
-      ) {
-        admin = await api.keyResolver.getPublicKey(
-          {
-            type: CredentialType.PUBLIC_KEY,
-            publicKey: scheduleResponse.admin_key.key,
-            keyType:
-              scheduleResponse.admin_key?._type ===
-              MirrorNodeKeyType.ED25519.toString()
-                ? KeyAlgorithm.ED25519
-                : KeyAlgorithm.ECDSA,
-            rawValue: scheduleResponse.admin_key.key,
-          },
-          keyManager,
-          false,
-          ['schedule:admin'],
-        );
-      }
-      updatedScheduledRecord = {
-        name: scheduleName,
-        network,
-        keyManager,
-        adminKeyRefIds: admin ? [admin.keyRefId] : [],
-        adminPublicKeys: admin ? [admin.publicKey] : [],
-        payerAccountId: scheduleResponse.payer_account_id,
-        payerKeyRefId: payer?.keyRefId,
-        memo: scheduleResponse.memo,
-        expirationTime: scheduleResponse.expiration_time
-          ? hederaTimestampToIso(scheduleResponse.expiration_time)
-          : undefined,
-        waitForExpiry: scheduleResponse.wait_for_expiry,
-        scheduled: true,
-        executed: !!scheduleResponse.executed_timestamp,
-        createdAt: scheduleResponse.consensus_timestamp
-          ? hederaTimestampToIso(scheduleResponse.consensus_timestamp)
-          : new Date().toISOString(),
-      };
-      stateHelper.saveScheduled(
-        composeKey(network, scheduleName),
-        updatedScheduledRecord,
-      );
     }
 
     const outputData: ScheduleVerifyOutput = {
@@ -184,5 +140,14 @@ export class ScheduleVerifyCommand implements Command {
 export async function scheduleVerify(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new ScheduleVerifyCommand().execute(args);
+  const { api } = args;
+  const scheduleState = new ScheduleStateServiceImpl(api.state, api.logger);
+  const scheduleKeys = new ScheduleKeysServiceImpl(api.keyResolver, api.mirror);
+  const scheduleSync = new ScheduleSyncServiceImpl(
+    scheduleState,
+    api.mirror,
+    scheduleKeys,
+  );
+
+  return new ScheduleVerifyCommand(scheduleState, scheduleSync).execute(args);
 }
