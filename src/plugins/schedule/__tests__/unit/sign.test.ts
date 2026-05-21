@@ -1,5 +1,6 @@
 import type { CoreApi, TransactionResult } from '@/core';
 
+import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
   createMirrorNodeMock,
@@ -23,7 +24,6 @@ import { ScheduleHelper } from '@/plugins/schedule/schedule-helper';
 import { ZustandScheduleStateHelper } from '@/plugins/schedule/zustand-state-helper';
 
 import {
-  ADMIN_PUBLIC_KEY,
   MIRROR_CONSENSUS_TS,
   ON_CHAIN_SCHEDULE_ID,
   SCHEDULE_COMPOSED_KEY,
@@ -181,7 +181,7 @@ describe('schedule plugin — sign command', () => {
 
     const resolveSigningKey = jest.fn().mockResolvedValue({
       keyRefId: SIGNER_KEY_REF,
-      publicKey: ADMIN_PUBLIC_KEY,
+      publicKey: ECDSA_HEX_PUBLIC_KEY,
     });
 
     const mirrorMock = createMirrorNodeMock();
@@ -277,7 +277,7 @@ describe('schedule plugin — sign command', () => {
     const keyResolverMock = makeKeyResolverMock();
     keyResolverMock.resolveSigningKey = jest.fn().mockResolvedValue({
       keyRefId: SIGNER_KEY_REF,
-      publicKey: ADMIN_PUBLIC_KEY,
+      publicKey: ECDSA_HEX_PUBLIC_KEY,
     });
 
     const api: Partial<CoreApi> = {
@@ -338,11 +338,11 @@ describe('schedule plugin — sign command', () => {
       .fn()
       .mockResolvedValueOnce({
         keyRefId: SIGNER_KEY_REF,
-        publicKey: ADMIN_PUBLIC_KEY,
+        publicKey: ECDSA_HEX_PUBLIC_KEY,
       })
       .mockResolvedValueOnce({
         keyRefId: SECOND_SIGNER_KEY_REF,
-        publicKey: ADMIN_PUBLIC_KEY,
+        publicKey: ECDSA_HEX_PUBLIC_KEY,
       });
 
     const mirrorMock = createMirrorNodeMock();
@@ -407,7 +407,7 @@ describe('schedule plugin — sign command', () => {
     const keyResolverMock = makeKeyResolverMock();
     keyResolverMock.resolveSigningKey = jest.fn().mockResolvedValue({
       keyRefId: SIGNER_KEY_REF,
-      publicKey: ADMIN_PUBLIC_KEY,
+      publicKey: ECDSA_HEX_PUBLIC_KEY,
     });
 
     const api: Partial<CoreApi> = {

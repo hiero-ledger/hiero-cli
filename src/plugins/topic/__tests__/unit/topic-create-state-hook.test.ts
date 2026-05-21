@@ -8,7 +8,7 @@ import {
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 import { TOPIC_CREATE_COMMAND_NAME } from '@/plugins/topic/commands/create';
 import { TopicCreateStateHook } from '@/plugins/topic/hooks/topic-create-state';
 import { TopicStateServiceImpl } from '@/plugins/topic/services/topic-state.service';
@@ -286,7 +286,7 @@ describe('topic plugin - topic-create-state hook', () => {
     expect(result.breakFlow).toBe(false);
     expect(registerMock).toHaveBeenCalledWith({
       alias: 'my-topic-alias',
-      type: 'topic',
+      type: AliasType.Topic,
       network: SupportedNetwork.TESTNET,
       entityId: '0.0.8888',
       createdAt: '2024-01-15T12:00:00.000Z',

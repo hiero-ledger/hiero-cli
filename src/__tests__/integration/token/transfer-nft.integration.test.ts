@@ -39,7 +39,7 @@ describe('Transfer NFT Integration Tests', () => {
       const createSourceAccountArgs: Record<string, unknown> = {
         name: 'account-nft-transfer-source',
         balance: 1,
-        'key-type': 'ecdsa',
+        'key-type': KeyAlgorithm.ECDSA,
         'auto-associations': 10,
       };
       const createSourceAccountResult = await accountCreate({
@@ -60,7 +60,7 @@ describe('Transfer NFT Integration Tests', () => {
       const createDestinationAccountArgs: Record<string, unknown> = {
         name: 'account-nft-transfer-destination',
         balance: 1,
-        'key-type': 'ecdsa',
+        'key-type': KeyAlgorithm.ECDSA,
         'auto-associations': 10,
       };
       const createDestinationAccountResult = await accountCreate({
@@ -216,7 +216,7 @@ describe('Transfer NFT Integration Tests', () => {
       const createAccountArgs: Record<string, unknown> = {
         name: 'account-nft-not-owned-test',
         balance: 1,
-        'key-type': 'ecdsa',
+        'key-type': KeyAlgorithm.ECDSA,
         'auto-associations': 10,
       };
       const createAccountResult = await accountCreate({
@@ -266,7 +266,7 @@ describe('Transfer NFT Integration Tests', () => {
       const createAnotherAccountArgs: Record<string, unknown> = {
         name: 'account-nft-wrong-owner',
         balance: 1,
-        'key-type': 'ecdsa',
+        'key-type': KeyAlgorithm.ECDSA,
         'auto-associations': 10,
       };
       await accountCreate({

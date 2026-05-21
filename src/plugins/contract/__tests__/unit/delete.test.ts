@@ -16,15 +16,14 @@ import {
 import {
   createMockContractInfo,
   createMockKmsRecord,
+  makeArgs,
+  makeLogger,
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, NotFoundError, ValidationError } from '@/core';
+import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
 import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
-import {
-  makeAliasServiceMock,
-  makeArgs,
-  makeLogger,
-} from '@/plugins/account/__tests__/unit/helpers/mocks';
+import { makeAliasServiceMock } from '@/plugins/account/__tests__/unit/helpers/mocks';
 import {
   makeApiMocks,
   makeContractCleanupServiceMock,
@@ -88,7 +87,10 @@ describe('contract plugin - delete command', () => {
 
     api.mirror.getContractInfo = jest.fn().mockResolvedValue(
       createMockContractInfo({
-        admin_key: { _type: 'ED25519', key: ED25519_DER_PUBLIC_KEY },
+        admin_key: {
+          _type: MirrorNodeKeyType.ED25519,
+          key: ED25519_DER_PUBLIC_KEY,
+        },
       }),
     );
   });

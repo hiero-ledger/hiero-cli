@@ -1,6 +1,6 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 
-import { makeLogger } from '@/__tests__/mocks/mocks';
+import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError } from '@/core/errors';
 import {
@@ -13,11 +13,7 @@ import {
   mockBatchData,
   mockBatchDataWithTransactions,
 } from './helpers/fixtures';
-import {
-  makeArgs,
-  makeBatchApiMocks,
-  makeBatchStateServiceMock,
-} from './helpers/mocks';
+import { makeBatchApiMocks, makeBatchStateServiceMock } from './helpers/mocks';
 
 describe('batch plugin - delete command', () => {
   beforeEach(() => {

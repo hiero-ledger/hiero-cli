@@ -12,6 +12,7 @@ import {
   makeNetworkMock,
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import { TopicFindMessageOutputSchema } from '@/plugins/topic/commands/find-message';
 import { topicFindMessage } from '@/plugins/topic/commands/find-message/handler';
 
@@ -26,11 +27,11 @@ const makeTopicMessage = (sequenceNumber: number, message: string) => ({
 const makeApiMocks = ({
   getTopicMessageImpl,
   getTopicMessagesImpl,
-  network = 'testnet',
+  network = SupportedNetwork.TESTNET,
 }: {
   getTopicMessageImpl?: jest.Mock;
   getTopicMessagesImpl?: jest.Mock;
-  network?: 'testnet' | 'mainnet' | 'previewnet';
+  network?: SupportedNetwork;
 }) => {
   const mirror: jest.Mocked<HederaMirrornodeService> = createMirrorNodeMock();
   mirror.getTopicMessage = getTopicMessageImpl || jest.fn();

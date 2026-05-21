@@ -4,19 +4,17 @@ import { ZodError } from 'zod';
 
 import {
   MOCK_ACCOUNT_ID,
+  MOCK_ACCOUNT_ID_TO,
   MOCK_CONTRACT_ID,
   MOCK_EVM_ADDRESS,
   MOCK_EVM_ADDRESS_ALT,
+  MOCK_HEDERA_ENTITY_ID_1,
 } from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError, StateError } from '@/core/errors';
 import { SupportedNetwork } from '@/core/types/shared.types';
-import {
-  makeContractErc721CallCommandArgs,
-  MOCK_ACCOUNT_ID_FROM,
-  MOCK_ACCOUNT_ID_TO,
-} from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
+import { makeContractErc721CallCommandArgs } from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
 import {
   ContractErc721CallIsApprovedForAllOutputSchema,
@@ -101,14 +99,14 @@ describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
       logger,
       args: {
         contract: 'some-alias-or-id',
-        owner: MOCK_ACCOUNT_ID_FROM,
+        owner: MOCK_HEDERA_ENTITY_ID_1,
         operator: MOCK_ACCOUNT_ID_TO,
       },
     });
 
     (args.api.identityResolution.resolveAccount as jest.Mock)
       .mockResolvedValueOnce({
-        accountId: MOCK_ACCOUNT_ID_FROM,
+        accountId: MOCK_HEDERA_ENTITY_ID_1,
         accountPublicKey: 'pub-key-owner',
         evmAddress: resolvedOwner,
       })
@@ -186,7 +184,7 @@ describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
 
     (args.api.identityResolution.resolveAccount as jest.Mock)
       .mockResolvedValueOnce({
-        accountId: MOCK_ACCOUNT_ID_FROM,
+        accountId: MOCK_HEDERA_ENTITY_ID_1,
         accountPublicKey: 'pub-key-owner',
         evmAddress: undefined,
       })
@@ -216,7 +214,7 @@ describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
 
     (args.api.identityResolution.resolveAccount as jest.Mock)
       .mockResolvedValueOnce({
-        accountId: MOCK_ACCOUNT_ID_FROM,
+        accountId: MOCK_HEDERA_ENTITY_ID_1,
         accountPublicKey: 'pub-key-owner',
         evmAddress: MOCK_EVM_ADDRESS,
       })

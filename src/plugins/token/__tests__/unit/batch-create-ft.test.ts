@@ -8,7 +8,11 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { HederaTokenType } from '@/core/shared/constants';
-import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
+import {
+  AliasType,
+  SupplyType,
+  SupportedNetwork,
+} from '@/core/types/shared.types';
 import { TOKEN_CREATE_FT_COMMAND_NAME } from '@/plugins/token/commands/create-ft';
 import { tokenCreateFtStateHook } from '@/plugins/token/hooks/token-create-ft-state';
 import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
@@ -255,7 +259,7 @@ describe('token plugin - batch-create-ft hook', () => {
         decimals: 6,
         initialSupply: 1000000n,
         tokenType: HederaTokenType.FUNGIBLE_COMMON,
-        supplyType: 'FINITE',
+        supplyType: SupplyType.FINITE,
         adminKeyRefIds: ['kr-admin'],
         adminKeyThreshold: 0,
         network: SupportedNetwork.TESTNET,
@@ -326,7 +330,7 @@ describe('token plugin - batch-create-ft hook', () => {
     expect(result.breakFlow).toBe(false);
     expect(registerMock).toHaveBeenCalledWith({
       alias: 'my-token-alias',
-      type: 'token',
+      type: AliasType.Token,
       network: SupportedNetwork.TESTNET,
       entityId: '0.0.8888',
       createdAt: '2024-01-15T12:00:00.000Z',

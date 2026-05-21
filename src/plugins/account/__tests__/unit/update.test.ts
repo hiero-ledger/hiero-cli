@@ -8,7 +8,13 @@ import {
   ECDSA_HEX_PUBLIC_KEY,
   MOCK_ACCOUNT_ID,
 } from '@/__tests__/mocks/fixtures';
-import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
+import {
+  makeArgs,
+  makeConfigMock,
+  makeLogger,
+  makeNetworkMock,
+  makeStateMock,
+} from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
   NotFoundError,
@@ -30,9 +36,6 @@ import {
   makeAccountData,
   makeAccountTransactionServiceMock,
   makeAliasServiceMock,
-  makeArgs,
-  makeLogger,
-  makeNetworkServiceMock,
   makeTxExecuteServiceMock,
   makeTxSignServiceMock,
 } from './helpers/mocks';
@@ -66,7 +69,7 @@ const buildApi = (overrides: Partial<CoreApi> = {}): Partial<CoreApi> => ({
   txExecute: makeTxExecuteServiceMock({
     execute: jest.fn().mockResolvedValue(mockTransactionResults.success),
   }),
-  network: makeNetworkServiceMock(SupportedNetwork.TESTNET),
+  network: makeNetworkMock(SupportedNetwork.TESTNET),
   alias: makeAliasServiceMock(),
   kms: makeKmsMock() as unknown as KmsService,
   keyResolver: makeKeyResolverMock() as unknown as KeyResolverService,

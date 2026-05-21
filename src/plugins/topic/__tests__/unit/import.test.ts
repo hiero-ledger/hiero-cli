@@ -22,6 +22,7 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { createMockTopicInfo } from '@/core/services/mirrornode/__tests__/unit/mocks';
+import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
 import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 import { TopicImportOutputSchema } from '@/plugins/topic/commands/import';
 import { topicImport } from '@/plugins/topic/commands/import/handler';
@@ -166,8 +167,14 @@ describe('topic plugin - import command (ADR-007)', () => {
       topic_id: '0.0.123456',
       memo: 'Topic with keys',
       created_timestamp: '1704067200.000000000',
-      admin_key: { _type: 'ED25519', key: ED25519_DER_PUBLIC_KEY },
-      submit_key: { _type: 'ECDSA_SECP256K1', key: ECDSA_DER_PUBLIC_KEY },
+      admin_key: {
+        _type: MirrorNodeKeyType.ED25519,
+        key: ED25519_DER_PUBLIC_KEY,
+      },
+      submit_key: {
+        _type: MirrorNodeKeyType.ECDSA_SECP256K1,
+        key: ECDSA_DER_PUBLIC_KEY,
+      },
     });
 
     const mirrorMock = makeMirrorMock() as Partial<HederaMirrornodeService> & {
@@ -223,7 +230,10 @@ describe('topic plugin - import command (ADR-007)', () => {
     const topicInfo = createMockTopicInfo({
       topic_id: '0.0.123456',
       created_timestamp: '1704067200.000000000',
-      admin_key: { _type: 'ED25519', key: ED25519_DER_PUBLIC_KEY },
+      admin_key: {
+        _type: MirrorNodeKeyType.ED25519,
+        key: ED25519_DER_PUBLIC_KEY,
+      },
     });
 
     const mirrorMock = makeMirrorMock() as Partial<HederaMirrornodeService> & {
@@ -271,7 +281,10 @@ describe('topic plugin - import command (ADR-007)', () => {
     const topicInfo = createMockTopicInfo({
       topic_id: '0.0.123456',
       created_timestamp: '1704067200.000000000',
-      submit_key: { _type: 'ED25519', key: ED25519_DER_PUBLIC_KEY },
+      submit_key: {
+        _type: MirrorNodeKeyType.ED25519,
+        key: ED25519_DER_PUBLIC_KEY,
+      },
     });
 
     const mirrorMock = makeMirrorMock() as Partial<HederaMirrornodeService> & {

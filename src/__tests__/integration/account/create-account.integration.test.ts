@@ -27,7 +27,7 @@ describe('Create Account Integration Tests', () => {
       const createAccountArgs: Record<string, unknown> = {
         name: 'account-test',
         balance: 1,
-        'key-type': 'ecdsa',
+        'key-type': KeyAlgorithm.ECDSA,
         'auto-associations': 10,
       };
       const createAccountResult = await accountCreate({

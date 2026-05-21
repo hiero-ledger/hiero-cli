@@ -12,7 +12,6 @@ import type { ContractQueryService } from '@/core/services/contract-query/contra
 import type { ContractTransactionService } from '@/core/services/contract-transaction/contract-transaction-service.interface';
 import type { ContractVerifierService } from '@/core/services/contract-verifier/contract-verifier-service.interface';
 import type { IdentityResolutionService } from '@/core/services/identity-resolution/identity-resolution-service.interface';
-import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { OutputService } from '@/core/services/output/output-service.interface';
 import type { OutputHandlerOptions } from '@/core/services/output/types';
@@ -23,7 +22,6 @@ import type { TopicService } from '@/core/services/topic/topic-transaction-servi
 import type { TransferService } from '@/core/services/transfer/transfer-service.interface';
 import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
 import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
-import type { SupportedNetwork } from '@/core/types/shared.types';
 
 import {
   createMirrorNodeMock,
@@ -33,23 +31,14 @@ import {
   makeIdentityResolutionServiceMock,
   makeKeyResolverMock,
   makeKmsMock,
+  makeLogger,
   makeNetworkMock,
   makeScheduleTransactionServiceMock,
   makeStateMock,
   makeTxExecuteMock,
   makeTxSignMock,
 } from '@/__tests__/mocks/mocks';
-
-/**
- * Create a mocked Logger
- */
-export const makeLogger = (): jest.Mocked<Logger> => ({
-  info: jest.fn(),
-  error: jest.fn(),
-  debug: jest.fn(),
-  warn: jest.fn(),
-  setLevel: jest.fn(),
-});
+import { SupportedNetwork } from '@/core/types/shared.types';
 
 /**
  * Configuration options for makeApiMocks (contract-erc20: identityResolution, contractQuery, contract)
@@ -68,7 +57,7 @@ export interface ApiMocksConfig {
  * identityResolution, contractQuery, and contract. Pass overrides in config to customize.
  */
 export const makeApiMocks = (config?: ApiMocksConfig) => {
-  const network = makeNetworkMock(config?.network ?? 'testnet');
+  const network = makeNetworkMock(config?.network ?? SupportedNetwork.TESTNET);
   const alias = makeAliasMock();
   const kms = makeKmsMock();
   const mirror = createMirrorNodeMock();

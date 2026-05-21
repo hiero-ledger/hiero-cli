@@ -4,28 +4,18 @@ import '@/core/utils/json-serialize';
 
 import { ZodError } from 'zod';
 
+import { makeHederaSdkContractMock } from '@/__tests__/mocks/hedera-sdk-contract-mock';
+import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { StateError } from '@/core/errors';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import { makeContractErc20CallCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
-import {
-  makeApiMocks,
-  makeLogger,
-} from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
+import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { ContractErc20CallDecimalsOutputSchema } from '@/plugins/contract-erc20/commands/decimals';
 import { contractErc20Decimals } from '@/plugins/contract-erc20/commands/decimals/handler';
 import { ContractErc20CallDecimalsInputSchema } from '@/plugins/contract-erc20/commands/decimals/input';
 
-jest.mock('@hiero-ledger/sdk', () => ({
-  ContractId: {
-    fromString: jest.fn(() => ({
-      toEvmAddress: jest.fn(() => 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
-    })),
-  },
-  TokenType: {
-    NonFungibleUnique: 'NonFungibleUnique',
-    FungibleCommon: 'FungibleCommon',
-  },
-}));
+jest.mock('@hiero-ledger/sdk', () => makeHederaSdkContractMock());
 
 describe('contract-erc20 plugin - decimals command (unit)', () => {
   let api: jest.Mocked<CoreApi>;
@@ -51,14 +41,14 @@ describe('contract-erc20 plugin - decimals command (unit)', () => {
 
     expect(parsed.contractId).toBe('0.0.1234');
     expect(parsed.decimals).toBe(18);
-    expect(parsed.network).toBe('testnet');
+    expect(parsed.network).toBe(SupportedNetwork.TESTNET);
 
     expect(
       args.api.identityResolution.resolveReferenceToEntityOrEvmAddress,
     ).toHaveBeenCalledWith({
       entityReference: 'some-alias-or-id',
       referenceType: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
       aliasType: expect.any(String),
     });
     expect(args.api.contractQuery.queryContractFunction).toHaveBeenCalledWith(

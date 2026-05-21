@@ -2,6 +2,7 @@
  * Test Fixtures for HBAR Transfer Tests
  * Reusable test data and constants
  */
+import { SupportedNetwork } from '@/core/types/shared.types';
 
 /**
  * Mock Account IDs
@@ -80,14 +81,14 @@ export const mockDefaultCredentials = {
     accountId: mockAccountIds.default,
     privateKey: 'default-key',
     keyRefId: 'kr_default_testnet',
-    network: 'testnet' as const,
+    network: SupportedNetwork.TESTNET,
     isDefault: true,
   },
   mainnet: {
     accountId: mockAccountIds.default,
     privateKey: 'default-key',
     keyRefId: 'kr_default_mainnet',
-    network: 'mainnet' as const,
+    network: SupportedNetwork.MAINNET,
     isDefault: true,
   },
 };

@@ -6,8 +6,8 @@ import {
   MOCK_ACCOUNT_ID,
   MOCK_CONTRACT_ID,
   MOCK_EVM_ADDRESS,
-  MOCK_EVM_ADDRESS_RAW,
 } from '@/__tests__/mocks/fixtures';
+import { makeHederaSdkContractMock } from '@/__tests__/mocks/hedera-sdk-contract-mock';
 import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { StateError } from '@/core/errors';
@@ -20,22 +20,7 @@ import {
 } from '@/plugins/contract-erc721/commands/owner-of';
 import { ContractErc721CallOwnerOfInputSchema } from '@/plugins/contract-erc721/commands/owner-of/input';
 
-jest.mock('@hiero-ledger/sdk', () => ({
-  ContractId: {
-    fromString: jest.fn(() => ({
-      toEvmAddress: jest.fn(() => 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
-    })),
-  },
-  AccountId: {
-    fromString: jest.fn(() => ({
-      toEvmAddress: jest.fn(() => MOCK_EVM_ADDRESS_RAW),
-    })),
-  },
-  TokenType: {
-    NonFungibleUnique: 'NonFungibleUnique',
-    FungibleCommon: 'FungibleCommon',
-  },
-}));
+jest.mock('@hiero-ledger/sdk', () => makeHederaSdkContractMock());
 
 describe('contract-erc721 plugin - ownerOf command (unit)', () => {
   let api: jest.Mocked<CoreApi>;

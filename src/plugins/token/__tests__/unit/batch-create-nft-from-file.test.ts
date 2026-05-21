@@ -7,7 +7,11 @@ import {
   makeLogger,
 } from '@/__tests__/mocks/mocks';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
-import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
+import {
+  AliasType,
+  SupplyType,
+  SupportedNetwork,
+} from '@/core/types/shared.types';
 import { TOKEN_CREATE_NFT_FROM_FILE_COMMAND_NAME } from '@/plugins/token/commands/create-nft-from-file';
 import { tokenCreateNftFromFileStateHook } from '@/plugins/token/hooks/token-create-nft-from-file-state';
 import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
@@ -275,7 +279,7 @@ describe('token plugin - batch-create-nft-from-file hook', () => {
     );
     expect(registerMock).toHaveBeenCalledWith({
       alias: 'MyNFT',
-      type: 'token',
+      type: AliasType.Token,
       network: SupportedNetwork.TESTNET,
       entityId: '0.0.9999',
       createdAt: '2024-01-01T00:00:00.000Z',

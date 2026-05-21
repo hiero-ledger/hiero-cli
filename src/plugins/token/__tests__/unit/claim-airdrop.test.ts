@@ -10,6 +10,7 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { EntityReferenceType } from '@/core/types/shared.types';
 import {
   tokenClaimAirdrop,
@@ -63,7 +64,7 @@ const makeFtTokenInfo = () => ({
   decimals: '2',
   total_supply: '10000',
   max_supply: '0',
-  type: 'FUNGIBLE_COMMON',
+  type: MirrorNodeTokenType.FUNGIBLE_COMMON,
   treasury_account_id: SENDER_ID,
   freeze_default: false,
   memo: '',
@@ -78,7 +79,7 @@ const makeNftTokenInfo = () => ({
   decimals: '0',
   total_supply: '100',
   max_supply: '1000',
-  type: 'NON_FUNGIBLE_UNIQUE',
+  type: MirrorNodeTokenType.NON_FUNGIBLE_UNIQUE,
   treasury_account_id: SENDER_ID,
   freeze_default: false,
   memo: '',

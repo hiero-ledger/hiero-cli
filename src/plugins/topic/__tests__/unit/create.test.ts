@@ -23,6 +23,7 @@ import {
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NetworkError, SupportedNetwork } from '@/core';
 import { TransactionError } from '@/core/errors';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { TopicCreateOutputSchema } from '@/plugins/topic/commands/create';
 import { topicCreate } from '@/plugins/topic/commands/create/handler';
@@ -37,11 +38,11 @@ const MockedHelper = TopicStateServiceImpl as jest.Mock;
 const makeApiMocks = ({
   topicCreateImpl,
   executeImpl,
-  network = 'testnet',
+  network = SupportedNetwork.TESTNET,
 }: {
   topicCreateImpl?: jest.Mock;
   executeImpl?: jest.Mock;
-  network?: 'testnet' | 'mainnet' | 'previewnet';
+  network?: SupportedNetwork;
 }) => {
   const topicTransactions = {
     createTopic: topicCreateImpl || jest.fn(),
@@ -133,7 +134,7 @@ describe('topic plugin - create command', () => {
     const output = assertOutput(result.result, TopicCreateOutputSchema);
     expect(output.topicId).toBe('0.0.9999');
     expect(output.memo).toBe('Test topic memo');
-    expect(output.network).toBe('testnet');
+    expect(output.network).toBe(SupportedNetwork.TESTNET);
     expect(output.transactionId).toBe('0.0.100000@1700000000.000000000');
 
     expect(topicTransactions.createTopic).toHaveBeenCalledWith({
@@ -147,7 +148,7 @@ describe('topic plugin - create command', () => {
       expect.objectContaining({
         topicId: '0.0.9999',
         memo: 'Test topic memo',
-        network: 'testnet',
+        network: SupportedNetwork.TESTNET,
       }),
     );
   });
@@ -205,13 +206,13 @@ describe('topic plugin - create command', () => {
     expect(kms.importPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
       ED25519_DER_PRIVATE_KEY,
-      'local',
+      KeyManager.local,
       ['topic:admin'],
     );
     expect(kms.importPublicKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
       ED25519_DER_PRIVATE_KEY_SUBMIT_1,
-      'local',
+      KeyManager.local,
       ['topic:submit'],
     );
     expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());
@@ -222,7 +223,7 @@ describe('topic plugin - create command', () => {
         memo: 'Test topic',
         adminKeyRefIds: [MOCK_TOPIC_ADMIN_KEY_REF_ID],
         submitKeyRefIds: [MOCK_TOPIC_SUBMIT_KEY_REF_ID],
-        network: 'testnet',
+        network: SupportedNetwork.TESTNET,
       }),
     );
   });
@@ -292,7 +293,7 @@ describe('topic plugin - create command', () => {
           MOCK_TOPIC_SUBMIT_KEY_REF_ID,
           MOCK_TOPIC_SUBMIT_KEY_REF_ID_2,
         ],
-        network: 'testnet',
+        network: SupportedNetwork.TESTNET,
       }),
     );
   });
@@ -344,7 +345,7 @@ describe('topic plugin - create command', () => {
       expect.objectContaining({
         topicId: '0.0.7777',
         memo: '(No memo)',
-        network: 'testnet',
+        network: SupportedNetwork.TESTNET,
       }),
     );
   });

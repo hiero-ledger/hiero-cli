@@ -5,8 +5,10 @@ import {
   MOCK_ACCOUNT_ID,
   MOCK_ACCOUNT_ID_ALT,
 } from '@/__tests__/mocks/fixtures';
+import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError, ValidationError } from '@/core/errors';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION } from '@/core/shared/constants';
 import { swapAddHbar } from '@/plugins/swap/commands/add-hbar/handler';
 import { SwapAddHbarOutputSchema } from '@/plugins/swap/commands/add-hbar/output';
@@ -21,7 +23,7 @@ import {
   mockEmptySwap,
   SWAP_NAME,
 } from './helpers/fixtures';
-import { makeArgs, makeLogger, makeSwapApiMocks } from './helpers/mocks';
+import { makeSwapApiMocks } from './helpers/mocks';
 
 jest.mock('../../services/swap-state.service', () => ({
   SwapStateServiceImpl: jest.fn(),
@@ -152,7 +154,9 @@ describe('swap plugin - add-hbar command', () => {
     }));
 
     const { networkMock, configMock } = makeSwapApiMocks();
-    configMock.getOption = jest.fn().mockReturnValue('local_encrypted');
+    configMock.getOption = jest
+      .fn()
+      .mockReturnValue(KeyManager.local_encrypted);
 
     const api: Partial<CoreApi> = {
       network: networkMock,
@@ -173,7 +177,7 @@ describe('swap plugin - add-hbar command', () => {
 
     expect(resolveAccountCredentialsMock).toHaveBeenCalledWith(
       expect.anything(),
-      'local_encrypted',
+      KeyManager.local_encrypted,
       true,
     );
   });

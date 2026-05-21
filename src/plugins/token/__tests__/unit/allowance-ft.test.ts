@@ -11,8 +11,9 @@ import {
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NetworkError } from '@/core';
 import { FtAllowanceEntry } from '@/core/services/allowance';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
-import { AliasType } from '@/core/types/shared.types';
+import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 import {
   tokenAllowanceFt,
   TokenAllowanceFtOutputSchema,
@@ -88,7 +89,7 @@ describe('tokenAllowanceFt', () => {
       expect(kms.importPrivateKey).toHaveBeenCalledWith(
         KeyAlgorithm.ECDSA,
         ECDSA_HEX_PRIVATE_KEY,
-        'local',
+        KeyManager.local,
         ['token:owner'],
       );
     });
@@ -240,7 +241,7 @@ describe('tokenAllowanceFt', () => {
       expect(alias.resolve).toHaveBeenCalledWith(
         'spender-alias',
         AliasType.Account,
-        'testnet',
+        SupportedNetwork.TESTNET,
       );
     });
   });

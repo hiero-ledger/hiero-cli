@@ -27,7 +27,7 @@ describe('contract plugin - list command', () => {
 
     const api = {
       alias: makeAliasMock(),
-      network: makeNetworkMock('testnet'),
+      network: makeNetworkMock(SupportedNetwork.TESTNET),
       logger: makeLogger(),
     };
 

@@ -4,9 +4,15 @@ import type { NetworkGetOperatorOutput } from '@/plugins/network/commands/get-op
 import { z } from 'zod';
 
 import { EntityIdSchema } from '@/core/schemas/common-schemas';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import { networkGetOperator } from '@/plugins/network/commands/get-operator';
 import { networkSetOperator } from '@/plugins/network/commands/set-operator';
 import { networkUse } from '@/plugins/network/commands/use';
+
+const INTEGRATION_NETWORKS = [
+  SupportedNetwork.TESTNET,
+  SupportedNetwork.LOCALNET,
+] as const;
 
 const envSchema = z.object({
   OPERATOR_ID: z
@@ -16,7 +22,7 @@ const envSchema = z.object({
     .pipe(EntityIdSchema)
     .describe('Hedera entity ID in format 0.0.{number}'),
   OPERATOR_KEY: z.string().min(1, 'OPERATOR_KEY is required').trim(),
-  NETWORK: z.enum(['testnet', 'localnet'], {
+  NETWORK: z.enum(INTEGRATION_NETWORKS, {
     error: () => ({
       message: 'Network must be testnet or localnet',
     }),

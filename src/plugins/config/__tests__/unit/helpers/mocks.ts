@@ -7,13 +7,7 @@ import type { ConfigService } from '@/core/services/config/config-service.interf
 import type { IdentityResolutionService } from '@/core/services/identity-resolution/identity-resolution-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 
-export const makeLogger = (): jest.Mocked<Logger> => ({
-  info: jest.fn(),
-  error: jest.fn(),
-  debug: jest.fn(),
-  warn: jest.fn(),
-  setLevel: jest.fn(),
-});
+import { makeLogger } from '@/__tests__/mocks/mocks';
 
 export const makeConfigServiceMock = (
   overrides?: Partial<jest.Mocked<ConfigService>>,

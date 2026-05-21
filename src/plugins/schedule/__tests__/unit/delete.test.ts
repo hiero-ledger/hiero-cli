@@ -1,6 +1,7 @@
 import type { CoreApi, KeyResolverService, TransactionResult } from '@/core';
 import type { ScheduleInfo } from '@/core/services/mirrornode/types';
 
+import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
   makeArgs,
@@ -13,6 +14,7 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
+import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import {
   scheduleDelete,
@@ -23,7 +25,6 @@ import { ZustandScheduleStateHelper } from '@/plugins/schedule/zustand-state-hel
 
 import {
   ADMIN_KEY_REF,
-  ADMIN_PUBLIC_KEY,
   DELETE_SUCCESS_TX_ID,
   ON_CHAIN_SCHEDULE_ID,
   SCHEDULE_COMPOSED_KEY,
@@ -55,8 +56,8 @@ function resolvedSchedule(overrides: Record<string, unknown> = {}) {
 
 function makeScheduleInfo(
   adminKey: ScheduleInfo['admin_key'] = {
-    _type: 'ED25519',
-    key: ADMIN_PUBLIC_KEY,
+    _type: MirrorNodeKeyType.ED25519,
+    key: ECDSA_HEX_PUBLIC_KEY,
   },
 ): Partial<ScheduleInfo> {
   return {
@@ -197,11 +198,12 @@ describe('schedule plugin — delete command', () => {
       resolveSigningKeys: resolveSigningKeysMock,
     } as unknown as KeyResolverService;
 
-    const getScheduledMock = jest
-      .fn()
-      .mockResolvedValue(
-        makeScheduleInfo({ _type: 'ED25519', key: ADMIN_PUBLIC_KEY }),
-      );
+    const getScheduledMock = jest.fn().mockResolvedValue(
+      makeScheduleInfo({
+        _type: MirrorNodeKeyType.ED25519,
+        key: ECDSA_HEX_PUBLIC_KEY,
+      }),
+    );
 
     const api: Partial<CoreApi> = {
       network: makeNetworkMock(SupportedNetwork.TESTNET),
@@ -223,7 +225,10 @@ describe('schedule plugin — delete command', () => {
     expect(getScheduledMock).toHaveBeenCalledWith(ON_CHAIN_SCHEDULE_ID);
     expect(resolveSigningKeysMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        mirrorRoleKey: { _type: 'ED25519', key: ADMIN_PUBLIC_KEY },
+        mirrorRoleKey: {
+          _type: MirrorNodeKeyType.ED25519,
+          key: ECDSA_HEX_PUBLIC_KEY,
+        },
         explicitCredentials: [],
       }),
     );
@@ -341,11 +346,12 @@ describe('schedule plugin — delete command', () => {
     const configMock = makeConfigMock();
     configMock.getOption = jest.fn().mockReturnValue(KeyManager.local);
 
-    const getScheduledMock = jest
-      .fn()
-      .mockResolvedValue(
-        makeScheduleInfo({ _type: 'ED25519', key: ADMIN_PUBLIC_KEY }),
-      );
+    const getScheduledMock = jest.fn().mockResolvedValue(
+      makeScheduleInfo({
+        _type: MirrorNodeKeyType.ED25519,
+        key: ECDSA_HEX_PUBLIC_KEY,
+      }),
+    );
 
     const api: Partial<CoreApi> = {
       network: makeNetworkMock(SupportedNetwork.TESTNET),

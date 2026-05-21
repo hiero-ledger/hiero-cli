@@ -3,6 +3,7 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 
 import { MOCK_TX_ID } from '@/__tests__/mocks/fixtures';
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
+import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
   NotFoundError,
@@ -23,7 +24,7 @@ import {
   mockSwapWithNft,
   SWAP_NAME,
 } from './helpers/fixtures';
-import { makeArgs, makeLogger, makeSwapApiMocks } from './helpers/mocks';
+import { makeSwapApiMocks } from './helpers/mocks';
 
 jest.mock('../../services/swap-state.service', () => ({
   SwapStateServiceImpl: jest.fn(),

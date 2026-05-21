@@ -2,12 +2,13 @@
  * Test Fixtures for Config Plugin
  */
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 
 export const enumOption = {
   name: ConfigOptionKey.default_key_manager,
   type: 'enum' as const,
-  value: 'local',
-  allowedValues: ['local', 'local_encrypted'],
+  value: KeyManager.local,
+  allowedValues: [KeyManager.local, KeyManager.local_encrypted],
 };
 
 export const booleanOption = {

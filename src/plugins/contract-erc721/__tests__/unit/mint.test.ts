@@ -4,7 +4,9 @@ import { ZodError } from 'zod';
 
 import {
   MOCK_ACCOUNT_ID,
+  MOCK_ACCOUNT_ID_TO,
   MOCK_CONTRACT_ID,
+  MOCK_CONTRACT_ID_UNKNOWN,
   MOCK_EVM_ADDRESS,
   MOCK_EVM_ADDRESS_ALT,
   MOCK_TX_ID,
@@ -13,11 +15,7 @@ import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError, TransactionError } from '@/core/errors';
 import { SupportedNetwork } from '@/core/types/shared.types';
-import {
-  makeContractErc721ExecuteCommandArgs,
-  MOCK_ACCOUNT_ID_TO,
-  MOCK_CONTRACT_ID_ALT,
-} from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
+import { makeContractErc721ExecuteCommandArgs } from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
 import {
   ContractErc721CallMintOutputSchema,
@@ -128,7 +126,7 @@ describe('contract-erc721 plugin - mint command (unit)', () => {
       api,
       logger,
       args: {
-        contract: MOCK_CONTRACT_ID_ALT,
+        contract: MOCK_CONTRACT_ID_UNKNOWN,
         to: MOCK_ACCOUNT_ID_TO,
         gas: 200000,
         tokenId: 1,
@@ -139,7 +137,7 @@ describe('contract-erc721 plugin - mint command (unit)', () => {
 
     expect(result.result).toBeDefined();
     expect(args.api.identityResolution.resolveContract).toHaveBeenCalledWith({
-      contractReference: MOCK_CONTRACT_ID_ALT,
+      contractReference: MOCK_CONTRACT_ID_UNKNOWN,
       type: expect.any(String),
       network: SupportedNetwork.TESTNET,
     });

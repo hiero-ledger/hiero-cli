@@ -5,10 +5,11 @@ import '@/core/utils/json-serialize';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
+import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { FileError, StateError } from '@/core/errors';
 import { HederaTokenType } from '@/core/shared/constants';
-import { SupplyType } from '@/core/types/shared.types';
+import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 import {
   tokenCreateFtFromFile,
   TokenCreateFtFromFileOutputSchema,
@@ -27,7 +28,7 @@ import {
   mockTransactions,
   validTokenFile,
 } from './helpers/fixtures';
-import { makeApiMocks, makeLogger } from './helpers/mocks';
+import { makeApiMocks } from './helpers/mocks';
 
 // Mock fs/promises
 jest.mock('fs/promises', () => ({
@@ -190,7 +191,7 @@ describe('tokenCreateFtFromFileHandler', () => {
       expect(output.initialSupply).toBe('1000');
       expect(output.supplyType).toBe(SupplyType.FINITE);
       expect(output.transactionId).toBe('0.0.123@1234567890.123456789');
-      expect(output.network).toBe('testnet');
+      expect(output.network).toBe(SupportedNetwork.TESTNET);
 
       expect(mockFs.readFile).toHaveBeenCalledWith(
         '/resolved/path/to/test.json',

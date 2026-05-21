@@ -6,7 +6,7 @@
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 
-import { SupplyType } from '@/core/types/shared.types';
+import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { mockMultipleTokens, mockStateTokenData } from './helpers/fixtures';
@@ -235,7 +235,7 @@ describe('Token State Management', () => {
           treasuryId: '0.0.789012',
           adminKeyRefIds: ['kr_admin'],
           adminKeyThreshold: 1,
-          network: 'testnet',
+          network: SupportedNetwork.TESTNET,
           associations: [{ name: 'TestAccount', accountId: '0.0.111111' }],
         }),
       );

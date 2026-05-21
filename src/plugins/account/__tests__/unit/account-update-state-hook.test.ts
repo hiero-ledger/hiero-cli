@@ -9,16 +9,17 @@ import {
 import {
   createBatchExecuteParams,
   createScheduleVerifyParams,
+  makeArgs,
   makeLogger,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import {
+  AliasType,
   MirrorTransactionResult,
   SupportedNetwork,
 } from '@/core/types/shared.types';
-import { makeArgs } from '@/plugins/account/__tests__/unit/helpers/mocks';
 import { ACCOUNT_UPDATE_COMMAND_NAME } from '@/plugins/account/commands/update/handler';
 import { AccountUpdateStateHook } from '@/plugins/account/hooks/account-update-state';
 import { AccountStateServiceImpl } from '@/plugins/account/services/account-state.service';
@@ -284,7 +285,7 @@ describe('account plugin - account-update-state hook', () => {
 
     const aliasRecord = {
       alias: 'my-account',
-      type: 'account',
+      type: AliasType.Account,
       network: SupportedNetwork.TESTNET,
       entityId: MOCK_ACCOUNT_ID,
       publicKey: 'old-pk',
@@ -648,7 +649,7 @@ describe('account plugin - account-update-state hook (schedule path)', () => {
 
     const aliasRecord = {
       alias: 'my-account',
-      type: 'account',
+      type: AliasType.Account,
       network: SupportedNetwork.TESTNET,
       entityId: MOCK_ACCOUNT_ID,
       publicKey: 'old-pk',

@@ -1,6 +1,7 @@
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { TokenCreateNftOutput } from '@/plugins/token/commands/create-nft/output';
 
+import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { HederaTokenType } from '@/core/shared/constants';
 import { AliasType, SupplyType } from '@/core/types/shared.types';
@@ -17,11 +18,7 @@ import {
   mockAccountKeyPairs,
   mockTransactions,
 } from './helpers/fixtures';
-import {
-  makeApiMocks,
-  makeLogger,
-  makeTransactionResult,
-} from './helpers/mocks';
+import { makeApiMocks, makeTransactionResult } from './helpers/mocks';
 
 jest.mock('../../services/token-state.service', () => ({
   TokenStateServiceImpl: jest.fn(),

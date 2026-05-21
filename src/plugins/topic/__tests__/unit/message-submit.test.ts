@@ -28,6 +28,7 @@ import {
 } from '@/core/errors';
 import { createMockTopicInfo } from '@/core/services/mirrornode/__tests__/unit/mocks';
 import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import { TopicSubmitMessageOutputSchema } from '@/plugins/topic/commands/submit-message';
 import { topicSubmitMessage } from '@/plugins/topic/commands/submit-message/handler';
 
@@ -71,12 +72,12 @@ const makeApiMocks = ({
   topicSubmitMessageImpl,
   executeImpl,
   executeContractCreateFlowImpl,
-  network = 'testnet',
+  network = SupportedNetwork.TESTNET,
 }: {
   topicSubmitMessageImpl?: jest.Mock;
   executeImpl?: jest.Mock;
   executeContractCreateFlowImpl?: jest.Mock;
-  network?: 'testnet' | 'mainnet' | 'previewnet';
+  network?: SupportedNetwork;
 }) => {
   const topicTransactions = {
     createTopic: jest.fn(),

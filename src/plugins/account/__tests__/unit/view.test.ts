@@ -13,7 +13,7 @@ import {
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
-import { AliasType } from '@/core/types/shared.types';
+import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 import { AccountViewOutputSchema } from '@/plugins/account/commands/view';
 import { accountView } from '@/plugins/account/commands/view/handler';
 import { AccountStateServiceImpl } from '@/plugins/account/services/account-state.service';
@@ -51,7 +51,7 @@ describe('account plugin - view command (ADR-003)', () => {
         resolve: jest.fn().mockReturnValue({
           alias: 'acc1',
           type: AliasType.Account,
-          network: 'testnet',
+          network: SupportedNetwork.TESTNET,
           entityId: '0.0.1111',
         }),
       },
@@ -89,7 +89,7 @@ describe('account plugin - view command (ADR-003)', () => {
     (alias.resolve as jest.Mock).mockReturnValue({
       alias: 'acc2',
       type: AliasType.Account,
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
       entityId: '0.0.2222',
       createdAt: new Date().toISOString(),
     });
