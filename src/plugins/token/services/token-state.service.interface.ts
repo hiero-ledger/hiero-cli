@@ -1,3 +1,4 @@
+import type { BatchDataItem } from '@/core/types/shared.types';
 import type { TokenData } from '@/plugins/token/schema';
 
 export interface TokenStateStats {
@@ -14,4 +15,13 @@ export interface TokenStateService {
   removeToken(key: string): void;
   listTokens(): TokenData[];
   getTokensWithStats(): TokenStateStats;
+
+  applyAssociationFromBatchItem(item: BatchDataItem): Promise<void>;
+  applyDissociationFromBatchItem(item: BatchDataItem): Promise<void>;
+  applyCreateFtFromBatchItem(item: BatchDataItem): Promise<void>;
+  applyCreateNftFromBatchItem(item: BatchDataItem): Promise<void>;
+  applyUpdateFromBatchItem(item: BatchDataItem): Promise<void>;
+  applyDeleteFromBatchItem(item: BatchDataItem): Promise<void>;
+  applyCreateFtFromFileFromBatchItem(item: BatchDataItem): Promise<void>;
+  applyCreateNftFromFileFromBatchItem(item: BatchDataItem): Promise<void>;
 }

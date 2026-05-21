@@ -282,6 +282,11 @@ export async function accountDelete(
   const accountState = new AccountStateServiceImpl(
     args.api.state,
     args.api.logger,
+    args.api.receipt,
+    args.api.mirror,
+    args.api.alias,
+    args.api.kms,
+    args.api.network,
   );
   const accountCleanup = new AccountCleanupServiceImpl(
     accountState,

@@ -205,6 +205,6 @@ export async function tokenTransferFt(
   const { api } = args;
   return new TokenTransferFtCommand(
     new TokenReferenceServiceImpl(api.identityResolution),
-    new TokenStateServiceImpl(api.state, api.logger),
+    new TokenStateServiceImpl(api.state, api.logger, api.receipt, api.alias),
   ).execute(args);
 }

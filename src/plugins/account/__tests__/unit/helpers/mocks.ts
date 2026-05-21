@@ -110,6 +110,11 @@ export const makeAccountStateServiceMock = (overrides?: {
   listAccounts?: jest.Mock;
   clearAccounts?: jest.Mock;
   hasAccount?: jest.Mock;
+  applyAccountCreateFromBatchItem?: jest.Mock;
+  applyAccountCreateFromSchedule?: jest.Mock;
+  applyAccountUpdateFromBatchItem?: jest.Mock;
+  applyAccountUpdateFromSchedule?: jest.Mock;
+  applyAccountDeleteFromBatchItem?: jest.Mock;
 }) => ({
   getAccount: jest.fn(),
   saveAccount: jest.fn(),
@@ -117,6 +122,11 @@ export const makeAccountStateServiceMock = (overrides?: {
   listAccounts: jest.fn().mockReturnValue([]),
   clearAccounts: jest.fn(),
   hasAccount: jest.fn().mockReturnValue(false),
+  applyAccountCreateFromBatchItem: jest.fn().mockResolvedValue(undefined),
+  applyAccountCreateFromSchedule: jest.fn().mockResolvedValue(undefined),
+  applyAccountUpdateFromBatchItem: jest.fn().mockResolvedValue(undefined),
+  applyAccountUpdateFromSchedule: jest.fn().mockResolvedValue(undefined),
+  applyAccountDeleteFromBatchItem: jest.fn().mockResolvedValue(undefined),
   ...overrides,
 });
 

@@ -149,6 +149,6 @@ export async function tokenImport(
 ): Promise<CommandResult> {
   const { api } = args;
   return new TokenImportCommand(
-    new TokenStateServiceImpl(api.state, api.logger),
+    new TokenStateServiceImpl(api.state, api.logger, api.receipt, api.alias),
   ).execute(args);
 }

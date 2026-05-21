@@ -30,5 +30,13 @@ export class AccountClearCommand implements Command {
 
 export const accountClear = (args: CommandHandlerArgs) =>
   new AccountClearCommand(
-    new AccountStateServiceImpl(args.api.state, args.api.logger),
+    new AccountStateServiceImpl(
+      args.api.state,
+      args.api.logger,
+      args.api.receipt,
+      args.api.mirror,
+      args.api.alias,
+      args.api.kms,
+      args.api.network,
+    ),
   ).execute(args);

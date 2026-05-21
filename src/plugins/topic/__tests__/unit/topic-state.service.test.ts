@@ -1,17 +1,26 @@
 import {
+  makeAliasMock,
   makeLogger,
+  makeReceiptMock,
   makeStateMock,
   makeTopicData,
 } from '@/__tests__/mocks/mocks';
 import { ValidationError } from '@/core/errors';
 import { TOPIC_NAMESPACE } from '@/plugins/topic/constants';
+import { TopicAliasServiceImpl } from '@/plugins/topic/services/topic-alias.service';
 import { TopicStateServiceImpl } from '@/plugins/topic/services/topic-state.service';
 
 describe('topic plugin - TopicStateService', () => {
   test('saves valid topic data in topic namespace', () => {
     const logger = makeLogger();
     const state = makeStateMock();
-    const service = new TopicStateServiceImpl(state, logger);
+    const service = new TopicStateServiceImpl(
+      state,
+      logger,
+      makeReceiptMock(),
+      makeAliasMock(),
+      new TopicAliasServiceImpl(makeAliasMock(), logger),
+    );
     const topicData = makeTopicData({ topicId: '0.0.1234' });
 
     service.saveTopic('testnet:0.0.1234', topicData);
@@ -24,7 +33,13 @@ describe('topic plugin - TopicStateService', () => {
   });
 
   test('throws ValidationError for invalid topic data on save', () => {
-    const service = new TopicStateServiceImpl(makeStateMock(), makeLogger());
+    const service = new TopicStateServiceImpl(
+      makeStateMock(),
+      makeLogger(),
+      makeReceiptMock(),
+      makeAliasMock(),
+      new TopicAliasServiceImpl(makeAliasMock(), makeLogger()),
+    );
     const invalidTopicData = makeTopicData({ topicId: 'invalid' });
 
     expect(() =>
@@ -35,7 +50,13 @@ describe('topic plugin - TopicStateService', () => {
   test('returns null for corrupted topic data on load', () => {
     const state = makeStateMock();
     state.get.mockReturnValue(makeTopicData({ topicId: 'invalid' }));
-    const service = new TopicStateServiceImpl(state, makeLogger());
+    const service = new TopicStateServiceImpl(
+      state,
+      makeLogger(),
+      makeReceiptMock(),
+      makeAliasMock(),
+      new TopicAliasServiceImpl(makeAliasMock(), makeLogger()),
+    );
 
     const result = service.loadTopic('testnet:invalid');
 
@@ -48,7 +69,13 @@ describe('topic plugin - TopicStateService', () => {
     const state = makeStateMock({
       listData: [validTopicData, invalidTopicData],
     });
-    const service = new TopicStateServiceImpl(state, makeLogger());
+    const service = new TopicStateServiceImpl(
+      state,
+      makeLogger(),
+      makeReceiptMock(),
+      makeAliasMock(),
+      new TopicAliasServiceImpl(makeAliasMock(), makeLogger()),
+    );
 
     const result = service.listTopics();
 
@@ -57,7 +84,13 @@ describe('topic plugin - TopicStateService', () => {
 
   test('deletes topic from topic namespace', () => {
     const state = makeStateMock();
-    const service = new TopicStateServiceImpl(state, makeLogger());
+    const service = new TopicStateServiceImpl(
+      state,
+      makeLogger(),
+      makeReceiptMock(),
+      makeAliasMock(),
+      new TopicAliasServiceImpl(makeAliasMock(), makeLogger()),
+    );
 
     service.deleteTopic('testnet:0.0.1234');
 

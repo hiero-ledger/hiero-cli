@@ -1,4 +1,1 @@
-export {
-  TokenCreateNftFromFileStateHook,
-  tokenCreateNftFromFileStateHook,
-} from './handler';
+export { TokenCreateNftFromFileStateHook } from './handler';

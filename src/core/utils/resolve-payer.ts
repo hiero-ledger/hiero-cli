@@ -1,31 +1,29 @@
-import type { CoreApi } from '@/core';
+import type { ConfigService } from '@/core/services/config/config-service.interface';
+import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
+import type { Logger } from '@/core/services/logger/logger-service.interface';
+import type { NetworkService } from '@/core/services/network/network-service.interface';
 
 import { KeySchema } from '@/core';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
 
-/**
- * Resolves payer from string (alias or account-id:private-key format)
- * and sets it in NetworkService
- *
- * @param payerString - Payer string from CLI flag (alias or account-id:private-key)
- * @param coreApi - Core API instance
- * @throws Error if payer cannot be resolved
- */
 export async function resolvePayer(
   payerString: string,
-  coreApi: CoreApi,
+  keyResolver: KeyResolverService,
+  network: NetworkService,
+  config: ConfigService,
+  logger: Logger,
 ): Promise<void> {
   const keyManager =
-    coreApi.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager) ||
+    config.getOption<KeyManager>(ConfigOptionKey.default_key_manager) ??
     KeyManager.local;
   const parsedPayer = KeySchema.parse(payerString);
-  const resolvedPayer = await coreApi.keyResolver.resolveAccountCredentials(
+  const resolvedPayer = await keyResolver.resolveAccountCredentials(
     parsedPayer,
     keyManager,
     false,
     ['payer:override'],
   );
-  coreApi.network.setPayer(resolvedPayer);
-  coreApi.logger.debug(`[CLI] Resolved payer: ${resolvedPayer.accountId}`);
+  network.setPayer(resolvedPayer);
+  logger.debug(`[CLI] Resolved payer: ${resolvedPayer.accountId}`);
 }

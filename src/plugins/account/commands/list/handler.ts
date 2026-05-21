@@ -41,5 +41,13 @@ export class AccountListCommand implements Command {
 
 export const accountList = (args: CommandHandlerArgs) =>
   new AccountListCommand(
-    new AccountStateServiceImpl(args.api.state, args.api.logger),
+    new AccountStateServiceImpl(
+      args.api.state,
+      args.api.logger,
+      args.api.receipt,
+      args.api.mirror,
+      args.api.alias,
+      args.api.kms,
+      args.api.network,
+    ),
   ).execute(args);

@@ -65,7 +65,13 @@ async function initializeCLI() {
 
     const payer = (opts.payer || opts.P) as string | undefined;
     if (payer) {
-      await resolvePayer(payer, coreApi);
+      await resolvePayer(
+        payer,
+        coreApi.keyResolver,
+        coreApi.network,
+        coreApi.config,
+        coreApi.logger,
+      );
     }
 
     // Setup global error handlers with validated format

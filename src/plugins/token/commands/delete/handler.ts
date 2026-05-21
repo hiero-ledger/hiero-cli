@@ -254,6 +254,6 @@ export async function tokenDelete(
   const { api } = args;
   return new TokenDeleteCommand(
     new TokenReferenceServiceImpl(api.identityResolution),
-    new TokenStateServiceImpl(api.state, api.logger),
+    new TokenStateServiceImpl(api.state, api.logger, api.receipt, api.alias),
   ).execute(args);
 }

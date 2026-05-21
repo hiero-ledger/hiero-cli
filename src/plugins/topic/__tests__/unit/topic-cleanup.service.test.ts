@@ -39,6 +39,9 @@ describe('topic plugin - TopicCleanupService', () => {
       loadTopic: jest.fn(),
       listTopics: jest.fn(),
       deleteTopic: jest.fn(),
+      applyTopicCreateFromBatchItem: jest.fn().mockResolvedValue(undefined),
+      applyTopicUpdateFromBatchItem: jest.fn().mockResolvedValue(undefined),
+      applyTopicDeleteFromBatchItem: jest.fn().mockResolvedValue(undefined),
     };
     const service = new TopicCleanupServiceImpl(
       alias,

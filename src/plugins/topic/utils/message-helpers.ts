@@ -1,9 +1,3 @@
-/**
- * Message Helpers
- * Utility functions for processing topic messages
- */
-import type { CoreApi } from '@/core';
-import type { Filter } from '@/core/services/mirrornode/types';
 import type { TopicFindMessageItemOutput } from '@/plugins/topic/commands/find-message/output';
 
 export function decodeMessageData(message: string, consensusTimestamp: string) {
@@ -32,17 +26,4 @@ export function transformMessageToOutput(message: {
     timestamp,
     consensusTimestamp: message.consensus_timestamp,
   };
-}
-
-export async function fetchFilteredMessages(
-  api: CoreApi,
-  topicId: string,
-  filters: Filter[] | undefined,
-): Promise<TopicFindMessageItemOutput[]> {
-  const response = await api.mirror.getTopicMessages({
-    topicId,
-    filters,
-  });
-
-  return response.messages.map(transformMessageToOutput).reverse();
 }

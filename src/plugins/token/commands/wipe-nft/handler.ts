@@ -219,6 +219,6 @@ export async function tokenWipeNft(
   const { api } = args;
   return new TokenWipeNftCommand(
     new TokenReferenceServiceImpl(api.identityResolution),
-    new TokenStateServiceImpl(api.state, api.logger),
+    new TokenStateServiceImpl(api.state, api.logger, api.receipt, api.alias),
   ).execute(args);
 }

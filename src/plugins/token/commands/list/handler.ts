@@ -104,6 +104,6 @@ export async function tokenList(
 ): Promise<CommandResult> {
   const { api } = args;
   return new TokenListCommand(
-    new TokenStateServiceImpl(api.state, api.logger),
+    new TokenStateServiceImpl(api.state, api.logger, api.receipt, api.alias),
   ).execute(args);
 }

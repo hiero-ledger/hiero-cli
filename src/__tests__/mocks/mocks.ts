@@ -398,6 +398,17 @@ export const makeStateMock = (
 });
 
 /**
+ * Create a mocked ReceiptService
+ */
+export const makeReceiptMock = (): jest.Mocked<ReceiptService> => ({
+  getReceipt: jest.fn().mockResolvedValue({
+    success: true,
+    transactionId: 'mock-tx-id',
+    consensusTimestamp: '2024-01-01T00:00:00.000Z',
+  }),
+});
+
+/**
  * Create a mocked HederaMirrornodeService
  */
 export const makeMirrorMock = (

@@ -360,7 +360,7 @@ export async function tokenCreateFt(
 ): Promise<CommandResult> {
   const { api } = args;
   return new TokenCreateFtCommand(
-    new TokenStateServiceImpl(api.state, api.logger),
+    new TokenStateServiceImpl(api.state, api.logger, api.receipt, api.alias),
     new TokenKeysServiceImpl(api.keyResolver),
   ).execute(args);
 }

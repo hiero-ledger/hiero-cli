@@ -207,6 +207,6 @@ export async function tokenBurnFt(
   const { api } = args;
   return new TokenBurnFtCommand(
     new TokenReferenceServiceImpl(api.identityResolution),
-    new TokenStateServiceImpl(api.state, api.logger),
+    new TokenStateServiceImpl(api.state, api.logger, api.receipt, api.alias),
   ).execute(args);
 }

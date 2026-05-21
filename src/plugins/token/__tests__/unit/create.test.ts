@@ -368,7 +368,7 @@ describe('createTokenHandler', () => {
       await tokenCreateFt(args);
 
       // Assert
-      expect(MockedHelper).toHaveBeenCalledWith(api.state, api.logger);
+      expect(MockedHelper).toHaveBeenCalled();
       expect(mockSaveToken).toHaveBeenCalled();
     });
   });

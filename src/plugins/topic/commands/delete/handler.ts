@@ -21,6 +21,7 @@ import {
 import { EntityIdSchema } from '@/core/schemas';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
+import { TopicAliasServiceImpl } from '@/plugins/topic/services/topic-alias.service';
 import { TopicCleanupServiceImpl } from '@/plugins/topic/services/topic-cleanup.service';
 import { TopicResolutionServiceImpl } from '@/plugins/topic/services/topic-resolution.service';
 import { TopicStateServiceImpl } from '@/plugins/topic/services/topic-state.service';
@@ -285,9 +286,19 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
 export async function topicDelete(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  const { alias, logger, state } = args.api;
-  const topicState = new TopicStateServiceImpl(state, logger);
-  const topicCleanup = new TopicCleanupServiceImpl(alias, topicState, logger);
+  const { alias } = args.api;
+  const topicState = new TopicStateServiceImpl(
+    args.api.state,
+    args.api.logger,
+    args.api.receipt,
+    args.api.alias,
+    new TopicAliasServiceImpl(args.api.alias, args.api.logger),
+  );
+  const topicCleanup = new TopicCleanupServiceImpl(
+    alias,
+    topicState,
+    args.api.logger,
+  );
   const topicResolution = new TopicResolutionServiceImpl(alias);
 
   return new TopicDeleteCommand(

@@ -1,11 +1,12 @@
 import type {
   CommandHandlerArgs,
   CommandResult,
-  CoreApi,
   IdentityResolutionService,
   SupportedNetwork,
 } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
+import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
+import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type {
   Credential,
   KeyManager,
@@ -52,7 +53,8 @@ export class Eip712VerifyCommand implements Command {
       validArgs.key,
       validArgs.signature,
       hash,
-      api,
+      api.keyResolver,
+      api.kms,
     );
   }
 
@@ -85,16 +87,17 @@ export class Eip712VerifyCommand implements Command {
     credential: Credential | undefined,
     signature: string,
     hash: string,
-    api: CoreApi,
+    keyResolver: KeyResolverService,
+    kms: KmsService,
   ): Promise<CommandResult> {
-    const resolved = await api.keyResolver.getPublicKey(
+    const resolved = await keyResolver.getPublicKey(
       credential,
       keyManager,
       true,
       ['eip712:verify'],
     );
 
-    const kmsRecord = api.kms.get(resolved.keyRefId);
+    const kmsRecord = kms.get(resolved.keyRefId);
     if (!kmsRecord) {
       throw new ValidationError(
         `Key reference not found: ${resolved.keyRefId}`,

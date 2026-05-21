@@ -182,12 +182,14 @@ import {
   tokenView,
   TokenViewOutputSchema,
 } from './commands/view';
-import { tokenCreateFtFromFileStateHook } from './hooks/token-create-ft-from-file-state';
-import { tokenCreateFtStateHook } from './hooks/token-create-ft-state';
-import { tokenCreateNftFromFileStateHook } from './hooks/token-create-nft-from-file-state';
-import { tokenCreateNftStateHook } from './hooks/token-create-nft-state';
-import { tokenDeleteStateHook } from './hooks/token-delete-state';
-import { tokenUpdateStateHook } from './hooks/token-update-state';
+import { TokenAssociateStateHook } from './hooks/token-associate-state';
+import { TokenCreateFtFromFileStateHook } from './hooks/token-create-ft-from-file-state';
+import { TokenCreateFtStateHook } from './hooks/token-create-ft-state';
+import { TokenCreateNftFromFileStateHook } from './hooks/token-create-nft-from-file-state';
+import { TokenCreateNftStateHook } from './hooks/token-create-nft-state';
+import { TokenDeleteStateHook } from './hooks/token-delete-state';
+import { TokenDissociateStateHook } from './hooks/token-dissociate-state/handler';
+import { TokenUpdateStateHook } from './hooks/token-update-state';
 
 export const tokenPluginManifest: PluginManifest = {
   name: 'token',
@@ -197,32 +199,42 @@ export const tokenPluginManifest: PluginManifest = {
   hooks: [
     {
       name: 'token-create-ft-state',
-      hook: tokenCreateFtStateHook,
+      hook: new TokenCreateFtStateHook(),
       options: [],
     },
     {
       name: 'token-create-ft-from-file-state',
-      hook: tokenCreateFtFromFileStateHook,
+      hook: new TokenCreateFtFromFileStateHook(),
       options: [],
     },
     {
       name: 'token-create-nft-state',
-      hook: tokenCreateNftStateHook,
+      hook: new TokenCreateNftStateHook(),
       options: [],
     },
     {
       name: 'token-create-nft-from-file-state',
-      hook: tokenCreateNftFromFileStateHook,
+      hook: new TokenCreateNftFromFileStateHook(),
+      options: [],
+    },
+    {
+      name: 'token-associate-state',
+      hook: new TokenAssociateStateHook(),
+      options: [],
+    },
+    {
+      name: 'token-dissociate-state',
+      hook: new TokenDissociateStateHook(),
       options: [],
     },
     {
       name: 'token-delete-state',
-      hook: tokenDeleteStateHook,
+      hook: new TokenDeleteStateHook(),
       options: [],
     },
     {
       name: 'token-update-state',
-      hook: tokenUpdateStateHook,
+      hook: new TokenUpdateStateHook(),
       options: [],
     },
   ],
