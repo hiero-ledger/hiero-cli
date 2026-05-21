@@ -1,6 +1,5 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { AccountReference } from '@/core/schemas/common-schemas';
 import type { IdentityResolutionService } from '@/core/services/identity-resolution/identity-resolution-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
@@ -9,10 +8,11 @@ import type {
   TokenInfo,
 } from '@/core/services/mirrornode/types';
 import type { SupportedNetwork } from '@/core/types/shared.types';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
 import type { NftTokenMetadata } from '@/plugins/token/types';
 import type { TokenAllowanceNftListOutput } from './output';
 
-import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
 
 import { TokenAllowanceNftListInputSchema } from './input';
 
@@ -31,6 +31,8 @@ type TokenAllowanceNftFetchResult = {
 };
 
 export class TokenAllowanceNftListCommand implements Command {
+  constructor(private readonly tokenReferenceService: TokenReferenceService) {}
+
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
     const validArgs = TokenAllowanceNftListInputSchema.parse(args.args);
@@ -45,7 +47,7 @@ export class TokenAllowanceNftListCommand implements Command {
       network,
       validArgs.spender,
     );
-    const tokenId = this.resolveOptionalToken(validArgs.token, api, network);
+    const tokenId = this.resolveOptionalToken(validArgs.token, network);
 
     const response = await this.fetchAllowances(
       api.mirror,
@@ -101,11 +103,10 @@ export class TokenAllowanceNftListCommand implements Command {
 
   private resolveOptionalToken(
     token: string | undefined,
-    api: CoreApi,
     network: SupportedNetwork,
   ): string | undefined {
     if (token === undefined) return undefined;
-    const resolved = resolveTokenParameter(token, api, network);
+    const resolved = this.tokenReferenceService.resolveToken(token, network);
     if (!resolved) return undefined;
     return resolved.tokenId;
   }
@@ -216,5 +217,8 @@ export class TokenAllowanceNftListCommand implements Command {
 export async function tokenAllowanceNftList(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenAllowanceNftListCommand().execute(args);
+  const { api } = args;
+  return new TokenAllowanceNftListCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+  ).execute(args);
 }

@@ -1,6 +1,5 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { AccountReference } from '@/core/schemas/common-schemas';
 import type { IdentityResolutionService } from '@/core/services/identity-resolution/identity-resolution-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
@@ -9,13 +8,14 @@ import type {
   TokenInfo,
 } from '@/core/services/mirrornode/types';
 import type { SupportedNetwork } from '@/core/types/shared.types';
+import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
 import type { FtTokenMetadata } from '@/plugins/token/types';
 import type { TokenAllowanceFtListOutput } from './output';
 
 import BigNumber from 'bignumber.js';
 
 import { normalizeBalance } from '@/core/utils/normalize-balance';
-import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
+import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
 
 import { TokenAllowanceFtListInputSchema } from './input';
 
@@ -27,6 +27,8 @@ type TokenAllowanceFtFetchResult = {
 };
 
 export class TokenAllowanceFtListCommand implements Command {
+  constructor(private readonly tokenReferenceService: TokenReferenceService) {}
+
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
     const validArgs = TokenAllowanceFtListInputSchema.parse(args.args);
@@ -41,7 +43,7 @@ export class TokenAllowanceFtListCommand implements Command {
       network,
       validArgs.spender,
     );
-    const tokenId = this.resolveOptionalToken(validArgs.token, api, network);
+    const tokenId = this.resolveOptionalToken(validArgs.token, network);
 
     const response = await this.fetchAllowances(
       api.mirror,
@@ -97,11 +99,10 @@ export class TokenAllowanceFtListCommand implements Command {
 
   private resolveOptionalToken(
     token: string | undefined,
-    api: CoreApi,
     network: SupportedNetwork,
   ): string | undefined {
     if (token === undefined) return undefined;
-    const resolved = resolveTokenParameter(token, api, network);
+    const resolved = this.tokenReferenceService.resolveToken(token, network);
     if (!resolved) return undefined;
     return resolved.tokenId;
   }
@@ -188,5 +189,8 @@ export class TokenAllowanceFtListCommand implements Command {
 export async function tokenAllowanceFtList(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenAllowanceFtListCommand().execute(args);
+  const { api } = args;
+  return new TokenAllowanceFtListCommand(
+    new TokenReferenceServiceImpl(api.identityResolution),
+  ).execute(args);
 }
