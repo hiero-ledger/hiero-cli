@@ -9,11 +9,11 @@ import pkg from '../package.json';
 import { createCoreApi } from './core';
 import { PluginManager } from './core/plugins/plugin-manager';
 import { ErrorBoundaryServiceImpl } from './core/services/error-boundary/error-boundary-service';
+import { PayerResolutionServiceImpl } from './core/services/payer-resolution/payer-resolution-service';
 import { DEFAULT_PLUGIN_STATE } from './core/shared/config/cli-options';
 import { validateNetwork } from './core/shared/validation/validate-network.zod';
 import { validateOutputFormat } from './core/shared/validation/validate-output-format.zod';
 import { addDisabledPluginsHelp } from './core/utils/add-disabled-plugins-help';
-import { resolvePayer } from './core/utils/resolve-payer';
 
 program
   .name('hcli')
@@ -65,13 +65,13 @@ async function initializeCLI() {
 
     const payer = (opts.payer || opts.P) as string | undefined;
     if (payer) {
-      await resolvePayer(
-        payer,
+      const payerResolution = new PayerResolutionServiceImpl(
         coreApi.keyResolver,
         coreApi.network,
         coreApi.config,
         coreApi.logger,
       );
+      await payerResolution.resolvePayer(payer);
     }
 
     // Setup global error handlers with validated format
