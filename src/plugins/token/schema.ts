@@ -30,12 +30,6 @@ import { applyKeyThresholdSuperRefine } from '@/core/utils/key-threshold-input-s
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import { zodToJsonSchema } from '@/core/utils/zod-to-json-schema';
 
-// Zod schema for token association
-export const TokenAssociationSchema = z.object({
-  name: z.string().min(1, 'Association name is required'),
-  accountId: EntityIdSchema,
-});
-
 export const TokenFileFixedFeeSchema = z
   .object({
     type: z.literal(CustomFeeType.FIXED),
@@ -151,8 +145,6 @@ export const TokenDataSchema = z.object({
       message: 'Network must be mainnet, testnet, previewnet, or localnet',
     }),
   }),
-
-  associations: z.array(TokenAssociationSchema).default([]),
 
   customFees: z.array(TokenFileCustomFeeSchema).default([]),
 

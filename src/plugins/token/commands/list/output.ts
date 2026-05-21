@@ -44,11 +44,6 @@ const TokenListItemSchema = z.object({
   keys: TokenKeysSchema.optional(),
   alias: z.string().describe('Local name (alias)').optional(),
   maxSupply: z.int().nonnegative().describe('Maximum supply for finite tokens'),
-  associationCount: z
-    .number()
-    .int()
-    .nonnegative()
-    .describe('Number of associations'),
 });
 
 /**
@@ -67,16 +62,6 @@ const TokenStatisticsSchema = z.object({
   bySupplyType: z
     .record(z.string(), z.int().nonnegative())
     .describe('Token count by supply type'),
-  withAssociations: z
-    .number()
-    .int()
-    .nonnegative()
-    .describe('Tokens with associations'),
-  totalAssociations: z
-    .number()
-    .int()
-    .nonnegative()
-    .describe('Total number of associations'),
 });
 
 /**
@@ -112,9 +97,6 @@ export const TOKEN_LIST_TEMPLATE = `
    Network: {{network}}
 {{#if (eq supplyType "FINITE")}}
    Max Supply: {{maxSupply}}
-{{/if}}
-{{#if (gt associationCount 0)}}
-   Associations: {{associationCount}}
 {{/if}}
 {{#if keys}}
 {{#if keys.adminKey}}

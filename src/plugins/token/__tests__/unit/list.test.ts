@@ -51,7 +51,7 @@ describe('tokenListHandler', () => {
             supplyType: SupplyType.INFINITE,
             tokenType: 'FungibleCommon',
             maxSupply: 0,
-            associationCount: 0,
+
             treasuryId: '0.0.111',
             network: 'testnet',
           },
@@ -61,8 +61,6 @@ describe('tokenListHandler', () => {
           withKeys: 0,
           byNetwork: { testnet: 1 },
           bySupplyType: { [SupplyType.INFINITE]: 1 },
-          withAssociations: 0,
-          totalAssociations: 0,
         }),
       }));
 
@@ -92,7 +90,7 @@ describe('tokenListHandler', () => {
             supplyType: SupplyType.FINITE,
             tokenType: 'FungibleCommon',
             maxSupply: 0,
-            associationCount: 0,
+
             treasuryId: '0.0.222',
             network: 'mainnet',
           },
@@ -102,8 +100,6 @@ describe('tokenListHandler', () => {
           withKeys: 0,
           byNetwork: { mainnet: 1 },
           bySupplyType: { [SupplyType.FINITE]: 1 },
-          withAssociations: 0,
-          totalAssociations: 0,
         }),
       }));
 

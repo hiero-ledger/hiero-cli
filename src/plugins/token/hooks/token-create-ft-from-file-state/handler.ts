@@ -84,12 +84,11 @@ export class TokenCreateFtFromFileStateHook implements Hook<PostOutputPreparatio
       normalisedParams,
     );
 
-    tokenData.associations =
-      await this.tokenAssociationsService.processTokenAssociations(
-        innerTransactionResult.tokenId,
-        normalisedParams.associations,
-        normalisedParams.keyManager,
-      );
+    await this.tokenAssociationsService.processTokenAssociations(
+      innerTransactionResult.tokenId,
+      normalisedParams.associations,
+      normalisedParams.keyManager,
+    );
 
     const key = composeKey(
       normalisedParams.network,
@@ -132,7 +131,6 @@ export const tokenCreateFtFromFileStateHook: Hook<PostOutputPreparationHookParam
           api.token,
           api.txSign,
           api.txExecute,
-          tokenStateService,
           api.logger,
         ),
       ).execute(params);

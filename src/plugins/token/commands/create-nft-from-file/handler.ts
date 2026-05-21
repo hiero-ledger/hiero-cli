@@ -253,8 +253,6 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
         normalisedParams.associations,
         normalisedParams.keyManager,
       );
-    tokenData.associations = successfulAssociations;
-
     const key = composeKey(normalisedParams.network, tokenId);
     this.tokenStateService.saveToken(key, tokenData);
     api.logger.info('   Token data saved to state');
@@ -308,7 +306,6 @@ export async function tokenCreateNftFromFile(
       api.token,
       api.txSign,
       api.txExecute,
-      tokenStateService,
       api.logger,
     ),
     new TokenKeysServiceImpl(api.keyResolver),
