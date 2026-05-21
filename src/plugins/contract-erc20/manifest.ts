@@ -199,7 +199,7 @@ export const contractErc20PluginManifest: PluginManifest = {
         },
         {
           name: 'value',
-          short: 'v',
+          short: 'V',
           type: OptionType.NUMBER,
           required: true,
           description:
@@ -251,7 +251,7 @@ export const contractErc20PluginManifest: PluginManifest = {
         },
         {
           name: 'value',
-          short: 'v',
+          short: 'V',
           type: OptionType.NUMBER,
           required: true,
           description:
@@ -295,7 +295,7 @@ export const contractErc20PluginManifest: PluginManifest = {
         },
         {
           name: 'value',
-          short: 'v',
+          short: 'V',
           type: OptionType.NUMBER,
           required: true,
           description:

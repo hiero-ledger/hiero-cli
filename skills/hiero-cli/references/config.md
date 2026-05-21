@@ -52,7 +52,7 @@ Set the value of a configuration option.
 | Option     | Short | Type   | Required | Description                                                        |
 | ---------- | ----- | ------ | -------- | ------------------------------------------------------------------ |
 | `--option` | `-o`  | string | **yes**  | Option name to set. Use `config list` to see available options     |
-| `--value`  | `-v`  | string | **yes**  | Value to set. Booleans: `true`/`false`. Numbers as strings: `"10"` |
+| `--value`  | `-V`  | string | **yes**  | Value to set. Booleans: `true`/`false`. Numbers as strings: `"10"` |
 
 **Example:**
 

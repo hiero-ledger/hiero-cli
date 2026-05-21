@@ -729,7 +729,7 @@ export const tokenPluginManifest: PluginManifest = {
         },
         {
           name: 'symbol',
-          short: 'Y',
+          short: 'C',
           type: OptionType.STRING,
           required: true,
           description: 'Fungible token symbol',
@@ -825,7 +825,7 @@ export const tokenPluginManifest: PluginManifest = {
         },
         {
           name: 'freeze-default',
-          short: 'F',
+          short: 'G',
           type: OptionType.BOOLEAN,
           required: false,
           default: false,
@@ -986,7 +986,7 @@ export const tokenPluginManifest: PluginManifest = {
         },
         {
           name: 'symbol',
-          short: 'Y',
+          short: 'C',
           type: OptionType.STRING,
           required: true,
           description: 'Token symbol',
@@ -1141,7 +1141,7 @@ export const tokenPluginManifest: PluginManifest = {
         },
         {
           name: 'freeze-default',
-          short: 'F',
+          short: 'G',
           type: OptionType.BOOLEAN,
           required: false,
           description:
@@ -2235,7 +2235,7 @@ export const tokenPluginManifest: PluginManifest = {
         },
         {
           name: 'symbol',
-          short: 'Y',
+          short: 'C',
           type: OptionType.STRING,
           required: false,
           description: 'New token symbol',

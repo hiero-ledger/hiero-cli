@@ -74,7 +74,7 @@ export const configPluginManifest: PluginManifest = {
         },
         {
           name: 'value',
-          short: 'v',
+          short: 'V',
           type: OptionType.STRING,
           required: true,
           description:

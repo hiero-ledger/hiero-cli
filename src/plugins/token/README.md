@@ -282,7 +282,7 @@ hcli token create-nft \
 **Parameters:**
 
 - `--token-name` / `-T`: Token name - **Required**
-- `--symbol` / `-s`: Token symbol/ticker - **Required**
+- `--symbol` / `-C`: Token symbol/ticker - **Required**
 - `--treasury`: Treasury account for the NFT collection - **Optional** (defaults to operator)
   - Account alias: `alice`
   - Account with key: `0.0.123456:private-key`
@@ -1476,7 +1476,7 @@ hcli token update --token mytoken-alias --token-name "Batched Rename" --batch my
 | ---------------------- | ----- | ---------------------------------------------------------------------- |
 | `--token`              | `-T`  | Token ID or alias — **Required**                                       |
 | `--token-name`         | `-b`  | New token name                                                         |
-| `--symbol`             | `-Y`  | New token symbol                                                       |
+| `--symbol`             | `-C`  | New token symbol                                                       |
 | `--treasury`           | `-t`  | New treasury account ID or alias                                       |
 | `--admin-keys`         | `-a`  | Current admin key credential(s) for signing (auto-resolved if omitted) |
 | `--new-admin-keys`     | `-n`  | New admin key(s); pass `null` to clear                                 |
