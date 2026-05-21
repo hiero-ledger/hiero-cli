@@ -11,7 +11,7 @@ export const enumOption = {
 };
 
 export const booleanOption = {
-  name: ConfigOptionKey.ed25519_support_enabled,
+  name: ConfigOptionKey.ed25519_support,
   type: 'boolean' as const,
   value: false,
 };

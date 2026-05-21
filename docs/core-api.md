@@ -583,9 +583,9 @@ The global log level is controlled by the config option `log_level`:
 - configure via CLI, for example:
 
 ```bash
-hcli config set -o log_level -v silent
-hcli config set -o log_level -v error
-hcli config set -o log_level -v debug
+hcli config set --log_level silent
+hcli config set --log_level error
+hcli config set --log_level debug
 ```
 
 All logger output is written to **stderr** so that structured command output on stdout
@@ -611,7 +611,7 @@ The KMS supports two storage modes for private keys:
 - **`local`** - Keys stored as plain text (suitable for development and testing)
 - **`local_encrypted`** - Keys encrypted using AES-256-GCM (recommended for production)
 
-The default storage mode is configured via `hcli config set -o default_key_manager -v local|local_encrypted`. Individual operations can override this using the `--key-manager` flag when available.
+The default storage mode is configured via `hcli config set --default_key_manager local` or `hcli config set --default_key_manager local_encrypted`. Individual operations can override this using the `--key-manager` flag when available.
 
 ```typescript
 interface KmsService {

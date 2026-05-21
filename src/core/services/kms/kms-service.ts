@@ -93,11 +93,11 @@ export class KmsServiceImpl implements KmsService {
     // Check if ED25519 support is enabled when using ED25519 key type
     if (keyType === KeyAlgorithm.ED25519) {
       const ed25519SupportEnabled = this.configService.getOption<boolean>(
-        ConfigOptionKey.ed25519_support_enabled,
+        ConfigOptionKey.ed25519_support,
       );
       if (!ed25519SupportEnabled) {
         throw new ConfigurationError(
-          'ED25519 support is disabled. Enable via ed25519_support_enabled config option.',
+          'ED25519 support is disabled. Enable via ed25519_support config option.',
         );
       }
     }
@@ -131,11 +131,11 @@ export class KmsServiceImpl implements KmsService {
     // Check if ED25519 support is enabled when using ED25519 key type
     if (keyType === KeyAlgorithm.ED25519) {
       const ed25519SupportEnabled = this.configService.getOption<boolean>(
-        ConfigOptionKey.ed25519_support_enabled,
+        ConfigOptionKey.ed25519_support,
       );
       if (!ed25519SupportEnabled) {
         throw new ConfigurationError(
-          'ED25519 key type is not enabled. Please enable it by setting the config option ed25519_support_enabled to true.',
+          'ED25519 key type is not enabled. Please enable it by setting the config option ed25519_support to true.',
         );
       }
     }
@@ -176,11 +176,11 @@ export class KmsServiceImpl implements KmsService {
     // Check if ED25519 support is enabled when using ED25519 key type
     if (keyType === KeyAlgorithm.ED25519) {
       const ed25519SupportEnabled = this.configService.getOption<boolean>(
-        ConfigOptionKey.ed25519_support_enabled,
+        ConfigOptionKey.ed25519_support,
       );
       if (!ed25519SupportEnabled) {
         throw new ConfigurationError(
-          'ED25519 support is disabled. Enable via ed25519_support_enabled config option.',
+          'ED25519 support is disabled. Enable via ed25519_support config option.',
         );
       }
     }

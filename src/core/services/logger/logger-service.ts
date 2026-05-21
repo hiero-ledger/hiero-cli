@@ -1,4 +1,6 @@
-import type { Logger, LogLevel } from './logger-service.interface';
+import type { Logger } from './logger-service.interface';
+
+import { LogLevel } from '@/core/types/shared.types';
 
 const LOG_LEVEL_DATA: Record<
   LogLevel,
@@ -30,7 +32,7 @@ const LOG_LEVEL_DATA: Record<
 };
 
 export class LoggerService implements Logger {
-  private currentLevel: LogLevel = 'silent';
+  private currentLevel: LogLevel = LogLevel.SILENT;
 
   private shouldLog(level: LogLevel): boolean {
     return (
@@ -58,18 +60,18 @@ export class LoggerService implements Logger {
   }
 
   info(message: string): void {
-    this.output('info', message);
+    this.output(LogLevel.INFO, message);
   }
 
   error(message: string): void {
-    this.output('error', message);
+    this.output(LogLevel.ERROR, message);
   }
 
   warn(message: string): void {
-    this.output('warn', message);
+    this.output(LogLevel.WARN, message);
   }
 
   debug(message: string): void {
-    this.output('debug', message);
+    this.output(LogLevel.DEBUG, message);
   }
 }

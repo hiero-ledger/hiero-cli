@@ -244,3 +244,11 @@ export interface EcdsaSignatureComponents {
   s: string;
   v: 27 | 28;
 }
+
+export enum LogLevel {
+  SILENT = 'silent',
+  ERROR = 'error',
+  WARN = 'warn',
+  INFO = 'info',
+  DEBUG = 'debug',
+}

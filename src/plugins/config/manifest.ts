@@ -65,20 +65,34 @@ export const configPluginManifest: PluginManifest = {
       description: 'Set the value of a configuration option',
       options: [
         {
-          name: 'option',
-          short: 'o',
+          name: 'default_key_manager',
+          short: 'k',
           type: OptionType.STRING,
-          required: true,
+          required: false,
           description:
-            'Option name to set. Use `list` command to check what options could be set',
+            'Set default key manager - allowed values: local | local_encrypted',
         },
         {
-          name: 'value',
-          short: 'v',
+          name: 'ed25519_support',
+          short: 'e',
           type: OptionType.STRING,
-          required: true,
+          required: false,
+          description: 'Set ed25519 support - true or false',
+        },
+        {
+          name: 'log_level',
+          short: 'l',
+          type: OptionType.STRING,
+          required: false,
           description:
-            'Value to set (boolean|number|string). Booleans: true/false.',
+            'Set log level - allowed values: silent | error | warn | info | debug',
+        },
+        {
+          name: 'skip_confirmations',
+          short: 'c',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Set skip confirmations - true or false',
         },
       ],
       handler: configSet,

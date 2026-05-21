@@ -1,5 +1,4 @@
 import { assertOutput } from '@/__tests__/utils/assert-output';
-import { ConfigurationError } from '@/core';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import {
   configSet,
@@ -19,7 +18,7 @@ describe('config plugin - set', () => {
       getOption: jest.fn().mockReturnValue(false),
       listOptions: jest.fn().mockReturnValue([
         {
-          name: ConfigOptionKey.ed25519_support_enabled,
+          name: ConfigOptionKey.ed25519_support,
           type: 'boolean',
           value: false,
         },
@@ -29,66 +28,81 @@ describe('config plugin - set', () => {
     const api = makeApiMock(configSvc);
     const args = makeCommandArgs({
       api,
-      args: { option: ConfigOptionKey.ed25519_support_enabled, value: 'true' },
+      args: { [ConfigOptionKey.ed25519_support]: 'true' },
     });
 
     const result = await configSet(args);
     expect(configSvc.setOption).toHaveBeenCalledWith(
-      ConfigOptionKey.ed25519_support_enabled,
+      ConfigOptionKey.ed25519_support,
       true,
     );
     const output = assertOutput(result.result, ConfigSetOutputSchema);
-    expect(output.name).toBe(ConfigOptionKey.ed25519_support_enabled);
+    expect(output.name).toBe(ConfigOptionKey.ed25519_support);
     expect(output.previousValue).toBe(false);
     expect(output.newValue).toBe(true);
   });
 
-  test('parses numeric value and sets', async () => {
+  test('errors when no flags are provided', async () => {
     const configSvc = makeConfigServiceMock({
-      getOption: jest.fn().mockReturnValue(1),
-      listOptions: jest
-        .fn()
-        .mockReturnValue([{ name: 'some_number', type: 'number', value: 1 }]),
+      getOption: jest.fn(),
+      listOptions: jest.fn().mockReturnValue([]),
+      setOption: jest.fn(),
+    });
+    const api = makeApiMock(configSvc);
+    const args = makeCommandArgs({ api, args: {} });
+
+    await expect(configSet(args)).rejects.toThrow(
+      'Exactly one config option flag must be provided',
+    );
+  });
+
+  test('errors when multiple flags are provided', async () => {
+    const configSvc = makeConfigServiceMock({
+      getOption: jest.fn(),
+      listOptions: jest.fn().mockReturnValue([]),
       setOption: jest.fn(),
     });
     const api = makeApiMock(configSvc);
     const args = makeCommandArgs({
       api,
-      args: { option: 'some_number', value: '42' },
+      args: {
+        [ConfigOptionKey.ed25519_support]: 'true',
+        [ConfigOptionKey.skip_confirmations]: 'false',
+      },
     });
 
-    const result = await configSet(args);
-    expect(configSvc.setOption).toHaveBeenCalledWith('some_number', 42);
-    const output = assertOutput(result.result, ConfigSetOutputSchema);
-    expect(output.newValue).toBe(42);
+    await expect(configSet(args)).rejects.toThrow(
+      'Exactly one config option flag must be provided',
+    );
   });
 
-  test('validates enum values', async () => {
+  test('rejects invalid enum value at schema level', async () => {
     const configSvc = makeConfigServiceMock({
       getOption: jest.fn().mockReturnValue('local'),
       listOptions: jest.fn().mockReturnValue([enumOption]),
-      setOption: jest.fn().mockImplementation((_name, val) => {
-        if (val !== 'local' && val !== 'local_encrypted') {
-          throw new ConfigurationError('Invalid value for default_key_manager');
-        }
-      }),
+      setOption: jest.fn(),
     });
     const api = makeApiMock(configSvc);
 
     const argsBad = makeCommandArgs({
       api,
-      args: { option: ConfigOptionKey.default_key_manager, value: 'invalid' },
+      args: { [ConfigOptionKey.default_key_manager]: 'invalid' },
     });
-    await expect(configSet(argsBad)).rejects.toThrow(
-      'Invalid value for default_key_manager',
-    );
+    await expect(configSet(argsBad)).rejects.toThrow();
+    expect(configSvc.setOption).not.toHaveBeenCalled();
+  });
+
+  test('accepts valid enum value for default_key_manager', async () => {
+    const configSvc = makeConfigServiceMock({
+      getOption: jest.fn().mockReturnValue('local'),
+      listOptions: jest.fn().mockReturnValue([enumOption]),
+      setOption: jest.fn(),
+    });
+    const api = makeApiMock(configSvc);
 
     const argsGood = makeCommandArgs({
       api,
-      args: {
-        option: ConfigOptionKey.default_key_manager,
-        value: 'local_encrypted',
-      },
+      args: { [ConfigOptionKey.default_key_manager]: 'local_encrypted' },
     });
     await configSet(argsGood);
     expect(configSvc.setOption).toHaveBeenCalledWith(
