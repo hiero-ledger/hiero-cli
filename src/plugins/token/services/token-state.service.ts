@@ -6,7 +6,7 @@ import type {
   TokenStateStats,
 } from '@/plugins/token/services/token-state.service.interface';
 
-import { NotFoundError, ValidationError } from '@/core/errors';
+import { ValidationError } from '@/core/errors';
 import { TOKEN_NAMESPACE } from '@/plugins/token/constants';
 import { TokenDataSchema } from '@/plugins/token/schema';
 
@@ -93,76 +93,6 @@ export class TokenStateServiceImpl implements TokenStateService {
     }
   }
 
-  addTokenAssociation(
-    key: string,
-    accountId: string,
-    accountName: string,
-  ): void {
-    try {
-      const tokenData = this.getToken(key);
-      if (!tokenData) {
-        throw new NotFoundError(`Token ${key} not found`, {
-          context: { key },
-        });
-      }
-
-      const associations = [...tokenData.associations];
-      const existingAssociation = associations.find(
-        (assoc) => assoc.accountId === accountId,
-      );
-      if (existingAssociation) {
-        this.logger.debug(
-          `[TOKEN STATE] Association ${accountId} already exists for token ${key}`,
-        );
-        return;
-      }
-
-      this.saveToken(key, {
-        ...tokenData,
-        associations: [
-          ...associations.map((assoc) => ({ ...assoc })),
-          { name: accountName, accountId },
-        ],
-        customFees: [...tokenData.customFees],
-      });
-      this.logger.debug(
-        `[TOKEN STATE] Added association ${accountId} to token ${key}`,
-      );
-    } catch (error) {
-      this.logger.error(
-        `[TOKEN STATE] Failed to add association to token ${key}: ${this.getErrorMessage(error)}`,
-      );
-      throw error;
-    }
-  }
-
-  removeTokenAssociation(key: string, accountId: string): void {
-    const tokenData = this.getToken(key);
-    if (!tokenData) {
-      this.logger.debug(
-        `[TOKEN STATE] Token ${key} not found; skip remove association`,
-      );
-      return;
-    }
-
-    const filtered = tokenData.associations.filter(
-      (assoc) => assoc.accountId !== accountId,
-    );
-    if (filtered.length === tokenData.associations.length) {
-      this.logger.debug(`[TOKEN STATE] No association ${accountId} on ${key}`);
-      return;
-    }
-
-    this.saveToken(key, {
-      ...tokenData,
-      associations: filtered,
-      customFees: [...tokenData.customFees],
-    });
-    this.logger.debug(
-      `[TOKEN STATE] Removed association ${accountId} from token ${key}`,
-    );
-  }
-
   listTokens(): TokenData[] {
     this.logger.debug('[TOKEN STATE] Listing all tokens');
     const allTokens = this.state.list<unknown>(TOKEN_NAMESPACE);
@@ -189,8 +119,6 @@ export class TokenStateServiceImpl implements TokenStateService {
       total: tokens.length,
       byNetwork: {},
       bySupplyType: {},
-      withAssociations: 0,
-      totalAssociations: 0,
       withKeys: 0,
     };
 
@@ -199,12 +127,6 @@ export class TokenStateServiceImpl implements TokenStateService {
         (stats.byNetwork[token.network] ?? 0) + 1;
       stats.bySupplyType[token.supplyType] =
         (stats.bySupplyType[token.supplyType] ?? 0) + 1;
-
-      const associationCount = token.associations.length;
-      if (associationCount > 0) {
-        stats.withAssociations++;
-        stats.totalAssociations += associationCount;
-      }
 
       if (token.adminKeyRefIds.length > 0) {
         stats.withKeys++;

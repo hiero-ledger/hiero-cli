@@ -85,12 +85,11 @@ export class TokenCreateNftFromFileStateHook implements Hook<PostOutputPreparati
       normalisedParams,
     );
 
-    tokenData.associations =
-      await this.tokenAssociationsService.processTokenAssociations(
-        innerTransactionResult.tokenId,
-        normalisedParams.associations as Credential[],
-        normalisedParams.keyManager,
-      );
+    await this.tokenAssociationsService.processTokenAssociations(
+      innerTransactionResult.tokenId,
+      normalisedParams.associations as Credential[],
+      normalisedParams.keyManager,
+    );
 
     const key = composeKey(
       normalisedParams.network,
@@ -133,7 +132,6 @@ export const tokenCreateNftFromFileStateHook: Hook<PostOutputPreparationHookPara
           api.token,
           api.txSign,
           api.txExecute,
-          tokenStateService,
           api.logger,
         ),
       ).execute(params);

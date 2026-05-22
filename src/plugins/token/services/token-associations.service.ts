@@ -7,14 +7,10 @@ import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { TokenService } from '@/core/services/token/token-service.interface';
 import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
 import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
-import type { SupportedNetwork } from '@/core/types/shared.types';
 import type {
   TokenAssociationResult,
   TokenAssociationsService,
 } from '@/plugins/token/services/token-associations.service.interface';
-import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
-
-import { composeKey } from '@/core/utils/key-composer';
 
 export class TokenAssociationsServiceImpl implements TokenAssociationsService {
   constructor(
@@ -22,39 +18,8 @@ export class TokenAssociationsServiceImpl implements TokenAssociationsService {
     private readonly token: TokenService,
     private readonly txSign: TxSignService,
     private readonly txExecute: TxExecuteService,
-    private readonly state: TokenStateService,
     private readonly logger: Logger,
   ) {}
-
-  saveAssociationToState(
-    tokenId: string,
-    accountId: string,
-    network: SupportedNetwork,
-  ): void {
-    const tokenKey = composeKey(network, tokenId);
-    const tokenData = this.state.getToken(tokenKey);
-    if (!tokenData) {
-      return;
-    }
-
-    this.state.addTokenAssociation(tokenKey, accountId, accountId);
-    this.logger.info('   Association saved to token state');
-  }
-
-  removeAssociationFromState(
-    tokenId: string,
-    accountId: string,
-    network: SupportedNetwork,
-  ): void {
-    const tokenKey = composeKey(network, tokenId);
-    const tokenData = this.state.getToken(tokenKey);
-    if (!tokenData) {
-      return;
-    }
-
-    this.state.removeTokenAssociation(tokenKey, accountId);
-    this.logger.info('   Association removed from token state');
-  }
 
   async processTokenAssociations(
     tokenId: string,
