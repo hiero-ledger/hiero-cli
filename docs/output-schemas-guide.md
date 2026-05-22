@@ -702,8 +702,7 @@ Lists all tokens from all networks stored in state.
       "treasuryId": "0.0.12345",
       "network": "testnet",
       "alias": "my-testnet-token",
-      "maxSupply": 0,
-      "associationCount": 0
+      "maxSupply": 0
     },
     {
       "tokenId": "0.0.7654321",
@@ -714,8 +713,7 @@ Lists all tokens from all networks stored in state.
       "treasuryId": "0.0.54321",
       "network": "previewnet",
       "alias": "token-previewnet1",
-      "maxSupply": 0,
-      "associationCount": 0
+      "maxSupply": 0
     }
   ],
   "totalCount": 2,
@@ -728,9 +726,7 @@ Lists all tokens from all networks stored in state.
     },
     "bySupplyType": {
       "INFINITE": 2
-    },
-    "withAssociations": 0,
-    "totalAssociations": 0
+    }
   }
 }
 ```
