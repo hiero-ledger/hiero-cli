@@ -10,7 +10,7 @@ import {
   scheduleCreate,
   ScheduleCreateOutputSchema,
 } from '@/plugins/schedule/commands/create';
-import { ZustandScheduleStateHelper } from '@/plugins/schedule/zustand-state-helper';
+import { ScheduleStateServiceImpl } from '@/plugins/schedule/services/schedule-state.service';
 
 import {
   ADMIN_KEY_REF,
@@ -22,11 +22,11 @@ import {
 } from './helpers/fixtures';
 import { makeLogger, makeScheduleArgs } from './helpers/mocks';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandScheduleStateHelper: jest.fn(),
+jest.mock('../../services/schedule-state.service', () => ({
+  ScheduleStateServiceImpl: jest.fn(),
 }));
 
-const MockedScheduleHelper = ZustandScheduleStateHelper as jest.Mock;
+const MockedScheduleState = ScheduleStateServiceImpl as jest.Mock;
 
 describe('schedule plugin — create command', () => {
   beforeEach(() => {
@@ -36,7 +36,7 @@ describe('schedule plugin — create command', () => {
   test('saves a new schedule record and returns structured output', async () => {
     const logger = makeLogger();
     const saveScheduledMock = jest.fn();
-    MockedScheduleHelper.mockImplementation(() => ({
+    MockedScheduleState.mockImplementation(() => ({
       hasScheduled: jest.fn().mockReturnValue(false),
       saveScheduled: saveScheduledMock,
     }));
@@ -84,7 +84,7 @@ describe('schedule plugin — create command', () => {
 
   test('throws ValidationError when a schedule with the same name already exists', async () => {
     const logger = makeLogger();
-    MockedScheduleHelper.mockImplementation(() => ({
+    MockedScheduleState.mockImplementation(() => ({
       hasScheduled: jest.fn().mockReturnValue(true),
       saveScheduled: jest.fn(),
     }));
@@ -116,7 +116,7 @@ describe('schedule plugin — create command', () => {
   test('resolves admin key and persists admin refs when --admin-key is set', async () => {
     const logger = makeLogger();
     const saveScheduledMock = jest.fn();
-    MockedScheduleHelper.mockImplementation(() => ({
+    MockedScheduleState.mockImplementation(() => ({
       hasScheduled: jest.fn().mockReturnValue(false),
       saveScheduled: saveScheduledMock,
     }));
@@ -169,7 +169,7 @@ describe('schedule plugin — create command', () => {
   test('resolves payer account credentials when --payer-account is set', async () => {
     const logger = makeLogger();
     const saveScheduledMock = jest.fn();
-    MockedScheduleHelper.mockImplementation(() => ({
+    MockedScheduleState.mockImplementation(() => ({
       hasScheduled: jest.fn().mockReturnValue(false),
       saveScheduled: saveScheduledMock,
     }));
@@ -221,7 +221,7 @@ describe('schedule plugin — create command', () => {
   test('persists memo, expiration, and waitForExpiry', async () => {
     const logger = makeLogger();
     const saveScheduledMock = jest.fn();
-    MockedScheduleHelper.mockImplementation(() => ({
+    MockedScheduleState.mockImplementation(() => ({
       hasScheduled: jest.fn().mockReturnValue(false),
       saveScheduled: saveScheduledMock,
     }));
@@ -269,7 +269,7 @@ describe('schedule plugin — create command', () => {
   test('uses key manager from args when provided', async () => {
     const logger = makeLogger();
     const saveScheduledMock = jest.fn();
-    MockedScheduleHelper.mockImplementation(() => ({
+    MockedScheduleState.mockImplementation(() => ({
       hasScheduled: jest.fn().mockReturnValue(false),
       saveScheduled: saveScheduledMock,
     }));

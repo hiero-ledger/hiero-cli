@@ -742,8 +742,6 @@ export const setupTokenStateServiceMock = (
       total: number;
       byNetwork: Record<string, number>;
       bySupplyType: Record<string, number>;
-      withAssociations: number;
-      totalAssociations: number;
     };
   },
 ) => {
@@ -755,8 +753,6 @@ export const setupTokenStateServiceMock = (
         withKeys: 0,
         byNetwork: {},
         bySupplyType: {},
-        withAssociations: 0,
-        totalAssociations: 0,
       },
     ),
   }));

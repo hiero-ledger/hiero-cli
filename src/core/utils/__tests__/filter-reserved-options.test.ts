@@ -37,7 +37,7 @@ describe('filterReservedOptions', () => {
     const options: CommandOption[] = [
       { name: 'my-n', short: 'N', type: OptionType.STRING, required: false },
       { name: 'my-h', short: 'h', type: OptionType.STRING, required: false },
-      { name: 'valid', short: 'v', type: OptionType.STRING, required: false },
+      { name: 'valid', short: 'q', type: OptionType.STRING, required: false },
     ];
     const result = filterReservedOptions(options, []);
     expect(result.allowed).toHaveLength(1);

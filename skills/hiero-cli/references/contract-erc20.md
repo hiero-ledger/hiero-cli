@@ -128,7 +128,7 @@ Call `transfer(to, value)` — transfer tokens to an address.
 | ------------ | ----- | ------ | -------- | -------- | -------------------------------------------------- |
 | `--contract` | `-c`  | string | **yes**  | —        | Contract alias, ID, or EVM address                 |
 | `--to`       | `-t`  | string | **yes**  | —        | Recipient: alias, account ID, or EVM address       |
-| `--value`    | `-v`  | number | **yes**  | —        | Token amount (raw integer, no decimals conversion) |
+| `--value`    | `-V`  | number | **yes**  | —        | Token amount (raw integer, no decimals conversion) |
 | `--gas`      | `-g`  | number | no       | `100000` | Gas limit                                          |
 
 **Example:**
@@ -150,7 +150,7 @@ Call `transferFrom(from, to, value)` — transfer tokens on behalf of `from` (re
 | `--contract` | `-c`  | string | **yes**  | —        | Contract alias, ID, or EVM address                |
 | `--from`     | `-f`  | string | **yes**  | —        | Source account: alias, account ID, or EVM address |
 | `--to`       | `-t`  | string | **yes**  | —        | Recipient: alias, account ID, or EVM address      |
-| `--value`    | `-v`  | number | **yes**  | —        | Token amount                                      |
+| `--value`    | `-V`  | number | **yes**  | —        | Token amount                                      |
 | `--gas`      | `-g`  | number | no       | `100000` | Gas limit                                         |
 
 **Example:**
@@ -171,7 +171,7 @@ Call `approve(spender, value)` — approve a spender to spend tokens.
 | ------------ | ----- | ------ | -------- | -------- | ------------------------------------------ |
 | `--contract` | `-c`  | string | **yes**  | —        | Contract alias, ID, or EVM address         |
 | `--spender`  | `-s`  | string | **yes**  | —        | Spender: alias, account ID, or EVM address |
-| `--value`    | `-v`  | number | **yes**  | —        | Amount to approve                          |
+| `--value`    | `-V`  | number | **yes**  | —        | Amount to approve                          |
 | `--gas`      | `-g`  | number | no       | `100000` | Gas limit                                  |
 
 **Example:**

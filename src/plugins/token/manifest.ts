@@ -182,13 +182,11 @@ import {
   tokenView,
   TokenViewOutputSchema,
 } from './commands/view';
-import { tokenAssociateStateHook } from './hooks/token-associate-state';
 import { tokenCreateFtFromFileStateHook } from './hooks/token-create-ft-from-file-state';
 import { tokenCreateFtStateHook } from './hooks/token-create-ft-state';
 import { tokenCreateNftFromFileStateHook } from './hooks/token-create-nft-from-file-state';
 import { tokenCreateNftStateHook } from './hooks/token-create-nft-state';
 import { tokenDeleteStateHook } from './hooks/token-delete-state';
-import { tokenDissociateStateHook } from './hooks/token-dissociate-state/handler';
 import { tokenUpdateStateHook } from './hooks/token-update-state';
 
 export const tokenPluginManifest: PluginManifest = {
@@ -215,16 +213,6 @@ export const tokenPluginManifest: PluginManifest = {
     {
       name: 'token-create-nft-from-file-state',
       hook: tokenCreateNftFromFileStateHook,
-      options: [],
-    },
-    {
-      name: 'token-associate-state',
-      hook: tokenAssociateStateHook,
-      options: [],
-    },
-    {
-      name: 'token-dissociate-state',
-      hook: tokenDissociateStateHook,
       options: [],
     },
     {
@@ -729,7 +717,7 @@ export const tokenPluginManifest: PluginManifest = {
         },
         {
           name: 'symbol',
-          short: 'Y',
+          short: 'C',
           type: OptionType.STRING,
           required: true,
           description: 'Fungible token symbol',
@@ -825,7 +813,7 @@ export const tokenPluginManifest: PluginManifest = {
         },
         {
           name: 'freeze-default',
-          short: 'F',
+          short: 'G',
           type: OptionType.BOOLEAN,
           required: false,
           default: false,
@@ -986,7 +974,7 @@ export const tokenPluginManifest: PluginManifest = {
         },
         {
           name: 'symbol',
-          short: 'Y',
+          short: 'C',
           type: OptionType.STRING,
           required: true,
           description: 'Token symbol',
@@ -1141,7 +1129,7 @@ export const tokenPluginManifest: PluginManifest = {
         },
         {
           name: 'freeze-default',
-          short: 'F',
+          short: 'G',
           type: OptionType.BOOLEAN,
           required: false,
           description:
@@ -2235,7 +2223,7 @@ export const tokenPluginManifest: PluginManifest = {
         },
         {
           name: 'symbol',
-          short: 'Y',
+          short: 'C',
           type: OptionType.STRING,
           required: false,
           description: 'New token symbol',

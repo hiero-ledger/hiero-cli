@@ -28,7 +28,7 @@ import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { ScheduledHook } from '@/plugins/schedule/hooks/scheduled/handler';
 import { ScheduledOutputSchema } from '@/plugins/schedule/hooks/scheduled/output';
-import { ZustandScheduleStateHelper } from '@/plugins/schedule/zustand-state-helper';
+import { ScheduleStateServiceImpl } from '@/plugins/schedule/services/schedule-state.service';
 
 import {
   ADMIN_KEY_REF,
@@ -41,11 +41,11 @@ import {
   SCHEDULE_NAME,
 } from './helpers/fixtures';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandScheduleStateHelper: jest.fn(),
+jest.mock('../../services/schedule-state.service', () => ({
+  ScheduleStateServiceImpl: jest.fn(),
 }));
 
-const MockedZustand = ZustandScheduleStateHelper as unknown as jest.Mock;
+const MockedScheduleState = ScheduleStateServiceImpl as unknown as jest.Mock;
 
 const HOOK_COMMAND_NAME = 'account_create';
 
@@ -77,7 +77,7 @@ describe('schedule plugin — scheduled hook', () => {
     jest.clearAllMocks();
     getScheduledMock = jest.fn();
     saveScheduledMock = jest.fn();
-    MockedZustand.mockImplementation(() => ({
+    MockedScheduleState.mockImplementation(() => ({
       getScheduled: getScheduledMock,
       saveScheduled: saveScheduledMock,
     }));

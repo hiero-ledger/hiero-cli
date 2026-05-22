@@ -35,9 +35,11 @@ export const RESERVED_LONG_OPTIONS = new Set<string>([
 
 export const RESERVED_SHORT_OPTIONS = new Set<string>([
   'h', // help (Commander default)
-  'V', // version (Commander default)
+  'v', // version
   'N', // network
-  'P', // Payer
+  'P', // payer
+  'F', // format
+  'Y', // confirm
 ]);
 
 export const DEFAULT_PLUGIN_STATE: PluginManifest[] = [

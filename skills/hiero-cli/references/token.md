@@ -17,7 +17,7 @@ Create a new fungible token with specified properties.
 | Option                   | Short | Type       | Required | Default        | Description                                                                                                                                                 |
 | ------------------------ | ----- | ---------- | -------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--token-name`           | `-T`  | string     | **yes**  | —              | Token name                                                                                                                                                  |
-| `--symbol`               | `-Y`  | string     | **yes**  | —              | Token symbol                                                                                                                                                |
+| `--symbol`               | `-C`  | string     | **yes**  | —              | Token symbol                                                                                                                                                |
 | `--treasury`             | `-t`  | string     | no       | operator       | Treasury account: `accountId:privateKey`, key reference, or alias                                                                                           |
 | `--decimals`             | `-d`  | number     | no       | `0`            | Number of decimal places                                                                                                                                    |
 | `--initial-supply`       | `-i`  | string     | no       | `1000000`      | Initial supply. Default: display units. Append `"t"` for raw units                                                                                          |
@@ -27,7 +27,7 @@ Create a new fungible token with specified properties.
 | `--admin-key-threshold`  | `-A`  | number     | no       | —              | M-of-N for threshold admin keys (use when multiple `--admin-key` entries participate in an M-of-N policy)                                                   |
 | `--supply-key`           | `-s`  | repeatable | no       | —              | Supply key(s). Pass multiple times for KeyList / threshold supply keys. Same formats as CLI key options                                                     |
 | `--supply-key-threshold` | `-L`  | number     | no       | —              | M-of-N for threshold supply keys (use when multiple `--supply-key` entries participate in an M-of-N policy)                                                 |
-| `--freeze-default`       | `-F`  | flag       | no       | `false`        | When set and a freeze key is provided, new token associations are frozen by default (presence-only flag)                                                    |
+| `--freeze-default`       | `-G`  | flag       | no       | `false`        | When set and a freeze key is provided, new token associations are frozen by default (presence-only flag)                                                    |
 | `--name`                 | `-n`  | string     | no       | —              | Local alias to register for this token                                                                                                                      |
 | `--key-manager`          | `-k`  | string     | no       | config default | Key manager: `local` or `local_encrypted`                                                                                                                   |
 | `--memo`                 | `-M`  | string     | no       | —              | Token memo (max 100 chars)                                                                                                                                  |
@@ -57,7 +57,7 @@ Create a new non-fungible token collection.
 | Option                    | Short | Type       | Required | Default        | Description                                                                         |
 | ------------------------- | ----- | ---------- | -------- | -------------- | ----------------------------------------------------------------------------------- |
 | `--token-name`            | `-T`  | string     | **yes**  | —              | Token name                                                                          |
-| `--symbol`                | `-Y`  | string     | **yes**  | —              | Token symbol                                                                        |
+| `--symbol`                | `-C`  | string     | **yes**  | —              | Token symbol                                                                        |
 | `--treasury`              | `-t`  | string     | no       | operator       | Treasury account: `accountId:privateKey`, key reference, or alias                   |
 | `--supply-type`           | `-S`  | string     | no       | `INFINITE`     | Supply type: `INFINITE` or `FINITE`                                                 |
 | `--max-supply`            | `-m`  | string     | no       | —              | Max supply. Append `"t"` for raw units                                              |
@@ -65,7 +65,7 @@ Create a new non-fungible token collection.
 | `--admin-key-threshold`   | `-A`  | number     | no       | —              | M-of-N when multiple `--admin-key` values are set                                   |
 | `--supply-key`            | `-s`  | repeatable | no       | —              | Supply key(s). Pass multiple times for KeyList / threshold supply keys              |
 | `--supply-key-threshold`  | `-L`  | number     | no       | —              | M-of-N when multiple `--supply-key` values are set                                  |
-| `--freeze-default`        | `-F`  | flag       | no       | `false`        | When set and a freeze key is provided, new token associations are frozen by default |
+| `--freeze-default`        | `-G`  | flag       | no       | `false`        | When set and a freeze key is provided, new token associations are frozen by default |
 | `--auto-renew-period`     | `-R`  | number     | no       | —              | Auto-renew period in seconds (e.g. `7776000` for 90 days)                           |
 | `--auto-renew-account-id` | `-r`  | string     | no       | —              | Account ID that pays for token auto-renewal fees (e.g. `0.0.12345`)                 |
 | `--expiration-time`       | `-x`  | string     | no       | —              | Token expiration time in ISO 8601 format (e.g. `2027-01-01T00:00:00Z`)              |

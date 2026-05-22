@@ -128,7 +128,7 @@ Transfers tokens from the operator account to the recipient.
 
 ```bash
 hcli contract-erc20 transfer --contract my-token --to bob --value 1000
-hcli contract-erc20 transfer -c my-token -t 0x123... -v 500 -g 150000
+hcli contract-erc20 transfer -c my-token -t 0x123... -V 500 -g 150000
 ```
 
 | Option     | Short | Required | Description                        | Default |
