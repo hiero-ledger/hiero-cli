@@ -111,14 +111,14 @@ hcli config get -o default_key_manager
 Set the value of a configuration option.
 
 ```bash
-hcli config set -o default_key_manager -v local_encrypted
-hcli config set -o log_level -v info
+hcli config set -o default_key_manager -V local_encrypted
+hcli config set -o log_level -V info
 ```
 
 **Options:**
 
 - `-o, --option <string>` - Option name to set (required)
-- `-v, --value <string>` - Value to set (required)
+- `-V, --value <string>` - Value to set (required)
 
 **Output:**
 

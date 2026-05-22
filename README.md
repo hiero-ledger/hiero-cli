@@ -187,7 +187,7 @@ hcli network set-operator --operator 0.0.123456:302e... --network testnet
 
 #### `--payer` / `-P` - Payer Override
 
-Override the default operator as the payer for all transactions in a command. The payer can be specified as:
+Override the default operator as the payer for all transactions in a command. When omitted, the operator account is used as the payer. The payer can be specified as:
 
 - **Account alias**: `--payer myaccount`
 - **Account ID with private key**: `--payer 0.0.123456:302e020100300506032b657004220420...`
@@ -342,10 +342,10 @@ Configure the default key storage method using the config command:
 
 ```bash
 # Set to plain text storage (development/testing)
-hcli config set -o default_key_manager -v local
+hcli config set -o default_key_manager -V local
 
 # Set to encrypted storage (production)
-hcli config set -o default_key_manager -v local_encrypted
+hcli config set -o default_key_manager -V local_encrypted
 ```
 
 ### Per-Operation Override
