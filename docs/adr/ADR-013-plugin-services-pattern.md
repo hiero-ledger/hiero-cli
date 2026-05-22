@@ -152,6 +152,28 @@ export async function tokenWipeFt(args: CommandHandlerArgs): Promise<CommandResu
 
 For a simple command (extending `Command` rather than `BaseTransactionCommand`), the wrapper pattern is identical.
 
+### Hooks: inline construction (no constructor injection)
+
+Hooks expose a single `execute(params)` method and have no benefit from constructor-injected services. **Plugin services consumed inside a hook are constructed inline at the top of `execute()`**, using `params.args.api` as the source of Core services:
+
+```typescript
+export class ScheduledHook implements Hook<...> {
+  async execute(params: PreSignTransactionHookParams<...>): Promise<HookResult> {
+    const { api } = params.args;
+    const scheduleState = new ScheduleStateServiceImpl(api.state, api.logger);
+    // ...
+  }
+}
+```
+
+Rules:
+
+- Hook classes do **not** declare a constructor.
+- Manifests register hooks with `new XxxHook()` — no arguments.
+- Tests mock the service module via `jest.mock(...)`; the inline `new` inside `execute()` resolves to the mocked constructor.
+
+**Rationale:** hooks are stateless, single-method handlers. Constructor injection would force a factory parameter and a default, duplicating the wiring already performed inside `execute()` and adding noise without testability gains.
+
 ---
 
 ## Responsibility Boundaries
@@ -226,7 +248,7 @@ Migration proceeds plugin by plugin, with each pull request independently mergea
 - Plugin manifest — unchanged.
 - `args.api` in handlers — remains available for Core services.
 - `makeApiMock` in command tests — continues to work as before.
-- Hooks — identical constructor injection of plugin services.
+- Hooks — **do not** use constructor injection. Plugin services are constructed inline inside `execute()`. See "Hooks: inline construction (no constructor injection)" above.
 
 This proposal **is not** a DI container (such as tsyringe or inversify). It introduces no decorators, no `reflect-metadata`, and no container. It is strictly a code-organization convention combined with constructor injection, with the wrapper function serving as the wiring point.
 
@@ -252,6 +274,7 @@ These concerns are out of scope. **This ADR addresses a single problem: the lack
 - Interface and implementation are placed at `plugins/<x>/services/<name>.service.ts` and `<name>.service.interface.ts`.
 - Use constructor injection of concrete Core services; never inject `CoreApi`.
 - The wrapper function in `handler.ts` is the wiring point.
+- Hooks construct plugin services inline in `execute()`; they have no constructor.
 - Within a command, `this.X` refers to plugin services and `args.api.X` refers to Core services.
 - `utils/` is reserved for pure functions without dependency injection. The `Helper` suffix is eliminated.
 

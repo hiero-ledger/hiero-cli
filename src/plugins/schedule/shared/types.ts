@@ -8,7 +8,7 @@ export interface ResolvedSchedule {
   adminKeyRefIds?: string[];
 }
 
-export interface ScheduleHelperResolveParams {
+export interface ScheduleResolveParams {
   scheduleReference: string;
   type: EntityReferenceType;
   network: SupportedNetwork;

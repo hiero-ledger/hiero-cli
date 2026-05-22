@@ -1,12 +1,8 @@
-/**
- * Schedule sign — ScheduleSignTransaction
- */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type {
-  Credential,
-  KeyManager,
-} from '@/core/services/kms/kms-types.interface';
-import type { ScheduledTransactionData } from '@/plugins/schedule/schema';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { ScheduleKeysService } from '@/plugins/schedule/services/schedule-keys.service.interface';
+import type { ScheduleResolverService } from '@/plugins/schedule/services/schedule-resolver.service.interface';
+import type { ScheduleSyncService } from '@/plugins/schedule/services/schedule-sync.service.interface';
 import type { ScheduleSignOutput } from './output';
 import type {
   ScheduleSignBuildTransactionResult,
@@ -20,9 +16,10 @@ import { BaseTransactionCommand } from '@/core/commands/command';
 import { TransactionError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { OrchestratorSource } from '@/core/types/shared.types';
-import { composeKey } from '@/core/utils/key-composer';
-import { ScheduleHelper } from '@/plugins/schedule/schedule-helper';
-import { ZustandScheduleStateHelper } from '@/plugins/schedule/zustand-state-helper';
+import { ScheduleKeysServiceImpl } from '@/plugins/schedule/services/schedule-keys.service';
+import { ScheduleResolverServiceImpl } from '@/plugins/schedule/services/schedule-resolver.service';
+import { ScheduleStateServiceImpl } from '@/plugins/schedule/services/schedule-state.service';
+import { ScheduleSyncServiceImpl } from '@/plugins/schedule/services/schedule-sync.service';
 
 import { ScheduleSignInputSchema } from './input';
 
@@ -34,7 +31,11 @@ export class ScheduleSignCommand extends BaseTransactionCommand<
   ScheduleSignSignTransactionResult,
   ScheduleSignExecuteTransactionResult
 > {
-  constructor() {
+  constructor(
+    private readonly scheduleResolver: ScheduleResolverService,
+    private readonly scheduleKeys: ScheduleKeysService,
+    private readonly scheduleSync: ScheduleSyncService,
+  ) {
     super(SCHEDULE_SIGN_COMMAND_NAME);
   }
 
@@ -50,43 +51,6 @@ export class ScheduleSignCommand extends BaseTransactionCommand<
     return executeTransactionResult;
   }
 
-  private async resolveSignerKeyRefIds(
-    args: CommandHandlerArgs,
-    scheduleId: string,
-    explicitKeys: Credential[],
-    keyManager: KeyManager,
-  ): Promise<string[]> {
-    const { api } = args;
-
-    if (explicitKeys.length > 0) {
-      const keyRefIds: string[] = [];
-      for (const credential of explicitKeys) {
-        const signer = await api.keyResolver.resolveSigningKey(
-          credential,
-          keyManager,
-          false,
-          ['schedule:signer'],
-        );
-        keyRefIds.push(signer.keyRefId);
-      }
-      return keyRefIds;
-    }
-
-    const mirrorScheduleInfo = await api.mirror.getScheduled(scheduleId);
-    const { keyRefIds } = await api.keyResolver.resolveSigningKeys({
-      mirrorRoleKey: mirrorScheduleInfo.admin_key,
-      explicitCredentials: [],
-      keyManager,
-      signingKeyLabels: ['schedule:signer'],
-      emptyMirrorRoleKeyMessage:
-        'Schedule has no admin key on the network. Provide --key to specify the signing key.',
-      insufficientKmsMatchesMessage:
-        'No matching signer key found in key manager for this schedule. Provide --key.',
-      validationErrorOptions: { context: { scheduleId } },
-    });
-    return keyRefIds;
-  }
-
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<ScheduleSignNormalisedParams> {
@@ -98,16 +62,12 @@ export class ScheduleSignCommand extends BaseTransactionCommand<
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const currentNetwork = api.network.getCurrentNetwork();
-    const scheduleHelper = new ScheduleHelper(
-      api.state,
-      api.mirror,
-      api.logger,
-    );
-    const schedule = await scheduleHelper.resolveScheduleIdByEntityReference({
-      scheduleReference: validArgs.schedule.value,
-      type: validArgs.schedule.type,
-      network: currentNetwork,
-    });
+    const schedule =
+      await this.scheduleResolver.resolveScheduleIdByEntityReference({
+        scheduleReference: validArgs.schedule.value,
+        type: validArgs.schedule.type,
+        network: currentNetwork,
+      });
     if (!schedule.scheduled) {
       throw new ValidationError(
         `Schedule has not been yet submitted on Hedera network: ${validArgs.schedule.value}`,
@@ -124,8 +84,7 @@ export class ScheduleSignCommand extends BaseTransactionCommand<
       );
     }
 
-    const signerKeyRefIds = await this.resolveSignerKeyRefIds(
-      args,
+    const signerKeyRefIds = await this.scheduleKeys.resolveSignKeyRefs(
       schedule.scheduleId,
       validArgs.key ?? [],
       keyManager,
@@ -182,7 +141,11 @@ export class ScheduleSignCommand extends BaseTransactionCommand<
     }
 
     const updatedScheduledRecord =
-      await this.syncScheduleExecutionStatusFromMirror(args, normalisedParams);
+      await this.scheduleSync.markExecutionStatusFromMirror(
+        normalisedParams.scheduleId,
+        normalisedParams.scheduleName,
+        normalisedParams.network,
+      );
 
     return {
       transactionId: result.transactionId,
@@ -190,50 +153,6 @@ export class ScheduleSignCommand extends BaseTransactionCommand<
       status: result.receipt?.status?.status,
       scheduledData: updatedScheduledRecord,
     };
-  }
-
-  /**
-   * After a successful sign tx, refresh schedule state from the mirror. If the
-   * schedule has executed (executed_timestamp set) and we have a local named
-   * entry, mark it executed — same idea as {@link ScheduleVerifyCommand}.
-   */
-  private async syncScheduleExecutionStatusFromMirror(
-    args: CommandHandlerArgs,
-    normalisedParams: ScheduleSignNormalisedParams,
-  ): Promise<ScheduledTransactionData | undefined> {
-    const { api } = args;
-    const scheduleResponse = await api.mirror.getScheduled(
-      normalisedParams.scheduleId,
-    );
-
-    if (!scheduleResponse) {
-      return undefined;
-    }
-
-    const scheduleName = normalisedParams.scheduleName;
-    if (!scheduleName) {
-      return undefined;
-    }
-
-    const stateHelper = new ZustandScheduleStateHelper(api.state, api.logger);
-    const scheduleRecord = stateHelper.getScheduled(
-      composeKey(normalisedParams.network, scheduleName),
-    );
-
-    if (!scheduleRecord || scheduleRecord.executed) {
-      return undefined;
-    }
-
-    const updatedScheduledRecord: ScheduledTransactionData = {
-      ...scheduleRecord,
-      scheduled: true,
-      executed: Boolean(scheduleResponse.executed_timestamp),
-    };
-    stateHelper.saveScheduled(
-      composeKey(normalisedParams.network, scheduleRecord.name),
-      updatedScheduledRecord,
-    );
-    return updatedScheduledRecord;
   }
 
   async outputPreparation(
@@ -257,5 +176,22 @@ export class ScheduleSignCommand extends BaseTransactionCommand<
 export async function scheduleSign(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new ScheduleSignCommand().execute(args);
+  const { api } = args;
+  const scheduleState = new ScheduleStateServiceImpl(api.state, api.logger);
+  const scheduleResolver = new ScheduleResolverServiceImpl(
+    scheduleState,
+    api.mirror,
+  );
+  const scheduleKeys = new ScheduleKeysServiceImpl(api.keyResolver, api.mirror);
+  const scheduleSync = new ScheduleSyncServiceImpl(
+    scheduleState,
+    api.mirror,
+    scheduleKeys,
+  );
+
+  return new ScheduleSignCommand(
+    scheduleResolver,
+    scheduleKeys,
+    scheduleSync,
+  ).execute(args);
 }
