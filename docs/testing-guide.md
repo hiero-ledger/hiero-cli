@@ -79,12 +79,6 @@ import { makeLogger } from '@/__tests__/mocks/mocks';
 export const makeLogger = (): jest.Mocked<Logger> => ({ info: jest.fn(), ... });
 ```
 
-Plugin `helpers/mocks.ts` files that need to re-export `makeLogger` for backwards compatibility may do so with a single re-export line:
-
-```typescript
-export { makeLogger } from '@/__tests__/mocks/mocks';
-```
-
 ---
 
 ## 4. Mocking `@hiero-ledger/sdk`
@@ -185,21 +179,20 @@ Never use raw strings where a TypeScript enum exists. This applies to mock data,
 **Allowed:**
 
 - Service-level mock helpers specific to the plugin (`makeSwapTxExecuteMock`, `makeBatchStateHelperMock`, `makeAccountTransactionServiceMock`, …)
-- Re-export of `makeLogger` from global (one line only)
 - `makeApiMocks(config?)` — plugin-specific `CoreApi` mock assembly, accepted only when the plugin's default for a service genuinely differs from the global default (e.g. `contract-erc20` / `contract-erc721`)
 
 **Not allowed:**
 
-- Local `makeLogger` definition (must re-export global)
+- Local `makeLogger` definition — import directly from `@/__tests__/mocks/mocks` at the usage site
 - Any function named `makeArgs` or `make*Args` that wraps the global `makeArgs`
 - Re-implementation of global factories (`makeNetworkMock`, `makeTxSignMock`, `makeKmsMock`, …)
 - Constants that duplicate values already in `src/__tests__/mocks/fixtures.ts`
 
 ---
 
-## 8. No re-exports or alias assignments in fixture files
+## 8. No re-exports or alias assignments in test files
 
-Never re-export a symbol from another module (`export { X } from '...'`) and never create an alias assignment (`export const A = B`) in `helpers/fixtures.ts` files. If a constant from global fixtures is needed, import it directly at the usage site.
+Never re-export a symbol from another module (`export { X } from '...'`) and never create an alias assignment (`export const A = B`) in any test helper file (`helpers/fixtures.ts`, `helpers/mocks.ts`, or any other file under `__tests__/`). If a symbol from the global fixtures or mocks is needed, import it directly at the usage site.
 
 ---
 
