@@ -123,6 +123,7 @@ export class TokenImportCommand implements Command {
       maxSupply: BigInt(tokenInfo.max_supply),
       network,
       customFees: [],
+      associations: [],
       memo: tokenInfo.memo || undefined,
     };
 

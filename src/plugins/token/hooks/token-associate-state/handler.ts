@@ -3,11 +3,10 @@ import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
 
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
 import { OrchestratorSource } from '@/core/types/shared.types';
-import { TOKEN_CREATE_NFT_FROM_FILE_COMMAND_NAME } from '@/plugins/token/commands/create-nft-from-file';
-import { TokenAssociationsServiceImpl } from '@/plugins/token/services/token-associations.service';
+import { TOKEN_ASSOCIATE_COMMAND_NAME } from '@/plugins/token/commands/associate';
 import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
-export class TokenCreateNftFromFileStateHook implements Hook<PostOutputPreparationHookParams> {
+export class TokenAssociateStateHook implements Hook<PostOutputPreparationHookParams> {
   async execute(params: PostOutputPreparationHookParams): Promise<HookResult> {
     const parsed = OrchestratorResultSchema.safeParse(
       params.executeTransactionResult,
@@ -20,25 +19,17 @@ export class TokenCreateNftFromFileStateHook implements Hook<PostOutputPreparati
     }
 
     const { api } = params.args;
-    const tokenAssociations = new TokenAssociationsServiceImpl(
-      api.keyResolver,
-      api.token,
-      api.txSign,
-      api.txExecute,
-      api.logger,
-    );
     const tokenState = new TokenStateServiceImpl(
       api.state,
       api.logger,
       api.receipt,
       api.alias,
-      tokenAssociations,
     );
 
     for (const item of parsed.data.batchData.transactions.filter(
-      (i) => i.command === TOKEN_CREATE_NFT_FROM_FILE_COMMAND_NAME,
+      (i) => i.command === TOKEN_ASSOCIATE_COMMAND_NAME,
     )) {
-      await tokenState.applyCreateNftFromFileFromBatchItem(item);
+      await tokenState.applyAssociationFromBatchItem(item);
     }
     return { breakFlow: false };
   }

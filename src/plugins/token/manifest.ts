@@ -188,7 +188,7 @@ import { TokenCreateFtStateHook } from './hooks/token-create-ft-state';
 import { TokenCreateNftFromFileStateHook } from './hooks/token-create-nft-from-file-state';
 import { TokenCreateNftStateHook } from './hooks/token-create-nft-state';
 import { TokenDeleteStateHook } from './hooks/token-delete-state';
-import { TokenDissociateStateHook } from './hooks/token-dissociate-state/handler';
+import { TokenDissociateStateHook } from './hooks/token-dissociate-state';
 import { TokenUpdateStateHook } from './hooks/token-update-state';
 
 export const tokenPluginManifest: PluginManifest = {

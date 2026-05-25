@@ -7,7 +7,6 @@ import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 
 import { makeAliasMock, makeReceiptMock } from '@/__tests__/mocks/mocks';
-import { SupplyType } from '@/core/types/shared.types';
 import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { mockMultipleTokens, mockStateTokenData } from './helpers/fixtures';

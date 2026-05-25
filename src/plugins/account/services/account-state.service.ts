@@ -7,21 +7,22 @@ import type {
 } from '@/core';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { ReceiptService } from '@/core/services/receipt/receipt-service.interface';
+import type { ScheduledTransactionData } from '@/core/schemas/common-schemas';
 import type {
   BatchDataItem,
   TransactionResult,
 } from '@/core/types/shared.types';
 import type { AccountUpdateNormalisedParams } from '@/plugins/account/hooks/account-update-state/types';
-import type {
-  AccountData,
-  AccountData as AccountDataType,
-} from '@/plugins/account/schema';
+import type { AccountData } from '@/plugins/account/schema';
 import type { AccountStateService } from '@/plugins/account/services/account-state.service.interface';
-import type { ScheduledTransactionData } from '@/plugins/schedule/schema';
 
 import { formatTransactionIdToDashFormat } from '@/core';
 import { ValidationError } from '@/core/errors';
-import { AliasType, MirrorTransactionResult } from '@/core/types/shared.types';
+import {
+  AliasType,
+  MirrorTransactionResult,
+  SupportedNetwork,
+} from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { ACCOUNT_CREATE_COMMAND_NAME } from '@/plugins/account/commands/create';
 import { ACCOUNT_DELETE_COMMAND_NAME } from '@/plugins/account/commands/delete/handler';
@@ -162,12 +163,11 @@ export class AccountStateServiceImpl implements AccountStateService {
     });
   }
 
-  applyAccountUpdateFromBatchItem(item: BatchDataItem): Promise<void> {
-    if (item.command !== ACCOUNT_UPDATE_COMMAND_NAME) return Promise.resolve();
+  async applyAccountUpdateFromBatchItem(item: BatchDataItem): Promise<void> {
+    if (item.command !== ACCOUNT_UPDATE_COMMAND_NAME) return;
     const params = this.parseUpdateParams(item.normalizedParams);
-    if (!params) return Promise.resolve();
+    if (!params) return;
     this.persistAccountUpdate(params);
-    return Promise.resolve();
   }
 
   async applyAccountUpdateFromSchedule(
@@ -208,8 +208,8 @@ export class AccountStateServiceImpl implements AccountStateService {
     this.persistAccountUpdate(params);
   }
 
-  applyAccountDeleteFromBatchItem(item: BatchDataItem): Promise<void> {
-    if (item.command !== ACCOUNT_DELETE_COMMAND_NAME) return Promise.resolve();
+  async applyAccountDeleteFromBatchItem(item: BatchDataItem): Promise<void> {
+    if (item.command !== ACCOUNT_DELETE_COMMAND_NAME) return;
     const parsed = AccountDeleteNormalisedParamsSchema.safeParse(
       item.normalizedParams,
     );
@@ -217,7 +217,7 @@ export class AccountStateServiceImpl implements AccountStateService {
       this.logger.warn(
         'Account delete batch state hook: normalized params did not match schema; skipping local state cleanup',
       );
-      return Promise.resolve();
+      return;
     }
     const params = parsed.data;
     this.removeAccountFromLocalState(
@@ -225,7 +225,6 @@ export class AccountStateServiceImpl implements AccountStateService {
       params.network,
     );
     this.removeKmsCredentialIfUnused(params.accountToDelete.keyRefId);
-    return Promise.resolve();
   }
 
   private parseCreateParams(
@@ -282,7 +281,7 @@ export class AccountStateServiceImpl implements AccountStateService {
       }
     }
 
-    const accountData: AccountDataType = {
+    const accountData: AccountData = {
       name: params.name,
       accountId: stateAccountId,
       type: params.keyType,
@@ -315,7 +314,7 @@ export class AccountStateServiceImpl implements AccountStateService {
       return;
     }
 
-    const updated: AccountDataType = {
+    const updated: AccountData = {
       ...existing,
       keyRefId: newKeyRefId,
       publicKey: newPublicKey,
@@ -340,7 +339,7 @@ export class AccountStateServiceImpl implements AccountStateService {
 
   private removeAccountFromLocalState(
     accountId: string,
-    network: AccountUpdateNormalisedParams['network'],
+    network: SupportedNetwork,
   ): void {
     const key = composeKey(network, accountId);
     const aliasesForAccount = this.alias

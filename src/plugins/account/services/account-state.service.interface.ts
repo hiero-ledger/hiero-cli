@@ -1,6 +1,6 @@
+import type { ScheduledTransactionData } from '@/core/schemas/common-schemas';
 import type { BatchDataItem } from '@/core/types/shared.types';
 import type { AccountData } from '@/plugins/account/schema';
-import type { ScheduledTransactionData } from '@/plugins/schedule/schema';
 
 export interface AccountStateService {
   saveAccount(key: string, accountData: AccountData): void;
