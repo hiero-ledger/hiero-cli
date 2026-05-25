@@ -7,7 +7,11 @@ import {
   makeLogger,
 } from '@/__tests__/mocks/mocks';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
-import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
+import {
+  AliasType,
+  SupplyType,
+  SupportedNetwork,
+} from '@/core/types/shared.types';
 import { TOKEN_CREATE_NFT_FROM_FILE_COMMAND_NAME } from '@/plugins/token/commands/create-nft-from-file';
 import { tokenCreateNftFromFileStateHook } from '@/plugins/token/hooks/token-create-nft-from-file-state';
 import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
@@ -80,7 +84,7 @@ describe('token plugin - batch-create-nft-from-file hook', () => {
   test('returns batch transaction status failure when batch success is false', async () => {
     const logger = makeLogger();
     const api = {} as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -104,7 +108,7 @@ describe('token plugin - batch-create-nft-from-file hook', () => {
       receipt: { getReceipt: jest.fn() },
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -135,7 +139,7 @@ describe('token plugin - batch-create-nft-from-file hook', () => {
       receipt: { getReceipt: jest.fn() },
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -167,7 +171,7 @@ describe('token plugin - batch-create-nft-from-file hook', () => {
       receipt: { getReceipt: jest.fn() },
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -203,7 +207,7 @@ describe('token plugin - batch-create-nft-from-file hook', () => {
       receipt: { getReceipt: getReceiptMock },
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -243,7 +247,7 @@ describe('token plugin - batch-create-nft-from-file hook', () => {
         exists: jest.fn().mockReturnValue(false),
       },
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -275,7 +279,7 @@ describe('token plugin - batch-create-nft-from-file hook', () => {
     );
     expect(registerMock).toHaveBeenCalledWith({
       alias: 'MyNFT',
-      type: 'token',
+      type: AliasType.Token,
       network: SupportedNetwork.TESTNET,
       entityId: '0.0.9999',
       createdAt: '2024-01-01T00:00:00.000Z',
@@ -310,7 +314,7 @@ describe('token plugin - batch-create-nft-from-file hook', () => {
         exists: jest.fn().mockReturnValue(false),
       },
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -370,7 +374,7 @@ describe('token plugin - batch-create-nft-from-file hook', () => {
       receipt: { getReceipt: getReceiptMock },
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(true) },
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',

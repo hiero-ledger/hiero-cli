@@ -6,6 +6,11 @@ import {
   MOCK_ACCOUNT_ID_ALT,
   MOCK_HEDERA_ENTITY_ID_1,
 } from '@/__tests__/mocks/fixtures';
+import {
+  makeArgs,
+  makeIdentityResolutionServiceMock,
+  makeLogger,
+} from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError, ValidationError } from '@/core/errors';
 import { HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION } from '@/core/shared/constants';
@@ -23,10 +28,8 @@ import {
   TOKEN_INPUT,
 } from './helpers/fixtures';
 import {
-  makeArgs,
-  makeIdentityResolutionServiceMock,
-  makeLogger,
   makeSwapApiMocks,
+  makeSwapIdentityResolutionMock,
 } from './helpers/mocks';
 
 jest.mock('../../services/swap-state.service', () => ({
@@ -66,18 +69,22 @@ describe('swap plugin - add-nft command', () => {
     const api: Partial<CoreApi> = {
       network: networkMock,
       config: configMock,
+      identityResolution: makeSwapIdentityResolutionMock(),
       keyResolver: {
         resolveAccountCredentials: resolveAccountCredentialsMock,
         resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
-    const args = makeArgs(api, logger, {
-      name: SWAP_NAME,
-      from: FROM_ACCOUNT_INPUT,
-      to: MOCK_ACCOUNT_ID_ALT,
-      token: TOKEN_INPUT,
-      serials: NFT_SERIALS.join(','),
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SWAP_NAME,
+        from: FROM_ACCOUNT_INPUT,
+        to: MOCK_ACCOUNT_ID_ALT,
+        token: TOKEN_INPUT,
+        serials: NFT_SERIALS.join(','),
+      },
+    );
 
     const result = await swapAddNft(args);
 
@@ -115,18 +122,22 @@ describe('swap plugin - add-nft command', () => {
     const api: Partial<CoreApi> = {
       network: networkMock,
       config: configMock,
+      identityResolution: makeSwapIdentityResolutionMock(),
       keyResolver: {
         resolveAccountCredentials: resolveAccountCredentialsMock,
         resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
-    const args = makeArgs(api, logger, {
-      name: SWAP_NAME,
-      from: FROM_ACCOUNT_INPUT,
-      to: MOCK_ACCOUNT_ID_ALT,
-      token: TOKEN_INPUT,
-      serials: NFT_SERIALS.join(','),
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SWAP_NAME,
+        from: FROM_ACCOUNT_INPUT,
+        to: MOCK_ACCOUNT_ID_ALT,
+        token: TOKEN_INPUT,
+        serials: NFT_SERIALS.join(','),
+      },
+    );
 
     await swapAddNft(args);
 
@@ -162,13 +173,16 @@ describe('swap plugin - add-nft command', () => {
         resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
-    const args = makeArgs(api, logger, {
-      name: SWAP_NAME,
-      from: FROM_ACCOUNT_INPUT,
-      to: MOCK_ACCOUNT_ID_ALT,
-      token: TOKEN_INPUT,
-      serials: NFT_SERIALS.join(','),
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SWAP_NAME,
+        from: FROM_ACCOUNT_INPUT,
+        to: MOCK_ACCOUNT_ID_ALT,
+        token: TOKEN_INPUT,
+        serials: NFT_SERIALS.join(','),
+      },
+    );
 
     await swapAddNft(args);
 
@@ -199,12 +213,15 @@ describe('swap plugin - add-nft command', () => {
         resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
-    const args = makeArgs(api, logger, {
-      name: SWAP_NAME,
-      to: MOCK_ACCOUNT_ID_ALT,
-      token: TOKEN_INPUT,
-      serials: NFT_SERIALS.join(','),
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SWAP_NAME,
+        to: MOCK_ACCOUNT_ID_ALT,
+        token: TOKEN_INPUT,
+        serials: NFT_SERIALS.join(','),
+      },
+    );
 
     await expect(swapAddNft(args)).rejects.toThrow(ValidationError);
   });
@@ -227,12 +244,15 @@ describe('swap plugin - add-nft command', () => {
         resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
-    const args = makeArgs(api, logger, {
-      name: SWAP_NAME,
-      to: MOCK_ACCOUNT_ID_ALT,
-      token: TOKEN_INPUT,
-      serials: '1',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SWAP_NAME,
+        to: MOCK_ACCOUNT_ID_ALT,
+        token: TOKEN_INPUT,
+        serials: '1',
+      },
+    );
 
     await expect(swapAddNft(args)).rejects.toThrow(NotFoundError);
   });

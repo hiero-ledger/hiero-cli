@@ -11,8 +11,12 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
-import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
+import {
+  MirrorNodeKeyType,
+  MirrorNodeTokenType,
+} from '@/core/services/mirrornode/types';
 import { NULL_TOKEN } from '@/core/shared/constants';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import {
   TOKEN_UPDATE_COMMAND_NAME,
   tokenUpdate,
@@ -33,7 +37,7 @@ const DEFAULT_TOKEN_INFO = {
   total_supply: '100000',
   max_supply: '0',
   treasury_account_id: '0.0.200000',
-  admin_key: { _type: 'ED25519', key: 'admin-key' },
+  admin_key: { _type: MirrorNodeKeyType.ED25519, key: 'admin-key' },
   memo: '',
   type: MirrorNodeTokenType.FUNGIBLE_COMMON,
 };
@@ -136,7 +140,7 @@ describe('tokenUpdate', () => {
 
       const output = assertOutput(result.result, TokenUpdateOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
-      expect(output.network).toBe('testnet');
+      expect(output.network).toBe(SupportedNetwork.TESTNET);
       expect(output.transactionId).toBe('0.0.123@1234567890.123456789');
     });
 

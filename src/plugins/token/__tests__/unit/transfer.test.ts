@@ -6,6 +6,7 @@ import '@/core/utils/json-serialize';
 import { ECDSA_HEX_PRIVATE_KEY } from '@/__tests__/mocks/fixtures';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NetworkError, SupportedNetwork } from '@/core';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { FtTransferEntry } from '@/core/services/transfer';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { AliasType } from '@/core/types/shared.types';
@@ -82,7 +83,7 @@ describe('transferTokenHandler', () => {
       expect(kms.importPrivateKey).toHaveBeenCalledWith(
         KeyAlgorithm.ECDSA,
         ECDSA_HEX_PRIVATE_KEY,
-        'local',
+        KeyManager.local,
         ['token:account'],
       );
     });
@@ -143,7 +144,7 @@ describe('transferTokenHandler', () => {
       expect(alias.resolve).toHaveBeenCalledWith(
         'alice',
         AliasType.Account,
-        'testnet',
+        SupportedNetwork.TESTNET,
       );
       expect(transfer.buildTransferTransaction).toHaveBeenCalledWith([
         new FtTransferEntry(
@@ -279,7 +280,7 @@ describe('transferTokenHandler', () => {
 
       api.network = {
         ...api.network,
-        getCurrentNetwork: jest.fn().mockReturnValue('testnet'),
+        getCurrentNetwork: jest.fn().mockReturnValue(SupportedNetwork.TESTNET),
         getOperator: jest.fn().mockReturnValue({
           accountId: '0.0.2',
           keyRefId: 'operator-key-ref-id',

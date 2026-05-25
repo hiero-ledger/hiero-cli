@@ -12,6 +12,7 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NetworkError, ValidationError } from '@/core/errors';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 import {
@@ -36,20 +37,19 @@ describe('network plugin - set-operator command', () => {
 
   test('sets operator using account-id:private-key format', async () => {
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     const kmsService = makeKmsMock();
     const aliasService = makeAliasMock();
 
     const args = makeArgs(
-      { network: networkService, kms: kmsService, alias: aliasService },
-      logger,
+      { network: networkService, kms: kmsService, alias: aliasService, logger },
       { operator: `0.0.123456:${ECDSA_DER_PRIVATE_KEY}` },
     );
 
     const result = await networkSetOperator(args);
 
     const output = assertOutput(result.result, NetworkSetOperatorOutputSchema);
-    expect(output.network).toBe('testnet');
+    expect(output.network).toBe(SupportedNetwork.TESTNET);
     expect(output.operator).toEqual({
       accountId: '0.0.123456',
       keyRefId: 'kr_test123',
@@ -58,18 +58,21 @@ describe('network plugin - set-operator command', () => {
     expect(kmsService.importPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
       ECDSA_DER_PRIVATE_KEY,
-      'local',
+      KeyManager.local,
       ['network:operator', 'network:testnet'],
     );
-    expect(networkService.setOperator).toHaveBeenCalledWith('testnet', {
-      accountId: '0.0.123456',
-      keyRefId: 'kr_test123',
-    });
+    expect(networkService.setOperator).toHaveBeenCalledWith(
+      SupportedNetwork.TESTNET,
+      {
+        accountId: '0.0.123456',
+        keyRefId: 'kr_test123',
+      },
+    );
   });
 
   test('sets operator using alias', async () => {
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     const kmsService = makeKmsMock();
     const aliasService = makeAliasMock();
 
@@ -85,8 +88,7 @@ describe('network plugin - set-operator command', () => {
     });
 
     const args = makeArgs(
-      { network: networkService, kms: kmsService, alias: aliasService },
-      logger,
+      { network: networkService, kms: kmsService, alias: aliasService, logger },
       { operator: 'testnet1' },
     );
 
@@ -95,14 +97,17 @@ describe('network plugin - set-operator command', () => {
     expect(aliasService.resolve).toHaveBeenCalledWith(
       'testnet1',
       AliasType.Account,
-      'testnet',
+      SupportedNetwork.TESTNET,
     );
-    expect(networkService.setOperator).toHaveBeenCalledWith('testnet', {
-      accountId: '0.0.789012',
-      keyRefId: 'kr_alias123',
-    });
+    expect(networkService.setOperator).toHaveBeenCalledWith(
+      SupportedNetwork.TESTNET,
+      {
+        accountId: '0.0.789012',
+        keyRefId: 'kr_alias123',
+      },
+    );
     const output = assertOutput(result.result, NetworkSetOperatorOutputSchema);
-    expect(output.network).toBe('testnet');
+    expect(output.network).toBe(SupportedNetwork.TESTNET);
     expect(output.operator).toEqual({
       accountId: '0.0.789012',
       keyRefId: 'kr_alias123',
@@ -113,33 +118,35 @@ describe('network plugin - set-operator command', () => {
 
   test('sets operator for specific network when --network is provided', async () => {
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     const kmsService = makeKmsMock();
     const aliasService = makeAliasMock();
 
     const args = makeArgs(
-      { network: networkService, kms: kmsService, alias: aliasService },
-      logger,
+      { network: networkService, kms: kmsService, alias: aliasService, logger },
       {
         operator:
           '0.0.123456:2222222222222222222222222222222222222222222222222222222222222222',
-        network: 'mainnet',
+        network: SupportedNetwork.MAINNET,
       },
     );
 
     const result = await networkSetOperator(args);
 
-    expect(networkService.setOperator).toHaveBeenCalledWith('mainnet', {
-      accountId: '0.0.123456',
-      keyRefId: 'kr_test123',
-    });
+    expect(networkService.setOperator).toHaveBeenCalledWith(
+      SupportedNetwork.MAINNET,
+      {
+        accountId: '0.0.123456',
+        keyRefId: 'kr_test123',
+      },
+    );
     const output = assertOutput(result.result, NetworkSetOperatorOutputSchema);
-    expect(output.network).toBe('mainnet');
+    expect(output.network).toBe(SupportedNetwork.MAINNET);
   });
 
   test('shows overwrite message when operator already exists', async () => {
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     const kmsService = makeKmsMock();
     const aliasService = makeAliasMock();
 
@@ -149,8 +156,7 @@ describe('network plugin - set-operator command', () => {
     });
 
     const args = makeArgs(
-      { network: networkService, kms: kmsService, alias: aliasService },
-      logger,
+      { network: networkService, kms: kmsService, alias: aliasService, logger },
       {
         operator:
           '0.0.123456:2222222222222222222222222222222222222222222222222222222222222222',
@@ -160,24 +166,26 @@ describe('network plugin - set-operator command', () => {
     const result = await networkSetOperator(args);
 
     const output = assertOutput(result.result, NetworkSetOperatorOutputSchema);
-    expect(output.network).toBe('testnet');
-    expect(networkService.setOperator).toHaveBeenCalledWith('testnet', {
-      accountId: '0.0.123456',
-      keyRefId: 'kr_test123',
-    });
+    expect(output.network).toBe(SupportedNetwork.TESTNET);
+    expect(networkService.setOperator).toHaveBeenCalledWith(
+      SupportedNetwork.TESTNET,
+      {
+        accountId: '0.0.123456',
+        keyRefId: 'kr_test123',
+      },
+    );
   });
 
   test('shows new operator message when no existing operator', async () => {
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     const kmsService = makeKmsMock();
     const aliasService = makeAliasMock();
 
     networkService.getOperator.mockReturnValue(null);
 
     const args = makeArgs(
-      { network: networkService, kms: kmsService, alias: aliasService },
-      logger,
+      { network: networkService, kms: kmsService, alias: aliasService, logger },
       {
         operator:
           '0.0.123456:2222222222222222222222222222222222222222222222222222222222222222',
@@ -187,16 +195,19 @@ describe('network plugin - set-operator command', () => {
     const result = await networkSetOperator(args);
 
     const output = assertOutput(result.result, NetworkSetOperatorOutputSchema);
-    expect(output.network).toBe('testnet');
-    expect(networkService.setOperator).toHaveBeenCalledWith('testnet', {
-      accountId: '0.0.123456',
-      keyRefId: 'kr_test123',
-    });
+    expect(output.network).toBe(SupportedNetwork.TESTNET);
+    expect(networkService.setOperator).toHaveBeenCalledWith(
+      SupportedNetwork.TESTNET,
+      {
+        accountId: '0.0.123456',
+        keyRefId: 'kr_test123',
+      },
+    );
   });
 
   test('throws when alias is not found', async () => {
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     const kmsService = makeKmsMock();
     const aliasService = makeAliasMock();
 
@@ -207,8 +218,8 @@ describe('network plugin - set-operator command', () => {
         network: networkService,
         kms: kmsService,
         alias: aliasService,
+        logger,
       },
-      logger,
       { operator: 'nonexistent' },
     );
 
@@ -219,7 +230,7 @@ describe('network plugin - set-operator command', () => {
 
   test('throws when alias has no key', async () => {
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     const kmsService = makeKmsMock();
     const aliasService = makeAliasMock();
 
@@ -238,8 +249,8 @@ describe('network plugin - set-operator command', () => {
         network: networkService,
         kms: kmsService,
         alias: aliasService,
+        logger,
       },
-      logger,
       { operator: 'testnet1' },
     );
 
@@ -250,7 +261,7 @@ describe('network plugin - set-operator command', () => {
 
   test('throws when KMS importPrivateKey fails', async () => {
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     const kmsService = makeKmsMock();
     const aliasService = makeAliasMock();
 
@@ -263,8 +274,8 @@ describe('network plugin - set-operator command', () => {
         network: networkService,
         kms: kmsService,
         alias: aliasService,
+        logger,
       },
-      logger,
       {
         operator:
           '0.0.123456:2222222222222222222222222222222222222222222222222222222222222222',
@@ -278,7 +289,7 @@ describe('network plugin - set-operator command', () => {
 
   test('throws when network service fails', async () => {
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     const kmsService = makeKmsMock();
     const aliasService = makeAliasMock();
 
@@ -287,8 +298,7 @@ describe('network plugin - set-operator command', () => {
     });
 
     const args = makeArgs(
-      { network: networkService, kms: kmsService, alias: aliasService },
-      logger,
+      { network: networkService, kms: kmsService, alias: aliasService, logger },
       {
         operator:
           '0.0.123456:2222222222222222222222222222222222222222222222222222222222222222',
@@ -302,24 +312,23 @@ describe('network plugin - set-operator command', () => {
 
   test('throws ValidationError when network is not available', async () => {
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     const kmsService = makeKmsMock();
     const aliasService = makeAliasMock();
 
     networkService.isNetworkAvailable.mockReturnValue(false);
     networkService.getAvailableNetworks.mockReturnValue([
-      'testnet',
-      'mainnet',
-      'previewnet',
+      SupportedNetwork.TESTNET,
+      SupportedNetwork.MAINNET,
+      SupportedNetwork.PREVIEWNET,
     ]);
 
     const args = makeArgs(
-      { network: networkService, kms: kmsService, alias: aliasService },
-      logger,
+      { network: networkService, kms: kmsService, alias: aliasService, logger },
       {
         operator:
           '0.0.123456:2222222222222222222222222222222222222222222222222222222222222222',
-        network: 'mainnet',
+        network: SupportedNetwork.MAINNET,
       },
     );
 
@@ -328,13 +337,12 @@ describe('network plugin - set-operator command', () => {
 
   test('displays all operator information after successful set', async () => {
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     const kmsService = makeKmsMock();
     const aliasService = makeAliasMock();
 
     const args = makeArgs(
-      { network: networkService, kms: kmsService, alias: aliasService },
-      logger,
+      { network: networkService, kms: kmsService, alias: aliasService, logger },
       {
         operator:
           '0.0.123456:2222222222222222222222222222222222222222222222222222222222222222',
@@ -344,7 +352,7 @@ describe('network plugin - set-operator command', () => {
     const result = await networkSetOperator(args);
 
     const output = assertOutput(result.result, NetworkSetOperatorOutputSchema);
-    expect(output.network).toBe('testnet');
+    expect(output.network).toBe(SupportedNetwork.TESTNET);
     expect(output.operator).toEqual({
       accountId: '0.0.123456',
       keyRefId: 'kr_test123',

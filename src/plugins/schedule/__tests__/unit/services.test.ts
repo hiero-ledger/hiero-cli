@@ -2,6 +2,7 @@ import type { HederaMirrornodeService, KeyResolverService } from '@/core';
 import type { MirrorNodeKey } from '@/core/services/mirrornode/types';
 import type { ScheduleStateService } from '@/plugins/schedule/services/schedule-state.service.interface';
 
+import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
 import { makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
 import { EntityReferenceType } from '@/core';
 import {
@@ -17,7 +18,6 @@ import { ScheduleSyncServiceImpl } from '@/plugins/schedule/services/schedule-sy
 
 import {
   ADMIN_KEY_REF,
-  ADMIN_PUBLIC_KEY,
   MIRROR_CONSENSUS_TS,
   ON_CHAIN_SCHEDULE_ID,
   PAYER_ACCOUNT_ID,
@@ -85,7 +85,7 @@ describe('schedule plugin services', () => {
         executed_timestamp: null,
         admin_key: {
           _type: MirrorNodeKeyType.ED25519,
-          key: ADMIN_PUBLIC_KEY,
+          key: ECDSA_HEX_PUBLIC_KEY,
         },
       }),
     } as unknown as HederaMirrornodeService;
@@ -110,7 +110,7 @@ describe('schedule plugin services', () => {
     const keyResolver = {
       resolveSigningKey: jest.fn().mockResolvedValue({
         keyRefId: SIGNER_KEY_REF,
-        publicKey: ADMIN_PUBLIC_KEY,
+        publicKey: ECDSA_HEX_PUBLIC_KEY,
       }),
     } as unknown as KeyResolverService;
     const service = new ScheduleKeysServiceImpl(
@@ -158,18 +158,18 @@ describe('schedule plugin services', () => {
         wait_for_expiry: false,
         admin_key: {
           _type: MirrorNodeKeyType.ED25519,
-          key: ADMIN_PUBLIC_KEY,
+          key: ECDSA_HEX_PUBLIC_KEY,
         } satisfies MirrorNodeKey,
       }),
     } as unknown as HederaMirrornodeService;
     const scheduleKeys = {
       resolveMirrorPayerPublicKey: jest.fn().mockResolvedValue({
         keyRefId: PAYER_KEY_REF_ID,
-        publicKey: ADMIN_PUBLIC_KEY,
+        publicKey: ECDSA_HEX_PUBLIC_KEY,
       }),
       resolveMirrorAdminPublicKey: jest.fn().mockResolvedValue({
         keyRefId: ADMIN_KEY_REF,
-        publicKey: ADMIN_PUBLIC_KEY,
+        publicKey: ECDSA_HEX_PUBLIC_KEY,
       }),
     } as unknown as ScheduleKeysServiceImpl;
     const service = new ScheduleSyncServiceImpl(

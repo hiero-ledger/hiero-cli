@@ -7,6 +7,7 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NetworkError } from '@/core';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import {
   networkUse,
   NetworkUseOutputSchema,
@@ -29,36 +30,40 @@ describe('network plugin - use command', () => {
 
   test('switches to a valid network', async () => {
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     networkService.switchNetwork = jest.fn();
     networkService.isNetworkAvailable = jest.fn().mockReturnValue(true);
     const mirrorService = createMirrorNodeMock();
 
     const args = makeArgs(
-      { network: networkService, mirror: mirrorService },
-      logger,
+      { network: networkService, mirror: mirrorService, logger },
       {
-        global: 'mainnet',
+        global: SupportedNetwork.MAINNET,
       },
     );
 
     const result = await networkUse(args);
 
-    expect(networkService.switchNetwork).toHaveBeenCalledWith('mainnet');
+    expect(networkService.switchNetwork).toHaveBeenCalledWith(
+      SupportedNetwork.MAINNET,
+    );
     const output = assertOutput(result.result, NetworkUseOutputSchema);
-    expect(output.activeNetwork).toBe('mainnet');
+    expect(output.activeNetwork).toBe(SupportedNetwork.MAINNET);
   });
 
   test('throws when switchNetwork fails', async () => {
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     networkService.switchNetwork = jest.fn().mockImplementation(() => {
       throw new NetworkError('Network not available: testnet');
     });
 
-    const args = makeArgs({ network: networkService }, logger, {
-      global: 'testnet',
-    });
+    const args = makeArgs(
+      { network: networkService, logger },
+      {
+        global: SupportedNetwork.TESTNET,
+      },
+    );
 
     await expect(networkUse(args)).rejects.toThrow(
       'Network not available: testnet',
@@ -67,38 +72,38 @@ describe('network plugin - use command', () => {
 
   test('returns output with activeNetwork when requested', async () => {
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     networkService.switchNetwork = jest.fn();
     const mirrorService = createMirrorNodeMock();
 
     const args = makeArgs(
-      { network: networkService, mirror: mirrorService },
-      logger,
+      { network: networkService, mirror: mirrorService, logger },
       {
-        global: 'previewnet',
+        global: SupportedNetwork.PREVIEWNET,
         json: true,
       },
     );
 
     const result = await networkUse(args);
 
-    expect(networkService.switchNetwork).toHaveBeenCalledWith('previewnet');
+    expect(networkService.switchNetwork).toHaveBeenCalledWith(
+      SupportedNetwork.PREVIEWNET,
+    );
     const output = assertOutput(result.result, NetworkUseOutputSchema);
-    expect(output.activeNetwork).toBe('previewnet');
+    expect(output.activeNetwork).toBe(SupportedNetwork.PREVIEWNET);
   });
 
   test('logs info message', async () => {
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     networkService.switchNetwork = jest.fn();
 
     const mirrorService = createMirrorNodeMock();
 
     const args = makeArgs(
-      { network: networkService, mirror: mirrorService },
-      logger,
+      { network: networkService, mirror: mirrorService, logger },
       {
-        global: 'mainnet',
+        global: SupportedNetwork.MAINNET,
       },
     );
 
@@ -109,39 +114,41 @@ describe('network plugin - use command', () => {
 
   test('successfully switches between networks', async () => {
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     networkService.switchNetwork = jest.fn();
 
     const mirrorService = createMirrorNodeMock();
 
     const argsToMainnet = makeArgs(
-      { network: networkService, mirror: mirrorService },
-      logger,
+      { network: networkService, mirror: mirrorService, logger },
       {
-        global: 'mainnet',
+        global: SupportedNetwork.MAINNET,
       },
     );
 
     const res1 = await networkUse(argsToMainnet);
     expect(
       assertOutput(res1.result, NetworkUseOutputSchema).activeNetwork,
-    ).toBe('mainnet');
-    expect(networkService.switchNetwork).toHaveBeenCalledWith('mainnet');
+    ).toBe(SupportedNetwork.MAINNET);
+    expect(networkService.switchNetwork).toHaveBeenCalledWith(
+      SupportedNetwork.MAINNET,
+    );
 
     jest.clearAllMocks();
 
     const argsToPreviewnet = makeArgs(
-      { network: networkService, mirror: mirrorService },
-      logger,
+      { network: networkService, mirror: mirrorService, logger },
       {
-        global: 'previewnet',
+        global: SupportedNetwork.PREVIEWNET,
       },
     );
 
     const res2 = await networkUse(argsToPreviewnet);
     expect(
       assertOutput(res2.result, NetworkUseOutputSchema).activeNetwork,
-    ).toBe('previewnet');
-    expect(networkService.switchNetwork).toHaveBeenCalledWith('previewnet');
+    ).toBe(SupportedNetwork.PREVIEWNET);
+    expect(networkService.switchNetwork).toHaveBeenCalledWith(
+      SupportedNetwork.PREVIEWNET,
+    );
   });
 });

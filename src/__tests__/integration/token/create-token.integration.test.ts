@@ -29,7 +29,7 @@ describe('Create Token Integration Tests', () => {
     const createAccountArgs: Record<string, unknown> = {
       name: 'account-create-token',
       balance: 1,
-      'key-type': 'ecdsa',
+      'key-type': KeyAlgorithm.ECDSA,
       'auto-associations': 10,
     };
     const createAccountResult = await accountCreate({

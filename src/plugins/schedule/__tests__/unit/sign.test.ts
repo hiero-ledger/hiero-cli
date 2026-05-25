@@ -1,5 +1,6 @@
 import type { CoreApi, TransactionResult } from '@/core';
 
+import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
   createMirrorNodeMock,
@@ -23,7 +24,6 @@ import { ScheduleResolverServiceImpl } from '@/plugins/schedule/services/schedul
 import { ScheduleStateServiceImpl } from '@/plugins/schedule/services/schedule-state.service';
 
 import {
-  ADMIN_PUBLIC_KEY,
   MIRROR_CONSENSUS_TS,
   ON_CHAIN_SCHEDULE_ID,
   SCHEDULE_COMPOSED_KEY,
@@ -92,10 +92,13 @@ describe('schedule plugin — sign command', () => {
       keyResolver: makeKeyResolverMock(),
     };
 
-    const args = makeArgs(api, logger, {
-      schedule: SCHEDULE_NAME,
-      key: [SIGNER_KEY_REF],
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        schedule: SCHEDULE_NAME,
+        key: [SIGNER_KEY_REF],
+      },
+    );
 
     await expect(scheduleSign(args)).rejects.toThrow(
       'Schedule has not been yet submitted',
@@ -114,10 +117,13 @@ describe('schedule plugin — sign command', () => {
       keyResolver: makeKeyResolverMock(),
     };
 
-    const args = makeArgs(api, logger, {
-      schedule: SCHEDULE_NAME,
-      key: [SIGNER_KEY_REF],
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        schedule: SCHEDULE_NAME,
+        key: [SIGNER_KEY_REF],
+      },
+    );
 
     await expect(scheduleSign(args)).rejects.toThrow(
       'Schedule is already executed',
@@ -140,10 +146,13 @@ describe('schedule plugin — sign command', () => {
       keyResolver: makeKeyResolverMock(),
     };
 
-    const args = makeArgs(api, logger, {
-      schedule: SCHEDULE_NAME,
-      key: [SIGNER_KEY_REF],
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        schedule: SCHEDULE_NAME,
+        key: [SIGNER_KEY_REF],
+      },
+    );
 
     await expect(scheduleSign(args)).rejects.toThrow(
       "Couldn't resolve schedule ID for signing",
@@ -182,7 +191,7 @@ describe('schedule plugin — sign command', () => {
 
     const resolveSigningKey = jest.fn().mockResolvedValue({
       keyRefId: SIGNER_KEY_REF,
-      publicKey: ADMIN_PUBLIC_KEY,
+      publicKey: ECDSA_HEX_PUBLIC_KEY,
     });
 
     const mirrorMock = createMirrorNodeMock();
@@ -203,10 +212,13 @@ describe('schedule plugin — sign command', () => {
       keyResolver: keyResolverMock,
     };
 
-    const args = makeArgs(api, logger, {
-      schedule: SCHEDULE_NAME,
-      key: [SIGNER_KEY_REF],
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        schedule: SCHEDULE_NAME,
+        key: [SIGNER_KEY_REF],
+      },
+    );
 
     const result = await scheduleSign(args);
 
@@ -278,7 +290,7 @@ describe('schedule plugin — sign command', () => {
     const keyResolverMock = makeKeyResolverMock();
     keyResolverMock.resolveSigningKey = jest.fn().mockResolvedValue({
       keyRefId: SIGNER_KEY_REF,
-      publicKey: ADMIN_PUBLIC_KEY,
+      publicKey: ECDSA_HEX_PUBLIC_KEY,
     });
 
     const api: Partial<CoreApi> = {
@@ -291,10 +303,13 @@ describe('schedule plugin — sign command', () => {
       keyResolver: keyResolverMock,
     };
 
-    const args = makeArgs(api, logger, {
-      schedule: SCHEDULE_NAME,
-      key: [SIGNER_KEY_REF],
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        schedule: SCHEDULE_NAME,
+        key: [SIGNER_KEY_REF],
+      },
+    );
 
     await scheduleSign(args);
 
@@ -339,11 +354,11 @@ describe('schedule plugin — sign command', () => {
       .fn()
       .mockResolvedValueOnce({
         keyRefId: SIGNER_KEY_REF,
-        publicKey: ADMIN_PUBLIC_KEY,
+        publicKey: ECDSA_HEX_PUBLIC_KEY,
       })
       .mockResolvedValueOnce({
         keyRefId: SECOND_SIGNER_KEY_REF,
-        publicKey: ADMIN_PUBLIC_KEY,
+        publicKey: ECDSA_HEX_PUBLIC_KEY,
       });
 
     const mirrorMock = createMirrorNodeMock();
@@ -364,10 +379,13 @@ describe('schedule plugin — sign command', () => {
       keyResolver: keyResolverMock,
     };
 
-    const args = makeArgs(api, logger, {
-      schedule: SCHEDULE_NAME,
-      key: [SIGNER_KEY_REF, SECOND_SIGNER_KEY_REF],
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        schedule: SCHEDULE_NAME,
+        key: [SIGNER_KEY_REF, SECOND_SIGNER_KEY_REF],
+      },
+    );
 
     await scheduleSign(args);
 
@@ -408,7 +426,7 @@ describe('schedule plugin — sign command', () => {
     const keyResolverMock = makeKeyResolverMock();
     keyResolverMock.resolveSigningKey = jest.fn().mockResolvedValue({
       keyRefId: SIGNER_KEY_REF,
-      publicKey: ADMIN_PUBLIC_KEY,
+      publicKey: ECDSA_HEX_PUBLIC_KEY,
     });
 
     const api: Partial<CoreApi> = {
@@ -420,10 +438,13 @@ describe('schedule plugin — sign command', () => {
       keyResolver: keyResolverMock,
     };
 
-    const args = makeArgs(api, logger, {
-      schedule: SCHEDULE_NAME,
-      key: [SIGNER_KEY_REF],
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        schedule: SCHEDULE_NAME,
+        key: [SIGNER_KEY_REF],
+      },
+    );
 
     await expect(scheduleSign(args)).rejects.toThrow('Schedule sign failed');
     expect(saveScheduledMock).not.toHaveBeenCalled();

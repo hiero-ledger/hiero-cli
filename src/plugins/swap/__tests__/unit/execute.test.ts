@@ -3,6 +3,7 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 
 import { MOCK_TX_ID } from '@/__tests__/mocks/fixtures';
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
+import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
   NotFoundError,
@@ -23,7 +24,7 @@ import {
   mockSwapWithNft,
   SWAP_NAME,
 } from './helpers/fixtures';
-import { makeArgs, makeLogger, makeSwapApiMocks } from './helpers/mocks';
+import { makeSwapApiMocks } from './helpers/mocks';
 
 jest.mock('../../services/swap-state.service', () => ({
   SwapStateServiceImpl: jest.fn(),
@@ -61,7 +62,7 @@ describe('swap plugin - execute command', () => {
         buildTransferTransaction: jest.fn().mockReturnValue(mockTx),
       },
     };
-    const args = makeArgs(api, logger, { name: SWAP_NAME });
+    const args = makeArgs({ ...api, logger }, { name: SWAP_NAME });
 
     const result = await swapExecute(args);
 
@@ -95,7 +96,7 @@ describe('swap plugin - execute command', () => {
         buildTransferTransaction: jest.fn().mockReturnValue(mockTx),
       },
     };
-    const args = makeArgs(api, logger, { name: SWAP_NAME });
+    const args = makeArgs({ ...api, logger }, { name: SWAP_NAME });
 
     await swapExecute(args);
 
@@ -124,7 +125,7 @@ describe('swap plugin - execute command', () => {
         buildTransferTransaction: jest.fn().mockReturnValue(mockTx),
       },
     };
-    const args = makeArgs(api, logger, { name: SWAP_NAME });
+    const args = makeArgs({ ...api, logger }, { name: SWAP_NAME });
 
     await swapExecute(args);
 
@@ -151,7 +152,7 @@ describe('swap plugin - execute command', () => {
       txExecute: txExecuteMock,
       transfer: { buildTransferTransaction: buildTransferMock },
     };
-    const args = makeArgs(api, logger, { name: SWAP_NAME });
+    const args = makeArgs({ ...api, logger }, { name: SWAP_NAME });
 
     const result = await swapExecute(args);
 
@@ -168,7 +169,7 @@ describe('swap plugin - execute command', () => {
 
     const { networkMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
-    const args = makeArgs(api, logger, { name: SWAP_NAME });
+    const args = makeArgs({ ...api, logger }, { name: SWAP_NAME });
 
     await expect(swapExecute(args)).rejects.toThrow(ValidationError);
   });
@@ -184,7 +185,7 @@ describe('swap plugin - execute command', () => {
 
     const { networkMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
-    const args = makeArgs(api, logger, { name: SWAP_NAME });
+    const args = makeArgs({ ...api, logger }, { name: SWAP_NAME });
 
     await expect(swapExecute(args)).rejects.toThrow(NotFoundError);
   });
@@ -216,7 +217,7 @@ describe('swap plugin - execute command', () => {
         buildTransferTransaction: jest.fn().mockReturnValue(mockTx),
       },
     };
-    const args = makeArgs(api, logger, { name: SWAP_NAME });
+    const args = makeArgs({ ...api, logger }, { name: SWAP_NAME });
 
     await expect(swapExecute(args)).rejects.toThrow(TransactionError);
     expect(deleteSwapMock).not.toHaveBeenCalled();

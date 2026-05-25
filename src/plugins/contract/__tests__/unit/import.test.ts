@@ -77,8 +77,8 @@ describe('contract plugin - import command', () => {
       {
         ...api,
         mirror: mirrorMock,
+        logger,
       },
-      logger,
       {
         contract: MOCK_CONTRACT_ID,
         name: 'imported-contract',
@@ -96,7 +96,7 @@ describe('contract plugin - import command', () => {
       expect.objectContaining({
         alias: 'imported-contract',
         type: AliasType.Contract,
-        network: 'testnet',
+        network: SupportedNetwork.TESTNET,
         entityId: MOCK_CONTRACT_ID,
         evmAddress: MOCK_EVM_ADDRESS,
       }),
@@ -109,7 +109,7 @@ describe('contract plugin - import command', () => {
         contractEvmAddress: MOCK_EVM_ADDRESS,
         adminKeyRefIds: [],
         adminKeyThreshold: 0,
-        network: 'testnet',
+        network: SupportedNetwork.TESTNET,
         memo: 'test contract',
         verified: true,
       }),
@@ -119,7 +119,7 @@ describe('contract plugin - import command', () => {
     expect(output.contractId).toBe(MOCK_CONTRACT_ID);
     expect(output.contractEvmAddress).toBe(MOCK_EVM_ADDRESS);
     expect(output.name).toBe('imported-contract');
-    expect(output.network).toBe('testnet');
+    expect(output.network).toBe(SupportedNetwork.TESTNET);
     expect(output.memo).toBe('test contract');
     expect(output.verified).toBe(true);
   });
@@ -138,8 +138,8 @@ describe('contract plugin - import command', () => {
       {
         ...api,
         mirror: mirrorMock,
+        logger,
       },
-      logger,
       {
         contract: MOCK_EVM_ADDRESS,
       },
@@ -177,8 +177,8 @@ describe('contract plugin - import command', () => {
       {
         ...api,
         mirror: mirrorMock,
+        logger,
       },
-      logger,
       {
         contract: MOCK_CONTRACT_ID,
         name: 'my-contract',
@@ -207,8 +207,8 @@ describe('contract plugin - import command', () => {
       {
         ...api,
         mirror: mirrorMock,
+        logger,
       },
-      logger,
       {
         contract: MOCK_CONTRACT_ID,
       },

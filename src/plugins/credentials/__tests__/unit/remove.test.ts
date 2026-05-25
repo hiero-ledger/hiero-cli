@@ -27,7 +27,7 @@ describe('credentials plugin - remove command', () => {
     const kmsService = makeKmsMock();
     kmsService.get.mockReturnValue(mockCredentials);
 
-    const args = makeArgs({ kms: kmsService }, logger, { id: 'kr_test123' });
+    const args = makeArgs({ kms: kmsService, logger }, { id: 'kr_test123' });
 
     const result = await credentialsRemove(args);
     const output = assertOutput(result.result, CredentialsRemoveOutputSchema);
@@ -42,9 +42,12 @@ describe('credentials plugin - remove command', () => {
     const kmsService = makeKmsMock();
     kmsService.get.mockReturnValue(undefined);
 
-    const args = makeArgs({ kms: kmsService }, logger, {
-      id: 'kr_nonexistent',
-    });
+    const args = makeArgs(
+      { kms: kmsService, logger },
+      {
+        id: 'kr_nonexistent',
+      },
+    );
 
     await expect(credentialsRemove(args)).rejects.toThrow(NotFoundError);
     expect(kmsService.get).toHaveBeenCalledWith('kr_nonexistent');
@@ -56,7 +59,7 @@ describe('credentials plugin - remove command', () => {
     const kmsService = makeKmsMock();
     kmsService.get.mockReturnValue(mockCredentials);
 
-    const args = makeArgs({ kms: kmsService }, logger, { id: 'kr_test123' });
+    const args = makeArgs({ kms: kmsService, logger }, { id: 'kr_test123' });
 
     const result = await credentialsRemove(args);
     const output = assertOutput(result.result, CredentialsRemoveOutputSchema);
@@ -74,7 +77,7 @@ describe('credentials plugin - remove command', () => {
       throw new InternalError('KMS service error');
     });
 
-    const args = makeArgs({ kms: kmsService }, logger, { id: 'kr_test123' });
+    const args = makeArgs({ kms: kmsService, logger }, { id: 'kr_test123' });
 
     await expect(credentialsRemove(args)).rejects.toThrow('KMS service error');
     expect(kmsService.get).toHaveBeenCalledWith('kr_test123');

@@ -78,7 +78,7 @@ describe('schedule plugin — verify command', () => {
       } as unknown as HederaMirrornodeService,
     };
 
-    const args = makeArgs(api, logger, { schedule: SCHEDULE_NAME });
+    const args = makeArgs({ ...api, logger }, { schedule: SCHEDULE_NAME });
 
     await expect(scheduleVerify(args)).rejects.toThrow(NotFoundError);
     expect(getScheduledMock).not.toHaveBeenCalled();
@@ -107,7 +107,7 @@ describe('schedule plugin — verify command', () => {
       } as unknown as HederaMirrornodeService,
     };
 
-    const args = makeArgs(api, logger, { schedule: SCHEDULE_NAME });
+    const args = makeArgs({ ...api, logger }, { schedule: SCHEDULE_NAME });
 
     const result = await scheduleVerify(args);
 
@@ -141,7 +141,10 @@ describe('schedule plugin — verify command', () => {
       } as unknown as HederaMirrornodeService,
     };
 
-    const args = makeArgs(api, logger, { schedule: ON_CHAIN_SCHEDULE_ID });
+    const args = makeArgs(
+      { ...api, logger },
+      { schedule: ON_CHAIN_SCHEDULE_ID },
+    );
 
     const result = await scheduleVerify(args);
 
@@ -181,7 +184,7 @@ describe('schedule plugin — verify command', () => {
       } as unknown as HederaMirrornodeService,
     };
 
-    const args = makeArgs(api, logger, { schedule: SCHEDULE_NAME });
+    const args = makeArgs({ ...api, logger }, { schedule: SCHEDULE_NAME });
 
     await scheduleVerify(args);
 
@@ -228,7 +231,7 @@ describe('schedule plugin — verify command', () => {
       } as unknown as HederaMirrornodeService,
     };
 
-    const base = makeArgs(api, logger, { schedule: SCHEDULE_NAME });
+    const base = makeArgs({ ...api, logger }, { schedule: SCHEDULE_NAME });
     const args = { ...base, hooks: phaseHooks };
 
     const result = await scheduleVerify(args);
@@ -263,7 +266,7 @@ describe('schedule plugin — verify command', () => {
       } as unknown as HederaMirrornodeService,
     };
 
-    const args = makeArgs(api, logger, { schedule: SCHEDULE_NAME });
+    const args = makeArgs({ ...api, logger }, { schedule: SCHEDULE_NAME });
 
     const result = await scheduleVerify(args);
 

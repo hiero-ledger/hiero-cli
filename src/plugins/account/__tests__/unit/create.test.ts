@@ -65,17 +65,20 @@ describe('account plugin - create command (ADR-003)', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, {
-      balance: '5000',
-      autoAssociations: 3,
-      name: 'myAccount',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        balance: '5000',
+        autoAssociations: 3,
+        name: 'myAccount',
+      },
+    );
 
     const result = await accountCreate(args);
 
     expect(kms.createLocalPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
-      'local',
+      KeyManager.local,
       ['account:create', 'account:myAccount'],
     );
     expect(account.createAccount).toHaveBeenCalledWith({
@@ -88,7 +91,7 @@ describe('account plugin - create command (ADR-003)', () => {
       expect.objectContaining({
         alias: 'myAccount',
         type: AliasType.Account,
-        network: 'testnet',
+        network: SupportedNetwork.TESTNET,
         entityId: '0.0.9999',
         publicKey: 'pub-key-test',
         keyRefId: 'kr_test123',
@@ -100,7 +103,7 @@ describe('account plugin - create command (ADR-003)', () => {
         name: 'myAccount',
         accountId: '0.0.9999',
         type: KeyAlgorithm.ECDSA,
-        network: 'testnet',
+        network: SupportedNetwork.TESTNET,
         keyRefId: 'kr_test123',
         evmAddress: ACCOUNT_ID_EVM_ADDRESS_9999,
       }),
@@ -111,7 +114,7 @@ describe('account plugin - create command (ADR-003)', () => {
     expect(output.accountId).toBe('0.0.9999');
     expect(output.name).toBe('myAccount');
     expect(output.type).toBe(KeyAlgorithm.ECDSA);
-    expect(output.network).toBe('testnet');
+    expect(output.network).toBe(SupportedNetwork.TESTNET);
     expect(output.transactionId).toBe('0.0.1234@1234567890.000000000');
     expect(output.evmAddress).toBe(ACCOUNT_ID_EVM_ADDRESS_9999);
     expect(output.publicKey).toBe(ECDSA_HEX_PUBLIC_KEY);
@@ -145,7 +148,10 @@ describe('account plugin - create command (ADR-003)', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, { name: 'failAccount', balance: '100' });
+    const args = makeArgs(
+      { ...api, logger },
+      { name: 'failAccount', balance: '100' },
+    );
 
     await expect(accountCreate(args)).rejects.toThrow();
   });
@@ -172,10 +178,13 @@ describe('account plugin - create command (ADR-003)', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, {
-      name: 'errorAccount',
-      balance: '100',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: 'errorAccount',
+        balance: '100',
+      },
+    );
 
     await expect(accountCreate(args)).rejects.toThrow();
   });
@@ -210,17 +219,20 @@ describe('account plugin - create command (ADR-003)', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, {
-      balance: '1000',
-      'key-type': KeyAlgorithm.ECDSA,
-      name: 'ecdsaAccount',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        balance: '1000',
+        'key-type': KeyAlgorithm.ECDSA,
+        name: 'ecdsaAccount',
+      },
+    );
 
     const result = await accountCreate(args);
 
     expect(kms.createLocalPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
-      'local',
+      KeyManager.local,
       ['account:create', 'account:ecdsaAccount'],
     );
     expect(account.createAccount).toHaveBeenCalledWith(
@@ -288,10 +300,13 @@ describe('account plugin - create command (ADR-003)', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, {
-      balance: '1000',
-      key: `ecdsa:private:${ECDSA_HEX_PRIVATE_KEY}`,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        balance: '1000',
+        key: `ecdsa:private:${ECDSA_HEX_PRIVATE_KEY}`,
+      },
+    );
 
     const result = await accountCreate(args);
 
@@ -362,10 +377,13 @@ describe('account plugin - create command (ADR-003)', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, {
-      balance: '1000',
-      key: 'kr_test123',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        balance: '1000',
+        key: 'kr_test123',
+      },
+    );
 
     const result = await accountCreate(args);
 
@@ -408,11 +426,14 @@ describe('account plugin - create command (ADR-003)', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, {
-      balance: '1000',
-      key: `ecdsa:private:${ECDSA_HEX_PRIVATE_KEY}`,
-      keyType: KeyAlgorithm.ECDSA,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        balance: '1000',
+        key: `ecdsa:private:${ECDSA_HEX_PRIVATE_KEY}`,
+        keyType: KeyAlgorithm.ECDSA,
+      },
+    );
 
     await expect(accountCreate(args)).rejects.toThrow();
   });
@@ -447,17 +468,20 @@ describe('account plugin - create command (ADR-003)', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, {
-      balance: '1000',
-      keyType: KeyAlgorithm.ED25519,
-      name: 'ed25519Account',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        balance: '1000',
+        keyType: KeyAlgorithm.ED25519,
+        name: 'ed25519Account',
+      },
+    );
 
     const result = await accountCreate(args);
 
     expect(kms.createLocalPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ED25519,
-      'local',
+      KeyManager.local,
       ['account:create', 'account:ed25519Account'],
     );
     expect(account.createAccount).toHaveBeenCalledWith(

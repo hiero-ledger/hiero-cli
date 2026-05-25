@@ -2,9 +2,10 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { BatchTransactionService } from '@/core/services/batch/batch-transaction-service.interface';
 
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
-import { makeLogger } from '@/__tests__/mocks/mocks';
+import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError, ValidationError } from '@/core/errors';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import {
   BatchExecuteCommand,
   BatchExecuteOutputSchema,
@@ -15,11 +16,7 @@ import {
   mockBatchDataWithTransactions,
   mockExecutedBatchData,
 } from './helpers/fixtures';
-import {
-  makeArgs,
-  makeBatchApiMocks,
-  makeBatchStateServiceMock,
-} from './helpers/mocks';
+import { makeBatchApiMocks, makeBatchStateServiceMock } from './helpers/mocks';
 
 jest.mock('@hiero-ledger/sdk', () => {
   const actual = jest.requireActual('@hiero-ledger/sdk');
@@ -76,7 +73,7 @@ describe('batch plugin - execute command', () => {
       batch: batchServiceMock as BatchTransactionService,
     };
 
-    const args = makeArgs(api, logger, { name: BATCH_NAME });
+    const args = makeArgs({ ...api, logger }, { name: BATCH_NAME });
     const result = await new BatchExecuteCommand(batchState).execute(args);
 
     expect(saveBatchMock).toHaveBeenCalledWith(
@@ -91,7 +88,7 @@ describe('batch plugin - execute command', () => {
     expect(output.batchName).toBe(BATCH_NAME);
     expect(output.success).toBe(true);
     expect(output.transactionId).toBe('0.0.1234@1234567890.000000000');
-    expect(output.network).toBe('testnet');
+    expect(output.network).toBe(SupportedNetwork.TESTNET);
   });
 
   test('marks batch as failed when execution fails', async () => {
@@ -129,7 +126,7 @@ describe('batch plugin - execute command', () => {
       batch: batchServiceMock as BatchTransactionService,
     };
 
-    const args = makeArgs(api, logger, { name: BATCH_NAME });
+    const args = makeArgs({ ...api, logger }, { name: BATCH_NAME });
     const result = await new BatchExecuteCommand(batchState).execute(args);
 
     expect(saveBatchMock).toHaveBeenCalledWith(
@@ -153,7 +150,7 @@ describe('batch plugin - execute command', () => {
     const { networkMock, kmsMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
 
-    const args = makeArgs(api, logger, { name: BATCH_NAME });
+    const args = makeArgs({ ...api, logger }, { name: BATCH_NAME });
 
     await expect(
       new BatchExecuteCommand(batchState).execute(args),
@@ -169,7 +166,7 @@ describe('batch plugin - execute command', () => {
     const { networkMock, kmsMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
 
-    const args = makeArgs(api, logger, { name: BATCH_NAME });
+    const args = makeArgs({ ...api, logger }, { name: BATCH_NAME });
 
     await expect(
       new BatchExecuteCommand(batchState).execute(args),
@@ -190,7 +187,7 @@ describe('batch plugin - execute command', () => {
 
     const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
 
-    const args = makeArgs(api, logger, { name: BATCH_NAME });
+    const args = makeArgs({ ...api, logger }, { name: BATCH_NAME });
 
     await expect(
       new BatchExecuteCommand(batchState).execute(args),
@@ -211,7 +208,7 @@ describe('batch plugin - execute command', () => {
 
     const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
 
-    const args = makeArgs(api, logger, { name: BATCH_NAME });
+    const args = makeArgs({ ...api, logger }, { name: BATCH_NAME });
 
     await expect(
       new BatchExecuteCommand(batchState).execute(args),

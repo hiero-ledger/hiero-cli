@@ -9,7 +9,10 @@ import {
 } from '@/__tests__/mocks/fixtures';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError } from '@/core/errors';
-import { EntityReferenceType } from '@/core/types/shared.types';
+import {
+  EntityReferenceType,
+  SupportedNetwork,
+} from '@/core/types/shared.types';
 import {
   tokenAllowanceFtList,
   TokenAllowanceFtListOutputSchema,
@@ -150,7 +153,7 @@ describe('tokenAllowanceFtList', () => {
     expect(resolveAccount).toHaveBeenCalledWith({
       accountReference: 'treasury',
       type: EntityReferenceType.ALIAS,
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
     expect(api.alias.resolve).not.toHaveBeenCalled();
   });

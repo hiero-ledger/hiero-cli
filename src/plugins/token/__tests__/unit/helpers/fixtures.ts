@@ -612,7 +612,8 @@ export const makeTokenData = (
     maxSupply: number;
     adminKeyRefIds: string[];
     adminKeyThreshold: number;
-    network: 'mainnet' | 'testnet' | 'previewnet' | 'localnet';
+    network: SupportedNetwork;
+    associations: Array<{ name: string; accountId: string }>;
     customFees: Array<unknown>;
     tokenType: HederaTokenType;
   }> = {},
@@ -675,13 +676,13 @@ export const mockListTokens = {
       tokenId: '0.0.1111',
       name: 'Token 1',
       symbol: 'TK1',
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     }),
     makeTokenData({
       tokenId: '0.0.2222',
       name: 'Token 2',
       symbol: 'TK2',
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     }),
   ],
   withKeys: [
@@ -689,7 +690,7 @@ export const mockListTokens = {
       tokenId: '0.0.3333',
       name: 'Token 3',
       symbol: 'TK3',
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
       adminKeyRefIds: ['kr_admin_123'],
       adminKeyThreshold: 1,
     }),
@@ -699,13 +700,31 @@ export const mockListTokens = {
       tokenId: '0.0.4444',
       name: 'Testnet Token',
       symbol: 'TST',
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     }),
     makeTokenData({
       tokenId: '0.0.5555',
       name: 'Mainnet Token',
       symbol: 'MNT',
-      network: 'mainnet',
+      network: SupportedNetwork.MAINNET,
+    }),
+  ],
+  withAssociations: [
+    makeTokenData({
+      tokenId: '0.0.1111',
+      name: 'Token 1',
+      symbol: 'TK1',
+      network: SupportedNetwork.TESTNET,
+      supplyType: SupplyType.INFINITE,
+      associations: [{ name: 'Account 1', accountId: '0.0.9999' }],
+    }),
+    makeTokenData({
+      tokenId: '0.0.2222',
+      name: 'Token 2',
+      symbol: 'TK2',
+      network: SupportedNetwork.TESTNET,
+      supplyType: SupplyType.FINITE,
+      maxSupply: 1000000,
     }),
   ],
   finiteSupply: [
@@ -713,7 +732,7 @@ export const mockListTokens = {
       tokenId: '0.0.1111',
       name: 'Finite Token',
       symbol: 'FNT',
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
       supplyType: SupplyType.FINITE,
       maxSupply: 500000,
     }),

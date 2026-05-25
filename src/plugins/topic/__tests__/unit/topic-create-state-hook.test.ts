@@ -8,7 +8,7 @@ import {
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 import { TOPIC_CREATE_COMMAND_NAME } from '@/plugins/topic/commands/create';
 import { TopicCreateStateHook } from '@/plugins/topic/hooks/topic-create-state';
 import { TopicStateServiceImpl } from '@/plugins/topic/services/topic-state.service';
@@ -48,7 +48,7 @@ describe('topic plugin - topic-create-state hook', () => {
   test('returns batch transaction status failure when batch success is false', async () => {
     const logger = makeLogger();
     const api = {} as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -73,7 +73,7 @@ describe('topic plugin - topic-create-state hook', () => {
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -105,7 +105,7 @@ describe('topic plugin - topic-create-state hook', () => {
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -138,7 +138,7 @@ describe('topic plugin - topic-create-state hook', () => {
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -172,7 +172,7 @@ describe('topic plugin - topic-create-state hook', () => {
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -209,7 +209,7 @@ describe('topic plugin - topic-create-state hook', () => {
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -261,7 +261,7 @@ describe('topic plugin - topic-create-state hook', () => {
       },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -286,7 +286,7 @@ describe('topic plugin - topic-create-state hook', () => {
     expect(result.breakFlow).toBe(false);
     expect(registerMock).toHaveBeenCalledWith({
       alias: 'my-topic-alias',
-      type: 'topic',
+      type: AliasType.Topic,
       network: SupportedNetwork.TESTNET,
       entityId: '0.0.8888',
       createdAt: '2024-01-15T12:00:00.000Z',
@@ -322,7 +322,7 @@ describe('topic plugin - topic-create-state hook', () => {
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -387,7 +387,7 @@ describe('topic plugin - topic-create-state hook', () => {
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(true) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',

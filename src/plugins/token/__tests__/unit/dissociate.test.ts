@@ -6,6 +6,7 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import {
   tokenDissociate,
@@ -68,7 +69,7 @@ describe('tokenDissociateHandler', () => {
       expect(kms.importPrivateKey).toHaveBeenCalledWith(
         KeyAlgorithm.ECDSA,
         '3333333333333333333333333333333333333333333333333333333333333333',
-        'local',
+        KeyManager.local,
         ['token:dissociate'],
       );
     });

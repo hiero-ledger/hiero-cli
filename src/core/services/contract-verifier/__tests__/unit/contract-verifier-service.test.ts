@@ -10,7 +10,7 @@ import type {
 } from '@/core/services/contract-verifier/types';
 
 import { ContractVerifierServiceImpl } from '@/core/services/contract-verifier/contract-verifier-service';
-import { NetworkChainMap } from '@/core/types/shared.types';
+import { NetworkChainMap, SupportedNetwork } from '@/core/types/shared.types';
 
 jest.mock('@/core/utils/solidity-file-importer', () => ({
   scanSolidityFiles: jest.fn(() => ({
@@ -23,7 +23,7 @@ jest.mock('fs/promises', () => ({
 }));
 
 describe('ContractVerifierServiceImpl', () => {
-  const NETWORK = 'testnet';
+  const NETWORK = SupportedNetwork.TESTNET;
   const CHAIN_ID = NetworkChainMap[NETWORK as keyof typeof NetworkChainMap];
 
   let networkServiceMock: jest.Mocked<NetworkService>;

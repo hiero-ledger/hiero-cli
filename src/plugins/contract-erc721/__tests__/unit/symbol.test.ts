@@ -3,6 +3,7 @@ import type { CoreApi, Logger } from '@/core';
 import { ZodError } from 'zod';
 
 import { MOCK_CONTRACT_ID } from '@/__tests__/mocks/fixtures';
+import { makeHederaSdkContractMock } from '@/__tests__/mocks/hedera-sdk-contract-mock';
 import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { StateError } from '@/core/errors';
@@ -17,22 +18,7 @@ import { ContractErc721CallSymbolInputSchema } from '@/plugins/contract-erc721/c
 
 const mockSymbol = 'MYNFT';
 
-jest.mock('@hiero-ledger/sdk', () => ({
-  ContractId: {
-    fromString: jest.fn(() => ({
-      toEvmAddress: jest.fn(() => 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
-    })),
-  },
-  AccountId: {
-    fromString: jest.fn(() => ({
-      toEvmAddress: jest.fn(() => '1234567890123456789012345678901234567890'),
-    })),
-  },
-  TokenType: {
-    NonFungibleUnique: 'NonFungibleUnique',
-    FungibleCommon: 'FungibleCommon',
-  },
-}));
+jest.mock('@hiero-ledger/sdk', () => makeHederaSdkContractMock());
 
 describe('contract-erc721 plugin - symbol command (unit)', () => {
   let api: jest.Mocked<CoreApi>;

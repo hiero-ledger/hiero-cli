@@ -15,7 +15,7 @@ describe('credentials plugin - list command', () => {
     const kmsService = makeKmsMock();
     kmsService.list.mockReturnValue([]);
 
-    const args = makeArgs({ kms: kmsService }, logger, {});
+    const args = makeArgs({ kms: kmsService, logger }, {});
 
     const result = await credentialsList(args);
     const output = assertOutput(result.result, CredentialsListOutputSchema);
@@ -46,7 +46,7 @@ describe('credentials plugin - list command', () => {
 
     kmsService.list.mockReturnValue(mockCredentials);
 
-    const args = makeArgs({ kms: kmsService }, logger, {});
+    const args = makeArgs({ kms: kmsService, logger }, {});
 
     const result = await credentialsList(args);
     const output = assertOutput(result.result, CredentialsListOutputSchema);
@@ -76,7 +76,7 @@ describe('credentials plugin - list command', () => {
       throw new InternalError('KMS service error');
     });
 
-    const args = makeArgs({ kms: kmsService }, logger, {});
+    const args = makeArgs({ kms: kmsService, logger }, {});
 
     await expect(credentialsList(args)).rejects.toThrow('KMS service error');
   });

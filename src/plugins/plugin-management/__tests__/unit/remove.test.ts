@@ -26,7 +26,7 @@ describe('plugin-management remove command', () => {
     } as unknown as PluginManagementService;
     const api = { pluginManagement };
 
-    const args = makeArgs(api, logger, { name: 'custom-plugin' });
+    const args = makeArgs({ ...api, logger }, { name: 'custom-plugin' });
 
     const result = await pluginManagementRemove(args);
     const output = assertOutput(
@@ -51,7 +51,7 @@ describe('plugin-management remove command', () => {
     } as unknown as PluginManagementService;
     const api = { pluginManagement };
 
-    const args = makeArgs(api, logger, { name: 'unknown-plugin' });
+    const args = makeArgs({ ...api, logger }, { name: 'unknown-plugin' });
 
     await expect(pluginManagementRemove(args)).rejects.toThrow(NotFoundError);
     await expect(pluginManagementRemove(args)).rejects.toThrow(
@@ -68,7 +68,7 @@ describe('plugin-management remove command', () => {
     } as unknown as PluginManagementService;
     const api = { pluginManagement };
 
-    const args = makeArgs(api, logger, { name: 'plugin-management' });
+    const args = makeArgs({ ...api, logger }, { name: 'plugin-management' });
 
     await expect(pluginManagementRemove(args)).rejects.toThrow(StateError);
     await expect(pluginManagementRemove(args)).rejects.toThrow(

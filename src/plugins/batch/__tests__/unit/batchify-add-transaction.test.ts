@@ -1,7 +1,7 @@
 import type { Transaction } from '@hiero-ledger/sdk';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 
-import { makeLogger } from '@/__tests__/mocks/mocks';
+import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError, ValidationError } from '@/core/errors';
 import { SupportedNetwork } from '@/core/types/shared.types';
@@ -15,7 +15,7 @@ import {
   mockBatchData,
   mockBatchDataWithTransactions,
 } from './helpers/fixtures';
-import { makeArgs, makeBatchApiMocks } from './helpers/mocks';
+import { makeBatchApiMocks } from './helpers/mocks';
 
 jest.mock('../../services/batch-state.service', () => ({
   BatchStateServiceImpl: jest.fn(),
@@ -35,7 +35,7 @@ describe('batch plugin - BatchifyAddTransactionHook', () => {
     const logger = makeLogger();
     const { networkMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const signedTransaction = {
       toBytes: jest.fn().mockReturnValue(Buffer.from([0xde, 0xad])),
@@ -65,7 +65,7 @@ describe('batch plugin - BatchifyAddTransactionHook', () => {
 
     const { networkMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
-    const args = makeArgs(api, logger, { batch: BATCH_NAME });
+    const args = makeArgs({ ...api, logger }, { batch: BATCH_NAME });
 
     const signedTransaction = {
       toBytes: jest.fn().mockReturnValue(Buffer.from([1])),
@@ -106,7 +106,7 @@ describe('batch plugin - BatchifyAddTransactionHook', () => {
 
     const { networkMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
-    const args = makeArgs(api, logger, { batch: BATCH_NAME });
+    const args = makeArgs({ ...api, logger }, { batch: BATCH_NAME });
 
     const signedTransaction = {
       toBytes: jest.fn().mockReturnValue(Buffer.from([1])),
@@ -134,7 +134,7 @@ describe('batch plugin - BatchifyAddTransactionHook', () => {
 
     const { networkMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
-    const args = makeArgs(api, logger, { batch: BATCH_NAME });
+    const args = makeArgs({ ...api, logger }, { batch: BATCH_NAME });
 
     const bytes = Buffer.from([0x01, 0x02, 0x03]);
     const signedTransaction = {
@@ -191,7 +191,7 @@ describe('batch plugin - BatchifyAddTransactionHook', () => {
 
     const { networkMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
-    const args = makeArgs(api, logger, { batch: BATCH_NAME });
+    const args = makeArgs({ ...api, logger }, { batch: BATCH_NAME });
 
     const signedTransaction = {
       toBytes: jest.fn().mockReturnValue(Buffer.from([9])),

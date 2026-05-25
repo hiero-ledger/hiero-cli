@@ -1,5 +1,6 @@
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import {
   configSet,
   ConfigSetOutputSchema,
@@ -78,7 +79,7 @@ describe('config plugin - set', () => {
 
   test('rejects invalid enum value at schema level', async () => {
     const configSvc = makeConfigServiceMock({
-      getOption: jest.fn().mockReturnValue('local'),
+      getOption: jest.fn().mockReturnValue(KeyManager.local),
       listOptions: jest.fn().mockReturnValue([enumOption]),
       setOption: jest.fn(),
     });
@@ -102,12 +103,14 @@ describe('config plugin - set', () => {
 
     const argsGood = makeCommandArgs({
       api,
-      args: { [ConfigOptionKey.default_key_manager]: 'local_encrypted' },
+      args: {
+        [ConfigOptionKey.default_key_manager]: KeyManager.local_encrypted,
+      },
     });
     await configSet(argsGood);
     expect(configSvc.setOption).toHaveBeenCalledWith(
       ConfigOptionKey.default_key_manager,
-      'local_encrypted',
+      KeyManager.local_encrypted,
     );
   });
 });

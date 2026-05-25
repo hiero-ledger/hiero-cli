@@ -5,17 +5,16 @@ import type { ScheduledTransactionData } from '@/plugins/schedule/schema';
 import {
   createBatchExecuteParams,
   createScheduleVerifyParams,
+  makeArgs,
   makeLogger,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 import { ACCOUNT_CREATE_COMMAND_NAME } from '@/plugins/account/commands/create';
 import { AccountCreateStateHook } from '@/plugins/account/hooks/account-create-state';
 import { AccountStateServiceImpl } from '@/plugins/account/services/account-state.service';
-
-import { makeArgs } from './helpers/mocks';
 
 jest.mock('../../services/account-state.service', () => ({
   AccountStateServiceImpl: jest.fn(),
@@ -72,7 +71,7 @@ describe('account plugin - account-create-state hook', () => {
   test('returns batch transaction status failure when batch success is false', async () => {
     const logger = makeLogger();
     const api = {} as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -97,7 +96,7 @@ describe('account plugin - account-create-state hook', () => {
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -129,7 +128,7 @@ describe('account plugin - account-create-state hook', () => {
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -162,7 +161,7 @@ describe('account plugin - account-create-state hook', () => {
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -196,7 +195,7 @@ describe('account plugin - account-create-state hook', () => {
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -233,7 +232,7 @@ describe('account plugin - account-create-state hook', () => {
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -291,7 +290,7 @@ describe('account plugin - account-create-state hook', () => {
       },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -319,7 +318,7 @@ describe('account plugin - account-create-state hook', () => {
     expect(result.breakFlow).toBe(false);
     expect(registerMock).toHaveBeenCalledWith({
       alias: 'my-account-alias',
-      type: 'account',
+      type: AliasType.Account,
       network: SupportedNetwork.TESTNET,
       entityId: '0.0.8888',
       evmAddress: '0x00000000000000000000000000000000000022b8',
@@ -357,7 +356,7 @@ describe('account plugin - account-create-state hook', () => {
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -423,7 +422,7 @@ describe('account plugin - account-create-state hook', () => {
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(true) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -511,7 +510,7 @@ describe('account plugin - account-create-state hook (schedule path)', () => {
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createScheduleVerifyParams(makeScheduledData());
 
@@ -535,7 +534,7 @@ describe('account plugin - account-create-state hook (schedule path)', () => {
     MockedHelper.mockImplementation(() => ({ saveAccount: saveAccountMock }));
 
     const api = {} as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createScheduleVerifyParams(
       makeScheduledData({ command: 'token_create' }),
@@ -553,7 +552,7 @@ describe('account plugin - account-create-state hook (schedule path)', () => {
     MockedHelper.mockImplementation(() => ({ saveAccount: saveAccountMock }));
 
     const api = {} as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createScheduleVerifyParams(
       makeScheduledData({ normalizedParams: { invalid: true } }),
@@ -574,7 +573,7 @@ describe('account plugin - account-create-state hook (schedule path)', () => {
     MockedHelper.mockImplementation(() => ({ saveAccount: saveAccountMock }));
 
     const api = {} as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createScheduleVerifyParams(
       makeScheduledData({ transactionId: undefined }),
@@ -602,7 +601,7 @@ describe('account plugin - account-create-state hook (schedule path)', () => {
       mirror: { getTransactionRecord: getTransactionRecordMock },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createScheduleVerifyParams(makeScheduledData());
 
@@ -639,7 +638,7 @@ describe('account plugin - account-create-state hook (schedule path)', () => {
       },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createScheduleVerifyParams(
       makeScheduledData({

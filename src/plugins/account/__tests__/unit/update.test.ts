@@ -8,7 +8,13 @@ import {
   ECDSA_HEX_PUBLIC_KEY,
   MOCK_ACCOUNT_ID,
 } from '@/__tests__/mocks/fixtures';
-import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
+import {
+  makeArgs,
+  makeConfigMock,
+  makeLogger,
+  makeNetworkMock,
+  makeStateMock,
+} from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
   NotFoundError,
@@ -30,9 +36,6 @@ import {
   makeAccountData,
   makeAccountTransactionServiceMock,
   makeAliasServiceMock,
-  makeArgs,
-  makeLogger,
-  makeNetworkServiceMock,
   makeTxExecuteServiceMock,
   makeTxSignServiceMock,
 } from './helpers/mocks';
@@ -66,7 +69,7 @@ const buildApi = (overrides: Partial<CoreApi> = {}): Partial<CoreApi> => ({
   txExecute: makeTxExecuteServiceMock({
     execute: jest.fn().mockResolvedValue(mockTransactionResults.success),
   }),
-  network: makeNetworkServiceMock(SupportedNetwork.TESTNET),
+  network: makeNetworkMock(SupportedNetwork.TESTNET),
   alias: makeAliasServiceMock(),
   kms: makeKmsMock() as unknown as KmsService,
   keyResolver: makeKeyResolverMock() as unknown as KeyResolverService,
@@ -101,7 +104,10 @@ describe('account plugin - update command', () => {
     });
 
     const result = await accountUpdate(
-      makeArgs(api, logger, { account: MOCK_ACCOUNT_ID, memo: 'new memo' }),
+      makeArgs(
+        { ...api, logger },
+        { account: MOCK_ACCOUNT_ID, memo: 'new memo' },
+      ),
     );
 
     expect(updateAccountMock).toHaveBeenCalledWith(
@@ -134,7 +140,7 @@ describe('account plugin - update command', () => {
     });
 
     await accountUpdate(
-      makeArgs(api, logger, { account: 'myAlias', memo: 'updated' }),
+      makeArgs({ ...api, logger }, { account: 'myAlias', memo: 'updated' }),
     );
 
     expect(updateAccountMock).toHaveBeenCalledWith(
@@ -153,7 +159,7 @@ describe('account plugin - update command', () => {
 
     await expect(
       accountUpdate(
-        makeArgs(api, logger, { account: '0.0.9999', memo: 'test' }),
+        makeArgs({ ...api, logger }, { account: '0.0.9999', memo: 'test' }),
       ),
     ).rejects.toThrow(NotFoundError);
   });
@@ -176,7 +182,10 @@ describe('account plugin - update command', () => {
 
     await expect(
       accountUpdate(
-        makeArgs(api, logger, { account: MOCK_ACCOUNT_ID, memo: 'test' }),
+        makeArgs(
+          { ...api, logger },
+          { account: MOCK_ACCOUNT_ID, memo: 'test' },
+        ),
       ),
     ).rejects.toThrow(TransactionError);
   });
@@ -191,7 +200,7 @@ describe('account plugin - update command', () => {
     const api = buildApi();
 
     await expect(
-      accountUpdate(makeArgs(api, logger, { account: MOCK_ACCOUNT_ID })),
+      accountUpdate(makeArgs({ ...api, logger }, { account: MOCK_ACCOUNT_ID })),
     ).rejects.toThrow();
   });
 
@@ -206,11 +215,14 @@ describe('account plugin - update command', () => {
 
     await expect(
       accountUpdate(
-        makeArgs(api, logger, {
-          account: MOCK_ACCOUNT_ID,
-          stakedAccountId: '0.0.5',
-          stakedNodeId: 3,
-        }),
+        makeArgs(
+          { ...api, logger },
+          {
+            account: MOCK_ACCOUNT_ID,
+            stakedAccountId: '0.0.5',
+            stakedNodeId: 3,
+          },
+        ),
       ),
     ).rejects.toThrow();
   });
@@ -231,7 +243,7 @@ describe('account plugin - update command', () => {
     });
 
     const result = await accountUpdate(
-      makeArgs(api, logger, { account: MOCK_ACCOUNT_ID, memo: 'null' }),
+      makeArgs({ ...api, logger }, { account: MOCK_ACCOUNT_ID, memo: 'null' }),
     );
 
     expect(updateAccountMock).toHaveBeenCalledWith(
@@ -257,7 +269,7 @@ describe('account plugin - update command', () => {
     });
 
     await accountUpdate(
-      makeArgs(api, logger, { account: MOCK_ACCOUNT_ID, memo: '' }),
+      makeArgs({ ...api, logger }, { account: MOCK_ACCOUNT_ID, memo: '' }),
     );
 
     expect(updateAccountMock).toHaveBeenCalledWith(
@@ -281,10 +293,13 @@ describe('account plugin - update command', () => {
     });
 
     await accountUpdate(
-      makeArgs(api, logger, {
-        account: MOCK_ACCOUNT_ID,
-        stakedAccountId: 'null',
-      }),
+      makeArgs(
+        { ...api, logger },
+        {
+          account: MOCK_ACCOUNT_ID,
+          stakedAccountId: 'null',
+        },
+      ),
     );
 
     expect(updateAccountMock).toHaveBeenCalledWith(
@@ -308,7 +323,10 @@ describe('account plugin - update command', () => {
     });
 
     await accountUpdate(
-      makeArgs(api, logger, { account: MOCK_ACCOUNT_ID, stakedNodeId: 'null' }),
+      makeArgs(
+        { ...api, logger },
+        { account: MOCK_ACCOUNT_ID, stakedNodeId: 'null' },
+      ),
     );
 
     expect(updateAccountMock).toHaveBeenCalledWith(
@@ -332,11 +350,14 @@ describe('account plugin - update command', () => {
     });
 
     const result = await accountUpdate(
-      makeArgs(api, logger, {
-        account: MOCK_ACCOUNT_ID,
-        stakedAccountId: 'null',
-        stakedNodeId: 'null',
-      }),
+      makeArgs(
+        { ...api, logger },
+        {
+          account: MOCK_ACCOUNT_ID,
+          stakedAccountId: 'null',
+          stakedNodeId: 'null',
+        },
+      ),
     );
 
     expect(updateAccountMock).toHaveBeenCalledWith(
@@ -367,7 +388,10 @@ describe('account plugin - update command', () => {
     });
 
     await accountUpdate(
-      makeArgs(api, logger, { account: MOCK_ACCOUNT_ID, key: NEW_KEY_REF_ID }),
+      makeArgs(
+        { ...api, logger },
+        { account: MOCK_ACCOUNT_ID, key: NEW_KEY_REF_ID },
+      ),
     );
 
     expect(signMock).toHaveBeenCalledWith(
@@ -398,7 +422,10 @@ describe('account plugin - update command', () => {
     const api = buildApi({ alias });
 
     await accountUpdate(
-      makeArgs(api, logger, { account: MOCK_ACCOUNT_ID, key: NEW_KEY_REF_ID }),
+      makeArgs(
+        { ...api, logger },
+        { account: MOCK_ACCOUNT_ID, key: NEW_KEY_REF_ID },
+      ),
     );
 
     expect(saveAccountMock).toHaveBeenCalledWith(
@@ -429,10 +456,13 @@ describe('account plugin - update command', () => {
 
     await expect(
       accountUpdate(
-        makeArgs(api, logger, {
-          account: MOCK_ACCOUNT_ID,
-          key: NEW_KEY_REF_ID,
-        }),
+        makeArgs(
+          { ...api, logger },
+          {
+            account: MOCK_ACCOUNT_ID,
+            key: NEW_KEY_REF_ID,
+          },
+        ),
       ),
     ).rejects.toThrow(ValidationError);
   });
@@ -448,12 +478,15 @@ describe('account plugin - update command', () => {
     const api = buildApi();
 
     const result = await accountUpdate(
-      makeArgs(api, logger, {
-        account: MOCK_ACCOUNT_ID,
-        memo: 'x',
-        maxAutoAssociations: 5,
-        declineStakingReward: true,
-      }),
+      makeArgs(
+        { ...api, logger },
+        {
+          account: MOCK_ACCOUNT_ID,
+          memo: 'x',
+          maxAutoAssociations: 5,
+          declineStakingReward: true,
+        },
+      ),
     );
 
     const output = assertOutput(result.result, AccountUpdateOutputSchema);

@@ -1,7 +1,13 @@
 import type { KeyResolverService } from '@/core';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 
-import { makeConfigMock, makeNetworkMock } from '@/__tests__/mocks/mocks';
+import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
+import {
+  makeArgs,
+  makeConfigMock,
+  makeLogger,
+  makeNetworkMock,
+} from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { ValidationError } from '@/core/errors';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
@@ -14,13 +20,11 @@ import { ScheduleStateServiceImpl } from '@/plugins/schedule/services/schedule-s
 
 import {
   ADMIN_KEY_REF,
-  ADMIN_PUBLIC_KEY,
   PAYER_ACCOUNT_ID,
   PAYER_KEY_REF_ID,
   SCHEDULE_COMPOSED_KEY,
   SCHEDULE_NAME,
 } from './helpers/fixtures';
-import { makeLogger, makeScheduleArgs } from './helpers/mocks';
 
 jest.mock('../../services/schedule-state.service', () => ({
   ScheduleStateServiceImpl: jest.fn(),
@@ -54,10 +58,13 @@ describe('schedule plugin — create command', () => {
       } as unknown as KeyResolverService,
     };
 
-    const args = makeScheduleArgs(api, logger, {
-      name: SCHEDULE_NAME,
-      waitForExpiry: false,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SCHEDULE_NAME,
+        waitForExpiry: false,
+      },
+    );
 
     const result = await scheduleCreate(args);
 
@@ -102,10 +109,13 @@ describe('schedule plugin — create command', () => {
       } as unknown as KeyResolverService,
     };
 
-    const args = makeScheduleArgs(api, logger, {
-      name: SCHEDULE_NAME,
-      waitForExpiry: false,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SCHEDULE_NAME,
+        waitForExpiry: false,
+      },
+    );
 
     await expect(scheduleCreate(args)).rejects.toThrow(ValidationError);
     await expect(scheduleCreate(args)).rejects.toThrow(
@@ -123,7 +133,7 @@ describe('schedule plugin — create command', () => {
 
     const resolveSigningKeyMock = jest.fn().mockResolvedValue({
       keyRefId: ADMIN_KEY_REF,
-      publicKey: ADMIN_PUBLIC_KEY,
+      publicKey: ECDSA_HEX_PUBLIC_KEY,
     });
 
     const networkMock = makeNetworkMock(SupportedNetwork.TESTNET);
@@ -139,11 +149,14 @@ describe('schedule plugin — create command', () => {
       } as unknown as KeyResolverService,
     };
 
-    const args = makeScheduleArgs(api, logger, {
-      name: SCHEDULE_NAME,
-      adminKey: [ADMIN_KEY_REF],
-      waitForExpiry: false,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SCHEDULE_NAME,
+        adminKey: [ADMIN_KEY_REF],
+        waitForExpiry: false,
+      },
+    );
 
     const result = await scheduleCreate(args);
 
@@ -157,7 +170,7 @@ describe('schedule plugin — create command', () => {
       SCHEDULE_COMPOSED_KEY,
       expect.objectContaining({
         adminKeyRefIds: [ADMIN_KEY_REF],
-        adminPublicKeys: [ADMIN_PUBLIC_KEY],
+        adminPublicKeys: [ECDSA_HEX_PUBLIC_KEY],
       }),
     );
 
@@ -177,7 +190,7 @@ describe('schedule plugin — create command', () => {
     const resolveAccountCredentialsMock = jest.fn().mockResolvedValue({
       keyRefId: PAYER_KEY_REF_ID,
       accountId: PAYER_ACCOUNT_ID,
-      publicKey: ADMIN_PUBLIC_KEY,
+      publicKey: ECDSA_HEX_PUBLIC_KEY,
     });
 
     const networkMock = makeNetworkMock(SupportedNetwork.TESTNET);
@@ -193,11 +206,14 @@ describe('schedule plugin — create command', () => {
       } as unknown as KeyResolverService,
     };
 
-    const args = makeScheduleArgs(api, logger, {
-      name: SCHEDULE_NAME,
-      payerAccount: PAYER_ACCOUNT_ID,
-      waitForExpiry: false,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SCHEDULE_NAME,
+        payerAccount: PAYER_ACCOUNT_ID,
+        waitForExpiry: false,
+      },
+    );
 
     const result = await scheduleCreate(args);
 
@@ -242,12 +258,15 @@ describe('schedule plugin — create command', () => {
       } as unknown as KeyResolverService,
     };
 
-    const args = makeScheduleArgs(api, logger, {
-      name: SCHEDULE_NAME,
-      memo,
-      expiration: expiration.toISOString(),
-      waitForExpiry: true,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SCHEDULE_NAME,
+        memo,
+        expiration: expiration.toISOString(),
+        waitForExpiry: true,
+      },
+    );
 
     const result = await scheduleCreate(args);
 
@@ -288,11 +307,14 @@ describe('schedule plugin — create command', () => {
     };
     configMock.getOption = getOptionSpy;
 
-    const args = makeScheduleArgs(api, logger, {
-      name: SCHEDULE_NAME,
-      keyManager: KeyManager.local_encrypted,
-      waitForExpiry: false,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SCHEDULE_NAME,
+        keyManager: KeyManager.local_encrypted,
+        waitForExpiry: false,
+      },
+    );
 
     await scheduleCreate(args);
 

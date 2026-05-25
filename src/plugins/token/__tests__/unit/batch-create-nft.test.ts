@@ -8,7 +8,11 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { HederaTokenType } from '@/core/shared/constants';
-import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
+import {
+  AliasType,
+  SupplyType,
+  SupportedNetwork,
+} from '@/core/types/shared.types';
 import { TOKEN_CREATE_NFT_COMMAND_NAME } from '@/plugins/token/commands/create-nft';
 import { tokenCreateNftStateHook } from '@/plugins/token/hooks/token-create-nft-state';
 import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
@@ -80,7 +84,7 @@ describe('token plugin - batch-create-nft hook', () => {
       receipt: { getReceipt: jest.fn() },
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -111,7 +115,7 @@ describe('token plugin - batch-create-nft hook', () => {
       receipt: { getReceipt: jest.fn() },
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -143,7 +147,7 @@ describe('token plugin - batch-create-nft hook', () => {
       receipt: { getReceipt: jest.fn() },
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -177,7 +181,7 @@ describe('token plugin - batch-create-nft hook', () => {
       receipt: { getReceipt: getReceiptMock },
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -213,7 +217,7 @@ describe('token plugin - batch-create-nft hook', () => {
       receipt: { getReceipt: getReceiptMock },
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -270,7 +274,7 @@ describe('token plugin - batch-create-nft hook', () => {
         decimals: 0,
         initialSupply: 0n,
         tokenType: HederaTokenType.NON_FUNGIBLE_TOKEN,
-        supplyType: 'INFINITE',
+        supplyType: SupplyType.INFINITE,
         adminKeyRefIds: ['kr-admin'],
         adminKeyThreshold: 0,
         supplyKeyRefIds: ['kr-supply'],
@@ -302,7 +306,7 @@ describe('token plugin - batch-create-nft hook', () => {
         exists: jest.fn().mockReturnValue(false),
       },
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -353,7 +357,7 @@ describe('token plugin - batch-create-nft hook', () => {
     expect(result.breakFlow).toBe(false);
     expect(registerMock).toHaveBeenCalledWith({
       alias: 'my-nft-alias',
-      type: 'token',
+      type: AliasType.Token,
       network: SupportedNetwork.TESTNET,
       entityId: '0.0.8888',
       createdAt: '2024-01-15T12:00:00.000Z',
@@ -390,7 +394,7 @@ describe('token plugin - batch-create-nft hook', () => {
       receipt: { getReceipt: getReceiptMock },
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -501,7 +505,7 @@ describe('token plugin - batch-create-nft hook', () => {
       receipt: { getReceipt: getReceiptMock },
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(true) },
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',

@@ -26,7 +26,7 @@ describe('plugin-management enable command', () => {
     } as unknown as PluginManagementService;
     const api = { pluginManagement };
 
-    const args = makeArgs(api, logger, { name: 'custom-plugin' });
+    const args = makeArgs({ ...api, logger }, { name: 'custom-plugin' });
 
     const result = await pluginManagementEnable(args);
     const output = assertOutput(
@@ -56,7 +56,7 @@ describe('plugin-management enable command', () => {
     } as unknown as PluginManagementService;
     const api = { pluginManagement };
 
-    const args = makeArgs(api, logger, { name: 'custom-plugin' });
+    const args = makeArgs({ ...api, logger }, { name: 'custom-plugin' });
 
     await expect(pluginManagementEnable(args)).rejects.toThrow(StateError);
     await expect(pluginManagementEnable(args)).rejects.toThrow(
@@ -74,7 +74,7 @@ describe('plugin-management enable command', () => {
     } as unknown as PluginManagementService;
     const api = { pluginManagement };
 
-    const args = makeArgs(api, logger, { name: 'unknown-plugin' });
+    const args = makeArgs({ ...api, logger }, { name: 'unknown-plugin' });
 
     await expect(pluginManagementEnable(args)).rejects.toThrow(NotFoundError);
     await expect(pluginManagementEnable(args)).rejects.toThrow(

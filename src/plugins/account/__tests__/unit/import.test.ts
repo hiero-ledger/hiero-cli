@@ -56,10 +56,13 @@ describe('account plugin - import command (ADR-003)', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, {
-      key: '0.0.9999:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
-      name: 'imported',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        key: '0.0.9999:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
+        name: 'imported',
+      },
+    );
 
     const result = await accountImport(args);
 
@@ -68,7 +71,7 @@ describe('account plugin - import command (ADR-003)', () => {
       expect.objectContaining({
         alias: 'imported',
         type: AliasType.Account,
-        network: 'testnet',
+        network: SupportedNetwork.TESTNET,
         entityId: '0.0.9999',
         publicKey: expect.any(String),
         keyRefId: 'kr_test123',
@@ -79,7 +82,7 @@ describe('account plugin - import command (ADR-003)', () => {
       expect.objectContaining({
         name: 'imported',
         accountId: '0.0.9999',
-        network: 'testnet',
+        network: SupportedNetwork.TESTNET,
         keyRefId: 'kr_test123',
         evmAddress: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
       }),
@@ -89,7 +92,7 @@ describe('account plugin - import command (ADR-003)', () => {
     expect(output.accountId).toBe('0.0.9999');
     expect(output.name).toBe('imported');
     expect(output.type).toBe(KeyAlgorithm.ECDSA);
-    expect(output.network).toBe('testnet');
+    expect(output.network).toBe(SupportedNetwork.TESTNET);
     expect(output.evmAddress).toBe(
       '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
     );
@@ -118,9 +121,12 @@ describe('account plugin - import command (ADR-003)', () => {
       state: makeStateMock(),
     };
 
-    const args = makeArgs(api, logger, {
-      key: '0.0.1111:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        key: '0.0.1111:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+      },
+    );
 
     await expect(accountImport(args)).rejects.toThrow(StateError);
   });
@@ -150,9 +156,12 @@ describe('account plugin - import command (ADR-003)', () => {
       state: makeStateMock(),
     };
 
-    const args = makeArgs(api, logger, {
-      key: '0.0.2222:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        key: '0.0.2222:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+      },
+    );
 
     await expect(accountImport(args)).rejects.toThrow();
   });

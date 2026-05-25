@@ -3,7 +3,12 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import '@/core/utils/json-serialize';
 
 import { assertOutput } from '@/__tests__/utils/assert-output';
-import { AliasType, SupplyType } from '@/core/types/shared.types';
+import { HederaTokenType } from '@/core/shared/constants';
+import {
+  AliasType,
+  SupplyType,
+  SupportedNetwork,
+} from '@/core/types/shared.types';
 import {
   tokenAssociate,
   TokenAssociateOutputSchema,
@@ -232,10 +237,10 @@ describe('Handler Output Validation - Token Plugin', () => {
             symbol: 'TTK',
             decimals: 2,
             supplyType: SupplyType.INFINITE,
-            tokenType: 'FungibleCommon',
+            tokenType: HederaTokenType.FUNGIBLE_COMMON,
             maxSupply: 0,
             treasuryId: '0.0.111',
-            network: 'testnet',
+            network: SupportedNetwork.TESTNET,
           },
         ]),
         getTokensWithStats: jest.fn().mockReturnValue({

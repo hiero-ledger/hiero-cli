@@ -32,7 +32,7 @@ describe('topic plugin - list command', () => {
     }));
 
     const api: Partial<CoreApi> = { state: makeStateMock(), logger };
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const result = await topicList(args);
 
@@ -53,7 +53,7 @@ describe('topic plugin - list command', () => {
     }));
 
     const api: Partial<CoreApi> = { state: makeStateMock(), logger };
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const result = await topicList(args);
 
@@ -85,7 +85,7 @@ describe('topic plugin - list command', () => {
     }));
 
     const api: Partial<CoreApi> = { state: makeStateMock(), logger };
-    const args = makeArgs(api, logger, { keys: true });
+    const args = makeArgs({ ...api, logger }, { keys: true });
 
     const result = await topicList(args);
 
@@ -118,7 +118,10 @@ describe('topic plugin - list command', () => {
     }));
 
     const api: Partial<CoreApi> = { state: makeStateMock(), logger };
-    const args = makeArgs(api, logger, { network: 'mainnet' });
+    const args = makeArgs(
+      { ...api, logger },
+      { network: SupportedNetwork.MAINNET },
+    );
 
     const result = await topicList(args);
 
@@ -143,7 +146,10 @@ describe('topic plugin - list command', () => {
     }));
 
     const api: Partial<CoreApi> = { state: makeStateMock(), logger };
-    const args = makeArgs(api, logger, { network: 'mainnet' });
+    const args = makeArgs(
+      { ...api, logger },
+      { network: SupportedNetwork.MAINNET },
+    );
 
     const result = await topicList(args);
 
@@ -182,7 +188,7 @@ describe('topic plugin - list command', () => {
     }));
 
     const api: Partial<CoreApi> = { state: makeStateMock(), logger };
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const result = await topicList(args);
 
@@ -209,7 +215,7 @@ describe('topic plugin - list command', () => {
     }));
 
     const api: Partial<CoreApi> = { state: makeStateMock(), logger };
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const result = await topicList(args);
 
@@ -227,7 +233,7 @@ describe('topic plugin - list command', () => {
     }));
 
     const api: Partial<CoreApi> = { state: makeStateMock(), logger };
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     await expect(topicList(args)).rejects.toThrow('db error');
   });

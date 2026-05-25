@@ -6,6 +6,7 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NetworkError } from '@/core';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import {
   networkList,
   NetworkListOutputSchema,
@@ -41,28 +42,28 @@ describe('network plugin - list command', () => {
 
   test('lists all available networks', async () => {
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
-    const args = makeArgs({ network: networkService }, logger, {});
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
+    const args = makeArgs({ network: networkService, logger }, {});
 
     const result = await networkList(args);
 
     const output = assertOutput(result.result, NetworkListOutputSchema);
     expect(output.networks).toBeDefined();
-    expect(output.activeNetwork).toBe('testnet');
+    expect(output.activeNetwork).toBe(SupportedNetwork.TESTNET);
   });
 
   test('shows health checks for active network', async () => {
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     networkService.getNetworkConfig = jest.fn().mockImplementation((name) => ({
       name,
       rpcUrl: `https://${name}.hashio.io/api`,
       mirrorNodeUrl: `https://${name}.mirrornode.hedera.com/api/v1`,
       chainId: '0x128',
       explorerUrl: `https://hashscan.io/${name}`,
-      isTestnet: name !== 'mainnet',
+      isTestnet: name !== SupportedNetwork.MAINNET,
     }));
-    const args = makeArgs({ network: networkService }, logger, {});
+    const args = makeArgs({ network: networkService, logger }, {});
 
     await networkList(args);
 
@@ -76,8 +77,8 @@ describe('network plugin - list command', () => {
 
   test('does not show health checks for inactive networks', async () => {
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
-    const args = makeArgs({ network: networkService }, logger, {});
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
+    const args = makeArgs({ network: networkService, logger }, {});
 
     await networkList(args);
 
@@ -87,47 +88,52 @@ describe('network plugin - list command', () => {
 
   test('returns output with networks for all available networks', async () => {
     const logger = makeLogger();
-    const networkService = makeNetworkMock('mainnet');
+    const networkService = makeNetworkMock(SupportedNetwork.MAINNET);
     networkService.getAvailableNetworks = jest
       .fn()
-      .mockReturnValue(['localnet', 'testnet', 'previewnet', 'mainnet']);
+      .mockReturnValue([
+        SupportedNetwork.LOCALNET,
+        SupportedNetwork.TESTNET,
+        SupportedNetwork.PREVIEWNET,
+        SupportedNetwork.MAINNET,
+      ]);
     networkService.getNetworkConfig = jest.fn().mockImplementation((name) => ({
       name,
       rpcUrl: `https://${name}.hashio.io/api`,
       mirrorNodeUrl: `https://${name}.mirrornode.hedera.com/api/v1`,
       chainId: '0x127',
       explorerUrl: `https://hashscan.io/${name}`,
-      isTestnet: name !== 'mainnet',
+      isTestnet: name !== SupportedNetwork.MAINNET,
     }));
     networkService.getOperator = jest.fn().mockImplementation((name) => {
-      if (name === 'mainnet') {
+      if (name === SupportedNetwork.MAINNET) {
         return { accountId: '0.0.1001', keyRefId: 'kr_mainnet' };
       }
       return null;
     });
-    const args = makeArgs({ network: networkService }, logger, { json: true });
+    const args = makeArgs({ network: networkService, logger }, { json: true });
 
     const result = await networkList(args);
 
     const output = assertOutput(result.result, NetworkListOutputSchema);
     expect(output.networks).toHaveLength(4);
-    expect(output.activeNetwork).toBe('mainnet');
+    expect(output.activeNetwork).toBe(SupportedNetwork.MAINNET);
   });
 
   test('throws when network service fails', async () => {
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     networkService.getAvailableNetworks = jest.fn().mockImplementation(() => {
       throw new NetworkError('Network service error');
     });
-    const args = makeArgs({ network: networkService }, logger, {});
+    const args = makeArgs({ network: networkService, logger }, {});
 
     await expect(networkList(args)).rejects.toThrow('Network service error');
   });
 
   test('shows health check failures', async () => {
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     networkService.getNetworkConfig = jest.fn().mockImplementation((name) => ({
       name,
       rpcUrl: `https://${name}.hashio.io/api`,
@@ -140,7 +146,7 @@ describe('network plugin - list command', () => {
     mockedCheckMirrorNodeHealth.mockResolvedValue({ status: '❌', code: 500 });
     mockedCheckRpcHealth.mockResolvedValue({ status: '❌' });
 
-    const args = makeArgs({ network: networkService }, logger, {});
+    const args = makeArgs({ network: networkService, logger }, {});
 
     const result = await networkList(args);
 
@@ -150,28 +156,28 @@ describe('network plugin - list command', () => {
 
   test('returns success on happy path', async () => {
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
-    const args = makeArgs({ network: networkService }, logger, {});
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
+    const args = makeArgs({ network: networkService, logger }, {});
 
     const result = await networkList(args);
 
     const output = assertOutput(result.result, NetworkListOutputSchema);
-    expect(output.activeNetwork).toBe('testnet');
+    expect(output.activeNetwork).toBe(SupportedNetwork.TESTNET);
   });
 
   test('includes operator information in output', async () => {
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     networkService.getOperator = jest.fn().mockImplementation((name) => {
-      if (name === 'testnet') {
+      if (name === SupportedNetwork.TESTNET) {
         return { accountId: '0.0.1001', keyRefId: 'kr_testnet' };
       }
-      if (name === 'mainnet') {
+      if (name === SupportedNetwork.MAINNET) {
         return { accountId: '0.0.2001', keyRefId: 'kr_mainnet' };
       }
       return null;
     });
-    const args = makeArgs({ network: networkService }, logger, {});
+    const args = makeArgs({ network: networkService, logger }, {});
 
     const result = await networkList(args);
 
@@ -181,9 +187,9 @@ describe('network plugin - list command', () => {
 
   test('shows empty operatorId when no operator is set', async () => {
     const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
+    const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     networkService.getOperator = jest.fn().mockReturnValue(null);
-    const args = makeArgs({ network: networkService }, logger, {});
+    const args = makeArgs({ network: networkService, logger }, {});
 
     const result = await networkList(args);
 

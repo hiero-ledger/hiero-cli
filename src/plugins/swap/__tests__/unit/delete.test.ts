@@ -1,5 +1,6 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 
+import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError } from '@/core/errors';
 import { swapDelete } from '@/plugins/swap/commands/delete/handler';
@@ -7,7 +8,7 @@ import { SwapDeleteOutputSchema } from '@/plugins/swap/commands/delete/output';
 import { SwapStateServiceImpl } from '@/plugins/swap/services/swap-state.service';
 
 import { SWAP_NAME } from './helpers/fixtures';
-import { makeArgs, makeLogger, makeSwapApiMocks } from './helpers/mocks';
+import { makeSwapApiMocks } from './helpers/mocks';
 
 jest.mock('../../services/swap-state.service', () => ({
   SwapStateServiceImpl: jest.fn(),
@@ -30,7 +31,7 @@ describe('swap plugin - delete command', () => {
 
     const { networkMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
-    const args = makeArgs(api, logger, { name: SWAP_NAME });
+    const args = makeArgs({ ...api, logger }, { name: SWAP_NAME });
 
     const result = await swapDelete(args);
 
@@ -50,7 +51,7 @@ describe('swap plugin - delete command', () => {
 
     const { networkMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
-    const args = makeArgs(api, logger, { name: SWAP_NAME });
+    const args = makeArgs({ ...api, logger }, { name: SWAP_NAME });
 
     await swapDelete(args);
 
@@ -66,7 +67,7 @@ describe('swap plugin - delete command', () => {
 
     const { networkMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
-    const args = makeArgs(api, logger, { name: SWAP_NAME });
+    const args = makeArgs({ ...api, logger }, { name: SWAP_NAME });
 
     await expect(swapDelete(args)).rejects.toThrow(NotFoundError);
   });
@@ -81,7 +82,7 @@ describe('swap plugin - delete command', () => {
 
     const { networkMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
-    const args = makeArgs(api, logger, { name: SWAP_NAME });
+    const args = makeArgs({ ...api, logger }, { name: SWAP_NAME });
 
     await expect(swapDelete(args)).rejects.toThrow(NotFoundError);
     expect(deleteSwapMock).not.toHaveBeenCalled();

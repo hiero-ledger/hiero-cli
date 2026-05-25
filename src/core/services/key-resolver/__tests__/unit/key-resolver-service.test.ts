@@ -10,8 +10,9 @@ import {
   CredentialType,
   KeyManager,
 } from '@/core/services/kms/kms-types.interface';
+import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
 import { KeyAlgorithm } from '@/core/shared/constants';
-import { AliasType } from '@/core/types/shared.types';
+import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -86,7 +87,7 @@ const makeAliasMock = (): jest.Mocked<Pick<AliasService, 'resolve'>> => ({
 const makeNetworkMock = (): jest.Mocked<
   Pick<NetworkService, 'getCurrentNetwork' | 'getCurrentOperatorOrThrow'>
 > => ({
-  getCurrentNetwork: jest.fn().mockReturnValue('testnet'),
+  getCurrentNetwork: jest.fn().mockReturnValue(SupportedNetwork.TESTNET),
   getCurrentOperatorOrThrow: jest.fn().mockReturnValue({
     accountId: ACCOUNT_ID,
     keyRefId: KEY_REF_ID,
@@ -173,7 +174,7 @@ describe('resolveAccountCredentials', () => {
     expect(alias.resolve).toHaveBeenCalledWith(
       'my-alias',
       AliasType.Account,
-      'testnet',
+      SupportedNetwork.TESTNET,
     );
     expect(result.accountId).toBe(ACCOUNT_ID);
   });
@@ -491,7 +492,7 @@ describe('resolveSigningKeys', () => {
 
     const result = await service.resolveSigningKeys({
       ...baseParams,
-      mirrorRoleKey: { _type: 'ED25519', key: PUBLIC_KEY },
+      mirrorRoleKey: { _type: MirrorNodeKeyType.ED25519, key: PUBLIC_KEY },
       explicitCredentials: [
         {
           type: CredentialType.PRIVATE_KEY,
@@ -512,7 +513,7 @@ describe('resolveSigningKeys', () => {
 
     const result = await service.resolveSigningKeys({
       ...baseParams,
-      mirrorRoleKey: { _type: 'ED25519', key: PUBLIC_KEY },
+      mirrorRoleKey: { _type: MirrorNodeKeyType.ED25519, key: PUBLIC_KEY },
     });
 
     expect(result.keyRefIds).toContain(KEY_REF_ID);
@@ -526,7 +527,7 @@ describe('resolveSigningKeys', () => {
     await expect(
       service.resolveSigningKeys({
         ...baseParams,
-        mirrorRoleKey: { _type: 'ED25519', key: PUBLIC_KEY },
+        mirrorRoleKey: { _type: MirrorNodeKeyType.ED25519, key: PUBLIC_KEY },
       }),
     ).rejects.toThrow('Admin key not found in KMS.');
   });

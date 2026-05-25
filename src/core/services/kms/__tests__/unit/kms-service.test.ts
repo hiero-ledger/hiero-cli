@@ -77,7 +77,9 @@ const buildClient = () => ({
 jest.mock('@hiero-ledger/sdk', () => ({
   PrivateKey: {
     fromStringECDSA: jest.fn(() => ({
-      publicKey: { toStringRaw: jest.fn().mockReturnValue('ecdsa-public-key') },
+      publicKey: {
+        toStringRaw: jest.fn().mockReturnValue('ecdsa-public-key'),
+      },
     })),
     fromStringED25519: jest.fn(() => ({
       publicKey: {

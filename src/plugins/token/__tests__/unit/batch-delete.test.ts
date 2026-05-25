@@ -49,7 +49,7 @@ describe('token plugin - batch-delete hook', () => {
   test('returns batch failure message when batch success is false', async () => {
     const logger = makeLogger();
     const api = {} as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -72,7 +72,7 @@ describe('token plugin - batch-delete hook', () => {
     }));
 
     const api = {} as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, makeLogger(), {});
+    const args = makeArgs({ ...api, logger: makeLogger() }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -99,7 +99,7 @@ describe('token plugin - batch-delete hook', () => {
 
     const logger = makeLogger();
     const api = {} as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -143,7 +143,7 @@ describe('token plugin - batch-delete hook', () => {
         remove: removeAliasMock,
       },
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, makeLogger(), {});
+    const args = makeArgs({ ...api, logger: makeLogger() }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -173,7 +173,7 @@ describe('token plugin - batch-delete hook', () => {
     const api = {
       alias: { list: jest.fn().mockReturnValue([]) },
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, makeLogger(), {});
+    const args = makeArgs({ ...api, logger: makeLogger() }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -199,7 +199,7 @@ describe('token plugin - batch-delete hook', () => {
     const api = {
       alias: { list: jest.fn().mockReturnValue([]) },
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, makeLogger(), {});
+    const args = makeArgs({ ...api, logger: makeLogger() }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',

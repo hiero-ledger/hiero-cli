@@ -8,6 +8,7 @@ import { makeStateMock } from '@/__tests__/mocks/mocks';
 import { ValidationError } from '@/core/errors';
 import { ConfigServiceImpl } from '@/core/services/config/config-service';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 
 describe('ConfigServiceImpl', () => {
   let configService: ConfigServiceImpl;
@@ -42,7 +43,7 @@ describe('ConfigServiceImpl', () => {
           expect.objectContaining({
             name: ConfigOptionKey.default_key_manager,
             type: 'enum',
-            value: 'local',
+            value: KeyManager.local,
             allowedValues: expect.any(Array),
           }),
         ]),
@@ -190,12 +191,15 @@ describe('ConfigServiceImpl', () => {
     });
 
     it('should set default_key_manager enum option', () => {
-      configService.setOption(ConfigOptionKey.default_key_manager, 'local');
+      configService.setOption(
+        ConfigOptionKey.default_key_manager,
+        KeyManager.local,
+      );
 
       expect(stateMock.set).toHaveBeenCalledWith(
         'config',
         ConfigOptionKey.default_key_manager,
-        'local',
+        KeyManager.local,
       );
     });
   });

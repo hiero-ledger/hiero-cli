@@ -3,7 +3,8 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 
 import { PublicKey } from '@hiero-ledger/sdk';
 
-import { makeLogger } from '@/__tests__/mocks/mocks';
+import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
+import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { NotFoundError, ValidationError } from '@/core/errors';
 import { BatchifySetBatchKeyHook } from '@/plugins/batch/hooks/batchify-set-batch-key/handler';
 import { BatchStateServiceImpl } from '@/plugins/batch/services/batch-state.service';
@@ -12,11 +13,10 @@ import {
   BATCH_COMPOSED_KEY,
   BATCH_KEY_REF_ID,
   BATCH_NAME,
-  BATCH_PUBLIC_KEY,
   mockBatchData,
   mockExecutedBatchData,
 } from './helpers/fixtures';
-import { makeArgs, makeBatchApiMocks } from './helpers/mocks';
+import { makeBatchApiMocks } from './helpers/mocks';
 
 jest.mock('../../services/batch-state.service', () => ({
   BatchStateServiceImpl: jest.fn(),
@@ -36,7 +36,7 @@ describe('batch plugin - BatchifySetBatchKeyHook', () => {
     const logger = makeLogger();
     const { networkMock, kmsMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const setBatchKey = jest.fn();
     const transaction = { setBatchKey } as unknown as Transaction;
@@ -64,7 +64,7 @@ describe('batch plugin - BatchifySetBatchKeyHook', () => {
 
     const { networkMock, kmsMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
-    const args = makeArgs(api, logger, { batch: BATCH_NAME });
+    const args = makeArgs({ ...api, logger }, { batch: BATCH_NAME });
 
     const transaction = {
       setBatchKey: jest.fn(),
@@ -90,7 +90,7 @@ describe('batch plugin - BatchifySetBatchKeyHook', () => {
 
     const { networkMock, kmsMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
-    const args = makeArgs(api, logger, { batch: BATCH_NAME });
+    const args = makeArgs({ ...api, logger }, { batch: BATCH_NAME });
 
     const transaction = {
       setBatchKey: jest.fn(),
@@ -116,7 +116,7 @@ describe('batch plugin - BatchifySetBatchKeyHook', () => {
     kmsMock.get = jest.fn().mockReturnValue(undefined);
 
     const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
-    const args = makeArgs(api, logger, { batch: BATCH_NAME });
+    const args = makeArgs({ ...api, logger }, { batch: BATCH_NAME });
 
     const transaction = {
       setBatchKey: jest.fn(),
@@ -143,7 +143,7 @@ describe('batch plugin - BatchifySetBatchKeyHook', () => {
     const { networkMock, kmsMock } = makeBatchApiMocks();
 
     const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
-    const args = makeArgs(api, logger, { batch: BATCH_NAME });
+    const args = makeArgs({ ...api, logger }, { batch: BATCH_NAME });
 
     const setBatchKey = jest.fn();
     const transaction = { setBatchKey } as unknown as Transaction;
@@ -158,7 +158,7 @@ describe('batch plugin - BatchifySetBatchKeyHook', () => {
     expect(result.breakFlow).toBe(false);
     expect(setBatchKey).toHaveBeenCalledTimes(1);
     expect(setBatchKey).toHaveBeenCalledWith(
-      PublicKey.fromString(BATCH_PUBLIC_KEY),
+      PublicKey.fromString(ECDSA_HEX_PUBLIC_KEY),
     );
   });
 });

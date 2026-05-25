@@ -27,11 +27,11 @@ describe('contract plugin - list command', () => {
 
     const api = {
       alias: makeAliasMock(),
-      network: makeNetworkMock('testnet'),
+      network: makeNetworkMock(SupportedNetwork.TESTNET),
       logger: makeLogger(),
     };
 
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
     const result = await new ListContractsCommand(contractState).execute(args);
 
     const output = assertOutput(result.result, ContractListOutputSchema);
@@ -70,7 +70,7 @@ describe('contract plugin - list command', () => {
       network: makeNetworkMock(SupportedNetwork.TESTNET),
       logger: makeLogger(),
     };
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const result = await new ListContractsCommand(contractState).execute(args);
 
@@ -111,7 +111,7 @@ describe('contract plugin - list command', () => {
       network: makeNetworkMock(SupportedNetwork.TESTNET),
       logger: makeLogger(),
     };
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     await expect(
       new ListContractsCommand(contractState).execute(args),

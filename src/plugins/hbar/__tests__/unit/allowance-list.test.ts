@@ -8,7 +8,10 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError } from '@/core/errors';
-import { EntityReferenceType } from '@/core/types/shared.types';
+import {
+  EntityReferenceType,
+  SupportedNetwork,
+} from '@/core/types/shared.types';
 import {
   hbarAllowanceList,
   HbarAllowanceListOutputSchema,
@@ -51,8 +54,7 @@ describe('hbarAllowanceList', () => {
       accountPublicKey: '',
     });
     const args = makeArgs(
-      { identityResolution, mirror: makeMirror(getHbarAllowances) },
-      logger,
+      { identityResolution, mirror: makeMirror(getHbarAllowances), logger },
       {
         account: 'treasury',
       },
@@ -70,7 +72,7 @@ describe('hbarAllowanceList', () => {
     expect(identityResolution.resolveAccount).toHaveBeenCalledWith({
       accountReference: 'treasury',
       type: EntityReferenceType.ALIAS,
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
     expect(args.api.alias.resolve).not.toHaveBeenCalled();
   });
@@ -86,8 +88,7 @@ describe('hbarAllowanceList', () => {
     });
     const identityResolution = makeIdentityResolution();
     const args = makeArgs(
-      { identityResolution, mirror: makeMirror(getHbarAllowances) },
-      logger,
+      { identityResolution, mirror: makeMirror(getHbarAllowances), logger },
       {
         account: ACCOUNT_ID,
         spender: SPENDER_ID,
@@ -102,7 +103,7 @@ describe('hbarAllowanceList', () => {
     expect(identityResolution.resolveAccount).toHaveBeenCalledWith({
       accountReference: SPENDER_ID,
       type: EntityReferenceType.ENTITY_ID,
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
   });
 
@@ -123,8 +124,8 @@ describe('hbarAllowanceList', () => {
           ...makeMirror(getHbarAllowances),
           getAllHbarAllowances,
         },
+        logger,
       },
-      logger,
       {
         account: ACCOUNT_ID,
         showAll: true,
@@ -149,8 +150,8 @@ describe('hbarAllowanceList', () => {
       {
         identityResolution: makeIdentityResolution(),
         mirror: makeMirror(getHbarAllowances),
+        logger,
       },
-      logger,
       { account: ACCOUNT_ID },
     );
 
@@ -172,8 +173,8 @@ describe('hbarAllowanceList', () => {
             .mockRejectedValue(new NotFoundError('missing')),
         },
         mirror: makeMirror(jest.fn()),
+        logger,
       },
-      logger,
       { account: 'missing' },
     );
 

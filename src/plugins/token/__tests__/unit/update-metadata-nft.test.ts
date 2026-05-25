@@ -1,11 +1,13 @@
 import '@/core/utils/json-serialize';
 
+import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
   NotFoundError,
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import {
@@ -17,7 +19,6 @@ import { TOKEN_NAMESPACE } from '@/plugins/token/constants';
 import { makeUpdateNftMetadataCommandArgs } from './helpers/fixtures';
 import {
   makeApiMocks,
-  makeLogger,
   makeTransactionResult,
   makeUpdateNftMetadataSuccessMocks,
 } from './helpers/mocks';
@@ -158,7 +159,7 @@ describe('tokenUpdateNftMetadataHandler', () => {
         mirror: {
           getTokenInfo: jest.fn().mockResolvedValue({
             decimals: '2',
-            type: 'FUNGIBLE_COMMON',
+            type: MirrorNodeTokenType.FUNGIBLE_COMMON,
             metadata_key: { key: 'some-key' },
           }),
         },

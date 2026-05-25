@@ -38,12 +38,15 @@ describe('hbar plugin - transfer command (unit)', () => {
         .mockResolvedValue(mockTransactionResults.success),
     });
 
-    const args = makeArgs(api, logger, {
-      amount: mockAmounts.large,
-      from: mockAccountIdKeyPairs.sender,
-      to: mockAccountIds.receiver,
-      memo: 'test-transfer',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        amount: mockAmounts.large,
+        from: mockAccountIdKeyPairs.sender,
+        to: mockAccountIds.receiver,
+        memo: 'test-transfer',
+      },
+    );
 
     const result = await hbarTransfer(args);
     const output = assertOutput(result.result, HbarTransferOutputSchema);
@@ -95,11 +98,14 @@ describe('hbar plugin - transfer command (unit)', () => {
   test('returns failure when balance is zero', async () => {
     const { api, logger } = setupTransferTest();
 
-    const args = makeArgs(api, logger, {
-      amount: mockAmounts.zero,
-      from: mockAccountIdKeyPairs.sender,
-      to: mockAccountIds.receiver,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        amount: mockAmounts.zero,
+        from: mockAccountIdKeyPairs.sender,
+        to: mockAccountIds.receiver,
+      },
+    );
 
     await expect(hbarTransfer(args)).rejects.toThrow(ZodError);
   });
@@ -114,11 +120,14 @@ describe('hbar plugin - transfer command (unit)', () => {
         .mockResolvedValue(mockTransactionResults.successGeneric),
     });
 
-    const args = makeArgs(api, logger, {
-      amount: mockAmounts.small,
-      from: mockAccountIdKeyPairs.sender,
-      to: mockAccountIds.receiver,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        amount: mockAmounts.small,
+        from: mockAccountIdKeyPairs.sender,
+        to: mockAccountIds.receiver,
+      },
+    );
 
     const result = await hbarTransfer(args);
     const output = assertOutput(result.result, HbarTransferOutputSchema);
@@ -142,11 +151,14 @@ describe('hbar plugin - transfer command (unit)', () => {
       return null;
     });
 
-    const args = makeArgs(api, logger, {
-      amount: mockAmounts.small,
-      from: 'same-account',
-      to: 'same-account',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        amount: mockAmounts.small,
+        from: 'same-account',
+        to: 'same-account',
+      },
+    );
 
     await expect(hbarTransfer(args)).rejects.toThrow(ValidationError);
   });
@@ -158,12 +170,15 @@ describe('hbar plugin - transfer command (unit)', () => {
       }),
     });
 
-    const args = makeArgs(api, logger, {
-      amount: mockAmounts.large,
-      from: mockAccountIdKeyPairs.sender,
-      to: mockAccountIds.receiver,
-      memo: 'test-transfer',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        amount: mockAmounts.large,
+        from: mockAccountIdKeyPairs.sender,
+        to: mockAccountIds.receiver,
+        memo: 'test-transfer',
+      },
+    );
 
     await expect(hbarTransfer(args)).rejects.toThrow(
       'Network connection failed',
@@ -173,11 +188,14 @@ describe('hbar plugin - transfer command (unit)', () => {
   test('returns failure when from is just account ID without private key', async () => {
     const { api, logger } = setupTransferTest();
 
-    const args = makeArgs(api, logger, {
-      amount: mockAmounts.small,
-      from: mockAccountIds.sender,
-      to: mockAccountIds.receiver,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        amount: mockAmounts.small,
+        from: mockAccountIds.sender,
+        to: mockAccountIds.receiver,
+      },
+    );
 
     await expect(hbarTransfer(args)).rejects.toThrow(StateError);
   });
@@ -193,11 +211,14 @@ describe('hbar plugin - transfer command (unit)', () => {
       defaultCredentials: mockDefaultCredentials.testnet,
     });
 
-    const args = makeArgs(api, logger, {
-      amount: mockAmounts.medium,
-      from: mockAccountIdKeyPairs.default,
-      to: mockAccountIds.receiver,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        amount: mockAmounts.medium,
+        from: mockAccountIdKeyPairs.default,
+        to: mockAccountIds.receiver,
+      },
+    );
 
     const result = await hbarTransfer(args);
     const output = assertOutput(result.result, HbarTransferOutputSchema);

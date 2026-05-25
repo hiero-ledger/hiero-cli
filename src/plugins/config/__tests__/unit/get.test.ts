@@ -1,6 +1,7 @@
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { ConfigurationError } from '@/core';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { ConfigGetOutputSchema } from '@/plugins/config/commands/get';
 import { configGet } from '@/plugins/config/commands/get/handler';
 
@@ -14,7 +15,7 @@ import {
 describe('config plugin - get', () => {
   test('returns option value and allowedValues for enum', async () => {
     const configSvc = makeConfigServiceMock({
-      getOption: jest.fn().mockReturnValue('local'),
+      getOption: jest.fn().mockReturnValue(KeyManager.local),
       listOptions: jest.fn().mockReturnValue([enumOption]),
     });
     const api = makeApiMock(configSvc);
@@ -27,8 +28,11 @@ describe('config plugin - get', () => {
     const output = assertOutput(result.result, ConfigGetOutputSchema);
     expect(output.name).toBe(ConfigOptionKey.default_key_manager);
     expect(output.type).toBe('enum');
-    expect(output.value).toBe('local');
-    expect(output.allowedValues).toEqual(['local', 'local_encrypted']);
+    expect(output.value).toBe(KeyManager.local);
+    expect(output.allowedValues).toEqual([
+      KeyManager.local,
+      KeyManager.local_encrypted,
+    ]);
   });
 
   test('throws when getOption fails', async () => {

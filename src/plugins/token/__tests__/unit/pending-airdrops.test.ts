@@ -3,6 +3,7 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import { MOCK_ACCOUNT_ID } from '@/__tests__/mocks/fixtures';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError } from '@/core/errors';
+import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { AliasType } from '@/core/types/shared.types';
 import {
   tokenPendingAirdrops,
@@ -40,7 +41,7 @@ const makeFtTokenInfo = () => ({
   decimals: '2',
   total_supply: '10000',
   max_supply: '0',
-  type: 'FUNGIBLE_COMMON',
+  type: MirrorNodeTokenType.FUNGIBLE_COMMON,
   treasury_account_id: SENDER_ID,
   freeze_default: false,
   memo: '',
@@ -55,7 +56,7 @@ const makeNftTokenInfo = () => ({
   decimals: '0',
   total_supply: '100',
   max_supply: '1000',
-  type: 'NON_FUNGIBLE_UNIQUE',
+  type: MirrorNodeTokenType.NON_FUNGIBLE_UNIQUE,
   treasury_account_id: SENDER_ID,
   freeze_default: false,
   memo: '',

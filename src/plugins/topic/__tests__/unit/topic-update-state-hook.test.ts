@@ -72,7 +72,7 @@ describe('topic plugin - topic-update-state hook', () => {
   test('returns breakFlow false when batch execution failed', async () => {
     const logger = makeLogger();
     const api = {} as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -91,7 +91,7 @@ describe('topic plugin - topic-update-state hook', () => {
   test('skips when batch has no topic_update transactions', async () => {
     const logger = makeLogger();
     const api = { state: makeStateMock() } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -112,7 +112,7 @@ describe('topic plugin - topic-update-state hook', () => {
   test('logs warn and skips save when normalized params are invalid', async () => {
     const logger = makeLogger();
     const api = { state: makeStateMock() } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -138,7 +138,7 @@ describe('topic plugin - topic-update-state hook', () => {
   test('persists merged topic data when memo is updated', async () => {
     const logger = makeLogger();
     const api = { state: makeStateMock() } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const base = baseUpdateNormalizedParams();
     const params = createBatchExecuteParams({
@@ -172,7 +172,7 @@ describe('topic plugin - topic-update-state hook', () => {
   test('clears submit keys when newSubmitKeys is null', async () => {
     const logger = makeLogger();
     const api = { state: makeStateMock() } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const base = baseUpdateNormalizedParams();
     const params = createBatchExecuteParams({

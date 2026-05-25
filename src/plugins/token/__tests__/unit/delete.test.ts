@@ -8,7 +8,7 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
-import { AliasType } from '@/core/types/shared.types';
+import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 import {
   tokenDelete,
   TokenDeleteOutputSchema,
@@ -60,7 +60,7 @@ describe('tokenDelete - network delete (stateOnly=false)', () => {
       expect(output.transactionId).toBe('0.0.123@1234567890.123456789');
       expect(output.deletedToken.tokenId).toBe('0.0.123456');
       expect(output.deletedToken.name).toBe('TestToken');
-      expect(output.network).toBe('testnet');
+      expect(output.network).toBe(SupportedNetwork.TESTNET);
       expect(output.removedAliases).toBeUndefined();
     });
 
@@ -90,7 +90,7 @@ describe('tokenDelete - network delete (stateOnly=false)', () => {
           alias: 'my-token',
           entityId: '0.0.123456',
           type: AliasType.Token,
-          network: 'testnet',
+          network: SupportedNetwork.TESTNET,
         },
       ]);
       const args = makeArgs(api);
@@ -99,7 +99,10 @@ describe('tokenDelete - network delete (stateOnly=false)', () => {
 
       const output = assertOutput(result.result, TokenDeleteOutputSchema);
       expect(output.removedAliases).toEqual(['my-token (testnet)']);
-      expect(api.alias.remove).toHaveBeenCalledWith('my-token', 'testnet');
+      expect(api.alias.remove).toHaveBeenCalledWith(
+        'my-token',
+        SupportedNetwork.TESTNET,
+      );
       expect(mockRemoveToken).toHaveBeenCalledWith('testnet:0.0.123456');
     });
 
@@ -246,7 +249,7 @@ describe('tokenDelete - state-only (stateOnly=true)', () => {
     expect(output.transactionId).toBeUndefined();
     expect(output.deletedToken.tokenId).toBe('0.0.123456');
     expect(output.deletedToken.name).toBe('TestToken');
-    expect(output.network).toBe('testnet');
+    expect(output.network).toBe(SupportedNetwork.TESTNET);
     expect(mockRemoveToken).toHaveBeenCalledWith('testnet:0.0.123456');
   });
 
@@ -268,13 +271,13 @@ describe('tokenDelete - state-only (stateOnly=true)', () => {
             alias: 'alias-one',
             entityId: '0.0.123456',
             type: AliasType.Token,
-            network: 'testnet',
+            network: SupportedNetwork.TESTNET,
           },
           {
             alias: 'alias-two',
             entityId: '0.0.123456',
             type: AliasType.Token,
-            network: 'testnet',
+            network: SupportedNetwork.TESTNET,
           },
         ]),
         remove: jest.fn(),
