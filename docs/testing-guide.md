@@ -71,20 +71,20 @@ const args = makeArgs({ txExecute: makeSwapTxExecuteMock(), logger }, { ... });
 
 `src/__tests__/mocks/mocks.ts` exports a factory for every `CoreApi` service. Always import and reuse these — never redefine them in a plugin.
 
-| Factory | Returns |
-|---|---|
-| `makeLogger()` | `jest.Mocked<Logger>` |
-| `makeNetworkMock(network?)` | `jest.Mocked<NetworkService>` |
-| `makeKmsMock()` | `jest.Mocked<KmsService>` |
-| `makeAliasMock()` | `jest.Mocked<AliasService>` |
-| `makeTxSignMock()` | `jest.Mocked<TxSignService>` |
-| `makeTxExecuteMock(options?)` | `jest.Mocked<TxExecuteService>` |
-| `makeMirrorMock(options?)` | `Partial<HederaMirrornodeService>` |
-| `makeStateMock(options?)` | `jest.Mocked<StateService>` |
-| `makeConfigMock()` | `jest.Mocked<ConfigService>` |
-| `makeKeyResolverMock(options?)` | `jest.Mocked<KeyResolverService>` |
-| `makeIdentityResolutionServiceMock()` | `jest.Mocked<IdentityResolutionService>` |
-| `makeContractQueryServiceMock()` | `jest.Mocked<ContractQueryService>` |
+| Factory                                | Returns                                   |
+| -------------------------------------- | ----------------------------------------- |
+| `makeLogger()`                         | `jest.Mocked<Logger>`                     |
+| `makeNetworkMock(network?)`            | `jest.Mocked<NetworkService>`             |
+| `makeKmsMock()`                        | `jest.Mocked<KmsService>`                 |
+| `makeAliasMock()`                      | `jest.Mocked<AliasService>`               |
+| `makeTxSignMock()`                     | `jest.Mocked<TxSignService>`              |
+| `makeTxExecuteMock(options?)`          | `jest.Mocked<TxExecuteService>`           |
+| `makeMirrorMock(options?)`             | `Partial<HederaMirrornodeService>`        |
+| `makeStateMock(options?)`              | `jest.Mocked<StateService>`               |
+| `makeConfigMock()`                     | `jest.Mocked<ConfigService>`              |
+| `makeKeyResolverMock(options?)`        | `jest.Mocked<KeyResolverService>`         |
+| `makeIdentityResolutionServiceMock()`  | `jest.Mocked<IdentityResolutionService>`  |
+| `makeContractQueryServiceMock()`       | `jest.Mocked<ContractQueryService>`       |
 | `makeScheduleTransactionServiceMock()` | `jest.Mocked<ScheduleTransactionService>` |
 
 ```typescript

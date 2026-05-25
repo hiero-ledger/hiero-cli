@@ -1,21 +1,34 @@
 import { z } from 'zod';
 
-import {
-  ConfigOptionNameSchema,
-  ConfigOptionValueSchema,
-} from '@/core/schemas';
+import { BooleanStringSchema } from '@/core';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
+import { LogLevel } from '@/core/types/shared.types';
 
-/**
- * Input schema for config set command
- * Validates arguments for setting a configuration option value
- */
-export const ConfigSetInputSchema = z.object({
-  option: ConfigOptionNameSchema.describe(
-    'Configuration option name to set. Use `list` command to check available options.',
-  ),
-  value: ConfigOptionValueSchema.describe(
-    'Value to set (boolean: true/false, number, or string)',
-  ),
-});
+export const ConfigSetInputSchema = z
+  .object({
+    default_key_manager: z
+      .enum(KeyManager)
+      .optional()
+      .describe(
+        'Default key manager - allowed values: local | local_encrypted',
+      ),
+    ed25519_support: BooleanStringSchema.optional().describe(
+      'ED25519 support - true or false',
+    ),
+    log_level: z
+      .enum(LogLevel)
+      .optional()
+      .describe(
+        "Log level - allowed values: silent | error | warn | info | debug',",
+      ),
+    skip_confirmations: BooleanStringSchema.optional(),
+  })
+  .refine(
+    (data) => Object.values(data).filter((v) => v !== undefined).length === 1,
+    {
+      message:
+        'Exactly one config option flag must be provided. Use --<option> <value>',
+    },
+  );
 
 export type ConfigSetInput = z.infer<typeof ConfigSetInputSchema>;

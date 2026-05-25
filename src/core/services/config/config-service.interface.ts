@@ -3,13 +3,13 @@
  * Generic accessors so new options are easy to add and discover
  */
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
-import { LOG_LEVEL_VALUES } from '@/core/services/logger/logger-service.interface';
+import { LogLevel } from '@/core/types/shared.types';
 
 export const CONFIG_NAMESPACE = 'config';
 
 /** Keys of options in CONFIG_OPTIONS — use instead of string literals when calling getOption/setOption. */
 export enum ConfigOptionKey {
-  ed25519_support_enabled = 'ed25519_support_enabled',
+  ed25519_support = 'ed25519_support',
   log_level = 'log_level',
   default_key_manager = 'default_key_manager',
   skip_confirmations = 'skip_confirmations',
@@ -35,14 +35,14 @@ type OptionSpec =
     };
 
 export const CONFIG_OPTIONS: Record<string, OptionSpec> = {
-  ed25519_support_enabled: {
+  ed25519_support: {
     type: 'boolean',
     default: false,
   },
   log_level: {
     type: 'enum',
     default: 'silent',
-    allowedValues: LOG_LEVEL_VALUES,
+    allowedValues: Object.values(LogLevel),
   },
   default_key_manager: {
     type: 'enum',

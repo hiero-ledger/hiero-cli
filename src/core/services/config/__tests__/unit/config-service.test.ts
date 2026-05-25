@@ -30,7 +30,7 @@ describe('ConfigServiceImpl', () => {
       expect(options).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            name: ConfigOptionKey.ed25519_support_enabled,
+            name: ConfigOptionKey.ed25519_support,
             type: 'boolean',
             value: false,
           }),
@@ -52,15 +52,14 @@ describe('ConfigServiceImpl', () => {
 
     it('should return stored values when available', () => {
       stateMock.get.mockImplementation((_: string, key: string) => {
-        if (key === (ConfigOptionKey.ed25519_support_enabled as string))
-          return true;
+        if (key === (ConfigOptionKey.ed25519_support as string)) return true;
         if (key === (ConfigOptionKey.log_level as string)) return 'debug';
         return undefined;
       });
 
       const options = configService.listOptions();
       const ed25519Option = options.find(
-        (o) => o.name === (ConfigOptionKey.ed25519_support_enabled as string),
+        (o) => o.name === (ConfigOptionKey.ed25519_support as string),
       );
       const logLevelOption = options.find(
         (o) => o.name === (ConfigOptionKey.log_level as string),
@@ -90,13 +89,11 @@ describe('ConfigServiceImpl', () => {
     it('should return stored value for boolean option', () => {
       stateMock.get.mockReturnValue(true);
 
-      const result = configService.getOption(
-        ConfigOptionKey.ed25519_support_enabled,
-      );
+      const result = configService.getOption(ConfigOptionKey.ed25519_support);
 
       expect(stateMock.get).toHaveBeenCalledWith(
         'config',
-        ConfigOptionKey.ed25519_support_enabled,
+        ConfigOptionKey.ed25519_support,
       );
       expect(result).toBe(true);
     });
@@ -104,9 +101,7 @@ describe('ConfigServiceImpl', () => {
     it('should return default value when not set', () => {
       stateMock.get.mockReturnValue(undefined);
 
-      const result = configService.getOption(
-        ConfigOptionKey.ed25519_support_enabled,
-      );
+      const result = configService.getOption(ConfigOptionKey.ed25519_support);
 
       expect(result).toBe(false);
     });
@@ -114,9 +109,7 @@ describe('ConfigServiceImpl', () => {
     it('should return default value when null', () => {
       stateMock.get.mockReturnValue(null);
 
-      const result = configService.getOption(
-        ConfigOptionKey.ed25519_support_enabled,
-      );
+      const result = configService.getOption(ConfigOptionKey.ed25519_support);
 
       expect(result).toBe(false);
     });
@@ -130,9 +123,7 @@ describe('ConfigServiceImpl', () => {
     it('should convert value to boolean for boolean type', () => {
       stateMock.get.mockReturnValue('truthy_string');
 
-      const result = configService.getOption(
-        ConfigOptionKey.ed25519_support_enabled,
-      );
+      const result = configService.getOption(ConfigOptionKey.ed25519_support);
 
       expect(result).toBe(true);
     });
@@ -156,11 +147,11 @@ describe('ConfigServiceImpl', () => {
 
   describe('setOption', () => {
     it('should set boolean option', () => {
-      configService.setOption(ConfigOptionKey.ed25519_support_enabled, true);
+      configService.setOption(ConfigOptionKey.ed25519_support, true);
 
       expect(stateMock.set).toHaveBeenCalledWith(
         'config',
-        ConfigOptionKey.ed25519_support_enabled,
+        ConfigOptionKey.ed25519_support,
         true,
       );
     });
@@ -173,10 +164,7 @@ describe('ConfigServiceImpl', () => {
 
     it('should throw error when setting non-boolean for boolean option', () => {
       expect(() =>
-        configService.setOption(
-          ConfigOptionKey.ed25519_support_enabled,
-          'not_boolean',
-        ),
+        configService.setOption(ConfigOptionKey.ed25519_support, 'not_boolean'),
       ).toThrow(ValidationError);
     });
 

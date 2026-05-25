@@ -342,10 +342,10 @@ Configure the default key storage method using the config command:
 
 ```bash
 # Set to plain text storage (development/testing)
-hcli config set -o default_key_manager -V local
+hcli config set --default_key_manager local
 
 # Set to encrypted storage (production)
-hcli config set -o default_key_manager -V local_encrypted
+hcli config set --default_key_manager local_encrypted
 ```
 
 ### Per-Operation Override

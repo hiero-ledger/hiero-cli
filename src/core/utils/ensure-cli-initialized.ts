@@ -124,7 +124,7 @@ function saveGlobalConfiguration(
   keyManager: KeyManager,
   ed25519Support: boolean,
 ): void {
-  api.config.setOption(ConfigOptionKey.ed25519_support_enabled, ed25519Support);
+  api.config.setOption(ConfigOptionKey.ed25519_support, ed25519Support);
   api.config.setOption(ConfigOptionKey.default_key_manager, keyManager);
 }
 

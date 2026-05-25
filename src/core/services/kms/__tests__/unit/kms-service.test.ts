@@ -115,7 +115,7 @@ const setupService = (options?: { ed25519Enabled?: boolean }) => {
   const state = makeStateMock() as StateService;
   const configService = {
     getOption: jest.fn((name: string) => {
-      if (name === (ConfigOptionKey.ed25519_support_enabled as string)) {
+      if (name === (ConfigOptionKey.ed25519_support as string)) {
         return options?.ed25519Enabled ?? false;
       }
       return undefined;

@@ -69,7 +69,7 @@ hcli config list
       "allowedValues": ["silent", "error", "warn", "info", "debug"]
     },
     {
-      "name": "ed25519_support_enabled",
+      "name": "ed25519_support",
       "type": "boolean",
       "value": false
     },
@@ -108,17 +108,21 @@ hcli config get -o default_key_manager
 
 ### Config Set
 
-Set the value of a configuration option.
+Set the value of a configuration option by passing the option name as a named flag. Exactly one flag must be provided per invocation.
 
 ```bash
-hcli config set -o default_key_manager -V local_encrypted
-hcli config set -o log_level -V info
+hcli config set --default_key_manager local_encrypted
+hcli config set --log_level info
+hcli config set --ed25519_support true
+hcli config set --skip_confirmations false
 ```
 
-**Options:**
+**Options (pass exactly one):**
 
-- `-o, --option <string>` - Option name to set (required)
-- `-V, --value <string>` - Value to set (required)
+- `--default_key_manager <string>` - Set default key manager (`local` | `local_encrypted`)
+- `--ed25519_support <string>` - Set Ed25519 support (`true` | `false`)
+- `--log_level <string>` - Set log level (`silent` | `error` | `warn` | `info` | `debug`)
+- `--skip_confirmations <string>` - Set skip confirmations (`true` | `false`)
 
 **Output:**
 

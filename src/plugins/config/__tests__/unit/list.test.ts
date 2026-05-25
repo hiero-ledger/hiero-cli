@@ -34,7 +34,7 @@ describe('config plugin - list', () => {
           allowedValues: [KeyManager.local, KeyManager.local_encrypted],
         }),
         expect.objectContaining({
-          name: ConfigOptionKey.ed25519_support_enabled,
+          name: ConfigOptionKey.ed25519_support,
           type: 'boolean',
           value: false,
         }),
