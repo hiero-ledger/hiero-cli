@@ -10,6 +10,7 @@ import type {
   AliasService,
 } from '@/core/services/alias/alias-service.interface';
 import type { AllowanceService } from '@/core/services/allowance/allowance-service.interface';
+import type { BatchTransactionService } from '@/core/services/batch/batch-transaction-service.interface';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { ContractCompilerService } from '@/core/services/contract-compiler/contract-compiler-service.interface';
 import type { ContractQueryService } from '@/core/services/contract-query/contract-query-service.interface';
@@ -33,8 +34,10 @@ import type { NetworkService } from '@/core/services/network/network-service.int
 import type { OutputService } from '@/core/services/output/output-service.interface';
 import type { OutputHandlerOptions } from '@/core/services/output/types';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
+import type { ReceiptService } from '@/core/services/receipt/receipt-service.interface';
 import type { ScheduleTransactionService } from '@/core/services/schedule-transaction/schedule-transaction-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
+import type { TopicService } from '@/core/services/topic/topic-transaction-service.interface';
 import type { TransferService } from '@/core/services/transfer/transfer-service.interface';
 import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
 import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
@@ -485,6 +488,16 @@ export const makeMirrorMock = (
 });
 
 /**
+ * Create a mocked TopicService
+ */
+export const makeTopicServiceMock = (): jest.Mocked<TopicService> => ({
+  createTopic: jest.fn(),
+  deleteTopic: jest.fn(),
+  submitMessage: jest.fn(),
+  updateTopic: jest.fn(),
+});
+
+/**
  * Create a mocked TransferService
  */
 const makeTransferMock = (): jest.Mocked<TransferService> => ({
@@ -551,6 +564,21 @@ const makeContractCompilerServiceMock = (): ContractCompilerService =>
   }) as unknown as ContractCompilerService;
 
 /**
+ * Create a mocked BatchTransactionService
+ */
+export const makeBatchTransactionServiceMock =
+  (): jest.Mocked<BatchTransactionService> => ({
+    createBatchTransaction: jest.fn(),
+  });
+
+/**
+ * Create a mocked ReceiptService
+ */
+export const makeReceiptServiceMock = (): jest.Mocked<ReceiptService> => ({
+  getReceipt: jest.fn(),
+});
+
+/**
  * Create a mocked ConfigService
  */
 export const makeConfigMock = (): jest.Mocked<ConfigService> => ({
@@ -571,63 +599,14 @@ export const makeArgs = (
   const kms = api.kms || makeKmsMock();
 
   const apiObject = {
+    ...api,
     account: api.account || ({} as unknown),
     token: api.token || ({} as unknown),
     txSign: api.txSign || makeTxSignMock(),
     txExecute: api.txExecute || makeTxExecuteMock(),
-    topic:
-      api.topic ||
-      ({
-        createTopic: jest.fn(),
-        submitMessage: jest.fn(),
-        updateTopic: jest.fn(),
-        deleteTopic: jest.fn(),
-      } as unknown),
-    state:
-      api.state ||
-      ({
-        list: jest.fn().mockReturnValue([]),
-        get: jest.fn(),
-        set: jest.fn(),
-        delete: jest.fn(),
-        clear: jest.fn(),
-        has: jest.fn(),
-        getNamespaces: jest.fn(),
-        getKeys: jest.fn(),
-        subscribe: jest.fn(),
-        getActions: jest.fn(),
-        getState: jest.fn(),
-        getStorageDirectory: jest.fn().mockReturnValue(''),
-        isInitialized: jest.fn().mockReturnValue(true),
-      } as unknown as StateService),
-    mirror:
-      api.mirror ||
-      ({
-        setBaseUrl: jest.fn(),
-        getAccountOrThrow: jest.fn(),
-        getAccount: jest.fn(),
-        getAccountTokenBalances: jest.fn(),
-        getHbarAllowances: jest.fn(),
-        getAllHbarAllowances: jest.fn(),
-        getTokenAllowances: jest.fn(),
-        getAllTokenAllowances: jest.fn(),
-        getNftAllowances: jest.fn(),
-        getAllNftAllowances: jest.fn(),
-        getAccountNfts: jest.fn(),
-        getAccounts: jest.fn(),
-        getTopicMessage: jest.fn(),
-        getTopicMessages: jest.fn(),
-        getTokenInfo: jest.fn(),
-        getScheduled: jest.fn(),
-        getNftInfo: jest.fn(),
-        getTopicInfo: jest.fn(),
-        getTransactionRecord: jest.fn(),
-        getContractInfo: jest.fn(),
-        getPendingAirdrops: jest.fn(),
-        getOutstandingAirdrops: jest.fn(),
-        getExchangeRate: jest.fn(),
-        postContractCall: jest.fn(),
-      } as HederaMirrornodeService),
+    topic: api.topic || makeTopicServiceMock(),
+    state: api.state || makeStateMock(),
+    mirror: api.mirror || createMirrorNodeMock(),
     network,
     config: api.config || makeConfigMock(),
     logger: api.logger || makeLogger(),
@@ -646,8 +625,8 @@ export const makeArgs = (
     identityResolution:
       api.identityResolution || makeIdentityResolutionServiceMock(),
     schedule: api.schedule || makeScheduleTransactionServiceMock(),
-    batch: api.batch,
-    receipt: api.receipt,
+    batch: api.batch || makeBatchTransactionServiceMock(),
+    receipt: api.receipt || makeReceiptServiceMock(),
   } as unknown as CoreApi;
 
   return {
