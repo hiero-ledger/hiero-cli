@@ -61,9 +61,12 @@ describe('plugin-management add command', () => {
     } as unknown as PluginManagementService;
     const api = { pluginManagement };
 
-    const args = makeArgs(api, logger, {
-      path: 'dist/plugins/custom-plugin',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        path: 'dist/plugins/custom-plugin',
+      },
+    );
 
     const result = await pluginManagementAdd(args);
     const output = assertOutput(result.result, PluginManagementAddOutputSchema);
@@ -92,9 +95,12 @@ describe('plugin-management add command', () => {
     } as unknown as PluginManagementService;
     const api = { pluginManagement };
 
-    const args = makeArgs(api, logger, {
-      path: 'dist/plugins/custom-plugin',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        path: 'dist/plugins/custom-plugin',
+      },
+    );
 
     await expect(pluginManagementAdd(args)).rejects.toThrow(StateError);
     await expect(pluginManagementAdd(args)).rejects.toThrow(/already exists/);
@@ -111,9 +117,12 @@ describe('plugin-management add command', () => {
     } as unknown as PluginManagementService;
     const api = { pluginManagement };
 
-    const args = makeArgs(api, logger, {
-      path: 'dist/plugins/custom-plugin',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        path: 'dist/plugins/custom-plugin',
+      },
+    );
 
     const error = new Error('ENOENT');
     (error as NodeJS.ErrnoException).code = 'ENOENT';

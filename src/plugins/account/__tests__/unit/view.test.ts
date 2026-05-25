@@ -56,7 +56,7 @@ describe('account plugin - view command (ADR-003)', () => {
         }),
       },
     };
-    const args = makeArgs(api, logger, { account: 'acc1' });
+    const args = makeArgs({ ...api, logger }, { account: 'acc1' });
 
     const result = await accountView(args);
 
@@ -99,7 +99,7 @@ describe('account plugin - view command (ADR-003)', () => {
       state: makeStateMock(),
       alias,
     };
-    const args = makeArgs(api, logger, { account: 'acc2' });
+    const args = makeArgs({ ...api, logger }, { account: 'acc2' });
 
     const result = await accountView(args);
 
@@ -125,7 +125,7 @@ describe('account plugin - view command (ADR-003)', () => {
       logger,
       state: makeStateMock(),
     };
-    const args = makeArgs(api, logger, { account: '0.0.3333' });
+    const args = makeArgs({ ...api, logger }, { account: '0.0.3333' });
 
     await expect(accountView(args)).rejects.toThrow();
   });
@@ -140,7 +140,7 @@ describe('account plugin - view command (ADR-003)', () => {
       state: makeStateMock(),
     };
     const account = 'broken';
-    const args = makeArgs(api, logger, { account });
+    const args = makeArgs({ ...api, logger }, { account });
 
     await expect(accountView(args)).rejects.toThrow(NotFoundError);
   });

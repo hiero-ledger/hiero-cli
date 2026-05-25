@@ -77,7 +77,7 @@ describe('token plugin - batch-create-ft hook', () => {
       receipt: { getReceipt: jest.fn() },
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -108,7 +108,7 @@ describe('token plugin - batch-create-ft hook', () => {
       receipt: { getReceipt: jest.fn() },
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -140,7 +140,7 @@ describe('token plugin - batch-create-ft hook', () => {
       receipt: { getReceipt: jest.fn() },
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -174,7 +174,7 @@ describe('token plugin - batch-create-ft hook', () => {
       receipt: { getReceipt: getReceiptMock },
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -210,7 +210,7 @@ describe('token plugin - batch-create-ft hook', () => {
       receipt: { getReceipt: getReceiptMock },
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -287,7 +287,7 @@ describe('token plugin - batch-create-ft hook', () => {
         exists: jest.fn().mockReturnValue(false),
       },
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -367,7 +367,7 @@ describe('token plugin - batch-create-ft hook', () => {
       receipt: { getReceipt: getReceiptMock },
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -462,7 +462,7 @@ describe('token plugin - batch-create-ft hook', () => {
       receipt: { getReceipt: getReceiptMock },
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(true) },
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',

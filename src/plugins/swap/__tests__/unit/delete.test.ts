@@ -31,7 +31,7 @@ describe('swap plugin - delete command', () => {
 
     const { networkMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
-    const args = makeArgs(api, logger, { name: SWAP_NAME });
+    const args = makeArgs({ ...api, logger }, { name: SWAP_NAME });
 
     const result = await swapDelete(args);
 
@@ -51,7 +51,7 @@ describe('swap plugin - delete command', () => {
 
     const { networkMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
-    const args = makeArgs(api, logger, { name: SWAP_NAME });
+    const args = makeArgs({ ...api, logger }, { name: SWAP_NAME });
 
     await swapDelete(args);
 
@@ -67,7 +67,7 @@ describe('swap plugin - delete command', () => {
 
     const { networkMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
-    const args = makeArgs(api, logger, { name: SWAP_NAME });
+    const args = makeArgs({ ...api, logger }, { name: SWAP_NAME });
 
     await expect(swapDelete(args)).rejects.toThrow(NotFoundError);
   });
@@ -82,7 +82,7 @@ describe('swap plugin - delete command', () => {
 
     const { networkMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
-    const args = makeArgs(api, logger, { name: SWAP_NAME });
+    const args = makeArgs({ ...api, logger }, { name: SWAP_NAME });
 
     await expect(swapDelete(args)).rejects.toThrow(NotFoundError);
     expect(deleteSwapMock).not.toHaveBeenCalled();

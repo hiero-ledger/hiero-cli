@@ -91,7 +91,7 @@ describe('TokenUpdateStateHook', () => {
           transactions: [],
         }),
         executeTransactionResult: { source: 'OTHER' },
-        args: makeArgs(api, makeLogger(), {}),
+        args: makeArgs({ ...api, logger: makeLogger() }, {}),
       };
 
       const result = await hook.execute(params as never);
@@ -102,7 +102,7 @@ describe('TokenUpdateStateHook', () => {
 
     test('returns breakFlow:false when batchData.success is false', async () => {
       const api = { state: makeStateMock() } as unknown as Partial<CoreApi>;
-      const args = makeArgs(api, makeLogger(), {});
+      const args = makeArgs({ ...api, logger: makeLogger() }, {});
       const params = createBatchExecuteParams(
         {
           name: 'batch',
@@ -122,7 +122,7 @@ describe('TokenUpdateStateHook', () => {
 
     test('returns breakFlow:false and skips when no token_update commands in batch', async () => {
       const api = { state: makeStateMock() } as unknown as Partial<CoreApi>;
-      const args = makeArgs(api, makeLogger(), {});
+      const args = makeArgs({ ...api, logger: makeLogger() }, {});
       const params = createBatchExecuteParams(
         {
           name: 'batch',
@@ -147,7 +147,7 @@ describe('TokenUpdateStateHook', () => {
     test('logs warn and skips when normalizedParams are invalid', async () => {
       const logger = makeLogger();
       const api = { state: makeStateMock() } as unknown as Partial<CoreApi>;
-      const args = makeArgs(api, logger, {});
+      const args = makeArgs({ ...api, logger }, {});
       const params = createBatchExecuteParams(
         {
           name: 'batch',
@@ -176,7 +176,7 @@ describe('TokenUpdateStateHook', () => {
   describe('successful state save', () => {
     test('saves token data with new name from normalizedParams', async () => {
       const api = { state: makeStateMock() } as unknown as Partial<CoreApi>;
-      const args = makeArgs(api, makeLogger(), {});
+      const args = makeArgs({ ...api, logger: makeLogger() }, {});
       const params = createBatchExecuteParams(
         {
           name: 'batch',
@@ -210,7 +210,7 @@ describe('TokenUpdateStateHook', () => {
 
     test('falls back to tokenInfo name when newName is not set', async () => {
       const api = { state: makeStateMock() } as unknown as Partial<CoreApi>;
-      const args = makeArgs(api, makeLogger(), {});
+      const args = makeArgs({ ...api, logger: makeLogger() }, {});
       const params = createBatchExecuteParams(
         {
           name: 'batch',
@@ -249,7 +249,7 @@ describe('TokenUpdateStateHook', () => {
       });
 
       const api = { state: makeStateMock() } as unknown as Partial<CoreApi>;
-      const args = makeArgs(api, makeLogger(), {});
+      const args = makeArgs({ ...api, logger: makeLogger() }, {});
       const params = createBatchExecuteParams(
         {
           name: 'batch',
@@ -282,7 +282,7 @@ describe('TokenUpdateStateHook', () => {
 
     test('clears kycKey when kycKeys is null', async () => {
       const api = { state: makeStateMock() } as unknown as Partial<CoreApi>;
-      const args = makeArgs(api, makeLogger(), {});
+      const args = makeArgs({ ...api, logger: makeLogger() }, {});
       const params = createBatchExecuteParams(
         {
           name: 'batch',
@@ -311,7 +311,7 @@ describe('TokenUpdateStateHook', () => {
 
     test('saves new kycKey refs when kycKeys are provided', async () => {
       const api = { state: makeStateMock() } as unknown as Partial<CoreApi>;
-      const args = makeArgs(api, makeLogger(), {});
+      const args = makeArgs({ ...api, logger: makeLogger() }, {});
       const params = createBatchExecuteParams(
         {
           name: 'batch',
@@ -340,7 +340,7 @@ describe('TokenUpdateStateHook', () => {
 
     test('updates treasury when newTreasuryId is set', async () => {
       const api = { state: makeStateMock() } as unknown as Partial<CoreApi>;
-      const args = makeArgs(api, makeLogger(), {});
+      const args = makeArgs({ ...api, logger: makeLogger() }, {});
       const params = createBatchExecuteParams(
         {
           name: 'batch',
@@ -370,7 +370,7 @@ describe('TokenUpdateStateHook', () => {
     test('logs info after saving token state', async () => {
       const logger = makeLogger();
       const api = { state: makeStateMock() } as unknown as Partial<CoreApi>;
-      const args = makeArgs(api, logger, {});
+      const args = makeArgs({ ...api, logger }, {});
       const params = createBatchExecuteParams(
         {
           name: 'batch',
@@ -391,7 +391,7 @@ describe('TokenUpdateStateHook', () => {
 
     test('processes multiple token_update-ft items', async () => {
       const api = { state: makeStateMock() } as unknown as Partial<CoreApi>;
-      const args = makeArgs(api, makeLogger(), {});
+      const args = makeArgs({ ...api, logger: makeLogger() }, {});
       const params = createBatchExecuteParams(
         {
           name: 'batch',
@@ -441,7 +441,7 @@ describe('TokenUpdateStateHook', () => {
 
     test('ignores non-update commands in a mixed batch', async () => {
       const api = { state: makeStateMock() } as unknown as Partial<CoreApi>;
-      const args = makeArgs(api, makeLogger(), {});
+      const args = makeArgs({ ...api, logger: makeLogger() }, {});
       const params = createBatchExecuteParams(
         {
           name: 'batch',

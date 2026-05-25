@@ -35,7 +35,7 @@ describe('swap plugin - list command', () => {
 
     const { networkMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const result = await swapList(args);
 
@@ -55,7 +55,7 @@ describe('swap plugin - list command', () => {
 
     const { networkMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const result = await swapList(args);
 
@@ -74,7 +74,7 @@ describe('swap plugin - list command', () => {
 
     const { networkMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const result = await swapList(args);
 
@@ -97,7 +97,7 @@ describe('swap plugin - list command', () => {
 
     const { networkMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const result = await swapList(args);
 
@@ -115,7 +115,7 @@ describe('swap plugin - list command', () => {
 
     const { networkMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const result = await swapList(args);
 

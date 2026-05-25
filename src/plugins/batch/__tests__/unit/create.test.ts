@@ -44,10 +44,13 @@ describe('batch plugin - create command', () => {
       } as unknown as KeyResolverService,
     };
 
-    const args = makeArgs(api, logger, {
-      name: BATCH_NAME,
-      key: BATCH_KEY_REF_ID,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: BATCH_NAME,
+        key: BATCH_KEY_REF_ID,
+      },
+    );
 
     const result = await new BatchCreateCommand(batchState).execute(args);
 
@@ -84,10 +87,13 @@ describe('batch plugin - create command', () => {
       } as unknown as KeyResolverService,
     };
 
-    const args = makeArgs(api, logger, {
-      name: BATCH_NAME,
-      key: BATCH_KEY_REF_ID,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: BATCH_NAME,
+        key: BATCH_KEY_REF_ID,
+      },
+    );
 
     await expect(
       new BatchCreateCommand(batchState).execute(args),
@@ -118,10 +124,13 @@ describe('batch plugin - create command', () => {
       } as unknown as KeyResolverService,
     };
 
-    const args = makeArgs(api, logger, {
-      name: BATCH_NAME,
-      key: BATCH_KEY_REF_ID,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: BATCH_NAME,
+        key: BATCH_KEY_REF_ID,
+      },
+    );
 
     await new BatchCreateCommand(batchState).execute(args);
 

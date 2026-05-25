@@ -70,10 +70,13 @@ describe('topic plugin - import command (ADR-007)', () => {
       state: makeStateMock(),
     };
 
-    const args = makeArgs(api, logger, {
-      topic: '0.0.123456',
-      name: 'my-topic',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        topic: '0.0.123456',
+        name: 'my-topic',
+      },
+    );
 
     const result = await topicImport(args);
 
@@ -133,9 +136,12 @@ describe('topic plugin - import command (ADR-007)', () => {
       state: makeStateMock(),
     };
 
-    const args = makeArgs(api, logger, {
-      topic: '0.0.999999',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        topic: '0.0.999999',
+      },
+    );
 
     const result = await topicImport(args);
 
@@ -200,7 +206,7 @@ describe('topic plugin - import command (ADR-007)', () => {
       kms,
     };
 
-    const args = makeArgs(api, logger, { topic: '0.0.123456' });
+    const args = makeArgs({ ...api, logger }, { topic: '0.0.123456' });
 
     const result = await topicImport(args);
 
@@ -253,7 +259,7 @@ describe('topic plugin - import command (ADR-007)', () => {
       kms,
     };
 
-    const args = makeArgs(api, logger, { topic: '0.0.123456' });
+    const args = makeArgs({ ...api, logger }, { topic: '0.0.123456' });
 
     const result = await topicImport(args);
 
@@ -308,7 +314,7 @@ describe('topic plugin - import command (ADR-007)', () => {
       kms,
     };
 
-    const args = makeArgs(api, logger, { topic: '0.0.123456' });
+    const args = makeArgs({ ...api, logger }, { topic: '0.0.123456' });
 
     const result = await topicImport(args);
 
@@ -352,10 +358,13 @@ describe('topic plugin - import command (ADR-007)', () => {
       state: makeStateMock(),
     };
 
-    const args = makeArgs(api, logger, {
-      topic: '0.0.123456',
-      name: 'new-topic',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        topic: '0.0.123456',
+        name: 'new-topic',
+      },
+    );
 
     await expect(topicImport(args)).rejects.toThrow(
       "Topic with ID '0.0.123456' already exists in state",
@@ -385,9 +394,12 @@ describe('topic plugin - import command (ADR-007)', () => {
       state: makeStateMock(),
     };
 
-    const args = makeArgs(api, logger, {
-      topic: '0.0.123456',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        topic: '0.0.123456',
+      },
+    );
 
     await expect(topicImport(args)).rejects.toThrow('Topic not found');
   });

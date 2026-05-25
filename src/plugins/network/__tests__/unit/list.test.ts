@@ -43,7 +43,7 @@ describe('network plugin - list command', () => {
   test('lists all available networks', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
-    const args = makeArgs({ network: networkService }, logger, {});
+    const args = makeArgs({ network: networkService, logger }, {});
 
     const result = await networkList(args);
 
@@ -63,7 +63,7 @@ describe('network plugin - list command', () => {
       explorerUrl: `https://hashscan.io/${name}`,
       isTestnet: name !== SupportedNetwork.MAINNET,
     }));
-    const args = makeArgs({ network: networkService }, logger, {});
+    const args = makeArgs({ network: networkService, logger }, {});
 
     await networkList(args);
 
@@ -78,7 +78,7 @@ describe('network plugin - list command', () => {
   test('does not show health checks for inactive networks', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
-    const args = makeArgs({ network: networkService }, logger, {});
+    const args = makeArgs({ network: networkService, logger }, {});
 
     await networkList(args);
 
@@ -111,7 +111,7 @@ describe('network plugin - list command', () => {
       }
       return null;
     });
-    const args = makeArgs({ network: networkService }, logger, { json: true });
+    const args = makeArgs({ network: networkService, logger }, { json: true });
 
     const result = await networkList(args);
 
@@ -126,7 +126,7 @@ describe('network plugin - list command', () => {
     networkService.getAvailableNetworks = jest.fn().mockImplementation(() => {
       throw new NetworkError('Network service error');
     });
-    const args = makeArgs({ network: networkService }, logger, {});
+    const args = makeArgs({ network: networkService, logger }, {});
 
     await expect(networkList(args)).rejects.toThrow('Network service error');
   });
@@ -146,7 +146,7 @@ describe('network plugin - list command', () => {
     mockedCheckMirrorNodeHealth.mockResolvedValue({ status: '❌', code: 500 });
     mockedCheckRpcHealth.mockResolvedValue({ status: '❌' });
 
-    const args = makeArgs({ network: networkService }, logger, {});
+    const args = makeArgs({ network: networkService, logger }, {});
 
     const result = await networkList(args);
 
@@ -157,7 +157,7 @@ describe('network plugin - list command', () => {
   test('returns success on happy path', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
-    const args = makeArgs({ network: networkService }, logger, {});
+    const args = makeArgs({ network: networkService, logger }, {});
 
     const result = await networkList(args);
 
@@ -177,7 +177,7 @@ describe('network plugin - list command', () => {
       }
       return null;
     });
-    const args = makeArgs({ network: networkService }, logger, {});
+    const args = makeArgs({ network: networkService, logger }, {});
 
     const result = await networkList(args);
 
@@ -189,7 +189,7 @@ describe('network plugin - list command', () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock(SupportedNetwork.TESTNET);
     networkService.getOperator = jest.fn().mockReturnValue(null);
-    const args = makeArgs({ network: networkService }, logger, {});
+    const args = makeArgs({ network: networkService, logger }, {});
 
     const result = await networkList(args);
 

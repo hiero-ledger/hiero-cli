@@ -28,7 +28,7 @@ describe('account plugin - list command (ADR-003)', () => {
     }));
 
     const api: Partial<CoreApi> = { state: makeStateMock(), logger };
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const result = await accountList(args);
 
@@ -49,7 +49,7 @@ describe('account plugin - list command (ADR-003)', () => {
     }));
 
     const api: Partial<CoreApi> = { state: makeStateMock(), logger };
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const result = await accountList(args);
 
@@ -73,7 +73,7 @@ describe('account plugin - list command (ADR-003)', () => {
     }));
 
     const api: Partial<CoreApi> = { state: makeStateMock(), logger };
-    const args = makeArgs(api, logger, { private: true });
+    const args = makeArgs({ ...api, logger }, { private: true });
 
     const result = await accountList(args);
 
@@ -96,7 +96,7 @@ describe('account plugin - list command (ADR-003)', () => {
     }));
 
     const api: Partial<CoreApi> = { state: makeStateMock(), logger };
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     await expect(accountList(args)).rejects.toThrow();
   });

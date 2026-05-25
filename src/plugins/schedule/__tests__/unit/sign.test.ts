@@ -92,10 +92,13 @@ describe('schedule plugin — sign command', () => {
       keyResolver: makeKeyResolverMock(),
     };
 
-    const args = makeArgs(api, logger, {
-      schedule: SCHEDULE_NAME,
-      key: [SIGNER_KEY_REF],
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        schedule: SCHEDULE_NAME,
+        key: [SIGNER_KEY_REF],
+      },
+    );
 
     await expect(scheduleSign(args)).rejects.toThrow(
       'Schedule has not been yet submitted',
@@ -114,10 +117,13 @@ describe('schedule plugin — sign command', () => {
       keyResolver: makeKeyResolverMock(),
     };
 
-    const args = makeArgs(api, logger, {
-      schedule: SCHEDULE_NAME,
-      key: [SIGNER_KEY_REF],
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        schedule: SCHEDULE_NAME,
+        key: [SIGNER_KEY_REF],
+      },
+    );
 
     await expect(scheduleSign(args)).rejects.toThrow(
       'Schedule is already executed',
@@ -140,10 +146,13 @@ describe('schedule plugin — sign command', () => {
       keyResolver: makeKeyResolverMock(),
     };
 
-    const args = makeArgs(api, logger, {
-      schedule: SCHEDULE_NAME,
-      key: [SIGNER_KEY_REF],
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        schedule: SCHEDULE_NAME,
+        key: [SIGNER_KEY_REF],
+      },
+    );
 
     await expect(scheduleSign(args)).rejects.toThrow(
       "Couldn't resolve schedule ID for signing",
@@ -203,10 +212,13 @@ describe('schedule plugin — sign command', () => {
       keyResolver: keyResolverMock,
     };
 
-    const args = makeArgs(api, logger, {
-      schedule: SCHEDULE_NAME,
-      key: [SIGNER_KEY_REF],
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        schedule: SCHEDULE_NAME,
+        key: [SIGNER_KEY_REF],
+      },
+    );
 
     const result = await scheduleSign(args);
 
@@ -291,10 +303,13 @@ describe('schedule plugin — sign command', () => {
       keyResolver: keyResolverMock,
     };
 
-    const args = makeArgs(api, logger, {
-      schedule: SCHEDULE_NAME,
-      key: [SIGNER_KEY_REF],
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        schedule: SCHEDULE_NAME,
+        key: [SIGNER_KEY_REF],
+      },
+    );
 
     await scheduleSign(args);
 
@@ -364,10 +379,13 @@ describe('schedule plugin — sign command', () => {
       keyResolver: keyResolverMock,
     };
 
-    const args = makeArgs(api, logger, {
-      schedule: SCHEDULE_NAME,
-      key: [SIGNER_KEY_REF, SECOND_SIGNER_KEY_REF],
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        schedule: SCHEDULE_NAME,
+        key: [SIGNER_KEY_REF, SECOND_SIGNER_KEY_REF],
+      },
+    );
 
     await scheduleSign(args);
 
@@ -420,10 +438,13 @@ describe('schedule plugin — sign command', () => {
       keyResolver: keyResolverMock,
     };
 
-    const args = makeArgs(api, logger, {
-      schedule: SCHEDULE_NAME,
-      key: [SIGNER_KEY_REF],
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        schedule: SCHEDULE_NAME,
+        key: [SIGNER_KEY_REF],
+      },
+    );
 
     await expect(scheduleSign(args)).rejects.toThrow('Schedule sign failed');
     expect(saveScheduledMock).not.toHaveBeenCalled();

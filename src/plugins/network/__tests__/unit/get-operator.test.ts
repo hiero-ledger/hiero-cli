@@ -52,8 +52,7 @@ describe('network plugin - get-operator command', () => {
     kmsService.get.mockReturnValue(mockCredentials);
 
     const args = makeArgs(
-      { network: networkService, kms: kmsService },
-      logger,
+      { network: networkService, kms: kmsService, logger },
       {},
     );
 
@@ -92,8 +91,7 @@ describe('network plugin - get-operator command', () => {
     kmsService.get.mockReturnValue(mockCredentials);
 
     const args = makeArgs(
-      { network: networkService, kms: kmsService },
-      logger,
+      { network: networkService, kms: kmsService, logger },
       { network: SupportedNetwork.MAINNET },
     );
 
@@ -120,8 +118,7 @@ describe('network plugin - get-operator command', () => {
     networkService.getOperator.mockReturnValue(null);
 
     const args = makeArgs(
-      { network: networkService, kms: kmsService },
-      logger,
+      { network: networkService, kms: kmsService, logger },
       {},
     );
 
@@ -148,8 +145,7 @@ describe('network plugin - get-operator command', () => {
     kmsService.get.mockReturnValue(undefined);
 
     const args = makeArgs(
-      { network: networkService, kms: kmsService },
-      logger,
+      { network: networkService, kms: kmsService, logger },
       {},
     );
 
@@ -181,8 +177,7 @@ describe('network plugin - get-operator command', () => {
     ]);
 
     const args = makeArgs(
-      { network: networkService, kms: kmsService },
-      logger,
+      { network: networkService, kms: kmsService, logger },
       { network: SupportedNetwork.MAINNET },
     );
 
@@ -202,8 +197,7 @@ describe('network plugin - get-operator command', () => {
     });
 
     const args = makeArgs(
-      { network: networkService, kms: kmsService },
-      logger,
+      { network: networkService, kms: kmsService, logger },
       {},
     );
 
@@ -226,8 +220,7 @@ describe('network plugin - get-operator command', () => {
     });
 
     const args = makeArgs(
-      { network: networkService, kms: kmsService },
-      logger,
+      { network: networkService, kms: kmsService, logger },
       {},
     );
 
@@ -256,8 +249,7 @@ describe('network plugin - get-operator command', () => {
     kmsService.get.mockReturnValue(mockCredentials);
 
     const args = makeArgs(
-      { network: networkService, kms: kmsService },
-      logger,
+      { network: networkService, kms: kmsService, logger },
       { network: SupportedNetwork.PREVIEWNET },
     );
 
@@ -294,8 +286,7 @@ describe('network plugin - get-operator command', () => {
     kmsService.get.mockReturnValue(mockCredentials);
 
     const args = makeArgs(
-      { network: networkService, kms: kmsService },
-      logger,
+      { network: networkService, kms: kmsService, logger },
       {},
     );
 

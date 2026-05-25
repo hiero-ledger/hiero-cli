@@ -42,8 +42,7 @@ describe('network plugin - set-operator command', () => {
     const aliasService = makeAliasMock();
 
     const args = makeArgs(
-      { network: networkService, kms: kmsService, alias: aliasService },
-      logger,
+      { network: networkService, kms: kmsService, alias: aliasService, logger },
       { operator: `0.0.123456:${ECDSA_DER_PRIVATE_KEY}` },
     );
 
@@ -89,8 +88,7 @@ describe('network plugin - set-operator command', () => {
     });
 
     const args = makeArgs(
-      { network: networkService, kms: kmsService, alias: aliasService },
-      logger,
+      { network: networkService, kms: kmsService, alias: aliasService, logger },
       { operator: 'testnet1' },
     );
 
@@ -125,8 +123,7 @@ describe('network plugin - set-operator command', () => {
     const aliasService = makeAliasMock();
 
     const args = makeArgs(
-      { network: networkService, kms: kmsService, alias: aliasService },
-      logger,
+      { network: networkService, kms: kmsService, alias: aliasService, logger },
       {
         operator:
           '0.0.123456:2222222222222222222222222222222222222222222222222222222222222222',
@@ -159,8 +156,7 @@ describe('network plugin - set-operator command', () => {
     });
 
     const args = makeArgs(
-      { network: networkService, kms: kmsService, alias: aliasService },
-      logger,
+      { network: networkService, kms: kmsService, alias: aliasService, logger },
       {
         operator:
           '0.0.123456:2222222222222222222222222222222222222222222222222222222222222222',
@@ -189,8 +185,7 @@ describe('network plugin - set-operator command', () => {
     networkService.getOperator.mockReturnValue(null);
 
     const args = makeArgs(
-      { network: networkService, kms: kmsService, alias: aliasService },
-      logger,
+      { network: networkService, kms: kmsService, alias: aliasService, logger },
       {
         operator:
           '0.0.123456:2222222222222222222222222222222222222222222222222222222222222222',
@@ -223,8 +218,8 @@ describe('network plugin - set-operator command', () => {
         network: networkService,
         kms: kmsService,
         alias: aliasService,
+        logger,
       },
-      logger,
       { operator: 'nonexistent' },
     );
 
@@ -254,8 +249,8 @@ describe('network plugin - set-operator command', () => {
         network: networkService,
         kms: kmsService,
         alias: aliasService,
+        logger,
       },
-      logger,
       { operator: 'testnet1' },
     );
 
@@ -279,8 +274,8 @@ describe('network plugin - set-operator command', () => {
         network: networkService,
         kms: kmsService,
         alias: aliasService,
+        logger,
       },
-      logger,
       {
         operator:
           '0.0.123456:2222222222222222222222222222222222222222222222222222222222222222',
@@ -303,8 +298,7 @@ describe('network plugin - set-operator command', () => {
     });
 
     const args = makeArgs(
-      { network: networkService, kms: kmsService, alias: aliasService },
-      logger,
+      { network: networkService, kms: kmsService, alias: aliasService, logger },
       {
         operator:
           '0.0.123456:2222222222222222222222222222222222222222222222222222222222222222',
@@ -330,8 +324,7 @@ describe('network plugin - set-operator command', () => {
     ]);
 
     const args = makeArgs(
-      { network: networkService, kms: kmsService, alias: aliasService },
-      logger,
+      { network: networkService, kms: kmsService, alias: aliasService, logger },
       {
         operator:
           '0.0.123456:2222222222222222222222222222222222222222222222222222222222222222',
@@ -349,8 +342,7 @@ describe('network plugin - set-operator command', () => {
     const aliasService = makeAliasMock();
 
     const args = makeArgs(
-      { network: networkService, kms: kmsService, alias: aliasService },
-      logger,
+      { network: networkService, kms: kmsService, alias: aliasService, logger },
       {
         operator:
           '0.0.123456:2222222222222222222222222222222222222222222222222222222222222222',

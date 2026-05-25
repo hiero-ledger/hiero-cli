@@ -54,8 +54,7 @@ describe('hbarAllowanceList', () => {
       accountPublicKey: '',
     });
     const args = makeArgs(
-      { identityResolution, mirror: makeMirror(getHbarAllowances) },
-      logger,
+      { identityResolution, mirror: makeMirror(getHbarAllowances), logger },
       {
         account: 'treasury',
       },
@@ -89,8 +88,7 @@ describe('hbarAllowanceList', () => {
     });
     const identityResolution = makeIdentityResolution();
     const args = makeArgs(
-      { identityResolution, mirror: makeMirror(getHbarAllowances) },
-      logger,
+      { identityResolution, mirror: makeMirror(getHbarAllowances), logger },
       {
         account: ACCOUNT_ID,
         spender: SPENDER_ID,
@@ -126,8 +124,8 @@ describe('hbarAllowanceList', () => {
           ...makeMirror(getHbarAllowances),
           getAllHbarAllowances,
         },
+        logger,
       },
-      logger,
       {
         account: ACCOUNT_ID,
         showAll: true,
@@ -152,8 +150,8 @@ describe('hbarAllowanceList', () => {
       {
         identityResolution: makeIdentityResolution(),
         mirror: makeMirror(getHbarAllowances),
+        logger,
       },
-      logger,
       { account: ACCOUNT_ID },
     );
 
@@ -175,8 +173,8 @@ describe('hbarAllowanceList', () => {
             .mockRejectedValue(new NotFoundError('missing')),
         },
         mirror: makeMirror(jest.fn()),
+        logger,
       },
-      logger,
       { account: 'missing' },
     );
 

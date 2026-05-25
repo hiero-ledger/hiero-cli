@@ -125,9 +125,12 @@ describe('topic plugin - create command', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, {
-      memo: 'Test topic memo',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        memo: 'Test topic memo',
+      },
+    );
 
     const result = await topicCreate(args);
 
@@ -185,11 +188,14 @@ describe('topic plugin - create command', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, {
-      memo: 'Test topic',
-      adminKey: [adminKey],
-      submitKey: [submitKey],
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        memo: 'Test topic',
+        adminKey: [adminKey],
+        submitKey: [submitKey],
+      },
+    );
 
     const result = await topicCreate(args);
 
@@ -262,11 +268,14 @@ describe('topic plugin - create command', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, {
-      memo: 'Multi-key topic',
-      adminKey: [adminKey1, adminKey2],
-      submitKey: [submitKey1, submitKey2],
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        memo: 'Multi-key topic',
+        adminKey: [adminKey1, adminKey2],
+        submitKey: [submitKey1, submitKey2],
+      },
+    );
 
     const result = await topicCreate(args);
 
@@ -327,7 +336,7 @@ describe('topic plugin - create command', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const result = await topicCreate(args);
 
@@ -376,7 +385,7 @@ describe('topic plugin - create command', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, { memo: 'Failed topic' });
+    const args = makeArgs({ ...api, logger }, { memo: 'Failed topic' });
 
     await expect(topicCreate(args)).rejects.toThrow(TransactionError);
   });
@@ -402,7 +411,7 @@ describe('topic plugin - create command', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, { memo: 'Error topic' });
+    const args = makeArgs({ ...api, logger }, { memo: 'Error topic' });
 
     await expect(topicCreate(args)).rejects.toThrow('network error');
   });

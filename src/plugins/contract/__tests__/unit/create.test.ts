@@ -53,10 +53,13 @@ describe('contract plugin - create command', () => {
     test('creates contract with erc20 default template', async () => {
       const contractState = makeContractStateServiceMock();
 
-      const args = makeArgs(api, logger, {
-        name: 'my-token',
-        default: 'erc20',
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          name: 'my-token',
+          default: 'erc20',
+        },
+      );
 
       const result = await new CreateContractCommand(contractState).execute(
         args,
@@ -95,10 +98,13 @@ describe('contract plugin - create command', () => {
     test('creates contract with erc721 default template', async () => {
       const contractState = makeContractStateServiceMock();
 
-      const args = makeArgs(api, logger, {
-        name: 'my-nft',
-        default: 'erc721',
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          name: 'my-nft',
+          default: 'erc721',
+        },
+      );
 
       const result = await new CreateContractCommand(contractState).execute(
         args,
@@ -133,10 +139,13 @@ describe('contract plugin - create command', () => {
   describe('default constructor parameters', () => {
     test('uses default erc20 constructor params when none provided', async () => {
       const contractState = makeContractStateServiceMock();
-      const args = makeArgs(api, logger, {
-        name: 'ft',
-        default: 'erc20',
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          name: 'ft',
+          default: 'erc20',
+        },
+      );
 
       await new CreateContractCommand(contractState).execute(args);
 
@@ -150,10 +159,13 @@ describe('contract plugin - create command', () => {
 
     test('uses default erc721 constructor params when none provided', async () => {
       const contractState = makeContractStateServiceMock();
-      const args = makeArgs(api, logger, {
-        name: 'nft',
-        default: 'erc721',
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          name: 'nft',
+          default: 'erc721',
+        },
+      );
 
       await new CreateContractCommand(contractState).execute(args);
 
@@ -168,11 +180,14 @@ describe('contract plugin - create command', () => {
     test('uses custom constructor params when provided (overrides defaults)', async () => {
       const contractState = makeContractStateServiceMock();
       const customParams = ['CustomToken', 'CTK', '5000000'];
-      const args = makeArgs(api, logger, {
-        name: 'custom-token',
-        default: 'erc20',
-        constructorParameter: customParams,
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          name: 'custom-token',
+          default: 'erc20',
+          constructorParameter: customParams,
+        },
+      );
 
       await new CreateContractCommand(contractState).execute(args);
 
@@ -189,10 +204,13 @@ describe('contract plugin - create command', () => {
       const contractState = makeContractStateServiceMock();
       mockGetDefaultContractFilePath.mockReturnValue(MOCK_ERC20_PATH);
 
-      const args = makeArgs(api, logger, {
-        name: 'token',
-        default: 'erc20',
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          name: 'token',
+          default: 'erc20',
+        },
+      );
 
       await new CreateContractCommand(contractState).execute(args);
 
@@ -207,10 +225,13 @@ describe('contract plugin - create command', () => {
       const contractState = makeContractStateServiceMock();
       mockGetDefaultContractFilePath.mockReturnValue(MOCK_ERC721_PATH);
 
-      const args = makeArgs(api, logger, {
-        name: 'nft',
-        default: 'erc721',
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          name: 'nft',
+          default: 'erc721',
+        },
+      );
 
       await new CreateContractCommand(contractState).execute(args);
 
@@ -223,10 +244,13 @@ describe('contract plugin - create command', () => {
 
     test('uses getRepositoryBasePath for basePath when --default is used', async () => {
       const contractState = makeContractStateServiceMock();
-      const args = makeArgs(api, logger, {
-        name: 'token',
-        default: 'erc20',
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          name: 'token',
+          default: 'erc20',
+        },
+      );
 
       await new CreateContractCommand(contractState).execute(args);
 
@@ -248,10 +272,13 @@ describe('contract plugin - create command', () => {
 
       const contractState = makeContractStateServiceMock();
 
-      const args = makeArgs(api, logger, {
-        name: 'custom-contract',
-        file: customPath,
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          name: 'custom-contract',
+          file: customPath,
+        },
+      );
 
       const result = await new CreateContractCommand(contractState).execute(
         args,
@@ -286,10 +313,13 @@ describe('contract plugin - create command', () => {
 
       const contractState = makeContractStateServiceMock();
 
-      const args = makeArgs(api, logger, {
-        name: 'token',
-        default: 'erc20',
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          name: 'token',
+          default: 'erc20',
+        },
+      );
 
       await expect(
         new CreateContractCommand(contractState).execute(args),
@@ -300,11 +330,14 @@ describe('contract plugin - create command', () => {
   describe('staking options', () => {
     test('resolves stakedAccountId alias to accountId', async () => {
       const contractState = makeContractStateServiceMock();
-      const args = makeArgs(api, logger, {
-        name: 'my-contract',
-        default: 'erc20',
-        stakedAccountId: 'my-staking-account',
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          name: 'my-contract',
+          default: 'erc20',
+          stakedAccountId: 'my-staking-account',
+        },
+      );
 
       await new CreateContractCommand(contractState).execute(args);
 
@@ -320,11 +353,14 @@ describe('contract plugin - create command', () => {
 
     test('passes stakedNodeId to contractCreateFlowTransaction', async () => {
       const contractState = makeContractStateServiceMock();
-      const args = makeArgs(api, logger, {
-        name: 'my-contract',
-        default: 'erc20',
-        stakedNodeId: 3,
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          name: 'my-contract',
+          default: 'erc20',
+          stakedNodeId: 3,
+        },
+      );
 
       await new CreateContractCommand(contractState).execute(args);
 
@@ -335,12 +371,15 @@ describe('contract plugin - create command', () => {
 
     test('throws when both stakedAccountId and stakedNodeId are provided', async () => {
       const contractState = makeContractStateServiceMock();
-      const args = makeArgs(api, logger, {
-        name: 'my-contract',
-        default: 'erc20',
-        stakedAccountId: '0.0.300',
-        stakedNodeId: 3,
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          name: 'my-contract',
+          default: 'erc20',
+          stakedAccountId: '0.0.300',
+          stakedNodeId: 3,
+        },
+      );
 
       await expect(
         new CreateContractCommand(contractState).execute(args),
@@ -349,11 +388,14 @@ describe('contract plugin - create command', () => {
 
     test('passes declineStakingReward to contractCreateFlowTransaction', async () => {
       const contractState = makeContractStateServiceMock();
-      const args = makeArgs(api, logger, {
-        name: 'my-contract',
-        default: 'erc20',
-        declineStakingReward: true,
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          name: 'my-contract',
+          default: 'erc20',
+          declineStakingReward: true,
+        },
+      );
 
       await new CreateContractCommand(contractState).execute(args);
 
@@ -366,11 +408,14 @@ describe('contract plugin - create command', () => {
   describe('token association and auto-renew options', () => {
     test('passes maxAutomaticTokenAssociations to contractCreateFlowTransaction', async () => {
       const contractState = makeContractStateServiceMock();
-      const args = makeArgs(api, logger, {
-        name: 'my-contract',
-        default: 'erc20',
-        maxAutomaticTokenAssociations: 10,
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          name: 'my-contract',
+          default: 'erc20',
+          maxAutomaticTokenAssociations: 10,
+        },
+      );
 
       await new CreateContractCommand(contractState).execute(args);
 
@@ -381,11 +426,14 @@ describe('contract plugin - create command', () => {
 
     test('passes autoRenewPeriod to contractCreateFlowTransaction', async () => {
       const contractState = makeContractStateServiceMock();
-      const args = makeArgs(api, logger, {
-        name: 'my-contract',
-        default: 'erc20',
-        autoRenewPeriod: 7776000,
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          name: 'my-contract',
+          default: 'erc20',
+          autoRenewPeriod: 7776000,
+        },
+      );
 
       await new CreateContractCommand(contractState).execute(args);
 
@@ -396,11 +444,14 @@ describe('contract plugin - create command', () => {
 
     test('resolves autoRenewAccountId alias to accountId', async () => {
       const contractState = makeContractStateServiceMock();
-      const args = makeArgs(api, logger, {
-        name: 'my-contract',
-        default: 'erc20',
-        autoRenewAccountId: 'my-renew-account',
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          name: 'my-contract',
+          default: 'erc20',
+          autoRenewAccountId: 'my-renew-account',
+        },
+      );
 
       await new CreateContractCommand(contractState).execute(args);
 
@@ -418,11 +469,14 @@ describe('contract plugin - create command', () => {
   describe('initialBalance option', () => {
     test('converts initialBalance HBAR string to tinybars bigint', async () => {
       const contractState = makeContractStateServiceMock();
-      const args = makeArgs(api, logger, {
-        name: 'my-contract',
-        default: 'erc20',
-        initialBalance: '1',
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          name: 'my-contract',
+          default: 'erc20',
+          initialBalance: '1',
+        },
+      );
 
       await new CreateContractCommand(contractState).execute(args);
 
@@ -433,11 +487,14 @@ describe('contract plugin - create command', () => {
 
     test('converts initialBalance tinybar string (t suffix) to bigint', async () => {
       const contractState = makeContractStateServiceMock();
-      const args = makeArgs(api, logger, {
-        name: 'my-contract',
-        default: 'erc20',
-        initialBalance: '500t',
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          name: 'my-contract',
+          default: 'erc20',
+          initialBalance: '500t',
+        },
+      );
 
       await new CreateContractCommand(contractState).execute(args);
 
@@ -448,10 +505,13 @@ describe('contract plugin - create command', () => {
 
     test('passes undefined initialBalanceRaw when initialBalance not provided', async () => {
       const contractState = makeContractStateServiceMock();
-      const args = makeArgs(api, logger, {
-        name: 'my-contract',
-        default: 'erc20',
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          name: 'my-contract',
+          default: 'erc20',
+        },
+      );
 
       await new CreateContractCommand(contractState).execute(args);
 

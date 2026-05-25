@@ -564,93 +564,90 @@ export const makeConfigMock = (): jest.Mocked<ConfigService> => ({
  */
 export const makeArgs = (
   api: Partial<CoreApi>,
-  logger: jest.Mocked<Logger>,
   args: Record<string, unknown>,
 ): CommandHandlerArgs => {
   const network = api.network || makeNetworkMock(SupportedNetwork.TESTNET);
   const alias = api.alias || makeAliasMock();
   const kms = api.kms || makeKmsMock();
-  const contract = api.contract || makeContractTransactionServiceMock();
-  const contractCompiler =
-    api.contractCompiler || makeContractCompilerServiceMock();
-  const contractVerifier =
-    api.contractVerifier || makeContractVerifierServiceMock();
-  const contractQuery = api.contractQuery || makeContractQueryServiceMock();
-  const identityResolution =
-    api.identityResolution || makeIdentityResolutionServiceMock();
-  const schedule = api.schedule || makeScheduleTransactionServiceMock();
-
-  const restApi = api;
 
   const apiObject = {
-    account: {} as unknown,
-    token: {} as unknown,
-    txSign: makeTxSignMock(),
-    txExecute: makeTxExecuteMock(),
-    topic: {
-      createTopic: jest.fn(),
-      submitMessage: jest.fn(),
-      updateTopic: jest.fn(),
-      deleteTopic: jest.fn(),
-    } as unknown,
-    state: {
-      list: jest.fn().mockReturnValue([]),
-      get: jest.fn(),
-      set: jest.fn(),
-      delete: jest.fn(),
-      clear: jest.fn(),
-      has: jest.fn(),
-      getNamespaces: jest.fn(),
-      getKeys: jest.fn(),
-      subscribe: jest.fn(),
-      getActions: jest.fn(),
-      getState: jest.fn(),
-      getStorageDirectory: jest.fn().mockReturnValue(''),
-      isInitialized: jest.fn().mockReturnValue(true),
-    } as unknown as StateService,
-    mirror: {
-      setBaseUrl: jest.fn(),
-      getAccountOrThrow: jest.fn(),
-      getAccount: jest.fn(),
-      getAccountTokenBalances: jest.fn(),
-      getHbarAllowances: jest.fn(),
-      getAllHbarAllowances: jest.fn(),
-      getTokenAllowances: jest.fn(),
-      getAllTokenAllowances: jest.fn(),
-      getNftAllowances: jest.fn(),
-      getAllNftAllowances: jest.fn(),
-      getAccountNfts: jest.fn(),
-      getAccounts: jest.fn(),
-      getTopicMessage: jest.fn(),
-      getTopicMessages: jest.fn(),
-      getTokenInfo: jest.fn(),
-      getScheduled: jest.fn(),
-      getNftInfo: jest.fn(),
-      getTopicInfo: jest.fn(),
-      getTransactionRecord: jest.fn(),
-      getContractInfo: jest.fn(),
-      getPendingAirdrops: jest.fn(),
-      getOutstandingAirdrops: jest.fn(),
-      getExchangeRate: jest.fn(),
-      postContractCall: jest.fn(),
-    } as HederaMirrornodeService,
+    account: api.account || ({} as unknown),
+    token: api.token || ({} as unknown),
+    txSign: api.txSign || makeTxSignMock(),
+    txExecute: api.txExecute || makeTxExecuteMock(),
+    topic:
+      api.topic ||
+      ({
+        createTopic: jest.fn(),
+        submitMessage: jest.fn(),
+        updateTopic: jest.fn(),
+        deleteTopic: jest.fn(),
+      } as unknown),
+    state:
+      api.state ||
+      ({
+        list: jest.fn().mockReturnValue([]),
+        get: jest.fn(),
+        set: jest.fn(),
+        delete: jest.fn(),
+        clear: jest.fn(),
+        has: jest.fn(),
+        getNamespaces: jest.fn(),
+        getKeys: jest.fn(),
+        subscribe: jest.fn(),
+        getActions: jest.fn(),
+        getState: jest.fn(),
+        getStorageDirectory: jest.fn().mockReturnValue(''),
+        isInitialized: jest.fn().mockReturnValue(true),
+      } as unknown as StateService),
+    mirror:
+      api.mirror ||
+      ({
+        setBaseUrl: jest.fn(),
+        getAccountOrThrow: jest.fn(),
+        getAccount: jest.fn(),
+        getAccountTokenBalances: jest.fn(),
+        getHbarAllowances: jest.fn(),
+        getAllHbarAllowances: jest.fn(),
+        getTokenAllowances: jest.fn(),
+        getAllTokenAllowances: jest.fn(),
+        getNftAllowances: jest.fn(),
+        getAllNftAllowances: jest.fn(),
+        getAccountNfts: jest.fn(),
+        getAccounts: jest.fn(),
+        getTopicMessage: jest.fn(),
+        getTopicMessages: jest.fn(),
+        getTokenInfo: jest.fn(),
+        getScheduled: jest.fn(),
+        getNftInfo: jest.fn(),
+        getTopicInfo: jest.fn(),
+        getTransactionRecord: jest.fn(),
+        getContractInfo: jest.fn(),
+        getPendingAirdrops: jest.fn(),
+        getOutstandingAirdrops: jest.fn(),
+        getExchangeRate: jest.fn(),
+        postContractCall: jest.fn(),
+      } as HederaMirrornodeService),
     network,
-    config: makeConfigMock(),
-    logger,
+    config: api.config || makeConfigMock(),
+    logger: api.logger || makeLogger(),
     alias,
     kms,
-    transfer: makeTransferMock(),
-    allowance: makeAllowanceMock(),
-    output: makeOutputMock(),
-    pluginManagement: makePluginManagementServiceMock(),
-    contract,
-    contractCompiler,
-    contractVerifier,
-    keyResolver: makeKeyResolverMock({ network, alias, kms }),
-    contractQuery,
-    identityResolution,
-    schedule,
-    ...restApi,
+    transfer: api.transfer || makeTransferMock(),
+    allowance: api.allowance || makeAllowanceMock(),
+    output: api.output || makeOutputMock(),
+    pluginManagement: api.pluginManagement || makePluginManagementServiceMock(),
+    contract: api.contract || makeContractTransactionServiceMock(),
+    contractCompiler: api.contractCompiler || makeContractCompilerServiceMock(),
+    contractVerifier: api.contractVerifier || makeContractVerifierServiceMock(),
+    keyResolver:
+      api.keyResolver || makeKeyResolverMock({ network, alias, kms }),
+    contractQuery: api.contractQuery || makeContractQueryServiceMock(),
+    identityResolution:
+      api.identityResolution || makeIdentityResolutionServiceMock(),
+    schedule: api.schedule || makeScheduleTransactionServiceMock(),
+    batch: api.batch,
+    receipt: api.receipt,
   } as unknown as CoreApi;
 
   return {

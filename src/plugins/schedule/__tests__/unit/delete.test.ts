@@ -104,7 +104,7 @@ describe('schedule plugin — delete command', () => {
       config: makeConfigMock(),
     };
 
-    const args = makeArgs(api, logger, { schedule: SCHEDULE_NAME });
+    const args = makeArgs({ ...api, logger }, { schedule: SCHEDULE_NAME });
     const result = await scheduleDelete(args);
 
     expect(resolveScheduleMock).toHaveBeenCalledTimes(1);
@@ -130,7 +130,7 @@ describe('schedule plugin — delete command', () => {
       config: makeConfigMock(),
     };
 
-    const args = makeArgs(api, logger, { schedule: SCHEDULE_NAME });
+    const args = makeArgs({ ...api, logger }, { schedule: SCHEDULE_NAME });
     const result = await scheduleDelete(args);
 
     expect(deleteScheduledMock).toHaveBeenCalledWith(SCHEDULE_COMPOSED_KEY);
@@ -153,7 +153,10 @@ describe('schedule plugin — delete command', () => {
       config: makeConfigMock(),
     };
 
-    const args = makeArgs(api, logger, { schedule: ON_CHAIN_SCHEDULE_ID });
+    const args = makeArgs(
+      { ...api, logger },
+      { schedule: ON_CHAIN_SCHEDULE_ID },
+    );
 
     await expect(scheduleDelete(args)).rejects.toThrow(
       'Could not resolve schedule ID',
@@ -218,7 +221,7 @@ describe('schedule plugin — delete command', () => {
       } as unknown as CoreApi['mirror'],
     };
 
-    const args = makeArgs(api, logger, { schedule: SCHEDULE_NAME });
+    const args = makeArgs({ ...api, logger }, { schedule: SCHEDULE_NAME });
 
     const result = await scheduleDelete(args);
 
@@ -299,10 +302,13 @@ describe('schedule plugin — delete command', () => {
       } as unknown as CoreApi['mirror'],
     };
 
-    const args = makeArgs(api, logger, {
-      schedule: SCHEDULE_NAME,
-      adminKey: [ADMIN_KEY_REF, ADMIN_KEY_REF_2],
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        schedule: SCHEDULE_NAME,
+        adminKey: [ADMIN_KEY_REF, ADMIN_KEY_REF_2],
+      },
+    );
 
     const result = await scheduleDelete(args);
 
@@ -371,7 +377,7 @@ describe('schedule plugin — delete command', () => {
       } as unknown as CoreApi['mirror'],
     };
 
-    const args = makeArgs(api, logger, { schedule: SCHEDULE_NAME });
+    const args = makeArgs({ ...api, logger }, { schedule: SCHEDULE_NAME });
 
     await expect(scheduleDelete(args)).rejects.toThrow(
       'Schedule delete failed',
@@ -409,7 +415,7 @@ describe('schedule plugin — delete command', () => {
       } as unknown as CoreApi['mirror'],
     };
 
-    const args = makeArgs(api, logger, { schedule: SCHEDULE_NAME });
+    const args = makeArgs({ ...api, logger }, { schedule: SCHEDULE_NAME });
 
     await expect(scheduleDelete(args)).rejects.toThrow(
       'Schedule has no admin key on the network',

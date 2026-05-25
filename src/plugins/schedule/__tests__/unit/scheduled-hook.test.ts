@@ -93,7 +93,7 @@ describe('schedule plugin — scheduled hook', () => {
       config: makeConfigMock(),
     };
 
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
     const params = makePreSignParams(args, ['kr_base']);
 
     const result = await hook.execute(params);
@@ -114,7 +114,7 @@ describe('schedule plugin — scheduled hook', () => {
       config: makeConfigMock(),
     };
 
-    const args = makeArgs(api, logger, { scheduled: SCHEDULE_NAME });
+    const args = makeArgs({ ...api, logger }, { scheduled: SCHEDULE_NAME });
     const params = makePreSignParams(args, ['kr_base']);
 
     await expect(hook.execute(params)).rejects.toThrow(
@@ -138,7 +138,7 @@ describe('schedule plugin — scheduled hook', () => {
       config: makeConfigMock(),
     };
 
-    const args = makeArgs(api, logger, { scheduled: SCHEDULE_NAME });
+    const args = makeArgs({ ...api, logger }, { scheduled: SCHEDULE_NAME });
     const params = makePreSignParams(args, ['kr_base']);
 
     await expect(hook.execute(params)).rejects.toThrow(
@@ -202,7 +202,7 @@ describe('schedule plugin — scheduled hook', () => {
     };
 
     const innerKeyRefIds = [COMMAND_SIGNER_KEY_REF];
-    const args = makeArgs(api, logger, { scheduled: SCHEDULE_NAME });
+    const args = makeArgs({ ...api, logger }, { scheduled: SCHEDULE_NAME });
     const params: PreSignTransactionHookParams<
       ScheduledNormalizedParams,
       BaseBuildTransactionResult
@@ -296,7 +296,7 @@ describe('schedule plugin — scheduled hook', () => {
       txExecute,
     };
 
-    const args = makeArgs(api, logger, { scheduled: SCHEDULE_NAME });
+    const args = makeArgs({ ...api, logger }, { scheduled: SCHEDULE_NAME });
     const params = makePreSignParams(args, ['kr_base']);
 
     await expect(hook.execute(params)).rejects.toThrow(
@@ -346,7 +346,7 @@ describe('schedule plugin — scheduled hook', () => {
       txExecute,
     };
 
-    const args = makeArgs(api, logger, { scheduled: SCHEDULE_NAME });
+    const args = makeArgs({ ...api, logger }, { scheduled: SCHEDULE_NAME });
     const params = makePreSignParams(args, ['kr_base']);
 
     await expect(hook.execute(params)).rejects.toThrow(

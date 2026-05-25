@@ -73,7 +73,7 @@ describe('batch plugin - execute command', () => {
       batch: batchServiceMock as BatchTransactionService,
     };
 
-    const args = makeArgs(api, logger, { name: BATCH_NAME });
+    const args = makeArgs({ ...api, logger }, { name: BATCH_NAME });
     const result = await new BatchExecuteCommand(batchState).execute(args);
 
     expect(saveBatchMock).toHaveBeenCalledWith(
@@ -126,7 +126,7 @@ describe('batch plugin - execute command', () => {
       batch: batchServiceMock as BatchTransactionService,
     };
 
-    const args = makeArgs(api, logger, { name: BATCH_NAME });
+    const args = makeArgs({ ...api, logger }, { name: BATCH_NAME });
     const result = await new BatchExecuteCommand(batchState).execute(args);
 
     expect(saveBatchMock).toHaveBeenCalledWith(
@@ -150,7 +150,7 @@ describe('batch plugin - execute command', () => {
     const { networkMock, kmsMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
 
-    const args = makeArgs(api, logger, { name: BATCH_NAME });
+    const args = makeArgs({ ...api, logger }, { name: BATCH_NAME });
 
     await expect(
       new BatchExecuteCommand(batchState).execute(args),
@@ -166,7 +166,7 @@ describe('batch plugin - execute command', () => {
     const { networkMock, kmsMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
 
-    const args = makeArgs(api, logger, { name: BATCH_NAME });
+    const args = makeArgs({ ...api, logger }, { name: BATCH_NAME });
 
     await expect(
       new BatchExecuteCommand(batchState).execute(args),
@@ -187,7 +187,7 @@ describe('batch plugin - execute command', () => {
 
     const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
 
-    const args = makeArgs(api, logger, { name: BATCH_NAME });
+    const args = makeArgs({ ...api, logger }, { name: BATCH_NAME });
 
     await expect(
       new BatchExecuteCommand(batchState).execute(args),
@@ -208,7 +208,7 @@ describe('batch plugin - execute command', () => {
 
     const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
 
-    const args = makeArgs(api, logger, { name: BATCH_NAME });
+    const args = makeArgs({ ...api, logger }, { name: BATCH_NAME });
 
     await expect(
       new BatchExecuteCommand(batchState).execute(args),

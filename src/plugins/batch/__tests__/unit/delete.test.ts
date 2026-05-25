@@ -31,7 +31,7 @@ describe('batch plugin - delete command', () => {
     const { networkMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
 
-    const args = makeArgs(api, logger, { name: BATCH_NAME });
+    const args = makeArgs({ ...api, logger }, { name: BATCH_NAME });
     const result = await new BatchDeleteCommand(batchState).execute(args);
 
     expect(deleteBatchMock).toHaveBeenCalled();
@@ -56,7 +56,7 @@ describe('batch plugin - delete command', () => {
     const { networkMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
 
-    const args = makeArgs(api, logger, { name: BATCH_NAME, order: 1 });
+    const args = makeArgs({ ...api, logger }, { name: BATCH_NAME, order: 1 });
     const result = await new BatchDeleteCommand(batchState).execute(args);
 
     expect(saveBatchMock).toHaveBeenCalledWith(
@@ -82,7 +82,7 @@ describe('batch plugin - delete command', () => {
     const { networkMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
 
-    const args = makeArgs(api, logger, { name: BATCH_NAME });
+    const args = makeArgs({ ...api, logger }, { name: BATCH_NAME });
 
     await expect(
       new BatchDeleteCommand(batchState).execute(args),
@@ -101,7 +101,7 @@ describe('batch plugin - delete command', () => {
     const { networkMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
 
-    const args = makeArgs(api, logger, { name: BATCH_NAME, order: 999 });
+    const args = makeArgs({ ...api, logger }, { name: BATCH_NAME, order: 999 });
 
     await expect(
       new BatchDeleteCommand(batchState).execute(args),

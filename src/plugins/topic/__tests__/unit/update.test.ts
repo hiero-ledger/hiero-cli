@@ -169,7 +169,7 @@ const makeUpdateArgs = (
   logger: ReturnType<typeof makeLogger>,
   inputArgs: Record<string, unknown>,
 ) => {
-  return makeArgs(api, logger, { topic: MOCK_TOPIC_ID, ...inputArgs });
+  return makeArgs({ ...api, logger }, { topic: MOCK_TOPIC_ID, ...inputArgs });
 };
 
 describe('topic plugin - update command', () => {

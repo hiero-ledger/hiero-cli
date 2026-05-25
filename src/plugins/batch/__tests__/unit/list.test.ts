@@ -31,7 +31,7 @@ describe('batch plugin - list command', () => {
     const { networkMock, kmsMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
 
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
     const result = await new BatchListCommand(batchState).execute(args);
 
     const output = assertOutput(result.result, BatchListOutputSchema);
@@ -50,7 +50,7 @@ describe('batch plugin - list command', () => {
     const { networkMock, kmsMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
 
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
     const result = await new BatchListCommand(batchState).execute(args);
 
     const output = assertOutput(result.result, BatchListOutputSchema);
@@ -72,7 +72,7 @@ describe('batch plugin - list command', () => {
     const { networkMock, kmsMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
 
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
     const result = await new BatchListCommand(batchState).execute(args);
 
     const output = assertOutput(result.result, BatchListOutputSchema);
@@ -89,7 +89,7 @@ describe('batch plugin - list command', () => {
     const { networkMock, kmsMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
 
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
     const result = await new BatchListCommand(batchState).execute(args);
 
     const output = assertOutput(result.result, BatchListOutputSchema);
@@ -107,7 +107,7 @@ describe('batch plugin - list command', () => {
     kmsMock.get = jest.fn().mockReturnValue(undefined);
     const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
 
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
     const result = await new BatchListCommand(batchState).execute(args);
 
     const output = assertOutput(result.result, BatchListOutputSchema);

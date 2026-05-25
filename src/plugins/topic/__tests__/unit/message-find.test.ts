@@ -70,10 +70,13 @@ describe('topic plugin - message-find command', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, {
-      topic: '0.0.5678',
-      sequenceGt: 5,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        topic: '0.0.5678',
+        sequenceGt: 5,
+      },
+    );
 
     const result = await topicFindMessage(args);
 
@@ -119,10 +122,13 @@ describe('topic plugin - message-find command', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, {
-      topic: '0.0.5678',
-      sequenceGte: 5,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        topic: '0.0.5678',
+        sequenceGte: 5,
+      },
+    );
 
     const result = await topicFindMessage(args);
 
@@ -167,10 +173,13 @@ describe('topic plugin - message-find command', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, {
-      topic: '0.0.5678',
-      sequenceLt: 3,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        topic: '0.0.5678',
+        sequenceLt: 3,
+      },
+    );
 
     const result = await topicFindMessage(args);
 
@@ -207,10 +216,13 @@ describe('topic plugin - message-find command', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, {
-      topic: '0.0.5678',
-      sequenceLte: 3,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        topic: '0.0.5678',
+        sequenceLte: 3,
+      },
+    );
 
     const result = await topicFindMessage(args);
 
@@ -247,10 +259,13 @@ describe('topic plugin - message-find command', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, {
-      topic: '0.0.5678',
-      sequenceEq: 5,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        topic: '0.0.5678',
+        sequenceEq: 5,
+      },
+    );
 
     const result = await topicFindMessage(args);
 
@@ -291,9 +306,12 @@ describe('topic plugin - message-find command', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, {
-      topic: '0.0.5678',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        topic: '0.0.5678',
+      },
+    );
 
     const result = await topicFindMessage(args);
 
@@ -322,10 +340,13 @@ describe('topic plugin - message-find command', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, {
-      topic: '0.0.5678',
-      sequenceGte: 5,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        topic: '0.0.5678',
+        sequenceGte: 5,
+      },
+    );
 
     await expect(topicFindMessage(args)).rejects.toThrow('network error');
   });
@@ -347,10 +368,13 @@ describe('topic plugin - message-find command', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, {
-      topic: '0.0.5678',
-      sequenceGte: 1000,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        topic: '0.0.5678',
+        sequenceGte: 1000,
+      },
+    );
 
     const result = await topicFindMessage(args);
 
@@ -373,29 +397,38 @@ describe('topic plugin - message-find command', () => {
       logger,
     };
 
-    const args1 = makeArgs(api, logger, {
-      topic: '0.0.5678',
-      sequenceEq: 5,
-      sequenceGt: 3,
-    });
+    const args1 = makeArgs(
+      { ...api, logger },
+      {
+        topic: '0.0.5678',
+        sequenceEq: 5,
+        sequenceGt: 3,
+      },
+    );
 
     await expect(topicFindMessage(args1)).rejects.toThrow(ZodError);
     expect(mirror.getTopicMessages).not.toHaveBeenCalled();
 
-    const args2 = makeArgs(api, logger, {
-      topic: '0.0.5678',
-      sequenceGt: 10,
-      sequenceLt: 5,
-    });
+    const args2 = makeArgs(
+      { ...api, logger },
+      {
+        topic: '0.0.5678',
+        sequenceGt: 10,
+        sequenceLt: 5,
+      },
+    );
 
     await expect(topicFindMessage(args2)).rejects.toThrow(ZodError);
     expect(mirror.getTopicMessages).not.toHaveBeenCalled();
 
-    const args3 = makeArgs(api, logger, {
-      topic: '0.0.5678',
-      sequenceGt: 5,
-      sequenceLt: 5,
-    });
+    const args3 = makeArgs(
+      { ...api, logger },
+      {
+        topic: '0.0.5678',
+        sequenceGt: 5,
+        sequenceLt: 5,
+      },
+    );
 
     await expect(topicFindMessage(args3)).rejects.toThrow(ZodError);
     expect(mirror.getTopicMessages).not.toHaveBeenCalled();
@@ -423,11 +456,14 @@ describe('topic plugin - message-find command', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, {
-      topic: '0.0.5678',
-      sequenceGt: 5,
-      sequenceLt: 9,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        topic: '0.0.5678',
+        sequenceGt: 5,
+        sequenceLt: 9,
+      },
+    );
 
     const result = await topicFindMessage(args);
 
@@ -479,11 +515,14 @@ describe('topic plugin - message-find command', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, {
-      topic: '0.0.5678',
-      sequenceGte: 5,
-      sequenceLte: 7,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        topic: '0.0.5678',
+        sequenceGte: 5,
+        sequenceLte: 7,
+      },
+    );
 
     const result = await topicFindMessage(args);
 

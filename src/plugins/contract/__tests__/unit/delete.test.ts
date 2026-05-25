@@ -105,10 +105,13 @@ describe('contract plugin - delete command', () => {
     });
     const alias = makeAliasServiceMock();
 
-    const args = makeArgs({ ...api, alias }, logger, {
-      contract: MOCK_CONTRACT_ID,
-      stateOnly: true,
-    });
+    const args = makeArgs(
+      { ...api, alias, logger },
+      {
+        contract: MOCK_CONTRACT_ID,
+        stateOnly: true,
+      },
+    );
 
     const result = await new DeleteContractCommand(
       contractState,
@@ -150,11 +153,14 @@ describe('contract plugin - delete command', () => {
           : undefined,
       );
 
-    const args = makeArgs({ ...api, alias }, logger, {
-      contract: MOCK_CONTRACT_ID,
-      stateOnly: false,
-      transferId: MOCK_ACCOUNT_ID,
-    });
+    const args = makeArgs(
+      { ...api, alias, logger },
+      {
+        contract: MOCK_CONTRACT_ID,
+        stateOnly: false,
+        transferId: MOCK_ACCOUNT_ID,
+      },
+    );
 
     const result = await new DeleteContractCommand(
       contractState,
@@ -207,10 +213,13 @@ describe('contract plugin - delete command', () => {
       createdAt: '2024-01-01T00:00:00.000Z',
     });
 
-    const args = makeArgs({ ...api, alias }, logger, {
-      contract: 'my-contract',
-      stateOnly: true,
-    });
+    const args = makeArgs(
+      { ...api, alias, logger },
+      {
+        contract: 'my-contract',
+        stateOnly: true,
+      },
+    );
 
     const result = await new DeleteContractCommand(
       contractState,
@@ -238,7 +247,7 @@ describe('contract plugin - delete command', () => {
     const contractState = makeContractStateServiceMock();
     const contractCleanup = makeContractCleanupServiceMock();
 
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     await expect(
       new DeleteContractCommand(contractState, contractCleanup).execute(args),
@@ -261,11 +270,14 @@ describe('contract plugin - delete command', () => {
       publicKey: ED25519_HEX_PUBLIC_KEY,
     });
 
-    const args = makeArgs(api, logger, {
-      contract: MOCK_CONTRACT_ID_UNKNOWN,
-      transferId: MOCK_ACCOUNT_ID,
-      adminKey: MOCK_ADMIN_KEY_CLI,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        contract: MOCK_CONTRACT_ID_UNKNOWN,
+        transferId: MOCK_ACCOUNT_ID,
+        adminKey: MOCK_ADMIN_KEY_CLI,
+      },
+    );
 
     await expect(
       new DeleteContractCommand(contractState, contractCleanup).execute(args),
@@ -282,11 +294,14 @@ describe('contract plugin - delete command', () => {
     const contractState = makeContractStateServiceMock();
     const contractCleanup = makeContractCleanupServiceMock();
 
-    const args = makeArgs({ ...api, alias }, logger, {
-      contract: 'missing-alias',
-      transferId: MOCK_ACCOUNT_ID,
-      adminKey: MOCK_ADMIN_KEY_CLI,
-    });
+    const args = makeArgs(
+      { ...api, alias, logger },
+      {
+        contract: 'missing-alias',
+        transferId: MOCK_ACCOUNT_ID,
+        adminKey: MOCK_ADMIN_KEY_CLI,
+      },
+    );
 
     await expect(
       new DeleteContractCommand(contractState, contractCleanup).execute(args),
@@ -317,11 +332,14 @@ describe('contract plugin - delete command', () => {
       publicKey: ED25519_HEX_PUBLIC_KEY,
     });
 
-    const args = makeArgs({ ...api, alias }, logger, {
-      contract: 'my-contract',
-      transferId: MOCK_ACCOUNT_ID,
-      adminKey: MOCK_ADMIN_KEY_CLI,
-    });
+    const args = makeArgs(
+      { ...api, alias, logger },
+      {
+        contract: 'my-contract',
+        transferId: MOCK_ACCOUNT_ID,
+        adminKey: MOCK_ADMIN_KEY_CLI,
+      },
+    );
 
     await expect(
       new DeleteContractCommand(contractState, contractCleanup).execute(args),
@@ -339,11 +357,14 @@ describe('contract plugin - delete command', () => {
     const contractCleanup = makeContractCleanupServiceMock();
     const alias = makeAliasServiceMock();
 
-    const args = makeArgs({ ...api, alias }, logger, {
-      contract: MOCK_CONTRACT_ID,
-      stateOnly: false,
-      transferId: MOCK_ACCOUNT_ID,
-    });
+    const args = makeArgs(
+      { ...api, alias, logger },
+      {
+        contract: MOCK_CONTRACT_ID,
+        stateOnly: false,
+        transferId: MOCK_ACCOUNT_ID,
+      },
+    );
 
     await expect(
       new DeleteContractCommand(contractState, contractCleanup).execute(args),
@@ -367,10 +388,13 @@ describe('contract plugin - delete command', () => {
     });
     const alias = makeAliasServiceMock();
 
-    const args = makeArgs({ ...api, alias }, logger, {
-      contract: MOCK_CONTRACT_ID,
-      stateOnly: true,
-    });
+    const args = makeArgs(
+      { ...api, alias, logger },
+      {
+        contract: MOCK_CONTRACT_ID,
+        stateOnly: true,
+      },
+    );
 
     await expect(
       new DeleteContractCommand(contractState, contractCleanup).execute(args),

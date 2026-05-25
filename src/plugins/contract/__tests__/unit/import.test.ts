@@ -77,8 +77,8 @@ describe('contract plugin - import command', () => {
       {
         ...api,
         mirror: mirrorMock,
+        logger,
       },
-      logger,
       {
         contract: MOCK_CONTRACT_ID,
         name: 'imported-contract',
@@ -138,8 +138,8 @@ describe('contract plugin - import command', () => {
       {
         ...api,
         mirror: mirrorMock,
+        logger,
       },
-      logger,
       {
         contract: MOCK_EVM_ADDRESS,
       },
@@ -177,8 +177,8 @@ describe('contract plugin - import command', () => {
       {
         ...api,
         mirror: mirrorMock,
+        logger,
       },
-      logger,
       {
         contract: MOCK_CONTRACT_ID,
         name: 'my-contract',
@@ -207,8 +207,8 @@ describe('contract plugin - import command', () => {
       {
         ...api,
         mirror: mirrorMock,
+        logger,
       },
-      logger,
       {
         contract: MOCK_CONTRACT_ID,
       },

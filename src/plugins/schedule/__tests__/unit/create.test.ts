@@ -58,10 +58,13 @@ describe('schedule plugin — create command', () => {
       } as unknown as KeyResolverService,
     };
 
-    const args = makeArgs(api, logger, {
-      name: SCHEDULE_NAME,
-      waitForExpiry: false,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SCHEDULE_NAME,
+        waitForExpiry: false,
+      },
+    );
 
     const result = await scheduleCreate(args);
 
@@ -106,10 +109,13 @@ describe('schedule plugin — create command', () => {
       } as unknown as KeyResolverService,
     };
 
-    const args = makeArgs(api, logger, {
-      name: SCHEDULE_NAME,
-      waitForExpiry: false,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SCHEDULE_NAME,
+        waitForExpiry: false,
+      },
+    );
 
     await expect(scheduleCreate(args)).rejects.toThrow(ValidationError);
     await expect(scheduleCreate(args)).rejects.toThrow(
@@ -143,11 +149,14 @@ describe('schedule plugin — create command', () => {
       } as unknown as KeyResolverService,
     };
 
-    const args = makeArgs(api, logger, {
-      name: SCHEDULE_NAME,
-      adminKey: [ADMIN_KEY_REF],
-      waitForExpiry: false,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SCHEDULE_NAME,
+        adminKey: [ADMIN_KEY_REF],
+        waitForExpiry: false,
+      },
+    );
 
     const result = await scheduleCreate(args);
 
@@ -197,11 +206,14 @@ describe('schedule plugin — create command', () => {
       } as unknown as KeyResolverService,
     };
 
-    const args = makeArgs(api, logger, {
-      name: SCHEDULE_NAME,
-      payerAccount: PAYER_ACCOUNT_ID,
-      waitForExpiry: false,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SCHEDULE_NAME,
+        payerAccount: PAYER_ACCOUNT_ID,
+        waitForExpiry: false,
+      },
+    );
 
     const result = await scheduleCreate(args);
 
@@ -246,12 +258,15 @@ describe('schedule plugin — create command', () => {
       } as unknown as KeyResolverService,
     };
 
-    const args = makeArgs(api, logger, {
-      name: SCHEDULE_NAME,
-      memo,
-      expiration: expiration.toISOString(),
-      waitForExpiry: true,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SCHEDULE_NAME,
+        memo,
+        expiration: expiration.toISOString(),
+        waitForExpiry: true,
+      },
+    );
 
     const result = await scheduleCreate(args);
 
@@ -292,11 +307,14 @@ describe('schedule plugin — create command', () => {
     };
     configMock.getOption = getOptionSpy;
 
-    const args = makeArgs(api, logger, {
-      name: SCHEDULE_NAME,
-      keyManager: KeyManager.local_encrypted,
-      waitForExpiry: false,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SCHEDULE_NAME,
+        keyManager: KeyManager.local_encrypted,
+        waitForExpiry: false,
+      },
+    );
 
     await scheduleCreate(args);
 

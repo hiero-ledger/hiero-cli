@@ -134,10 +134,13 @@ describe('topic plugin - message-submit command', () => {
       mirror: mirrorWithNoSubmitKey('0.0.1234'),
     };
 
-    const args = makeArgs(api, logger, {
-      topic: '0.0.1234',
-      message: 'Hello, World!',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        topic: '0.0.1234',
+        message: 'Hello, World!',
+      },
+    );
 
     const result = await topicSubmitMessage(args);
 
@@ -190,11 +193,14 @@ describe('topic plugin - message-submit command', () => {
       config: makeConfigMock(),
     };
 
-    const args = makeArgs(api, logger, {
-      topic: '0.0.5678',
-      message: 'Signed message',
-      signer: ['my-account-alias'],
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        topic: '0.0.5678',
+        message: 'Signed message',
+        signer: ['my-account-alias'],
+      },
+    );
 
     const result = await topicSubmitMessage(args);
 
@@ -220,10 +226,13 @@ describe('topic plugin - message-submit command', () => {
       mirror: mirrorThrowingNotFound(),
     };
 
-    const args = makeArgs(api, logger, {
-      topic: '0.0.9999',
-      message: 'Test message',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        topic: '0.0.9999',
+        message: 'Test message',
+      },
+    );
 
     await expect(topicSubmitMessage(args)).rejects.toThrow(NotFoundError);
   });
@@ -244,10 +253,13 @@ describe('topic plugin - message-submit command', () => {
       mirror: mirrorWithSubmitKey('0.0.1234'),
     };
 
-    const args = makeArgs(api, logger, {
-      topic: '0.0.1234',
-      message: 'Test message',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        topic: '0.0.1234',
+        message: 'Test message',
+      },
+    );
 
     await expect(topicSubmitMessage(args)).rejects.toThrow(ValidationError);
   });
@@ -277,10 +289,13 @@ describe('topic plugin - message-submit command', () => {
       mirror: mirrorWithNoSubmitKey('0.0.1234'),
     };
 
-    const args = makeArgs(api, logger, {
-      topic: '0.0.1234',
-      message: 'Failed message',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        topic: '0.0.1234',
+        message: 'Failed message',
+      },
+    );
 
     await expect(topicSubmitMessage(args)).rejects.toThrow(TransactionError);
   });
@@ -305,10 +320,13 @@ describe('topic plugin - message-submit command', () => {
       mirror: mirrorWithNoSubmitKey('0.0.1234'),
     };
 
-    const args = makeArgs(api, logger, {
-      topic: '0.0.1234',
-      message: 'Error message',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        topic: '0.0.1234',
+        message: 'Error message',
+      },
+    );
 
     await expect(topicSubmitMessage(args)).rejects.toThrow('network error');
   });

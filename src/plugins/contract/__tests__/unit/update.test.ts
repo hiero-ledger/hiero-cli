@@ -95,10 +95,13 @@ describe('contract plugin - update command', () => {
     const alias = makeAliasServiceMock();
     alias.list.mockReturnValue([]);
 
-    const args = makeArgs({ ...api, alias }, logger, {
-      contract: MOCK_CONTRACT_ID,
-      memo: MEMO_NEW,
-    });
+    const args = makeArgs(
+      { ...api, alias, logger },
+      {
+        contract: MOCK_CONTRACT_ID,
+        memo: MEMO_NEW,
+      },
+    );
 
     const result = await new UpdateContractCommand(contractState).execute(args);
 
@@ -130,11 +133,14 @@ describe('contract plugin - update command', () => {
       keyRefIds: [STORED_CONTRACT_ADMIN_REF],
     });
 
-    const args = makeArgs({ ...api, alias }, logger, {
-      contract: MOCK_CONTRACT_ID,
-      adminKey: ['ed25519:private:' + 'a'.repeat(64)],
-      memo: MEMO_UPDATED,
-    });
+    const args = makeArgs(
+      { ...api, alias, logger },
+      {
+        contract: MOCK_CONTRACT_ID,
+        adminKey: ['ed25519:private:' + 'a'.repeat(64)],
+        memo: MEMO_UPDATED,
+      },
+    );
 
     const result = await new UpdateContractCommand(contractState).execute(args);
 
@@ -159,10 +165,13 @@ describe('contract plugin - update command', () => {
       publicKey: ED25519_DER_PUBLIC_KEY,
     });
 
-    const args = makeArgs({ ...api, alias }, logger, {
-      contract: MOCK_CONTRACT_ID,
-      newAdminKey: [NEW_ADMIN_KEY_ED25519],
-    });
+    const args = makeArgs(
+      { ...api, alias, logger },
+      {
+        contract: MOCK_CONTRACT_ID,
+        newAdminKey: [NEW_ADMIN_KEY_ED25519],
+      },
+    );
 
     const result = await new UpdateContractCommand(contractState).execute(args);
 
@@ -190,12 +199,15 @@ describe('contract plugin - update command', () => {
     const alias = makeAliasServiceMock();
     alias.list.mockReturnValue([]);
 
-    const args = makeArgs({ ...api, alias }, logger, {
-      contract: MOCK_CONTRACT_ID,
-      memo: MEMO_NEW,
-      autoRenewPeriod: 7776000,
-      maxAutomaticTokenAssociations: 5,
-    });
+    const args = makeArgs(
+      { ...api, alias, logger },
+      {
+        contract: MOCK_CONTRACT_ID,
+        memo: MEMO_NEW,
+        autoRenewPeriod: 7776000,
+        maxAutomaticTokenAssociations: 5,
+      },
+    );
 
     const result = await new UpdateContractCommand(contractState).execute(args);
 
@@ -221,10 +233,13 @@ describe('contract plugin - update command', () => {
     const alias = makeAliasServiceMock();
     alias.list.mockReturnValue([]);
 
-    const args = makeArgs({ ...api, alias }, logger, {
-      contract: MOCK_CONTRACT_ID,
-      memo: 'null',
-    });
+    const args = makeArgs(
+      { ...api, alias, logger },
+      {
+        contract: MOCK_CONTRACT_ID,
+        memo: 'null',
+      },
+    );
 
     const result = await new UpdateContractCommand(contractState).execute(args);
 
@@ -242,10 +257,13 @@ describe('contract plugin - update command', () => {
     const alias = makeAliasServiceMock();
     alias.list.mockReturnValue([]);
 
-    const args = makeArgs({ ...api, alias }, logger, {
-      contract: MOCK_CONTRACT_ID,
-      memo: 'test memo',
-    });
+    const args = makeArgs(
+      { ...api, alias, logger },
+      {
+        contract: MOCK_CONTRACT_ID,
+        memo: 'test memo',
+      },
+    );
 
     const result = await new UpdateContractCommand(contractState).execute(args);
 
@@ -262,10 +280,13 @@ describe('contract plugin - update command', () => {
     const alias = makeAliasServiceMock();
     alias.list.mockReturnValue([]);
 
-    const args = makeArgs({ ...api, alias }, logger, {
-      contract: MOCK_CONTRACT_ALIAS,
-      memo: 'updated via alias',
-    });
+    const args = makeArgs(
+      { ...api, alias, logger },
+      {
+        contract: MOCK_CONTRACT_ALIAS,
+        memo: 'updated via alias',
+      },
+    );
 
     const result = await new UpdateContractCommand(contractState).execute(args);
 
@@ -286,10 +307,13 @@ describe('contract plugin - update command', () => {
     const alias = makeAliasServiceMock();
     alias.list.mockReturnValue([]);
 
-    const args = makeArgs({ ...api, alias }, logger, {
-      contract: MOCK_CONTRACT_ID,
-      memo: MEMO_UPDATED,
-    });
+    const args = makeArgs(
+      { ...api, alias, logger },
+      {
+        contract: MOCK_CONTRACT_ID,
+        memo: MEMO_UPDATED,
+      },
+    );
 
     await new UpdateContractCommand(contractState).execute(args);
 
@@ -324,10 +348,13 @@ describe('contract plugin - update command', () => {
       publicKey: ED25519_DER_PUBLIC_KEY,
     });
 
-    const args = makeArgs({ ...api, alias }, logger, {
-      contract: MOCK_CONTRACT_ID,
-      newAdminKey: [NEW_ADMIN_KEY_ED25519],
-    });
+    const args = makeArgs(
+      { ...api, alias, logger },
+      {
+        contract: MOCK_CONTRACT_ID,
+        newAdminKey: [NEW_ADMIN_KEY_ED25519],
+      },
+    );
 
     await new UpdateContractCommand(contractState).execute(args);
 
@@ -343,7 +370,7 @@ describe('contract plugin - update command', () => {
 
   test('throws when no update fields are provided', async () => {
     const contractState = makeContractStateServiceMock();
-    const args = makeArgs(api, logger, { contract: MOCK_CONTRACT_ID });
+    const args = makeArgs({ ...api, logger }, { contract: MOCK_CONTRACT_ID });
 
     await expect(
       new UpdateContractCommand(contractState).execute(args),
@@ -359,10 +386,13 @@ describe('contract plugin - update command', () => {
       .fn()
       .mockResolvedValue(createMockContractInfo({ deleted: true }));
 
-    const args = makeArgs(api, logger, {
-      contract: MOCK_CONTRACT_ID,
-      memo: MEMO_TEST,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        contract: MOCK_CONTRACT_ID,
+        memo: MEMO_TEST,
+      },
+    );
 
     await expect(
       new UpdateContractCommand(contractState).execute(args),
@@ -381,10 +411,13 @@ describe('contract plugin - update command', () => {
       .fn()
       .mockResolvedValue(createMockContractInfo({ admin_key: undefined }));
 
-    const args = makeArgs(api, logger, {
-      contract: MOCK_CONTRACT_ID,
-      memo: MEMO_TEST,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        contract: MOCK_CONTRACT_ID,
+        memo: MEMO_TEST,
+      },
+    );
 
     await expect(
       new UpdateContractCommand(contractState).execute(args),
@@ -402,10 +435,13 @@ describe('contract plugin - update command', () => {
     api.kms.findByPublicKey = jest.fn().mockReturnValue(undefined);
 
     const alias = makeAliasServiceMock();
-    const args = makeArgs({ ...api, alias }, logger, {
-      contract: MOCK_CONTRACT_ID,
-      memo: MEMO_TEST,
-    });
+    const args = makeArgs(
+      { ...api, alias, logger },
+      {
+        contract: MOCK_CONTRACT_ID,
+        memo: MEMO_TEST,
+      },
+    );
 
     await expect(
       new UpdateContractCommand(contractState).execute(args),
@@ -433,10 +469,13 @@ describe('contract plugin - update command', () => {
         new ValidationError(ERROR_NEW_ADMIN_KEY_NO_PRIVATE_KEY),
       );
 
-    const args = makeArgs({ ...api, alias }, logger, {
-      contract: MOCK_CONTRACT_ID,
-      newAdminKey: [NEW_ADMIN_KEY_ED25519],
-    });
+    const args = makeArgs(
+      { ...api, alias, logger },
+      {
+        contract: MOCK_CONTRACT_ID,
+        newAdminKey: [NEW_ADMIN_KEY_ED25519],
+      },
+    );
 
     await expect(
       new UpdateContractCommand(contractState).execute(args),
@@ -459,10 +498,13 @@ describe('contract plugin - update command', () => {
       transactionId: MOCK_TX_ID,
     });
 
-    const args = makeArgs({ ...api, alias }, logger, {
-      contract: MOCK_CONTRACT_ID,
-      memo: MEMO_TEST,
-    });
+    const args = makeArgs(
+      { ...api, alias, logger },
+      {
+        contract: MOCK_CONTRACT_ID,
+        memo: MEMO_TEST,
+      },
+    );
 
     await expect(
       new UpdateContractCommand(contractState).execute(args),
@@ -480,10 +522,13 @@ describe('contract plugin - update command', () => {
         new NotFoundError(`Contract ${MOCK_CONTRACT_ID_UNKNOWN} not found`),
       );
 
-    const args = makeArgs(api, logger, {
-      contract: MOCK_CONTRACT_ID,
-      memo: MEMO_TEST,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        contract: MOCK_CONTRACT_ID,
+        memo: MEMO_TEST,
+      },
+    );
 
     await expect(
       new UpdateContractCommand(contractState).execute(args),
@@ -502,10 +547,13 @@ describe('contract plugin - update command', () => {
       });
 
     const alias = makeAliasServiceMock();
-    const args = makeArgs({ ...api, alias }, logger, {
-      contract: 'missing-alias',
-      memo: MEMO_TEST,
-    });
+    const args = makeArgs(
+      { ...api, alias, logger },
+      {
+        contract: 'missing-alias',
+        memo: MEMO_TEST,
+      },
+    );
 
     await expect(
       new UpdateContractCommand(contractState).execute(args),

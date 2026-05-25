@@ -20,7 +20,7 @@ src/
     __tests__/unit/
       helpers/
         fixtures.ts    ← Plugin-specific constants only (must not duplicate global values)
-        mocks.ts       ← Plugin-specific service helpers only (no makeArgs, no makeLogger)
+        mocks.ts       ← Plugin-specific service helpers only (no makeArgs, no global factory reimplementations)
       <command>.test.ts
 ```
 
@@ -39,11 +39,11 @@ const logger = makeLogger();
 const args = makeArgs(
   {
     // override only what this test exercises
+    logger,
     contractQuery: {
       queryContractFunction: jest.fn().mockResolvedValue({ result: '0x1' }),
     },
   },
-  logger,
   { contract: 'some-alias-or-id' },
 );
 ```
@@ -62,21 +62,38 @@ export const makeSwapTxExecuteMock = () =>
   });
 
 // swap/create.test.ts
-const args = makeArgs({ txExecute: makeSwapTxExecuteMock() }, logger, { ... });
+const args = makeArgs({ txExecute: makeSwapTxExecuteMock(), logger }, { ... });
 ```
 
 ---
 
-## 3. `makeLogger`
+## 3. Global mock factories
 
-Always import from the global module. Never redefine it in a plugin.
+`src/__tests__/mocks/mocks.ts` exports a factory for every `CoreApi` service. Always import and reuse these — never redefine them in a plugin.
+
+| Factory | Returns |
+|---|---|
+| `makeLogger()` | `jest.Mocked<Logger>` |
+| `makeNetworkMock(network?)` | `jest.Mocked<NetworkService>` |
+| `makeKmsMock()` | `jest.Mocked<KmsService>` |
+| `makeAliasMock()` | `jest.Mocked<AliasService>` |
+| `makeTxSignMock()` | `jest.Mocked<TxSignService>` |
+| `makeTxExecuteMock(options?)` | `jest.Mocked<TxExecuteService>` |
+| `makeMirrorMock(options?)` | `Partial<HederaMirrornodeService>` |
+| `makeStateMock(options?)` | `jest.Mocked<StateService>` |
+| `makeConfigMock()` | `jest.Mocked<ConfigService>` |
+| `makeKeyResolverMock(options?)` | `jest.Mocked<KeyResolverService>` |
+| `makeIdentityResolutionServiceMock()` | `jest.Mocked<IdentityResolutionService>` |
+| `makeContractQueryServiceMock()` | `jest.Mocked<ContractQueryService>` |
+| `makeScheduleTransactionServiceMock()` | `jest.Mocked<ScheduleTransactionService>` |
 
 ```typescript
 // Correct
-import { makeLogger } from '@/__tests__/mocks/mocks';
+import { makeLogger, makeNetworkMock, makeKmsMock } from '@/__tests__/mocks/mocks';
 
-// Wrong — do not define this in plugin helpers/mocks.ts
+// Wrong — do not redefine any of these in plugin helpers/mocks.ts
 export const makeLogger = (): jest.Mocked<Logger> => ({ info: jest.fn(), ... });
+export const makeNetworkServiceMock = () => ({ getCurrentNetwork: jest.fn(), ... });
 ```
 
 ---
@@ -183,7 +200,7 @@ Never use raw strings where a TypeScript enum exists. This applies to mock data,
 
 **Not allowed:**
 
-- Local `makeLogger` definition — import directly from `@/__tests__/mocks/mocks` at the usage site
+- Reimplementations of any global factory (`makeLogger`, `makeNetworkMock`, `makeTxSignMock`, etc.) — import directly from `@/__tests__/mocks/mocks` at the usage site
 - Any function named `makeArgs` or `make*Args` that wraps the global `makeArgs`
 - Re-implementation of global factories (`makeNetworkMock`, `makeTxSignMock`, `makeKmsMock`, …)
 - Constants that duplicate values already in `src/__tests__/mocks/fixtures.ts`

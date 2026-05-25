@@ -50,10 +50,13 @@ describe('account plugin - balance command (ADR-003)', () => {
         }),
       } as unknown as AliasService,
     };
-    const args = makeArgs(api, logger, {
-      account: 'token-account',
-      token: '0.0.7777',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        account: 'token-account',
+        token: '0.0.7777',
+      },
+    );
 
     const result = await accountBalance(args);
     const output = assertOutput(result.result, AccountBalanceOutputSchema);
@@ -105,10 +108,13 @@ describe('account plugin - balance command (ADR-003)', () => {
           }),
       } as unknown as AliasService,
     };
-    const args = makeArgs(api, logger, {
-      account: 'token-account',
-      token: 'token-alias',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        account: 'token-account',
+        token: 'token-alias',
+      },
+    );
 
     const result = await accountBalance(args);
 
@@ -148,10 +154,13 @@ describe('account plugin - balance command (ADR-003)', () => {
         }),
       } as unknown as AliasService,
     };
-    const args = makeArgs(api, logger, {
-      account: 'test-account',
-      hbarOnly: true,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        account: 'test-account',
+        hbarOnly: true,
+      },
+    );
 
     const result = await accountBalance(args);
 
@@ -187,7 +196,7 @@ describe('account plugin - balance command (ADR-003)', () => {
         }),
       } as unknown as AliasService,
     };
-    const args = makeArgs(api, logger, { account: 'acc2' });
+    const args = makeArgs({ ...api, logger }, { account: 'acc2' });
 
     const result = await accountBalance(args);
 
@@ -239,7 +248,7 @@ describe('account plugin - balance command (ADR-003)', () => {
       logger,
       alias,
     };
-    const args = makeArgs(api, logger, { account: 'acc777' });
+    const args = makeArgs({ ...api, logger }, { account: 'acc777' });
 
     const result = await accountBalance(args);
 
@@ -268,7 +277,7 @@ describe('account plugin - balance command (ADR-003)', () => {
         }),
       } as unknown as AliasService,
     };
-    const args = makeArgs(api, logger, { account: 'acc3' });
+    const args = makeArgs({ ...api, logger }, { account: 'acc3' });
 
     const result = await accountBalance(args);
 
@@ -299,7 +308,7 @@ describe('account plugin - balance command (ADR-003)', () => {
         }),
       } as unknown as AliasService,
     };
-    const args = makeArgs(api, logger, { account: 'acc4' });
+    const args = makeArgs({ ...api, logger }, { account: 'acc4' });
 
     await expect(accountBalance(args)).rejects.toThrow();
   });
@@ -322,7 +331,7 @@ describe('account plugin - balance command (ADR-003)', () => {
       logger,
     };
     const account = 'broken';
-    const args = makeArgs(api, logger, { account });
+    const args = makeArgs({ ...api, logger }, { account });
 
     await expect(accountBalance(args)).rejects.toThrow(NotFoundError);
   });
@@ -347,10 +356,13 @@ describe('account plugin - balance command (ADR-003)', () => {
         }),
       } as unknown as AliasService,
     };
-    const args = makeArgs(api, logger, {
-      account: 'test-acc',
-      hbarOnly: true,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        account: 'test-acc',
+        hbarOnly: true,
+      },
+    );
 
     await expect(accountBalance(args)).rejects.toThrow();
   });
@@ -382,9 +394,12 @@ describe('account plugin - balance command (ADR-003)', () => {
         }),
       } as unknown as AliasService,
     };
-    const args = makeArgs(api, logger, {
-      account: 'test-acc',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        account: 'test-acc',
+      },
+    );
 
     const result = await accountBalance(args);
 
@@ -440,7 +455,7 @@ describe('account plugin - balance command (ADR-003)', () => {
         }),
       } as unknown as AliasService,
     };
-    const args = makeArgs(api, logger, { account: 'acc-nft' });
+    const args = makeArgs({ ...api, logger }, { account: 'acc-nft' });
 
     const result = await accountBalance(args);
     const output = assertOutput(result.result, AccountBalanceOutputSchema);
@@ -496,7 +511,7 @@ describe('account plugin - balance command (ADR-003)', () => {
         }),
       } as unknown as AliasService,
     };
-    const args = makeArgs(api, logger, { account: 'acc-mixed' });
+    const args = makeArgs({ ...api, logger }, { account: 'acc-mixed' });
 
     const result = await accountBalance(args);
     const output = assertOutput(result.result, AccountBalanceOutputSchema);
@@ -540,10 +555,13 @@ describe('account plugin - balance command (ADR-003)', () => {
         }),
       } as unknown as AliasService,
     };
-    const args = makeArgs(api, logger, {
-      account: 'acc-nft',
-      token: '0.0.9000',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        account: 'acc-nft',
+        token: '0.0.9000',
+      },
+    );
 
     const result = await accountBalance(args);
     const output = assertOutput(result.result, AccountBalanceOutputSchema);
@@ -569,7 +587,7 @@ describe('account plugin - balance command (ADR-003)', () => {
         }),
       } as unknown as AliasService,
     };
-    const args = makeArgs(api, logger, { account: 'acc-empty' });
+    const args = makeArgs({ ...api, logger }, { account: 'acc-empty' });
 
     const result = await accountBalance(args);
     const output = assertOutput(result.result, AccountBalanceOutputSchema);
@@ -593,7 +611,10 @@ describe('account plugin - balance command (ADR-003)', () => {
         }),
       } as unknown as AliasService,
     };
-    const args = makeArgs(api, logger, { account: 'acc-hbar', hbarOnly: true });
+    const args = makeArgs(
+      { ...api, logger },
+      { account: 'acc-hbar', hbarOnly: true },
+    );
 
     const result = await accountBalance(args);
     const output = assertOutput(result.result, AccountBalanceOutputSchema);
@@ -630,7 +651,7 @@ describe('account plugin - balance command (ADR-003)', () => {
         }),
       } as unknown as AliasService,
     };
-    const args = makeArgs(api, logger, { account: 'acc-many' });
+    const args = makeArgs({ ...api, logger }, { account: 'acc-many' });
 
     const result = await accountBalance(args);
     const output = assertOutput(result.result, AccountBalanceOutputSchema);
@@ -665,10 +686,13 @@ describe('account plugin - balance command (ADR-003)', () => {
         }),
       } as unknown as AliasService,
     };
-    const args = makeArgs(api, logger, {
-      account: 'test-acc',
-      raw: true,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        account: 'test-acc',
+        raw: true,
+      },
+    );
 
     const result = await accountBalance(args);
 

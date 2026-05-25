@@ -36,8 +36,7 @@ describe('network plugin - use command', () => {
     const mirrorService = createMirrorNodeMock();
 
     const args = makeArgs(
-      { network: networkService, mirror: mirrorService },
-      logger,
+      { network: networkService, mirror: mirrorService, logger },
       {
         global: SupportedNetwork.MAINNET,
       },
@@ -59,9 +58,12 @@ describe('network plugin - use command', () => {
       throw new NetworkError('Network not available: testnet');
     });
 
-    const args = makeArgs({ network: networkService }, logger, {
-      global: SupportedNetwork.TESTNET,
-    });
+    const args = makeArgs(
+      { network: networkService, logger },
+      {
+        global: SupportedNetwork.TESTNET,
+      },
+    );
 
     await expect(networkUse(args)).rejects.toThrow(
       'Network not available: testnet',
@@ -75,8 +77,7 @@ describe('network plugin - use command', () => {
     const mirrorService = createMirrorNodeMock();
 
     const args = makeArgs(
-      { network: networkService, mirror: mirrorService },
-      logger,
+      { network: networkService, mirror: mirrorService, logger },
       {
         global: SupportedNetwork.PREVIEWNET,
         json: true,
@@ -100,8 +101,7 @@ describe('network plugin - use command', () => {
     const mirrorService = createMirrorNodeMock();
 
     const args = makeArgs(
-      { network: networkService, mirror: mirrorService },
-      logger,
+      { network: networkService, mirror: mirrorService, logger },
       {
         global: SupportedNetwork.MAINNET,
       },
@@ -120,8 +120,7 @@ describe('network plugin - use command', () => {
     const mirrorService = createMirrorNodeMock();
 
     const argsToMainnet = makeArgs(
-      { network: networkService, mirror: mirrorService },
-      logger,
+      { network: networkService, mirror: mirrorService, logger },
       {
         global: SupportedNetwork.MAINNET,
       },
@@ -138,8 +137,7 @@ describe('network plugin - use command', () => {
     jest.clearAllMocks();
 
     const argsToPreviewnet = makeArgs(
-      { network: networkService, mirror: mirrorService },
-      logger,
+      { network: networkService, mirror: mirrorService, logger },
       {
         global: SupportedNetwork.PREVIEWNET,
       },

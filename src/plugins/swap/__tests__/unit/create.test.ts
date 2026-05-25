@@ -32,7 +32,7 @@ describe('swap plugin - create command', () => {
 
     const { networkMock, configMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = { network: networkMock, config: configMock };
-    const args = makeArgs(api, logger, { name: SWAP_NAME });
+    const args = makeArgs({ ...api, logger }, { name: SWAP_NAME });
 
     const result = await swapCreate(args);
 
@@ -60,7 +60,10 @@ describe('swap plugin - create command', () => {
 
     const { networkMock, configMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = { network: networkMock, config: configMock };
-    const args = makeArgs(api, logger, { name: SWAP_NAME, memo: SWAP_MEMO });
+    const args = makeArgs(
+      { ...api, logger },
+      { name: SWAP_NAME, memo: SWAP_MEMO },
+    );
 
     const result = await swapCreate(args);
 
@@ -83,7 +86,7 @@ describe('swap plugin - create command', () => {
 
     const { networkMock, configMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = { network: networkMock, config: configMock };
-    const args = makeArgs(api, logger, { name: SWAP_NAME });
+    const args = makeArgs({ ...api, logger }, { name: SWAP_NAME });
 
     await expect(swapCreate(args)).rejects.toThrow(ValidationError);
   });
@@ -98,7 +101,7 @@ describe('swap plugin - create command', () => {
 
     const { networkMock, configMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = { network: networkMock, config: configMock };
-    const args = makeArgs(api, logger, { name: SWAP_NAME });
+    const args = makeArgs({ ...api, logger }, { name: SWAP_NAME });
 
     await expect(swapCreate(args)).rejects.toThrow(ValidationError);
     expect(saveSwapMock).not.toHaveBeenCalled();

@@ -75,13 +75,16 @@ describe('swap plugin - add-nft command', () => {
         resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
-    const args = makeArgs(api, logger, {
-      name: SWAP_NAME,
-      from: FROM_ACCOUNT_INPUT,
-      to: MOCK_ACCOUNT_ID_ALT,
-      token: TOKEN_INPUT,
-      serials: NFT_SERIALS.join(','),
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SWAP_NAME,
+        from: FROM_ACCOUNT_INPUT,
+        to: MOCK_ACCOUNT_ID_ALT,
+        token: TOKEN_INPUT,
+        serials: NFT_SERIALS.join(','),
+      },
+    );
 
     const result = await swapAddNft(args);
 
@@ -125,13 +128,16 @@ describe('swap plugin - add-nft command', () => {
         resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
-    const args = makeArgs(api, logger, {
-      name: SWAP_NAME,
-      from: FROM_ACCOUNT_INPUT,
-      to: MOCK_ACCOUNT_ID_ALT,
-      token: TOKEN_INPUT,
-      serials: NFT_SERIALS.join(','),
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SWAP_NAME,
+        from: FROM_ACCOUNT_INPUT,
+        to: MOCK_ACCOUNT_ID_ALT,
+        token: TOKEN_INPUT,
+        serials: NFT_SERIALS.join(','),
+      },
+    );
 
     await swapAddNft(args);
 
@@ -167,13 +173,16 @@ describe('swap plugin - add-nft command', () => {
         resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
-    const args = makeArgs(api, logger, {
-      name: SWAP_NAME,
-      from: FROM_ACCOUNT_INPUT,
-      to: MOCK_ACCOUNT_ID_ALT,
-      token: TOKEN_INPUT,
-      serials: NFT_SERIALS.join(','),
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SWAP_NAME,
+        from: FROM_ACCOUNT_INPUT,
+        to: MOCK_ACCOUNT_ID_ALT,
+        token: TOKEN_INPUT,
+        serials: NFT_SERIALS.join(','),
+      },
+    );
 
     await swapAddNft(args);
 
@@ -204,12 +213,15 @@ describe('swap plugin - add-nft command', () => {
         resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
-    const args = makeArgs(api, logger, {
-      name: SWAP_NAME,
-      to: MOCK_ACCOUNT_ID_ALT,
-      token: TOKEN_INPUT,
-      serials: NFT_SERIALS.join(','),
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SWAP_NAME,
+        to: MOCK_ACCOUNT_ID_ALT,
+        token: TOKEN_INPUT,
+        serials: NFT_SERIALS.join(','),
+      },
+    );
 
     await expect(swapAddNft(args)).rejects.toThrow(ValidationError);
   });
@@ -232,12 +244,15 @@ describe('swap plugin - add-nft command', () => {
         resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
-    const args = makeArgs(api, logger, {
-      name: SWAP_NAME,
-      to: MOCK_ACCOUNT_ID_ALT,
-      token: TOKEN_INPUT,
-      serials: '1',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SWAP_NAME,
+        to: MOCK_ACCOUNT_ID_ALT,
+        token: TOKEN_INPUT,
+        serials: '1',
+      },
+    );
 
     await expect(swapAddNft(args)).rejects.toThrow(NotFoundError);
   });

@@ -74,7 +74,7 @@ describe('account plugin - account-update-state hook', () => {
   test('returns batch transaction status failure when batch success is false', async () => {
     const logger = makeLogger();
     const api = {} as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -105,7 +105,7 @@ describe('account plugin - account-update-state hook', () => {
       },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -139,7 +139,7 @@ describe('account plugin - account-update-state hook', () => {
       },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -176,7 +176,7 @@ describe('account plugin - account-update-state hook', () => {
       },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -216,7 +216,7 @@ describe('account plugin - account-update-state hook', () => {
       },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -251,7 +251,7 @@ describe('account plugin - account-update-state hook', () => {
       },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -301,7 +301,7 @@ describe('account plugin - account-update-state hook', () => {
       },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -340,7 +340,7 @@ describe('account plugin - account-update-state hook', () => {
       },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -401,7 +401,7 @@ describe('account plugin - account-update-state hook', () => {
       },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -487,7 +487,7 @@ describe('account plugin - account-update-state hook (schedule path)', () => {
       },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createScheduleVerifyParams(makeScheduledData());
 
@@ -512,7 +512,7 @@ describe('account plugin - account-update-state hook (schedule path)', () => {
     }));
 
     const api = {} as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createScheduleVerifyParams(
       makeScheduledData({ command: 'token_create' }),
@@ -533,7 +533,7 @@ describe('account plugin - account-update-state hook (schedule path)', () => {
     }));
 
     const api = {} as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createScheduleVerifyParams(
       makeScheduledData({ normalizedParams: { invalid: true } }),
@@ -557,7 +557,7 @@ describe('account plugin - account-update-state hook (schedule path)', () => {
     }));
 
     const api = {} as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createScheduleVerifyParams(
       makeScheduledData({ transactionId: undefined }),
@@ -590,7 +590,7 @@ describe('account plugin - account-update-state hook (schedule path)', () => {
       mirror: { getTransactionRecord: getTransactionRecordMock },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createScheduleVerifyParams(makeScheduledData());
 
@@ -625,7 +625,7 @@ describe('account plugin - account-update-state hook (schedule path)', () => {
       mirror: { getTransactionRecord: getTransactionRecordMock },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createScheduleVerifyParams(makeScheduledData());
 
@@ -676,7 +676,7 @@ describe('account plugin - account-update-state hook (schedule path)', () => {
       },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createScheduleVerifyParams(makeScheduledData());
 

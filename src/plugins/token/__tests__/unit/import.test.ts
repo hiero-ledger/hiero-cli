@@ -69,10 +69,13 @@ describe('token plugin - import command (ADR-007)', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, {
-      token: '0.0.123456',
-      name: 'my-token',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        token: '0.0.123456',
+        name: 'my-token',
+      },
+    );
 
     const result = await tokenImport(args);
 
@@ -138,9 +141,12 @@ describe('token plugin - import command (ADR-007)', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, {
-      token: '0.0.999999',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        token: '0.0.999999',
+      },
+    );
 
     const result = await tokenImport(args);
 
@@ -192,9 +198,12 @@ describe('token plugin - import command (ADR-007)', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, {
-      token: '0.0.555555',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        token: '0.0.555555',
+      },
+    );
 
     const result = await tokenImport(args);
 
@@ -228,10 +237,13 @@ describe('token plugin - import command (ADR-007)', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, {
-      token: '0.0.123456',
-      name: 'new-token',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        token: '0.0.123456',
+        name: 'new-token',
+      },
+    );
 
     await expect(tokenImport(args)).rejects.toThrow(
       "Token with ID '0.0.123456' already exists in state",
@@ -260,9 +272,12 @@ describe('token plugin - import command (ADR-007)', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, {
-      token: '0.0.123456',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        token: '0.0.123456',
+      },
+    );
 
     await expect(tokenImport(args)).rejects.toThrow('Token not found');
   });

@@ -52,7 +52,7 @@ describe('plugin-management info command', () => {
       commands: [{ name: 'list' }, { name: 'create' }],
     });
 
-    const args = makeArgs(api, logger, { name: 'topic' });
+    const args = makeArgs({ ...api, logger }, { name: 'topic' });
 
     const result = await pluginManagementInfo(args);
     const output = assertOutput(
@@ -87,7 +87,7 @@ describe('plugin-management info command', () => {
       name: 'custom-plugin',
     });
 
-    const args = makeArgs(api, logger, { name: 'custom-plugin' });
+    const args = makeArgs({ ...api, logger }, { name: 'custom-plugin' });
 
     const result = await pluginManagementInfo(args);
     const output = assertOutput(
@@ -112,7 +112,7 @@ describe('plugin-management info command', () => {
     } as unknown as PluginManagementService;
     const api = { pluginManagement };
 
-    const args = makeArgs(api, logger, { name: 'missing-plugin' });
+    const args = makeArgs({ ...api, logger }, { name: 'missing-plugin' });
 
     await expect(pluginManagementInfo(args)).rejects.toThrow(NotFoundError);
     await expect(pluginManagementInfo(args)).rejects.toThrow(

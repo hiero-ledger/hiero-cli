@@ -105,7 +105,10 @@ describe('topic plugin - delete command (ADR-007)', () => {
       alias,
       network,
     };
-    const args = makeArgs(api, logger, { topic: 'topic1', stateOnly: true });
+    const args = makeArgs(
+      { ...api, logger },
+      { topic: 'topic1', stateOnly: true },
+    );
 
     const result = await topicDelete(args);
 
@@ -141,10 +144,13 @@ describe('topic plugin - delete command (ADR-007)', () => {
       alias,
       network,
     };
-    const args = makeArgs(api, logger, {
-      topic: MOCK_HEDERA_ENTITY_ID_2,
-      stateOnly: true,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        topic: MOCK_HEDERA_ENTITY_ID_2,
+        stateOnly: true,
+      },
+    );
 
     const result = await topicDelete(args);
 
@@ -175,7 +181,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
       alias,
       network,
     };
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     await expect(topicDelete(args)).rejects.toThrow();
   });
@@ -211,10 +217,13 @@ describe('topic plugin - delete command (ADR-007)', () => {
       alias,
       network,
     };
-    const args = makeArgs(api, logger, {
-      topic: 'missingTopic',
-      stateOnly: true,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        topic: 'missingTopic',
+        stateOnly: true,
+      },
+    );
 
     await expect(topicDelete(args)).rejects.toThrow(
       "Topic with identifier 'missingTopic' not found",
@@ -240,10 +249,13 @@ describe('topic plugin - delete command (ADR-007)', () => {
       alias,
       network,
     };
-    const args = makeArgs(api, logger, {
-      topic: MOCK_HEDERA_ENTITY_ID_1,
-      stateOnly: true,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        topic: MOCK_HEDERA_ENTITY_ID_1,
+        stateOnly: true,
+      },
+    );
 
     await expect(topicDelete(args)).rejects.toThrow(
       `Topic with identifier '${MOCK_HEDERA_ENTITY_ID_1}' not found`,
@@ -282,7 +294,10 @@ describe('topic plugin - delete command (ADR-007)', () => {
       alias,
       network,
     };
-    const args = makeArgs(api, logger, { topic: 'topic5', stateOnly: true });
+    const args = makeArgs(
+      { ...api, logger },
+      { topic: 'topic5', stateOnly: true },
+    );
 
     await expect(topicDelete(args)).rejects.toThrow('db error');
   });
@@ -312,10 +327,13 @@ describe('topic plugin - delete command (ADR-007)', () => {
       alias,
       network,
     };
-    const args = makeArgs(api, logger, {
-      topic: 'topic-alias',
-      stateOnly: true,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        topic: 'topic-alias',
+        stateOnly: true,
+      },
+    );
 
     const result = await topicDelete(args);
 
@@ -402,11 +420,14 @@ describe('topic plugin - delete command (ADR-007)', () => {
         keyResolver: keyResolver as unknown as KeyResolverService,
       };
 
-      const args = makeArgs(api, logger, {
-        topic: 'topic-net',
-        stateOnly: false,
-        adminKey: [MOCK_TOPIC_ADMIN_KEY_REF_ID],
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          topic: 'topic-net',
+          stateOnly: false,
+          adminKey: [MOCK_TOPIC_ADMIN_KEY_REF_ID],
+        },
+      );
 
       const result = await topicDelete(args);
 
@@ -447,10 +468,13 @@ describe('topic plugin - delete command (ADR-007)', () => {
         network,
         mirror: mirrorWithTopicNoAdminKey(MOCK_HEDERA_ENTITY_ID_1),
       };
-      const args = makeArgs(api, logger, {
-        topic: MOCK_HEDERA_ENTITY_ID_1,
-        adminKey: [MOCK_TOPIC_CLI_ADMIN_KEY_REF_ID],
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          topic: MOCK_HEDERA_ENTITY_ID_1,
+          adminKey: [MOCK_TOPIC_CLI_ADMIN_KEY_REF_ID],
+        },
+      );
 
       await expect(topicDelete(args)).rejects.toThrow(ValidationError);
     });
@@ -511,10 +535,13 @@ describe('topic plugin - delete command (ADR-007)', () => {
         keyResolver: keyResolver as unknown as KeyResolverService,
       };
 
-      const args = makeArgs(api, logger, {
-        topic: MOCK_HEDERA_ENTITY_ID_1,
-        adminKey: [MOCK_TOPIC_ADMIN_KEY_REF_ID],
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          topic: MOCK_HEDERA_ENTITY_ID_1,
+          adminKey: [MOCK_TOPIC_ADMIN_KEY_REF_ID],
+        },
+      );
 
       await expect(topicDelete(args)).rejects.toThrow(TransactionError);
     });
@@ -570,10 +597,13 @@ describe('topic plugin - delete command (ADR-007)', () => {
         keyResolver: keyResolver as unknown as KeyResolverService,
       };
 
-      const args = makeArgs(api, logger, {
-        topic: MOCK_HEDERA_ENTITY_ID_1,
-        adminKey: [MOCK_TOPIC_CLI_ADMIN_KEY_REF_ID],
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          topic: MOCK_HEDERA_ENTITY_ID_1,
+          adminKey: [MOCK_TOPIC_CLI_ADMIN_KEY_REF_ID],
+        },
+      );
 
       const result = await topicDelete(args);
 
@@ -604,9 +634,12 @@ describe('topic plugin - delete command (ADR-007)', () => {
         network,
         mirror: mirrorWithTopic(MOCK_HEDERA_ENTITY_ID_1),
       };
-      const args = makeArgs(api, logger, {
-        topic: MOCK_HEDERA_ENTITY_ID_1,
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          topic: MOCK_HEDERA_ENTITY_ID_1,
+        },
+      );
 
       await expect(topicDelete(args)).rejects.toThrow(ValidationError);
     });

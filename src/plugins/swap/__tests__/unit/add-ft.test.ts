@@ -77,13 +77,16 @@ describe('swap plugin - add-ft command', () => {
         resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
-    const args = makeArgs(api, logger, {
-      name: SWAP_NAME,
-      from: FROM_ACCOUNT_INPUT,
-      to: MOCK_ACCOUNT_ID_ALT,
-      token: TOKEN_INPUT,
-      amount: FT_AMOUNT_INPUT,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SWAP_NAME,
+        from: FROM_ACCOUNT_INPUT,
+        to: MOCK_ACCOUNT_ID_ALT,
+        token: TOKEN_INPUT,
+        amount: FT_AMOUNT_INPUT,
+      },
+    );
 
     const result = await swapAddFt(args);
 
@@ -134,13 +137,16 @@ describe('swap plugin - add-ft command', () => {
         resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
-    const args = makeArgs(api, logger, {
-      name: SWAP_NAME,
-      from: FROM_ACCOUNT_INPUT,
-      to: MOCK_ACCOUNT_ID_ALT,
-      token: TOKEN_INPUT,
-      amount: FT_AMOUNT_INPUT,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SWAP_NAME,
+        from: FROM_ACCOUNT_INPUT,
+        to: MOCK_ACCOUNT_ID_ALT,
+        token: TOKEN_INPUT,
+        amount: FT_AMOUNT_INPUT,
+      },
+    );
 
     await swapAddFt(args);
 
@@ -177,13 +183,16 @@ describe('swap plugin - add-ft command', () => {
         resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
-    const args = makeArgs(api, logger, {
-      name: SWAP_NAME,
-      from: FROM_ACCOUNT_INPUT,
-      to: MOCK_ACCOUNT_ID_ALT,
-      token: TOKEN_INPUT,
-      amount: '5',
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SWAP_NAME,
+        from: FROM_ACCOUNT_INPUT,
+        to: MOCK_ACCOUNT_ID_ALT,
+        token: TOKEN_INPUT,
+        amount: '5',
+      },
+    );
 
     await swapAddFt(args);
 
@@ -212,12 +221,15 @@ describe('swap plugin - add-ft command', () => {
         resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
-    const args = makeArgs(api, logger, {
-      name: SWAP_NAME,
-      to: MOCK_ACCOUNT_ID_ALT,
-      token: TOKEN_INPUT,
-      amount: FT_AMOUNT_INPUT,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SWAP_NAME,
+        to: MOCK_ACCOUNT_ID_ALT,
+        token: TOKEN_INPUT,
+        amount: FT_AMOUNT_INPUT,
+      },
+    );
 
     await expect(swapAddFt(args)).rejects.toThrow(ValidationError);
   });
@@ -246,13 +258,16 @@ describe('swap plugin - add-ft command', () => {
         resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
-    const args = makeArgs(api, logger, {
-      name: SWAP_NAME,
-      from: FROM_ACCOUNT_INPUT,
-      to: MOCK_ACCOUNT_ID_ALT,
-      token: TOKEN_INPUT,
-      amount: FT_AMOUNT_INPUT,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SWAP_NAME,
+        from: FROM_ACCOUNT_INPUT,
+        to: MOCK_ACCOUNT_ID_ALT,
+        token: TOKEN_INPUT,
+        amount: FT_AMOUNT_INPUT,
+      },
+    );
 
     await swapAddFt(args);
 

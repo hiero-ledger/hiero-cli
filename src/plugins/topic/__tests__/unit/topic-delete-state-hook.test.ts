@@ -65,7 +65,7 @@ describe('topic plugin - TopicDeleteStateHook', () => {
   test('returns breakFlow false when batch execution failed', async () => {
     const logger = makeLogger();
     const api = {} as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -84,7 +84,7 @@ describe('topic plugin - TopicDeleteStateHook', () => {
   test('skips when batch has no topic_delete transactions', async () => {
     const logger = makeLogger();
     const api = { state: makeStateMock() } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -108,7 +108,7 @@ describe('topic plugin - TopicDeleteStateHook', () => {
       state: makeStateMock(),
       alias: { list: jest.fn().mockReturnValue([]), remove: jest.fn() },
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -137,7 +137,7 @@ describe('topic plugin - TopicDeleteStateHook', () => {
       state: makeStateMock(),
       alias: { list: jest.fn().mockReturnValue([]), remove: jest.fn() },
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const params = createBatchExecuteParams({
       name: 'batch',
@@ -166,7 +166,7 @@ describe('topic plugin - TopicDeleteStateHook', () => {
       state: makeStateMock(),
       alias: { list: jest.fn().mockReturnValue([]), remove: jest.fn() },
     } as unknown as Partial<CoreApi>;
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const topicToDelete = baseTopicToDelete();
     const params = createBatchExecuteParams({

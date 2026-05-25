@@ -36,7 +36,7 @@ describe('batch plugin - BatchifySetBatchKeyHook', () => {
     const logger = makeLogger();
     const { networkMock, kmsMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs({ ...api, logger }, {});
 
     const setBatchKey = jest.fn();
     const transaction = { setBatchKey } as unknown as Transaction;
@@ -64,7 +64,7 @@ describe('batch plugin - BatchifySetBatchKeyHook', () => {
 
     const { networkMock, kmsMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
-    const args = makeArgs(api, logger, { batch: BATCH_NAME });
+    const args = makeArgs({ ...api, logger }, { batch: BATCH_NAME });
 
     const transaction = {
       setBatchKey: jest.fn(),
@@ -90,7 +90,7 @@ describe('batch plugin - BatchifySetBatchKeyHook', () => {
 
     const { networkMock, kmsMock } = makeBatchApiMocks();
     const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
-    const args = makeArgs(api, logger, { batch: BATCH_NAME });
+    const args = makeArgs({ ...api, logger }, { batch: BATCH_NAME });
 
     const transaction = {
       setBatchKey: jest.fn(),
@@ -116,7 +116,7 @@ describe('batch plugin - BatchifySetBatchKeyHook', () => {
     kmsMock.get = jest.fn().mockReturnValue(undefined);
 
     const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
-    const args = makeArgs(api, logger, { batch: BATCH_NAME });
+    const args = makeArgs({ ...api, logger }, { batch: BATCH_NAME });
 
     const transaction = {
       setBatchKey: jest.fn(),
@@ -143,7 +143,7 @@ describe('batch plugin - BatchifySetBatchKeyHook', () => {
     const { networkMock, kmsMock } = makeBatchApiMocks();
 
     const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
-    const args = makeArgs(api, logger, { batch: BATCH_NAME });
+    const args = makeArgs({ ...api, logger }, { batch: BATCH_NAME });
 
     const setBatchKey = jest.fn();
     const transaction = { setBatchKey } as unknown as Transaction;

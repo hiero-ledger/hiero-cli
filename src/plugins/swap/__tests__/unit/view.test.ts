@@ -43,7 +43,7 @@ describe('swap plugin - view command', () => {
 
     const { networkMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
-    const args = makeArgs(api, logger, { name: SWAP_NAME });
+    const args = makeArgs({ ...api, logger }, { name: SWAP_NAME });
 
     const result = await swapView(args);
 
@@ -64,7 +64,7 @@ describe('swap plugin - view command', () => {
 
     const { networkMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
-    const args = makeArgs(api, logger, { name: SWAP_NAME });
+    const args = makeArgs({ ...api, logger }, { name: SWAP_NAME });
 
     const result = await swapView(args);
 
@@ -85,7 +85,7 @@ describe('swap plugin - view command', () => {
 
     const { networkMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
-    const args = makeArgs(api, logger, { name: SWAP_NAME });
+    const args = makeArgs({ ...api, logger }, { name: SWAP_NAME });
 
     const result = await swapView(args);
 
@@ -106,7 +106,7 @@ describe('swap plugin - view command', () => {
 
     const { networkMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
-    const args = makeArgs(api, logger, { name: SWAP_NAME });
+    const args = makeArgs({ ...api, logger }, { name: SWAP_NAME });
 
     const result = await swapView(args);
 
@@ -128,7 +128,7 @@ describe('swap plugin - view command', () => {
 
     const { networkMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = { network: networkMock };
-    const args = makeArgs(api, logger, { name: SWAP_NAME });
+    const args = makeArgs({ ...api, logger }, { name: SWAP_NAME });
 
     await expect(swapView(args)).rejects.toThrow(NotFoundError);
   });

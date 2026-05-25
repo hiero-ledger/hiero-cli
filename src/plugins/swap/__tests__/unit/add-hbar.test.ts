@@ -66,12 +66,15 @@ describe('swap plugin - add-hbar command', () => {
         resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
-    const args = makeArgs(api, logger, {
-      name: SWAP_NAME,
-      from: FROM_ACCOUNT_INPUT,
-      to: MOCK_ACCOUNT_ID_ALT,
-      amount: HBAR_AMOUNT_INPUT,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SWAP_NAME,
+        from: FROM_ACCOUNT_INPUT,
+        to: MOCK_ACCOUNT_ID_ALT,
+        amount: HBAR_AMOUNT_INPUT,
+      },
+    );
 
     const result = await swapAddHbar(args);
 
@@ -119,11 +122,14 @@ describe('swap plugin - add-hbar command', () => {
         resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
-    const args = makeArgs(api, logger, {
-      name: SWAP_NAME,
-      to: MOCK_ACCOUNT_ID_ALT,
-      amount: HBAR_AMOUNT_INPUT,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SWAP_NAME,
+        to: MOCK_ACCOUNT_ID_ALT,
+        amount: HBAR_AMOUNT_INPUT,
+      },
+    );
 
     await swapAddHbar(args);
 
@@ -166,12 +172,15 @@ describe('swap plugin - add-hbar command', () => {
         resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
-    const args = makeArgs(api, logger, {
-      name: SWAP_NAME,
-      from: FROM_ACCOUNT_INPUT,
-      to: MOCK_ACCOUNT_ID_ALT,
-      amount: HBAR_AMOUNT_INPUT,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SWAP_NAME,
+        from: FROM_ACCOUNT_INPUT,
+        to: MOCK_ACCOUNT_ID_ALT,
+        amount: HBAR_AMOUNT_INPUT,
+      },
+    );
 
     await swapAddHbar(args);
 
@@ -200,11 +209,14 @@ describe('swap plugin - add-hbar command', () => {
         resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
-    const args = makeArgs(api, logger, {
-      name: SWAP_NAME,
-      to: MOCK_ACCOUNT_ID_ALT,
-      amount: HBAR_AMOUNT_INPUT,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SWAP_NAME,
+        to: MOCK_ACCOUNT_ID_ALT,
+        amount: HBAR_AMOUNT_INPUT,
+      },
+    );
 
     await expect(swapAddHbar(args)).rejects.toThrow(ValidationError);
   });
@@ -227,11 +239,14 @@ describe('swap plugin - add-hbar command', () => {
         resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
-    const args = makeArgs(api, logger, {
-      name: SWAP_NAME,
-      to: MOCK_ACCOUNT_ID_ALT,
-      amount: HBAR_AMOUNT_INPUT,
-    });
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        name: SWAP_NAME,
+        to: MOCK_ACCOUNT_ID_ALT,
+        amount: HBAR_AMOUNT_INPUT,
+      },
+    );
 
     await expect(swapAddHbar(args)).rejects.toThrow(NotFoundError);
   });

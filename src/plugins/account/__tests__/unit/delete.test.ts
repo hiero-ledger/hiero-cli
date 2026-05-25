@@ -99,10 +99,13 @@ describe('account plugin - delete command (ADR-003)', () => {
         kms: kms as unknown as KmsService,
         identityResolution: mockIdentityResolution('0.0.1111'),
       };
-      const args = makeArgs(api, logger, {
-        account: 'acc1',
-        stateOnly: true,
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          account: 'acc1',
+          stateOnly: true,
+        },
+      );
 
       const result = await accountDelete(args);
 
@@ -137,10 +140,13 @@ describe('account plugin - delete command (ADR-003)', () => {
         kms: kms as unknown as KmsService,
         identityResolution: mockIdentityResolution('0.0.2222'),
       };
-      const args = makeArgs(api, logger, {
-        account: '0.0.2222',
-        stateOnly: true,
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          account: '0.0.2222',
+          stateOnly: true,
+        },
+      );
 
       const result = await accountDelete(args);
 
@@ -170,7 +176,7 @@ describe('account plugin - delete command (ADR-003)', () => {
         network,
         identityResolution: mockIdentityResolution('0.0.1'),
       };
-      const args = makeArgs(api, logger, { stateOnly: true });
+      const args = makeArgs({ ...api, logger }, { stateOnly: true });
 
       await expect(accountDelete(args)).rejects.toThrow();
     });
@@ -199,10 +205,13 @@ describe('account plugin - delete command (ADR-003)', () => {
         network,
         identityResolution: mockIdentityResolution('0.0.1111'),
       };
-      const args = makeArgs(api, logger, {
-        account: 'missingAcc',
-        stateOnly: true,
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          account: 'missingAcc',
+          stateOnly: true,
+        },
+      );
 
       await expect(accountDelete(args)).rejects.toThrow(NotFoundError);
     });
@@ -228,10 +237,13 @@ describe('account plugin - delete command (ADR-003)', () => {
         network,
         identityResolution: mockIdentityResolution('0.0.4444'),
       };
-      const args = makeArgs(api, logger, {
-        account: '0.0.4444',
-        stateOnly: true,
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          account: '0.0.4444',
+          stateOnly: true,
+        },
+      );
 
       await expect(accountDelete(args)).rejects.toThrow(NotFoundError);
     });
@@ -263,10 +275,13 @@ describe('account plugin - delete command (ADR-003)', () => {
         network,
         identityResolution: mockIdentityResolution('0.0.5555'),
       };
-      const args = makeArgs(api, logger, {
-        account: 'acc5',
-        stateOnly: true,
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          account: 'acc5',
+          stateOnly: true,
+        },
+      );
 
       await expect(accountDelete(args)).rejects.toThrow();
     });
@@ -302,10 +317,13 @@ describe('account plugin - delete command (ADR-003)', () => {
         kms: kms as unknown as KmsService,
         identityResolution: mockIdentityResolution('0.0.7777'),
       };
-      const args = makeArgs(api, logger, {
-        account: 'acc-alias',
-        stateOnly: true,
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          account: 'acc-alias',
+          stateOnly: true,
+        },
+      );
 
       const result = await accountDelete(args);
 
@@ -401,11 +419,14 @@ describe('account plugin - delete command (ADR-003)', () => {
         identityResolution: mockIdentityResolution('0.0.1111'),
       };
 
-      const args = makeArgs(api, logger, {
-        account: 'net-del',
-        transferId: '0.0.9999',
-        stateOnly: false,
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          account: 'net-del',
+          transferId: '0.0.9999',
+          stateOnly: false,
+        },
+      );
 
       const result = await accountDelete(args);
 
@@ -468,10 +489,13 @@ describe('account plugin - delete command (ADR-003)', () => {
         identityResolution: mockIdentityResolution('0.0.1111'),
       };
 
-      const args = makeArgs(api, logger, {
-        account: '0.0.1111',
-        transferId: '0.0.9999',
-      });
+      const args = makeArgs(
+        { ...api, logger },
+        {
+          account: '0.0.1111',
+          transferId: '0.0.9999',
+        },
+      );
 
       await expect(accountDelete(args)).rejects.toThrow(
         'Failed to delete account',
