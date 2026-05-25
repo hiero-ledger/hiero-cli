@@ -2,8 +2,8 @@ import type { HederaMirrornodeService, KeyResolverService } from '@/core';
 import type { MirrorNodeKey } from '@/core/services/mirrornode/types';
 import type { ScheduleStateService } from '@/plugins/schedule/services/schedule-state.service.interface';
 
-import { makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
 import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
+import { makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
 import { EntityReferenceType } from '@/core';
 import {
   CredentialType,
