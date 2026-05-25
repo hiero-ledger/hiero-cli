@@ -32,7 +32,7 @@ describe('Config Integration Tests', () => {
     const optionNames = listConfigOutput.options.map((option) => option.name);
     expect(optionNames).toEqual(
       expect.arrayContaining([
-        ConfigOptionKey.ed25519_support_enabled,
+        ConfigOptionKey.ed25519_support,
         ConfigOptionKey.log_level,
         ConfigOptionKey.default_key_manager,
       ]),
@@ -41,8 +41,7 @@ describe('Config Integration Tests', () => {
 
   it('should set config option and then verify it with with get method', async () => {
     const setConfigArgs: Record<string, unknown> = {
-      option: ConfigOptionKey.ed25519_support_enabled,
-      value: 'true',
+      [ConfigOptionKey.ed25519_support]: 'true',
     };
     const setConfigResult = await configSet({
       args: setConfigArgs,
@@ -53,14 +52,14 @@ describe('Config Integration Tests', () => {
     expect(setConfigOutput.newValue).toBe(true);
 
     const getConfigArgs: Record<string, unknown> = {
-      option: ConfigOptionKey.ed25519_support_enabled,
+      option: ConfigOptionKey.ed25519_support,
     };
     const getConfigResult = await configGet({
       args: getConfigArgs,
       api: coreApi,
     });
     const getConfigOutput = getConfigResult.result as ConfigGetOutput;
-    expect(getConfigOutput.name).toBe(ConfigOptionKey.ed25519_support_enabled);
+    expect(getConfigOutput.name).toBe(ConfigOptionKey.ed25519_support);
     expect(getConfigOutput.value).toBe(true);
     expect(getConfigOutput.type).toBe('boolean');
   });

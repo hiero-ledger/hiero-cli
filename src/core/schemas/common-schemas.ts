@@ -740,29 +740,6 @@ export const ConfigOptionNameSchema = z
   .describe('Configuration option name');
 
 /**
- * Configuration Option Value
- * Value for configuration option (can be string, number, or boolean as string)
- * Handler will parse it to appropriate type
- */
-export const ConfigOptionValueSchema = z
-  .preprocess(
-    (value) => {
-      if (typeof value !== 'string') return value;
-      const s = value.trim().toLowerCase();
-
-      if (s === 'true') return true;
-      if (s === 'false') return false;
-
-      const n = Number(value);
-      if (!Number.isNaN(n) && Number.isFinite(n)) return n;
-
-      return value;
-    },
-    z.union([z.boolean(), z.number(), z.string()]),
-  )
-  .describe('Configuration option value (boolean, number, or string)');
-
-/**
  * Key Reference ID
  * Identifier for a key stored in KMS (Key Management System)
  */
@@ -1242,3 +1219,8 @@ export const ScheduledTransactionDataSchema = z.object({
   ),
   createdAt: z.string().optional(),
 });
+
+export const BooleanStringSchema = z.preprocess(
+  (v) => (v === 'true' ? true : v === 'false' ? false : v),
+  z.boolean({ error: 'Value must be true or false' }),
+);

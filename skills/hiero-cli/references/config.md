@@ -47,18 +47,22 @@ hcli config get --option default_key_manager
 
 ### `hcli config set`
 
-Set the value of a configuration option.
+Set the value of a configuration option. Pass exactly one named option flag per invocation.
 
-| Option     | Short | Type   | Required | Description                                                        |
-| ---------- | ----- | ------ | -------- | ------------------------------------------------------------------ |
-| `--option` | `-o`  | string | **yes**  | Option name to set. Use `config list` to see available options     |
-| `--value`  | `-V`  | string | **yes**  | Value to set. Booleans: `true`/`false`. Numbers as strings: `"10"` |
+| Option                      | Type   | Required | Allowed values                             |
+| --------------------------- | ------ | -------- | ------------------------------------------ |
+| `--default_key_manager`     | string | one of   | `local`, `local_encrypted`                 |
+| `--ed25519_support_enabled` | string | one of   | `true`, `false`                            |
+| `--log_level`               | string | one of   | `silent`, `error`, `warn`, `info`, `debug` |
+| `--skip_confirmations`      | string | one of   | `true`, `false`                            |
 
 **Example:**
 
 ```
-hcli config set --option default_key_manager --value local_encrypted
-hcli config set --option skip_confirmations --value true
+hcli config set --default_key_manager local_encrypted
+hcli config set --skip_confirmations true
+hcli config set --log_level debug
+hcli config set --ed25519_support_enabled false
 ```
 
 **Output:** `{ name, previousValue, newValue }`

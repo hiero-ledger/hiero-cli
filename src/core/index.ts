@@ -36,7 +36,7 @@ export type * from './services/contract-verifier/contract-verifier-service.inter
 export type * from './services/identity-resolution/identity-resolution-service.interface';
 export type * from './services/key-resolver/key-resolver-service.interface';
 export type * from './services/kms/kms-service.interface';
-export * from './services/logger/logger-service.interface';
+export type * from './services/logger/logger-service.interface';
 export type * from './services/mirrornode/hedera-mirrornode-service.interface';
 export type { NetworkService } from './services/network/network-service.interface';
 export type * from './services/output/output-service.interface';

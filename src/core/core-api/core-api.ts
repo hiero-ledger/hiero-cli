@@ -15,10 +15,7 @@ import type { ContractVerifierService } from '@/core/services/contract-verifier/
 import type { IdentityResolutionService } from '@/core/services/identity-resolution/identity-resolution-service.interface';
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
-import type {
-  Logger,
-  LogLevel,
-} from '@/core/services/logger/logger-service.interface';
+import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type { OutputService } from '@/core/services/output/output-service.interface';
@@ -31,6 +28,7 @@ import type { TopicService } from '@/core/services/topic/topic-transaction-servi
 import type { TransferService } from '@/core/services/transfer/transfer-service.interface';
 import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
 import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
+import type { LogLevel } from '@/core/types/shared.types';
 
 import { AccountServiceImpl } from '@/core/services/account/account-transaction-service';
 import { AliasServiceImpl } from '@/core/services/alias/alias-service';

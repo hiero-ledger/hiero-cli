@@ -2,16 +2,7 @@
  * Interface for logging operations
  * Provides consistent logging interface for plugins
  */
-
-export const LOG_LEVEL_VALUES = [
-  'silent',
-  'error',
-  'warn',
-  'info',
-  'debug',
-] as const;
-
-export type LogLevel = (typeof LOG_LEVEL_VALUES)[number];
+import type { LogLevel } from '@/core/types/shared.types';
 
 export interface Logger {
   /**

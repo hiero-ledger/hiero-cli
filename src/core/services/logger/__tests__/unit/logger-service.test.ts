@@ -3,6 +3,7 @@
  * Tests logging methods, level filtering, and message formatting
  */
 import { LoggerService } from '@/core/services/logger/logger-service';
+import { LogLevel } from '@/core/types/shared.types';
 
 describe('LoggerService', () => {
   let logger: LoggerService;
@@ -10,183 +11,183 @@ describe('LoggerService', () => {
 
   beforeEach(() => {
     logger = new LoggerService();
-    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    consoleErrorSpy = jest.spyOn(console, LogLevel.ERROR).mockImplementation();
   });
 
   afterEach(() => {
     consoleErrorSpy.mockRestore();
   });
 
-  describe('info', () => {
+  describe(LogLevel.INFO, () => {
     it('should log info message with prefix', () => {
-      logger.setLevel('info');
+      logger.setLevel(LogLevel.INFO);
       logger.info('Test message');
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('[INFO] Test message');
     });
 
     it('should not log when level is error', () => {
-      logger.setLevel('error');
+      logger.setLevel(LogLevel.ERROR);
       logger.info('Test message');
 
       expect(consoleErrorSpy).not.toHaveBeenCalled();
     });
 
     it('should not log when level is warn', () => {
-      logger.setLevel('warn');
+      logger.setLevel(LogLevel.WARN);
       logger.info('Test message');
 
       expect(consoleErrorSpy).not.toHaveBeenCalled();
     });
 
     it('should log when level is info', () => {
-      logger.setLevel('info');
+      logger.setLevel(LogLevel.INFO);
       logger.info('Test message');
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('[INFO] Test message');
     });
 
     it('should log when level is debug', () => {
-      logger.setLevel('debug');
+      logger.setLevel(LogLevel.DEBUG);
       logger.info('Test message');
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('[INFO] Test message');
     });
 
     it('should not log when level is silent', () => {
-      logger.setLevel('silent');
+      logger.setLevel(LogLevel.SILENT);
       logger.info('Test message');
 
       expect(consoleErrorSpy).not.toHaveBeenCalled();
     });
   });
 
-  describe('error', () => {
+  describe(LogLevel.ERROR, () => {
     it('should log error message with prefix', () => {
-      logger.setLevel('error');
+      logger.setLevel(LogLevel.ERROR);
       logger.error('Error message');
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('[ERROR] Error message');
     });
 
     it('should log when level is error', () => {
-      logger.setLevel('error');
+      logger.setLevel(LogLevel.ERROR);
       logger.error('Error message');
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('[ERROR] Error message');
     });
 
     it('should log when level is warn', () => {
-      logger.setLevel('warn');
+      logger.setLevel(LogLevel.WARN);
       logger.error('Error message');
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('[ERROR] Error message');
     });
 
     it('should log when level is info', () => {
-      logger.setLevel('info');
+      logger.setLevel(LogLevel.INFO);
       logger.error('Error message');
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('[ERROR] Error message');
     });
 
     it('should log when level is debug', () => {
-      logger.setLevel('debug');
+      logger.setLevel(LogLevel.DEBUG);
       logger.error('Error message');
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('[ERROR] Error message');
     });
 
     it('should not log when level is silent', () => {
-      logger.setLevel('silent');
+      logger.setLevel(LogLevel.SILENT);
       logger.error('Error message');
 
       expect(consoleErrorSpy).not.toHaveBeenCalled();
     });
   });
 
-  describe('warn', () => {
+  describe(LogLevel.WARN, () => {
     it('should log warn message with prefix', () => {
-      logger.setLevel('warn');
+      logger.setLevel(LogLevel.WARN);
       logger.warn('Warning message');
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('[WARN] Warning message');
     });
 
     it('should not log when level is error', () => {
-      logger.setLevel('error');
+      logger.setLevel(LogLevel.ERROR);
       logger.warn('Warning message');
 
       expect(consoleErrorSpy).not.toHaveBeenCalled();
     });
 
     it('should log when level is warn', () => {
-      logger.setLevel('warn');
+      logger.setLevel(LogLevel.WARN);
       logger.warn('Warning message');
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('[WARN] Warning message');
     });
 
     it('should log when level is info', () => {
-      logger.setLevel('info');
+      logger.setLevel(LogLevel.INFO);
       logger.warn('Warning message');
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('[WARN] Warning message');
     });
 
     it('should log when level is debug', () => {
-      logger.setLevel('debug');
+      logger.setLevel(LogLevel.DEBUG);
       logger.warn('Warning message');
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('[WARN] Warning message');
     });
 
     it('should not log when level is silent', () => {
-      logger.setLevel('silent');
+      logger.setLevel(LogLevel.SILENT);
       logger.warn('Warning message');
 
       expect(consoleErrorSpy).not.toHaveBeenCalled();
     });
   });
 
-  describe('debug', () => {
+  describe(LogLevel.DEBUG, () => {
     it('should log debug message with prefix', () => {
-      logger.setLevel('debug');
+      logger.setLevel(LogLevel.DEBUG);
       logger.debug('Debug message');
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('[DEBUG] Debug message');
     });
 
     it('should not log when level is error', () => {
-      logger.setLevel('error');
+      logger.setLevel(LogLevel.ERROR);
       logger.debug('Debug message');
 
       expect(consoleErrorSpy).not.toHaveBeenCalled();
     });
 
     it('should not log when level is warn', () => {
-      logger.setLevel('warn');
+      logger.setLevel(LogLevel.WARN);
       logger.debug('Debug message');
 
       expect(consoleErrorSpy).not.toHaveBeenCalled();
     });
 
     it('should not log when level is info', () => {
-      logger.setLevel('info');
+      logger.setLevel(LogLevel.INFO);
       logger.debug('Debug message');
 
       expect(consoleErrorSpy).not.toHaveBeenCalled();
     });
 
     it('should log when level is debug', () => {
-      logger.setLevel('debug');
+      logger.setLevel(LogLevel.DEBUG);
       logger.debug('Debug message');
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('[DEBUG] Debug message');
     });
 
     it('should not log when level is silent', () => {
-      logger.setLevel('silent');
+      logger.setLevel(LogLevel.SILENT);
       logger.debug('Debug message');
 
       expect(consoleErrorSpy).not.toHaveBeenCalled();
@@ -195,7 +196,7 @@ describe('LoggerService', () => {
 
   describe('setLevel', () => {
     it('should change log level to error', () => {
-      logger.setLevel('error');
+      logger.setLevel(LogLevel.ERROR);
       logger.info('Should not log');
       logger.warn('Should not log');
       logger.debug('Should not log');
@@ -206,7 +207,7 @@ describe('LoggerService', () => {
     });
 
     it('should change log level to warn', () => {
-      logger.setLevel('warn');
+      logger.setLevel(LogLevel.WARN);
       logger.info('Should not log');
       logger.debug('Should not log');
       logger.warn('Should log');
@@ -217,7 +218,7 @@ describe('LoggerService', () => {
     });
 
     it('should change log level to info', () => {
-      logger.setLevel('info');
+      logger.setLevel(LogLevel.INFO);
       logger.debug('Should not log');
       logger.info('Should log');
       logger.warn('Should log');
@@ -229,7 +230,7 @@ describe('LoggerService', () => {
     });
 
     it('should change log level to debug', () => {
-      logger.setLevel('debug');
+      logger.setLevel(LogLevel.DEBUG);
       logger.debug('Should log');
       logger.info('Should log');
       logger.warn('Should log');
@@ -242,7 +243,7 @@ describe('LoggerService', () => {
     });
 
     it('should change log level to silent', () => {
-      logger.setLevel('silent');
+      logger.setLevel(LogLevel.SILENT);
       logger.debug('Should not log');
       logger.info('Should not log');
       logger.warn('Should not log');

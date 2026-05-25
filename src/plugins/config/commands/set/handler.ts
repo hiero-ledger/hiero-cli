@@ -12,8 +12,9 @@ export class ConfigSetCommand implements Command {
 
     const validArgs = ConfigSetInputSchema.parse(args.args);
 
-    const name = validArgs.option;
-    const value = validArgs.value;
+    const entry = Object.entries(validArgs).find(([, v]) => v !== undefined)!;
+    const name = entry[0];
+    const value = entry[1] as boolean | number | string;
 
     const prev = api.config.getOption(name);
     const descriptor = api.config.listOptions().find((o) => o.name === name);
@@ -23,7 +24,7 @@ export class ConfigSetCommand implements Command {
     const output: ConfigSetOutput = {
       name,
       type,
-      previousValue: prev as ConfigSetOutput['previousValue'],
+      previousValue: prev,
       newValue: value,
     };
 
