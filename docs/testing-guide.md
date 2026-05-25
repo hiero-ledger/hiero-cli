@@ -39,7 +39,9 @@ const logger = makeLogger();
 const args = makeArgs(
   {
     // override only what this test exercises
-    contractQuery: { queryContractFunction: jest.fn().mockResolvedValue({ result: '0x1' }) },
+    contractQuery: {
+      queryContractFunction: jest.fn().mockResolvedValue({ result: '0x1' }),
+    },
   },
   logger,
   { contract: 'some-alias-or-id' },
@@ -114,8 +116,13 @@ const mockContractFunctionParameters = jest.fn().mockReturnValue({
 
 jest.mock('@hiero-ledger/sdk', () => ({
   ContractFunctionParameters: mockContractFunctionParameters,
-  ContractId: { fromString: jest.fn().mockReturnValue({ toEvmAddress: jest.fn() }) },
-  TokenType: { NonFungibleUnique: 'NonFungibleUnique', FungibleCommon: 'FungibleCommon' },
+  ContractId: {
+    fromString: jest.fn().mockReturnValue({ toEvmAddress: jest.fn() }),
+  },
+  TokenType: {
+    NonFungibleUnique: 'NonFungibleUnique',
+    FungibleCommon: 'FungibleCommon',
+  },
 }));
 ```
 
@@ -132,6 +139,7 @@ Use `jest.requireActual` to keep real SDK methods while selectively overriding o
 **Global** `src/__tests__/mocks/fixtures.ts` owns all shared constants: entity IDs, addresses, public/private keys, transaction IDs, key ref IDs.
 
 **Plugin** `helpers/fixtures.ts` is only for:
+
 - Plugin-domain objects (`mockBatchData`, `mockSwapWithHbar`, `validTokenFile`, …)
 - Constants with meaning only in that plugin's context (`BATCH_NAME`, `SCHEDULE_COMPOSED_KEY`, …)
 
@@ -139,16 +147,16 @@ Before adding a constant to a plugin fixture file, check if it already exists in
 
 Key global constants to know:
 
-| Constant | Value |
-|---|---|
-| `MOCK_OPERATOR_ACCOUNT_ID` | `'0.0.100000'` |
-| `MOCK_CONTRACT_ID` | `'0.0.1234'` |
-| `MOCK_CONTRACT_ID_UNKNOWN` | `'0.0.9999'` |
-| `MOCK_ACCOUNT_ID` | `'0.0.5678'` |
-| `MOCK_ACCOUNT_ID_ALT` | `'0.0.5679'` |
-| `MOCK_TOPIC_ID` | `'0.0.7777'` |
-| `MOCK_TX_ID` | `'0.0.1234@1234567890.123456789'` |
-| `ECDSA_HEX_PUBLIC_KEY` | `'0230a1f4…'` (64-char hex) |
+| Constant                   | Value                             |
+| -------------------------- | --------------------------------- |
+| `MOCK_OPERATOR_ACCOUNT_ID` | `'0.0.100000'`                    |
+| `MOCK_CONTRACT_ID`         | `'0.0.1234'`                      |
+| `MOCK_CONTRACT_ID_UNKNOWN` | `'0.0.9999'`                      |
+| `MOCK_ACCOUNT_ID`          | `'0.0.5678'`                      |
+| `MOCK_ACCOUNT_ID_ALT`      | `'0.0.5679'`                      |
+| `MOCK_TOPIC_ID`            | `'0.0.7777'`                      |
+| `MOCK_TX_ID`               | `'0.0.1234@1234567890.123456789'` |
+| `ECDSA_HEX_PUBLIC_KEY`     | `'0230a1f4…'` (64-char hex)       |
 
 ---
 
@@ -156,30 +164,32 @@ Key global constants to know:
 
 Never use raw strings where a TypeScript enum exists. This applies to mock data, `makeArgs` arguments, and assertions.
 
-| String literal | Correct enum | Import from |
-|---|---|---|
-| `'testnet'` | `SupportedNetwork.TESTNET` | `@/core/types/shared.types` |
-| `'mainnet'` | `SupportedNetwork.MAINNET` | `@/core/types/shared.types` |
-| `'previewnet'` | `SupportedNetwork.PREVIEWNET` | `@/core/types/shared.types` |
-| `'localnet'` | `SupportedNetwork.LOCALNET` | `@/core/types/shared.types` |
-| `'account'` | `AliasType.Account` | `@/core/types/shared.types` |
-| `'token'` | `AliasType.Token` | `@/core/types/shared.types` |
-| `'topic'` | `AliasType.Topic` | `@/core/types/shared.types` |
-| `'contract'` | `AliasType.Contract` | `@/core/types/shared.types` |
-| `'ecdsa'` / `'ECDSA'` | `KeyAlgorithm.ECDSA` | `@/core/shared/constants` |
-| `'ed25519'` / `'ED25519'` | `KeyAlgorithm.ED25519` | `@/core/shared/constants` |
-| `'local'` (key manager) | `KeyManager.local` | `@/core/services/kms/kms-types.interface` |
+| String literal            | Correct enum                  | Import from                               |
+| ------------------------- | ----------------------------- | ----------------------------------------- |
+| `'testnet'`               | `SupportedNetwork.TESTNET`    | `@/core/types/shared.types`               |
+| `'mainnet'`               | `SupportedNetwork.MAINNET`    | `@/core/types/shared.types`               |
+| `'previewnet'`            | `SupportedNetwork.PREVIEWNET` | `@/core/types/shared.types`               |
+| `'localnet'`              | `SupportedNetwork.LOCALNET`   | `@/core/types/shared.types`               |
+| `'account'`               | `AliasType.Account`           | `@/core/types/shared.types`               |
+| `'token'`                 | `AliasType.Token`             | `@/core/types/shared.types`               |
+| `'topic'`                 | `AliasType.Topic`             | `@/core/types/shared.types`               |
+| `'contract'`              | `AliasType.Contract`          | `@/core/types/shared.types`               |
+| `'ecdsa'` / `'ECDSA'`     | `KeyAlgorithm.ECDSA`          | `@/core/shared/constants`                 |
+| `'ed25519'` / `'ED25519'` | `KeyAlgorithm.ED25519`        | `@/core/shared/constants`                 |
+| `'local'` (key manager)   | `KeyManager.local`            | `@/core/services/kms/kms-types.interface` |
 
 ---
 
 ## 7. What plugin `helpers/mocks.ts` may and may not contain
 
 **Allowed:**
+
 - Service-level mock helpers specific to the plugin (`makeSwapTxExecuteMock`, `makeBatchStateHelperMock`, `makeAccountTransactionServiceMock`, …)
 - Re-export of `makeLogger` from global (one line only)
 - `makeApiMocks(config?)` — plugin-specific `CoreApi` mock assembly, accepted only when the plugin's default for a service genuinely differs from the global default (e.g. `contract-erc20` / `contract-erc721`)
 
 **Not allowed:**
+
 - Local `makeLogger` definition (must re-export global)
 - Any function named `makeArgs` or `make*Args` that wraps the global `makeArgs`
 - Re-implementation of global factories (`makeNetworkMock`, `makeTxSignMock`, `makeKmsMock`, …)
