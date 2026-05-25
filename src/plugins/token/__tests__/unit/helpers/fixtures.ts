@@ -283,12 +283,6 @@ export const validTokenDataForSchema = {
   supplyType: SupplyType.FINITE,
   maxSupply: 10000n,
   treasuryId: '0.0.789012',
-  associations: [
-    {
-      name: 'TestAccount',
-      accountId: '0.0.345678',
-    },
-  ],
   adminKeyRefIds: ['kr_admin'],
   adminKeyThreshold: 1,
   supplyKeyRefIds: [],
@@ -331,14 +325,6 @@ export const validTokenKeys = {
   feeScheduleKey: 'fee-schedule-key',
   metadataKey: 'metadata-key',
   treasuryKey: 'treasury-key',
-};
-
-/**
- * Schema Test Data - Valid Token Association
- */
-export const validTokenAssociation = {
-  name: 'TestAccount',
-  accountId: '0.0.345678',
 };
 
 /**
@@ -413,37 +399,6 @@ export const mockStateTokenData = {
     metadataKeyRefIds: [],
     metadataKeyThreshold: 0,
     network: SupportedNetwork.TESTNET,
-    associations: [],
-    customFees: [],
-    tokenType: HederaTokenType.FUNGIBLE_COMMON,
-  },
-  withAssociations: {
-    tokenId: '0.0.123456',
-    name: 'TestToken',
-    symbol: 'TEST',
-    decimals: 2,
-    initialSupply: 1000n,
-    supplyType: SupplyType.FINITE,
-    maxSupply: 10000n,
-    treasuryId: '0.0.789012',
-    adminKeyRefIds: ['kr_admin'],
-    adminKeyThreshold: 1,
-    supplyKeyRefIds: [],
-    supplyKeyThreshold: 0,
-    wipeKeyRefIds: [],
-    wipeKeyThreshold: 0,
-    kycKeyRefIds: [],
-    kycKeyThreshold: 0,
-    freezeKeyRefIds: [],
-    freezeKeyThreshold: 0,
-    pauseKeyRefIds: [],
-    pauseKeyThreshold: 0,
-    feeScheduleKeyRefIds: [],
-    feeScheduleKeyThreshold: 0,
-    metadataKeyRefIds: [],
-    metadataKeyThreshold: 0,
-    network: SupportedNetwork.TESTNET,
-    associations: [{ name: 'TestAccount', accountId: '0.0.111111' }],
     customFees: [],
     tokenType: HederaTokenType.FUNGIBLE_COMMON,
   },
@@ -473,7 +428,6 @@ export const mockStateTokenData = {
     metadataKeyRefIds: [],
     metadataKeyThreshold: 0,
     network: SupportedNetwork.TESTNET,
-    associations: [],
     customFees: [],
     tokenType: HederaTokenType.FUNGIBLE_COMMON,
   },
@@ -626,7 +580,6 @@ export const validTokenDataForValidation = {
   supplyType: SupplyType.FINITE,
   maxSupply: 10000,
   treasuryId: '0.0.789012',
-  associations: [],
   adminKeyRefIds: ['kr_admin'],
   adminKeyThreshold: 1,
   network: SupportedNetwork.TESTNET,
@@ -690,41 +643,9 @@ export const makeTokenData = (
   metadataKeyRefIds: [],
   metadataKeyThreshold: 0,
   network: SupportedNetwork.TESTNET,
-  associations: [],
   customFees: [],
   tokenType: HederaTokenType.FUNGIBLE_COMMON,
   ...overrides,
-});
-
-export const tokenAssociatedWithAccountFixture = makeTokenData({
-  tokenId: '0.0.123456',
-  name: 'TestToken',
-  symbol: 'TEST',
-  associations: [
-    {
-      name: '0.0.789012',
-      accountId: '0.0.789012',
-    },
-  ],
-});
-
-export const tokenAssociatedWithAliasFixture = makeTokenData({
-  tokenId: '0.0.123456',
-  name: 'TestToken',
-  symbol: 'TEST',
-  associations: [
-    {
-      name: 'my-account-alias',
-      accountId: '0.0.789012',
-    },
-  ],
-});
-
-export const tokenWithoutAssociationsFixture = makeTokenData({
-  tokenId: '0.0.123456',
-  name: 'TestToken',
-  symbol: 'TEST',
-  associations: [],
 });
 
 /**
@@ -735,16 +656,12 @@ export const makeTokenStats = (
     total: number;
     byNetwork: Record<string, number>;
     bySupplyType: Record<string, number>;
-    withAssociations: number;
-    totalAssociations: number;
     withKeys: number;
   }> = {},
 ) => ({
   total: 0,
   byNetwork: {},
   bySupplyType: {},
-  withAssociations: 0,
-  totalAssociations: 0,
   withKeys: 0,
   ...overrides,
 });
@@ -843,14 +760,6 @@ export const mockTokenStats = {
     total: 2,
     byNetwork: { testnet: 1, mainnet: 1 },
     bySupplyType: { [SupplyType.INFINITE]: 2 },
-    withKeys: 2,
-  }),
-  withAssociations: makeTokenStats({
-    total: 2,
-    byNetwork: { testnet: 2 },
-    bySupplyType: { [SupplyType.INFINITE]: 1, [SupplyType.FINITE]: 1 },
-    withAssociations: 1,
-    totalAssociations: 1,
     withKeys: 2,
   }),
   finiteSupply: makeTokenStats({

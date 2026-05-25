@@ -20,8 +20,8 @@ import {
   scheduleDelete,
   ScheduleDeleteOutputSchema,
 } from '@/plugins/schedule/commands/delete';
-import { ScheduleHelper } from '@/plugins/schedule/schedule-helper';
-import { ZustandScheduleStateHelper } from '@/plugins/schedule/zustand-state-helper';
+import { ScheduleResolverServiceImpl } from '@/plugins/schedule/services/schedule-resolver.service';
+import { ScheduleStateServiceImpl } from '@/plugins/schedule/services/schedule-state.service';
 
 import {
   ADMIN_KEY_REF,
@@ -31,15 +31,16 @@ import {
   SCHEDULE_NAME,
 } from './helpers/fixtures';
 
-jest.mock('../../schedule-helper', () => ({
-  ScheduleHelper: jest.fn(),
+jest.mock('../../services/schedule-resolver.service', () => ({
+  ScheduleResolverServiceImpl: jest.fn(),
 }));
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandScheduleStateHelper: jest.fn(),
+jest.mock('../../services/schedule-state.service', () => ({
+  ScheduleStateServiceImpl: jest.fn(),
 }));
 
-const MockedScheduleHelper = ScheduleHelper as unknown as jest.Mock;
-const MockedZustand = ZustandScheduleStateHelper as unknown as jest.Mock;
+const MockedScheduleResolver =
+  ScheduleResolverServiceImpl as unknown as jest.Mock;
+const MockedScheduleState = ScheduleStateServiceImpl as unknown as jest.Mock;
 
 const ADMIN_KEY_REF_2 = 'kr_admintest456';
 
@@ -80,10 +81,10 @@ describe('schedule plugin — delete command', () => {
     jest.clearAllMocks();
     deleteScheduledMock = jest.fn();
     resolveScheduleMock = jest.fn();
-    MockedZustand.mockImplementation(() => ({
+    MockedScheduleState.mockImplementation(() => ({
       deleteScheduled: deleteScheduledMock,
     }));
-    MockedScheduleHelper.mockImplementation(() => ({
+    MockedScheduleResolver.mockImplementation(() => ({
       resolveScheduleIdByEntityReference: resolveScheduleMock,
     }));
   });

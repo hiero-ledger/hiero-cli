@@ -1,6 +1,5 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
-import type { TokenAssociationsService } from '@/plugins/token/services/token-associations.service.interface';
 import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
 import type { TokenDissociateOutput } from './output';
 import type {
@@ -14,9 +13,7 @@ import { ValidationError } from '@/core';
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { NotFoundError, TransactionError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
-import { TokenAssociationsServiceImpl } from '@/plugins/token/services/token-associations.service';
 import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
-import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { TokenDissociateInputSchema } from './input';
 
@@ -28,10 +25,7 @@ export class TokenDissociateCommand extends BaseTransactionCommand<
   DissociateSignTransactionResult,
   DissociateExecuteTransactionResult
 > {
-  constructor(
-    private readonly tokenReferenceService: TokenReferenceService,
-    private readonly tokenAssociationsService: TokenAssociationsService,
-  ) {
+  constructor(private readonly tokenReferenceService: TokenReferenceService) {
     super(TOKEN_DISSOCIATE_COMMAND_NAME);
   }
 
@@ -152,12 +146,6 @@ export class TokenDissociateCommand extends BaseTransactionCommand<
     _signTransactionResult: DissociateSignTransactionResult,
     executeTransactionResult: DissociateExecuteTransactionResult,
   ): Promise<CommandResult> {
-    this.tokenAssociationsService.removeAssociationFromState(
-      normalisedParams.tokenId,
-      normalisedParams.account.accountId,
-      normalisedParams.network,
-    );
-
     const outputData: TokenDissociateOutput = {
       accountId: normalisedParams.account.accountId,
       tokenId: normalisedParams.tokenId,
@@ -173,16 +161,7 @@ export async function tokenDissociate(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   const { api } = args;
-  const tokenStateService = new TokenStateServiceImpl(api.state, api.logger);
   return new TokenDissociateCommand(
     new TokenReferenceServiceImpl(api.identityResolution),
-    new TokenAssociationsServiceImpl(
-      api.keyResolver,
-      api.token,
-      api.txSign,
-      api.txExecute,
-      tokenStateService,
-      api.logger,
-    ),
   ).execute(args);
 }

@@ -17,18 +17,18 @@ import { resolvePayer } from './core/utils/resolve-payer';
 
 program
   .name('hcli')
-  .version(pkg.version || '0.0.0')
+  .version(pkg.version || '0.0.0', '-v, --version')
   .description('A CLI tool for managing Hedera environments')
-  .option('--format <type>', 'Output format: human (default) or json')
+  .option('-F, --format <type>', 'Output format: human (default) or json')
   .option(
     '-N, --network <network>',
     'Target network (testnet, mainnet, previewnet, localnet)',
   )
   .option(
     '-P, --payer <payer>',
-    'Payer account (alias or account-id:private-key format)',
+    'Payer account (alias or account-id:private-key format); defaults to operator if omitted',
   )
-  .option('--confirm', 'Skip confirmation prompts')
+  .option('-Y, --confirm', 'Skip confirmation prompts')
   .showHelpAfterError('use --help for available options')
   .configureHelp({
     showGlobalOptions: true,

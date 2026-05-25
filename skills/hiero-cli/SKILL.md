@@ -18,12 +18,12 @@ hcli <plugin> <command> [options]
 
 ## Global flags
 
-| Flag        | Short | Default  | Description                              |
-| ----------- | ----- | -------- | ---------------------------------------- |
-| `--format`  |       | `human`  | Output format: `human` or `json`         |
-| `--network` | `-N`  | active   | Override active network for this command |
-| `--payer`   | `-P`  | operator | Override payer account for this command  |
-| `--confirm` |       | `false`  | Skip all confirmation prompts            |
+| Flag        | Short | Default  | Description                                                              |
+| ----------- | ----- | -------- | ------------------------------------------------------------------------ |
+| `--format`  | `-F`  | `human`  | Output format: `human` or `json`                                         |
+| `--network` | `-N`  | active   | Override active network for this command                                 |
+| `--payer`   | `-P`  | operator | Override payer account for this command; defaults to operator if omitted |
+| `--confirm` | `-Y`  | `false`  | Skip all confirmation prompts                                            |
 
 ## Prerequisites
 

@@ -7,7 +7,6 @@ import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 import { TokenCreateFtInputSchema } from '@/plugins/token/commands/create-ft/input';
 import {
   FungibleTokenFileSchema,
-  TokenAssociationSchema,
   TokenDataSchema,
   TokenFileCustomFeeSchema,
   validateTokenData,
@@ -17,7 +16,6 @@ import {
   invalidTokenDataForValidation,
   minimalTokenCreateParams,
   mockAccountKeyPairs,
-  validTokenAssociation,
   validTokenCreateParams,
   validTokenDataForSchema,
   validTokenDataForValidation,
@@ -160,43 +158,6 @@ describe('Token Schema Validation', () => {
       if (!result.success) {
         expect(result.error.issues[0].message).toContain(
           'Network must be mainnet, testnet, previewnet, or localnet',
-        );
-      }
-    });
-  });
-
-  describe('TokenAssociationSchema', () => {
-    test('should validate valid association', () => {
-      const result = TokenAssociationSchema.safeParse(validTokenAssociation);
-      expect(result.success).toBe(true);
-    });
-
-    test('should reject empty association name', () => {
-      const invalidAssociation = {
-        ...validTokenAssociation,
-        name: '',
-      };
-
-      const result = TokenAssociationSchema.safeParse(invalidAssociation);
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.issues[0].message).toContain(
-          'Association name is required',
-        );
-      }
-    });
-
-    test('should reject invalid account ID format', () => {
-      const invalidAssociation = {
-        ...validTokenAssociation,
-        accountId: 'invalid-account-id',
-      };
-
-      const result = TokenAssociationSchema.safeParse(invalidAssociation);
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.issues[0].message).toContain(
-          'Hedera entity ID must be in format 0.0.{number}',
         );
       }
     });

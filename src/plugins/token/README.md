@@ -151,17 +151,10 @@ src/plugins/token/
 │   │   ├── handler.ts       # TokenCreateNftFromFileBatchStateHook - persists NFT-from-file state after batch execution
 │   │   ├── types.ts         # CreateNftFromFileNormalisedParamsSchema for batch item validation
 │   │   └── index.ts         # Hook exports
-│   ├── batch-associate/
-│   │   ├── handler.ts       # TokenAssociateBatchStateHook - persists association results after batch execution
-│   │   ├── types.ts         # AssociateNormalisedParamsSchema for batch item validation
-│   │   └── index.ts         # Hook exports
 │   ├── token-update-state/
 │   │   ├── handler.ts       # TokenUpdateStateHook - persists updated token data after batch execution
 │   │   ├── types.ts         # TokenUpdateNormalisedParamsSchema for batch item validation
 │   │   └── index.ts         # Hook exports
-│   └── token-dissociate-state/
-│       ├── handler.ts       # TokenDissociateStateHook - removes association from state after batch execution
-│       └── types.ts         # DissociateNormalizedParamsSchema for batch item validation
 ├── utils/                       # Pure functions only (no DI)
 │   ├── token-build-output.ts             # NFT output builder utilities
 │   ├── token-data-builders.ts            # Token data builders for create-from-file and update commands
@@ -282,7 +275,7 @@ hcli token create-nft \
 **Parameters:**
 
 - `--token-name` / `-T`: Token name - **Required**
-- `--symbol` / `-s`: Token symbol/ticker - **Required**
+- `--symbol` / `-C`: Token symbol/ticker - **Required**
 - `--treasury`: Treasury account for the NFT collection - **Optional** (defaults to operator)
   - Account alias: `alice`
   - Account with key: `0.0.123456:private-key`
@@ -857,7 +850,6 @@ hcli token dissociate --token mytoken-alias --account alice --batch my-batch
 
 - The account must hold a zero balance of the token before dissociation (Hedera requirement)
 - The command validates that the token is currently associated with the account before attempting dissociation
-- After successful dissociation, the association is removed from local state
 - Batch support: pass `--batch <batch-name>` to queue the transaction for batch execution
 
 ### Token Airdrop (Fungible Token)
@@ -1476,7 +1468,7 @@ hcli token update --token mytoken-alias --token-name "Batched Rename" --batch my
 | ---------------------- | ----- | ---------------------------------------------------------------------- |
 | `--token`              | `-T`  | Token ID or alias — **Required**                                       |
 | `--token-name`         | `-b`  | New token name                                                         |
-| `--symbol`             | `-Y`  | New token symbol                                                       |
+| `--symbol`             | `-C`  | New token symbol                                                       |
 | `--treasury`           | `-t`  | New treasury account ID or alias                                       |
 | `--admin-keys`         | `-a`  | Current admin key credential(s) for signing (auto-resolved if omitted) |
 | `--new-admin-keys`     | `-n`  | New admin key(s); pass `null` to clear                                 |
@@ -1705,11 +1697,10 @@ The following token commands support the `--batch` / `-B` flag via the batch plu
 - `create-nft` – `TokenCreateNftBatchStateHook` persists NFT state after batch execution
 - `create-ft-from-file` – `TokenCreateFtFromFileBatchStateHook` persists FT-from-file state
 - `create-nft-from-file` – `TokenCreateNftFromFileBatchStateHook` persists NFT-from-file state
-- `associate` – `TokenAssociateBatchStateHook` persists association results
-- `burn-ft`, `burn-nft`, `mint-ft`, `mint-nft`, `update-metadata-nft`, `transfer-ft`, `transfer-nft`, `allowance-nft`, `allowance-ft`, `delete-allowance-nft` – can be batched (no state hook; transactions execute atomically)
-- `dissociate` – `TokenDissociateStateHook` removes association from state after batch execution
+- `associate` – can be batched (no state hook; association status is always resolved from the mirror node)
+- `dissociate` – can be batched (no state hook; association status is always resolved from the mirror node)
 - `update` – `TokenUpdateStateHook` persists updated token data (name, symbol, treasury, role keys, memo) after batch execution
-- `burn-ft`, `burn-nft`, `mint-ft`, `mint-nft`, `transfer-ft`, `transfer-nft`, `allowance-nft`, `allowance-ft`, `delete-allowance-nft` – can be batched (no state hook; transactions execute atomically)
+- `burn-ft`, `burn-nft`, `mint-ft`, `mint-nft`, `update-metadata-nft`, `transfer-ft`, `transfer-nft`, `allowance-nft`, `allowance-ft`, `delete-allowance-nft` – can be batched (no state hook; transactions execute atomically)
 
 When you pass `--batch <batch-name>`:
 
@@ -1792,7 +1783,6 @@ interface TokenData {
   metadataPublicKey?: string;
   keys: TokenKeys;
   network: 'mainnet' | 'testnet' | 'previewnet' | 'localnet';
-  associations: TokenAssociation[];
   customFees: CustomFee[];
 }
 ```

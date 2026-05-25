@@ -109,7 +109,7 @@ export const contractPluginManifest: PluginManifest = {
         },
         {
           name: 'solidity-version',
-          short: 'v',
+          short: 'V',
           type: OptionType.STRING,
           required: false,
           description: 'Solidity compiler version.',

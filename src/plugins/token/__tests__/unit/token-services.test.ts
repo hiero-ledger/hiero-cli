@@ -9,7 +9,6 @@ import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-ser
 import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
 import type { TokenCreateFtInput } from '@/plugins/token/commands/create-ft/input';
 import type { FungibleTokenFileDefinition } from '@/plugins/token/schema';
-import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import { NotFoundError } from '@/core/errors';
@@ -319,11 +318,6 @@ describe('Token services', () => {
         execute: jest.fn().mockResolvedValue({ success: true }),
         ...overrides.txExecute,
       } as unknown as jest.Mocked<TxExecuteService>;
-      const state = {
-        getToken: jest.fn(),
-        addTokenAssociation: jest.fn(),
-        removeTokenAssociation: jest.fn(),
-      } as unknown as jest.Mocked<TokenStateService>;
       const logger = {
         info: jest.fn(),
         warn: jest.fn(),
@@ -333,11 +327,10 @@ describe('Token services', () => {
         token,
         txSign,
         txExecute,
-        state,
         logger,
       );
 
-      return { service, keyResolver, token, txSign, txExecute, state, logger };
+      return { service, keyResolver, token, txSign, txExecute, logger };
     };
 
     test('processes successful association transaction', async () => {
