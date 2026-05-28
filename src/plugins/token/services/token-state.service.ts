@@ -1,5 +1,4 @@
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
-import type { Credential } from '@/core/services/kms/kms-types.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { ReceiptService } from '@/core/services/receipt/receipt-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
@@ -8,29 +7,24 @@ import type {
   TransactionResult,
 } from '@/core/types/shared.types';
 import type { TokenData } from '@/plugins/token/schema';
-import type { TokenAssociationsService } from '@/plugins/token/services/token-associations.service.interface';
 import type {
   TokenStateService,
   TokenStateStats,
 } from '@/plugins/token/services/token-state.service.interface';
 
-import { InternalError, NotFoundError, ValidationError } from '@/core/errors';
+import { NotFoundError, ValidationError } from '@/core/errors';
 import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { TOKEN_NAMESPACE } from '@/plugins/token/constants';
 import { AssociateNormalizedParamsSchema } from '@/plugins/token/hooks/token-associate-state/types';
-import { CreateFtFromFileNormalizedParamsSchema } from '@/plugins/token/hooks/token-create-ft-from-file-state/types';
 import { CreateFtNormalizedParamsSchema } from '@/plugins/token/hooks/token-create-ft-state/types';
-import { CreateNftFromFileNormalizedParamsSchema } from '@/plugins/token/hooks/token-create-nft-from-file-state/types';
 import { CreateNftNormalizedParamsSchema } from '@/plugins/token/hooks/token-create-nft-state/types';
 import { DeleteNormalizedParamsSchema } from '@/plugins/token/hooks/token-delete-state/types';
 import { DissociateNormalizedParamsSchema } from '@/plugins/token/hooks/token-dissociate-state/types';
 import { TokenUpdateNormalisedParamsSchema } from '@/plugins/token/hooks/token-update-state/types';
 import { TokenDataSchema } from '@/plugins/token/schema';
 import {
-  buildNftTokenDataFromFile,
   buildTokenData,
-  buildTokenDataFromFile,
   buildUpdatedTokenData,
 } from '@/plugins/token/utils/token-data-builders';
 
@@ -40,7 +34,6 @@ export class TokenStateServiceImpl implements TokenStateService {
     private readonly logger: Logger,
     private readonly receipt: ReceiptService,
     private readonly alias: AliasService,
-    private readonly tokenAssociations?: TokenAssociationsService,
   ) {}
 
   saveToken(key: string, tokenData: TokenData): void {
@@ -339,74 +332,6 @@ export class TokenStateServiceImpl implements TokenStateService {
     this.removeToken(key);
     this.logger.debug(`Cleaned up state for deleted token ${tokenId}`);
     return Promise.resolve();
-  }
-
-  async applyCreateFtFromFileFromBatchItem(item: BatchDataItem): Promise<void> {
-    if (!this.tokenAssociations) {
-      throw new InternalError(
-        'TokenAssociationsService not provided to TokenStateService',
-      );
-    }
-    const parsed = CreateFtFromFileNormalizedParamsSchema.safeParse(
-      item.normalizedParams,
-    );
-    if (!parsed.success) {
-      this.logger.warn(
-        `There was a problem with parsing data schema. The saving will not be done`,
-      );
-      return;
-    }
-    const params = parsed.data;
-    const receipt = await this.fetchReceiptOrWarn(item);
-    if (!receipt || !receipt.tokenId) return;
-
-    const tokenData = buildTokenDataFromFile(receipt, params);
-    const associations = await this.tokenAssociations.processTokenAssociations(
-      receipt.tokenId,
-      params.associations as Credential[],
-      params.keyManager,
-    );
-    tokenData.associations = associations;
-
-    const key = composeKey(params.network, receipt.tokenId);
-    this.saveToken(key, tokenData);
-    this.logger.info('   Token data saved to state');
-    this.registerTokenAlias(params.alias, params.network, receipt);
-  }
-
-  async applyCreateNftFromFileFromBatchItem(
-    item: BatchDataItem,
-  ): Promise<void> {
-    if (!this.tokenAssociations) {
-      throw new InternalError(
-        'TokenAssociationsService not provided to TokenStateService',
-      );
-    }
-    const parsed = CreateNftFromFileNormalizedParamsSchema.safeParse(
-      item.normalizedParams,
-    );
-    if (!parsed.success) {
-      this.logger.warn(
-        `There was a problem with parsing data schema. The saving will not be done`,
-      );
-      return;
-    }
-    const params = parsed.data;
-    const receipt = await this.fetchReceiptOrWarn(item);
-    if (!receipt || !receipt.tokenId) return;
-
-    const tokenData = buildNftTokenDataFromFile(receipt, params);
-    const associations = await this.tokenAssociations.processTokenAssociations(
-      receipt.tokenId,
-      params.associations as Credential[],
-      params.keyManager,
-    );
-    tokenData.associations = associations;
-
-    const key = composeKey(params.network, receipt.tokenId);
-    this.saveToken(key, tokenData);
-    this.logger.info('   Non-fungible token data saved to state');
-    this.registerTokenAlias(params.alias, params.network, receipt);
   }
 
   private async fetchReceiptOrWarn(

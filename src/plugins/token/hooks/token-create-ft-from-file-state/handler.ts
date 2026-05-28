@@ -5,6 +5,7 @@ import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
 import { OrchestratorSource } from '@/core/types/shared.types';
 import { TOKEN_CREATE_FT_FROM_FILE_COMMAND_NAME } from '@/plugins/token/commands/create-ft-from-file';
 import { TokenAssociationsServiceImpl } from '@/plugins/token/services/token-associations.service';
+import { TokenFromFileStateServiceImpl } from '@/plugins/token/services/token-from-file-state.service';
 import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 export class TokenCreateFtFromFileStateHook implements Hook<PostOutputPreparationHookParams> {
@@ -32,13 +33,19 @@ export class TokenCreateFtFromFileStateHook implements Hook<PostOutputPreparatio
       api.logger,
       api.receipt,
       api.alias,
+    );
+    const fromFileState = new TokenFromFileStateServiceImpl(
+      tokenState,
+      api.receipt,
+      api.alias,
       tokenAssociations,
+      api.logger,
     );
 
     for (const item of parsed.data.batchData.transactions.filter(
       (i) => i.command === TOKEN_CREATE_FT_FROM_FILE_COMMAND_NAME,
     )) {
-      await tokenState.applyCreateFtFromFileFromBatchItem(item);
+      await fromFileState.applyCreateFtFromFileFromBatchItem(item);
     }
     return { breakFlow: false };
   }

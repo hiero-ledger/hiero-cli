@@ -22,6 +22,4 @@ export interface TokenStateService {
   applyCreateNftFromBatchItem(item: BatchDataItem): Promise<void>;
   applyUpdateFromBatchItem(item: BatchDataItem): Promise<void>;
   applyDeleteFromBatchItem(item: BatchDataItem): Promise<void>;
-  applyCreateFtFromFileFromBatchItem(item: BatchDataItem): Promise<void>;
-  applyCreateNftFromFileFromBatchItem(item: BatchDataItem): Promise<void>;
 }

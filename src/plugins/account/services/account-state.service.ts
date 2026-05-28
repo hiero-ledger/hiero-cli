@@ -5,11 +5,12 @@ import type {
   NetworkService,
   StateService,
 } from '@/core';
+import type { ScheduledTransactionData } from '@/core/schemas/common-schemas';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { ReceiptService } from '@/core/services/receipt/receipt-service.interface';
-import type { ScheduledTransactionData } from '@/core/schemas/common-schemas';
 import type {
   BatchDataItem,
+  SupportedNetwork,
   TransactionResult,
 } from '@/core/types/shared.types';
 import type { AccountUpdateNormalisedParams } from '@/plugins/account/hooks/account-update-state/types';
@@ -18,11 +19,7 @@ import type { AccountStateService } from '@/plugins/account/services/account-sta
 
 import { formatTransactionIdToDashFormat } from '@/core';
 import { ValidationError } from '@/core/errors';
-import {
-  AliasType,
-  MirrorTransactionResult,
-  SupportedNetwork,
-} from '@/core/types/shared.types';
+import { AliasType, MirrorTransactionResult } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { ACCOUNT_CREATE_COMMAND_NAME } from '@/plugins/account/commands/create';
 import { ACCOUNT_DELETE_COMMAND_NAME } from '@/plugins/account/commands/delete/handler';
@@ -163,11 +160,12 @@ export class AccountStateServiceImpl implements AccountStateService {
     });
   }
 
-  async applyAccountUpdateFromBatchItem(item: BatchDataItem): Promise<void> {
-    if (item.command !== ACCOUNT_UPDATE_COMMAND_NAME) return;
+  applyAccountUpdateFromBatchItem(item: BatchDataItem): Promise<void> {
+    if (item.command !== ACCOUNT_UPDATE_COMMAND_NAME) return Promise.resolve();
     const params = this.parseUpdateParams(item.normalizedParams);
-    if (!params) return;
+    if (!params) return Promise.resolve();
     this.persistAccountUpdate(params);
+    return Promise.resolve();
   }
 
   async applyAccountUpdateFromSchedule(
@@ -208,8 +206,8 @@ export class AccountStateServiceImpl implements AccountStateService {
     this.persistAccountUpdate(params);
   }
 
-  async applyAccountDeleteFromBatchItem(item: BatchDataItem): Promise<void> {
-    if (item.command !== ACCOUNT_DELETE_COMMAND_NAME) return;
+  applyAccountDeleteFromBatchItem(item: BatchDataItem): Promise<void> {
+    if (item.command !== ACCOUNT_DELETE_COMMAND_NAME) return Promise.resolve();
     const parsed = AccountDeleteNormalisedParamsSchema.safeParse(
       item.normalizedParams,
     );
@@ -217,7 +215,7 @@ export class AccountStateServiceImpl implements AccountStateService {
       this.logger.warn(
         'Account delete batch state hook: normalized params did not match schema; skipping local state cleanup',
       );
-      return;
+      return Promise.resolve();
     }
     const params = parsed.data;
     this.removeAccountFromLocalState(
@@ -225,6 +223,7 @@ export class AccountStateServiceImpl implements AccountStateService {
       params.network,
     );
     this.removeKmsCredentialIfUnused(params.accountToDelete.keyRefId);
+    return Promise.resolve();
   }
 
   private parseCreateParams(

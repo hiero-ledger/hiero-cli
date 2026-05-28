@@ -1,11 +1,7 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { BatchDataItem } from '@/core/types/shared.types';
 
-import {
-  createBatchExecuteParams,
-  makeArgs,
-  makeLogger,
-} from '@/__tests__/mocks/mocks';
+import { createBatchExecuteParams, makeArgs } from '@/__tests__/mocks/mocks';
 import { TOKEN_ASSOCIATE_COMMAND_NAME } from '@/plugins/token/commands/associate';
 import { TokenAssociateStateHook } from '@/plugins/token/hooks/token-associate-state';
 import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
@@ -41,7 +37,7 @@ describe('token plugin - TokenAssociateStateHook', () => {
 
   test('returns breakFlow false when batch failed', async () => {
     const api = {} as Partial<CoreApi>;
-    const args = makeArgs(api, makeLogger(), {});
+    const args = makeArgs(api, {});
     const params = createBatchExecuteParams({
       name: 'b',
       keyRefId: 'kr',
@@ -56,7 +52,7 @@ describe('token plugin - TokenAssociateStateHook', () => {
 
   test('delegates to apply', async () => {
     const api = {} as Partial<CoreApi>;
-    const args = makeArgs(api, makeLogger(), {});
+    const args = makeArgs(api, {});
     const item = createBatchItem();
     const params = createBatchExecuteParams({
       name: 'b',
