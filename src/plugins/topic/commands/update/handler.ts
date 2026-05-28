@@ -72,9 +72,8 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
     const submitKeyInput =
       validArgs.submitKey === NULL_TOKEN ? null : validArgs.submitKey;
     const isSubmitKeyClear = submitKeyInput === null;
-    const submitKeyCredentials = isSubmitKeyClear
-      ? []
-      : (submitKeyInput as Credential[]);
+    const submitKeyCredentials: Credential[] =
+      submitKeyInput === null ? [] : submitKeyInput;
 
     const hasAdminKey = !!topicInfo.admin_key;
     const hasOnlyExpirationTime =

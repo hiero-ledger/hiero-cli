@@ -1,11 +1,6 @@
 import type { AccountReference } from '@/core/schemas/common-schemas';
-import type { HbarAllowanceInfo } from '@/core/services/mirrornode/types';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-
-export interface HbarAllowanceFetchResult {
-  allowances: HbarAllowanceInfo[];
-  hasMore: boolean;
-}
+import type { HbarAllowanceFetchResult } from '@/plugins/hbar/services/hbar-allowance-query.types';
 
 export interface HbarAllowanceQueryService {
   resolveAccountId(

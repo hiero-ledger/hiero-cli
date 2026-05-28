@@ -1,7 +1,7 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
+import type { ScheduledTransactionData } from '@/core/schemas/common-schemas';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
-import type { ScheduledTransactionData } from '@/plugins/schedule/schema';
 import type { ScheduleStateService } from '@/plugins/schedule/services/schedule-state.service.interface';
 import type { ScheduleSyncService } from '@/plugins/schedule/services/schedule-sync.service.interface';
 import type { ScheduleVerifyOutput } from './output';

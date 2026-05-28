@@ -1,4 +1,4 @@
-import type { ScheduledTransactionData } from '@/plugins/schedule/schema';
+import type { ScheduledTransactionData } from '@/core/schemas/common-schemas';
 
 export interface ScheduleStateService {
   saveScheduled(key: string, data: ScheduledTransactionData): void;

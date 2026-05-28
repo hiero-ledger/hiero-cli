@@ -1,5 +1,4 @@
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
-import type { Credential } from '@/core/services/kms/kms-types.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { ReceiptService } from '@/core/services/receipt/receipt-service.interface';
 import type {
@@ -46,7 +45,7 @@ export class TokenFromFileStateServiceImpl implements TokenFromFileStateService 
     const tokenData = buildTokenDataFromFile(receipt, params);
     const associations = await this.tokenAssociations.processTokenAssociations(
       receipt.tokenId,
-      params.associations as Credential[],
+      params.associations,
       params.keyManager,
     );
     tokenData.associations = associations;
@@ -76,7 +75,7 @@ export class TokenFromFileStateServiceImpl implements TokenFromFileStateService 
     const tokenData = buildNftTokenDataFromFile(receipt, params);
     const associations = await this.tokenAssociations.processTokenAssociations(
       receipt.tokenId,
-      params.associations as Credential[],
+      params.associations,
       params.keyManager,
     );
     tokenData.associations = associations;

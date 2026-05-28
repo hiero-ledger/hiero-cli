@@ -16,8 +16,6 @@ export interface TokenStateService {
   listTokens(): TokenData[];
   getTokensWithStats(): TokenStateStats;
 
-  applyAssociationFromBatchItem(item: BatchDataItem): Promise<void>;
-  applyDissociationFromBatchItem(item: BatchDataItem): Promise<void>;
   applyCreateFtFromBatchItem(item: BatchDataItem): Promise<void>;
   applyCreateNftFromBatchItem(item: BatchDataItem): Promise<void>;
   applyUpdateFromBatchItem(item: BatchDataItem): Promise<void>;

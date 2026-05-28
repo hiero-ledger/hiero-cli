@@ -1,9 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type {
-  TokenAllowanceInfo,
-  TokenInfo,
-} from '@/core/services/mirrornode/types';
+import type { TokenAllowanceInfo } from '@/core/services/mirrornode/types';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { TokenAllowanceQueryService } from '@/plugins/token/services/token-allowance-query.service.interface';
 import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
@@ -126,5 +123,3 @@ export async function tokenAllowanceFtList(
     args,
   );
 }
-
-export type { TokenInfo };

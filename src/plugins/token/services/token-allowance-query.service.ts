@@ -7,12 +7,12 @@ import type {
 } from '@/core/services/mirrornode/types';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { FtTokenMetadata, NftTokenMetadata } from '@/plugins/token/types';
+import type { TokenAllowanceQueryService } from './token-allowance-query.service.interface';
 import type {
   NftAllowanceGroup,
   TokenAllowanceFtFetchResult,
   TokenAllowanceNftFetchResult,
-  TokenAllowanceQueryService,
-} from './token-allowance-query.service.interface';
+} from './token-allowance-query.types';
 
 export class TokenAllowanceQueryServiceImpl implements TokenAllowanceQueryService {
   constructor(

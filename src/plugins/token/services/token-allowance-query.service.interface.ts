@@ -1,27 +1,12 @@
 import type { AccountReference } from '@/core/schemas/common-schemas';
-import type {
-  NftAllowanceInfo,
-  TokenAllowanceInfo,
-} from '@/core/services/mirrornode/types';
+import type { TokenAllowanceInfo } from '@/core/services/mirrornode/types';
 import type { SupportedNetwork } from '@/core/types/shared.types';
+import type {
+  NftAllowanceGroup,
+  TokenAllowanceFtFetchResult,
+  TokenAllowanceNftFetchResult,
+} from '@/plugins/token/services/token-allowance-query.types';
 import type { FtTokenMetadata, NftTokenMetadata } from '@/plugins/token/types';
-
-export interface TokenAllowanceFtFetchResult {
-  allowances: TokenAllowanceInfo[];
-  hasMore: boolean;
-}
-
-export interface TokenAllowanceNftFetchResult {
-  allowances: NftAllowanceInfo[];
-  hasMore: boolean;
-}
-
-export interface NftAllowanceGroup {
-  tokenId: string;
-  spenderAccountId: string;
-  approvedForAll: boolean;
-  serialNumbers: Set<number>;
-}
 
 export interface TokenAllowanceQueryService {
   resolveAccountId(

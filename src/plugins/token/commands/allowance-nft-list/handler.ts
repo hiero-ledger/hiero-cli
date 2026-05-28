@@ -2,10 +2,8 @@ import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { NftAllowanceInfo } from '@/core/services/mirrornode/types';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type {
-  NftAllowanceGroup,
-  TokenAllowanceQueryService,
-} from '@/plugins/token/services/token-allowance-query.service.interface';
+import type { TokenAllowanceQueryService } from '@/plugins/token/services/token-allowance-query.service.interface';
+import type { NftAllowanceGroup } from '@/plugins/token/services/token-allowance-query.types';
 import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
 import type { NftTokenMetadata } from '@/plugins/token/types';
 import type { TokenAllowanceNftListOutput } from './output';

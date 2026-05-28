@@ -12,15 +12,13 @@ import type {
   TokenStateStats,
 } from '@/plugins/token/services/token-state.service.interface';
 
-import { NotFoundError, ValidationError } from '@/core/errors';
+import { ValidationError } from '@/core/errors';
 import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { TOKEN_NAMESPACE } from '@/plugins/token/constants';
-import { AssociateNormalizedParamsSchema } from '@/plugins/token/hooks/token-associate-state/types';
 import { CreateFtNormalizedParamsSchema } from '@/plugins/token/hooks/token-create-ft-state/types';
 import { CreateNftNormalizedParamsSchema } from '@/plugins/token/hooks/token-create-nft-state/types';
 import { DeleteNormalizedParamsSchema } from '@/plugins/token/hooks/token-delete-state/types';
-import { DissociateNormalizedParamsSchema } from '@/plugins/token/hooks/token-dissociate-state/types';
 import { TokenUpdateNormalisedParamsSchema } from '@/plugins/token/hooks/token-update-state/types';
 import { TokenDataSchema } from '@/plugins/token/schema';
 import {
@@ -154,46 +152,6 @@ export class TokenStateServiceImpl implements TokenStateService {
     }
 
     return stats;
-  }
-
-  applyAssociationFromBatchItem(item: BatchDataItem): Promise<void> {
-    const parsed = AssociateNormalizedParamsSchema.safeParse(
-      item.normalizedParams,
-    );
-    if (!parsed.success) {
-      this.logger.warn(
-        `There was a problem with parsing data schema. The saving will not be done`,
-      );
-      return Promise.resolve();
-    }
-    const params = parsed.data;
-    const tokenKey = composeKey(params.network, params.tokenId);
-    if (!this.getToken(tokenKey)) return Promise.resolve();
-    this.addTokenAssociation(
-      tokenKey,
-      params.account.accountId,
-      params.account.accountId,
-    );
-    this.logger.info('   Association saved to token state');
-    return Promise.resolve();
-  }
-
-  applyDissociationFromBatchItem(item: BatchDataItem): Promise<void> {
-    const parsed = DissociateNormalizedParamsSchema.safeParse(
-      item.normalizedParams,
-    );
-    if (!parsed.success) {
-      this.logger.warn(
-        `There was a problem with parsing data schema. The saving will not be done`,
-      );
-      return Promise.resolve();
-    }
-    const params = parsed.data;
-    const tokenKey = composeKey(params.network, params.tokenId);
-    if (!this.getToken(tokenKey)) return Promise.resolve();
-    this.removeTokenAssociation(tokenKey, params.account.accountId);
-    this.logger.info('   Association removed from token state');
-    return Promise.resolve();
   }
 
   async applyCreateFtFromBatchItem(item: BatchDataItem): Promise<void> {
@@ -374,41 +332,6 @@ export class TokenStateServiceImpl implements TokenStateService {
       createdAt: receipt.consensusTimestamp,
     });
     this.logger.info(`   Name registered: ${aliasName}`);
-  }
-
-  private addTokenAssociation(
-    tokenKey: string,
-    name: string,
-    accountId: string,
-  ): void {
-    const token = this.getRequiredToken(tokenKey);
-    const associations = token.associations.filter(
-      (association) => association.accountId !== accountId,
-    );
-    this.saveToken(tokenKey, {
-      ...token,
-      associations: [...associations, { name, accountId }],
-    });
-  }
-
-  private removeTokenAssociation(tokenKey: string, accountId: string): void {
-    const token = this.getRequiredToken(tokenKey);
-    this.saveToken(tokenKey, {
-      ...token,
-      associations: token.associations.filter(
-        (association) => association.accountId !== accountId,
-      ),
-    });
-  }
-
-  private getRequiredToken(tokenKey: string): TokenData {
-    const token = this.getToken(tokenKey);
-    if (!token) {
-      throw new NotFoundError('Token not found in state', {
-        context: { tokenKey },
-      });
-    }
-    return token;
   }
 
   private getErrorMessage(error: unknown): string {

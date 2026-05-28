@@ -45,11 +45,14 @@ plugins/<x>/
 ├── services/
 │   ├── token-state.service.interface.ts
 │   ├── token-state.service.ts
+│   ├── token-state.types.ts     ← service-scoped types (method params, fetch results, ...)
 │   └── ...
 ├── utils/                    ← pure functions only
 │   └── token-data-builders.ts
 └── (existing: handler.ts, manifest.ts, ...)
 ```
+
+The `.service.interface.ts` file contains the service interface and only the types strictly needed to express it. Any additional service-scoped types (method parameter shapes, fetch results, intermediate representations) live in an adjacent `<name>.types.ts` file. Consumers import the interface from `.service.interface.ts` and the types from `.types.ts` directly — the interface file does not re-export types.
 
 ---
 

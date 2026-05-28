@@ -11,11 +11,6 @@ export interface AccountDeleteContext {
   name?: string;
 }
 
-export type {
-  AccountDeleteKmsCleanupInput,
-  AccountDeleteLocalStateInput,
-} from '@/plugins/account/services/account-cleanup.service.interface';
-
 export interface DeleteNormalisedParams {
   network: SupportedNetwork;
   stateKey: string;

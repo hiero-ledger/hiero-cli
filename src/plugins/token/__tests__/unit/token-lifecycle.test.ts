@@ -31,7 +31,6 @@ describe('Token Lifecycle Integration', () => {
   describe('complete token lifecycle', () => {
     test('should handle create -> associate -> transfer flow', async () => {
       const mockAddToken = jest.fn();
-      const mockAddAssociation = jest.fn();
       const token = '0.0.123456';
       const _treasuryAccountId = mockAccountIds.treasury;
       const userAccountId = mockAccountIds.association;
@@ -40,7 +39,6 @@ describe('Token Lifecycle Integration', () => {
 
       mockTokenStateServiceImpl(MockedHelper, {
         addToken: mockAddToken,
-        addAssociation: mockAddAssociation,
       });
 
       const mockTokenTransaction = { type: 'token-create' };
@@ -197,7 +195,6 @@ describe('Token Lifecycle Integration', () => {
 
       mockTokenStateServiceImpl(MockedHelper, {
         addToken: mockAddToken,
-        addAssociation: jest.fn(),
       });
 
       const mockTokenTransaction = { type: 'token-create' };
@@ -276,7 +273,6 @@ describe('Token Lifecycle Integration', () => {
 
     test('should handle multiple associations for same token', async () => {
       const mockAddToken = jest.fn();
-      const mockAddAssociation = jest.fn();
       const token = '0.0.123456';
       const userAccountId1 = mockAccountIds.association;
       const userAccountId2 = mockAccountIds.receiver;
@@ -286,7 +282,6 @@ describe('Token Lifecycle Integration', () => {
 
       mockTokenStateServiceImpl(MockedHelper, {
         addToken: mockAddToken,
-        addAssociation: mockAddAssociation,
       });
 
       const mockTokenTransaction = { type: 'token-create' };
@@ -387,13 +382,11 @@ describe('Token Lifecycle Integration', () => {
   describe('state consistency', () => {
     test('should maintain consistent state across operations', async () => {
       const mockAddToken = jest.fn();
-      const mockAddAssociation = jest.fn();
       const token = '0.0.123456';
       const userAccountId = '0.0.345678';
 
       const stateHelper = {
         addToken: mockAddToken,
-        addAssociation: mockAddAssociation,
         getToken: jest.fn().mockReturnValue(null),
       };
 

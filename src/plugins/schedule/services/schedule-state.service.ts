@@ -1,11 +1,11 @@
 import type { Logger, StateService } from '@/core';
+import type { ScheduledTransactionData } from '@/core/schemas/common-schemas';
 import type { ScheduleStateService } from '@/plugins/schedule/services/schedule-state.service.interface';
 
 import { ValidationError } from '@/core/errors';
 import {
   safeParseScheduledTransactionData,
   SCHEDULE_NAMESPACE,
-  type ScheduledTransactionData,
 } from '@/plugins/schedule/schema';
 
 export class ScheduleStateServiceImpl implements ScheduleStateService {

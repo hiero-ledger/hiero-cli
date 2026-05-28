@@ -4,11 +4,11 @@ import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { Eip712VerifyOutput } from '@/plugins/eip712/commands/verify/output';
 import type { ExpectedSignerType } from '@/plugins/eip712/commands/verify/types';
+import type { Eip712VerificationService } from './eip712-verification.service.interface';
 import type {
-  Eip712VerificationService,
   VerifyEcdsaParams,
   VerifyEd25519Params,
-} from './eip712-verification.service.interface';
+} from './eip712-verification.types';
 
 import { PublicKey } from '@hiero-ledger/sdk';
 import { recoverAddress } from 'ethers';

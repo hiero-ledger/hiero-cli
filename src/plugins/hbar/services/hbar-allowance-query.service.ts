@@ -2,10 +2,8 @@ import type { AccountReference } from '@/core/schemas/common-schemas';
 import type { IdentityResolutionService } from '@/core/services/identity-resolution/identity-resolution-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type {
-  HbarAllowanceFetchResult,
-  HbarAllowanceQueryService,
-} from './hbar-allowance-query.service.interface';
+import type { HbarAllowanceQueryService } from './hbar-allowance-query.service.interface';
+import type { HbarAllowanceFetchResult } from './hbar-allowance-query.types';
 
 export class HbarAllowanceQueryServiceImpl implements HbarAllowanceQueryService {
   constructor(
