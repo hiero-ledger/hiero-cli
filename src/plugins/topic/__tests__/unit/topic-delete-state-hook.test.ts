@@ -1,6 +1,7 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { BatchDataItem } from '@/core/types/shared.types';
 
+import { MOCK_TOPIC_ID, MOCK_TX_ID_1 } from '@/__tests__/mocks/fixtures';
 import {
   createBatchExecuteParams,
   makeArgs,
@@ -23,8 +24,11 @@ const createDeleteBatchDataItem = (
   order: 1,
   keyRefIds: [],
   command: TOPIC_DELETE_COMMAND_NAME,
-  normalizedParams: { network: SupportedNetwork.TESTNET, topicId: '0.0.999' },
-  transactionId: '0.0.1234@1234567890.000000000',
+  normalizedParams: {
+    network: SupportedNetwork.TESTNET,
+    topicId: MOCK_TOPIC_ID,
+  },
+  transactionId: MOCK_TX_ID_1,
   ...overrides,
 });
 

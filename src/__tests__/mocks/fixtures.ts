@@ -37,6 +37,8 @@ export const MOCK_TOPIC_ID = '0.0.7777';
 export const MOCK_HEDERA_ENTITY_ID_1 = '0.0.1111';
 export const MOCK_HEDERA_ENTITY_ID_2 = '0.0.2222';
 export const MOCK_HEDERA_ENTITY_ID_3 = '0.0.3333';
+export const MOCK_HEDERA_ENTITY_ID_4 = '0.0.4444';
+export const MOCK_HEDERA_ENTITY_ID_5 = '0.0.5555';
 
 export const MOCK_NONEXISTENT_ENTITY_ID = '0.0.999999999';
 

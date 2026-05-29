@@ -1,3 +1,4 @@
+import { MOCK_TOPIC_ID } from '@/__tests__/mocks/fixtures';
 import {
   makeAliasMock,
   makeLogger,
@@ -21,13 +22,13 @@ describe('topic plugin - TopicStateService', () => {
       makeAliasMock(),
       new TopicAliasServiceImpl(makeAliasMock(), logger),
     );
-    const topicData = makeTopicData({ topicId: '0.0.1234' });
+    const topicData = makeTopicData({ topicId: MOCK_TOPIC_ID });
 
-    service.saveTopic('testnet:0.0.1234', topicData);
+    service.saveTopic(`testnet:${MOCK_TOPIC_ID}`, topicData);
 
     expect(state.set).toHaveBeenCalledWith(
       TOPIC_NAMESPACE,
-      'testnet:0.0.1234',
+      `testnet:${MOCK_TOPIC_ID}`,
       topicData,
     );
   });
@@ -64,7 +65,7 @@ describe('topic plugin - TopicStateService', () => {
   });
 
   test('filters invalid topic data on list', () => {
-    const validTopicData = makeTopicData({ topicId: '0.0.1234' });
+    const validTopicData = makeTopicData({ topicId: MOCK_TOPIC_ID });
     const invalidTopicData = makeTopicData({ topicId: 'invalid' });
     const state = makeStateMock({
       listData: [validTopicData, invalidTopicData],
@@ -92,11 +93,11 @@ describe('topic plugin - TopicStateService', () => {
       new TopicAliasServiceImpl(makeAliasMock(), makeLogger()),
     );
 
-    service.deleteTopic('testnet:0.0.1234');
+    service.deleteTopic(`testnet:${MOCK_TOPIC_ID}`);
 
     expect(state.delete).toHaveBeenCalledWith(
       TOPIC_NAMESPACE,
-      'testnet:0.0.1234',
+      `testnet:${MOCK_TOPIC_ID}`,
     );
   });
 });
