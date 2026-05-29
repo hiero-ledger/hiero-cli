@@ -309,6 +309,7 @@ export const validTokenDataForSchema = {
       exempt: false,
     },
   ],
+  associations: [],
   tokenType: HederaTokenType.FUNGIBLE_COMMON,
 };
 
@@ -400,6 +401,7 @@ export const mockStateTokenData = {
     metadataKeyThreshold: 0,
     network: SupportedNetwork.TESTNET,
     customFees: [],
+    associations: [],
     tokenType: HederaTokenType.FUNGIBLE_COMMON,
   },
   token2: {
@@ -429,6 +431,7 @@ export const mockStateTokenData = {
     metadataKeyThreshold: 0,
     network: SupportedNetwork.TESTNET,
     customFees: [],
+    associations: [],
     tokenType: HederaTokenType.FUNGIBLE_COMMON,
   },
 };

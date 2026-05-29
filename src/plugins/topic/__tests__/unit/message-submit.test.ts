@@ -3,7 +3,10 @@ import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-
 
 import {
   ED25519_DER_PUBLIC_KEY,
+  MOCK_TOPIC_ID,
   MOCK_TOPIC_SUBMIT_KEY_REF_ID,
+  MOCK_TX_ID_1,
+  MOCK_TX_ID_2,
 } from '@/__tests__/mocks/fixtures';
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
@@ -113,7 +116,7 @@ describe('topic plugin - message-submit command', () => {
           transaction: {},
         }),
         executeImpl: jest.fn().mockResolvedValue({
-          transactionId: '0.0.1234@1234567890.000000000',
+          transactionId: MOCK_TX_ID_1,
           success: true,
           topicSequenceNumber: 5,
           receipt: { status: { status: 'success' } },
@@ -128,13 +131,13 @@ describe('topic plugin - message-submit command', () => {
       network: networkMock,
       alias,
       logger,
-      mirror: mirrorWithNoSubmitKey('0.0.1234'),
+      mirror: mirrorWithNoSubmitKey(MOCK_TOPIC_ID),
     };
 
     const args = makeArgs(
       { ...api, logger },
       {
-        topic: '0.0.1234',
+        topic: MOCK_TOPIC_ID,
         message: 'Hello, World!',
       },
     );
@@ -142,13 +145,13 @@ describe('topic plugin - message-submit command', () => {
     const result = await topicSubmitMessage(args);
 
     const output = assertOutput(result.result, TopicSubmitMessageOutputSchema);
-    expect(output.topicId).toBe('0.0.1234');
+    expect(output.topicId).toBe(MOCK_TOPIC_ID);
     expect(output.message).toBe('Hello, World!');
     expect(output.sequenceNumber).toBe(5);
-    expect(output.transactionId).toBe('0.0.1234@1234567890.000000000');
+    expect(output.transactionId).toBe(MOCK_TX_ID_1);
 
     expect(topicTransactions.submitMessage).toHaveBeenCalledWith({
-      topicId: '0.0.1234',
+      topicId: MOCK_TOPIC_ID,
       message: 'Hello, World!',
     });
   });
@@ -162,7 +165,7 @@ describe('topic plugin - message-submit command', () => {
           transaction: {},
         }),
         executeImpl: jest.fn().mockResolvedValue({
-          transactionId: '0.0.5678@1234567890.000000000',
+          transactionId: MOCK_TX_ID_2,
           success: true,
           topicSequenceNumber: 10,
           receipt: { status: { status: 'success' } },
@@ -185,7 +188,7 @@ describe('topic plugin - message-submit command', () => {
       network: networkMock,
       alias,
       logger,
-      mirror: mirrorWithSubmitKey('0.0.5678'),
+      mirror: mirrorWithSubmitKey(MOCK_TOPIC_ID),
       keyResolver: keyResolverMock,
       config: makeConfigMock(),
     };
@@ -193,7 +196,7 @@ describe('topic plugin - message-submit command', () => {
     const args = makeArgs(
       { ...api, logger },
       {
-        topic: '0.0.5678',
+        topic: MOCK_TOPIC_ID,
         message: 'Signed message',
         signer: ['my-account-alias'],
       },
@@ -226,7 +229,7 @@ describe('topic plugin - message-submit command', () => {
     const args = makeArgs(
       { ...api, logger },
       {
-        topic: '0.0.9999',
+        topic: MOCK_TOPIC_ID,
         message: 'Test message',
       },
     );
@@ -247,13 +250,13 @@ describe('topic plugin - message-submit command', () => {
       network: networkMock,
       alias,
       logger,
-      mirror: mirrorWithSubmitKey('0.0.1234'),
+      mirror: mirrorWithSubmitKey(MOCK_TOPIC_ID),
     };
 
     const args = makeArgs(
       { ...api, logger },
       {
-        topic: '0.0.1234',
+        topic: MOCK_TOPIC_ID,
         message: 'Test message',
       },
     );
@@ -283,13 +286,13 @@ describe('topic plugin - message-submit command', () => {
       network: networkMock,
       alias,
       logger,
-      mirror: mirrorWithNoSubmitKey('0.0.1234'),
+      mirror: mirrorWithNoSubmitKey(MOCK_TOPIC_ID),
     };
 
     const args = makeArgs(
       { ...api, logger },
       {
-        topic: '0.0.1234',
+        topic: MOCK_TOPIC_ID,
         message: 'Failed message',
       },
     );
@@ -314,13 +317,13 @@ describe('topic plugin - message-submit command', () => {
       network: networkMock,
       alias,
       logger,
-      mirror: mirrorWithNoSubmitKey('0.0.1234'),
+      mirror: mirrorWithNoSubmitKey(MOCK_TOPIC_ID),
     };
 
     const args = makeArgs(
       { ...api, logger },
       {
-        topic: '0.0.1234',
+        topic: MOCK_TOPIC_ID,
         message: 'Error message',
       },
     );

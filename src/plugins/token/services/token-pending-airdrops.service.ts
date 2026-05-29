@@ -2,11 +2,11 @@ import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { TokenAirdropItem } from '@/core/services/mirrornode/types';
 import type { SupportedNetwork } from '@/core/types/shared.types';
+import type { TokenPendingAirdropsService } from '@/plugins/token/services/token-pending-airdrops.service.interface';
 import type {
   PendingAirdropEntry,
   TokenPendingAirdropsResult,
-  TokenPendingAirdropsService,
-} from '@/plugins/token/services/token-pending-airdrops.service.interface';
+} from '@/plugins/token/services/token-pending-airdrops.types';
 import type { TokenReferenceService } from '@/plugins/token/services/token-reference.service.interface';
 
 import { NotFoundError } from '@/core/errors';

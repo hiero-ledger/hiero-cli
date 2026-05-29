@@ -15,6 +15,7 @@ import { ConfigOptionKey } from '@/core/services/config/config-service.interface
 import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
+import { TopicAliasServiceImpl } from '@/plugins/topic/services/topic-alias.service';
 import { TopicStateServiceImpl } from '@/plugins/topic/services/topic-state.service';
 
 import { TopicCreateInputSchema } from './input';
@@ -219,8 +220,13 @@ export class TopicCreateCommand extends BaseTransactionCommand<
 export async function topicCreate(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  const { logger, state } = args.api;
-  const topicState = new TopicStateServiceImpl(state, logger);
+  const topicState = new TopicStateServiceImpl(
+    args.api.state,
+    args.api.logger,
+    args.api.receipt,
+    args.api.alias,
+    new TopicAliasServiceImpl(args.api.alias, args.api.logger),
+  );
 
   return new TopicCreateCommand(topicState).execute(args);
 }

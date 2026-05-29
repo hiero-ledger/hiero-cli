@@ -3,6 +3,7 @@ import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-
 
 import { ZodError } from 'zod';
 
+import { MOCK_TOPIC_ID } from '@/__tests__/mocks/fixtures';
 import {
   createMirrorNodeMock,
   makeAliasMock,
@@ -19,7 +20,7 @@ const makeTopicMessage = (sequenceNumber: number, message: string) => ({
   consensus_timestamp: '1234567890.123456789',
   message: Buffer.from(message).toString('base64'),
   sequence_number: sequenceNumber,
-  topic_id: '0.0.5678',
+  topic_id: MOCK_TOPIC_ID,
   running_hash: 'hash',
 });
 
@@ -72,7 +73,7 @@ describe('topic plugin - message-find command', () => {
     const args = makeArgs(
       { ...api, logger },
       {
-        topic: '0.0.5678',
+        topic: MOCK_TOPIC_ID,
         sequenceGt: 5,
       },
     );
@@ -89,7 +90,7 @@ describe('topic plugin - message-find command', () => {
     expect(sequenceNumbers).toContain(8);
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
-      topicId: '0.0.5678',
+      topicId: MOCK_TOPIC_ID,
       filters: [
         {
           field: 'sequenceNumber',
@@ -124,7 +125,7 @@ describe('topic plugin - message-find command', () => {
     const args = makeArgs(
       { ...api, logger },
       {
-        topic: '0.0.5678',
+        topic: MOCK_TOPIC_ID,
         sequenceGte: 5,
       },
     );
@@ -140,7 +141,7 @@ describe('topic plugin - message-find command', () => {
     expect(sequenceNumbers).toContain(6);
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
-      topicId: '0.0.5678',
+      topicId: MOCK_TOPIC_ID,
       filters: [
         {
           field: 'sequenceNumber',
@@ -175,7 +176,7 @@ describe('topic plugin - message-find command', () => {
     const args = makeArgs(
       { ...api, logger },
       {
-        topic: '0.0.5678',
+        topic: MOCK_TOPIC_ID,
         sequenceLt: 3,
       },
     );
@@ -186,7 +187,7 @@ describe('topic plugin - message-find command', () => {
     expect(output.totalCount).toBe(2);
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
-      topicId: '0.0.5678',
+      topicId: MOCK_TOPIC_ID,
       filters: [
         {
           field: 'sequenceNumber',
@@ -218,7 +219,7 @@ describe('topic plugin - message-find command', () => {
     const args = makeArgs(
       { ...api, logger },
       {
-        topic: '0.0.5678',
+        topic: MOCK_TOPIC_ID,
         sequenceLte: 3,
       },
     );
@@ -229,7 +230,7 @@ describe('topic plugin - message-find command', () => {
     expect(output.totalCount).toBe(1);
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
-      topicId: '0.0.5678',
+      topicId: MOCK_TOPIC_ID,
       filters: [
         {
           field: 'sequenceNumber',
@@ -261,7 +262,7 @@ describe('topic plugin - message-find command', () => {
     const args = makeArgs(
       { ...api, logger },
       {
-        topic: '0.0.5678',
+        topic: MOCK_TOPIC_ID,
         sequenceEq: 5,
       },
     );
@@ -272,7 +273,7 @@ describe('topic plugin - message-find command', () => {
     expect(output.totalCount).toBe(1);
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
-      topicId: '0.0.5678',
+      topicId: MOCK_TOPIC_ID,
       filters: [
         {
           field: 'sequenceNumber',
@@ -308,7 +309,7 @@ describe('topic plugin - message-find command', () => {
     const args = makeArgs(
       { ...api, logger },
       {
-        topic: '0.0.5678',
+        topic: MOCK_TOPIC_ID,
       },
     );
 
@@ -318,7 +319,7 @@ describe('topic plugin - message-find command', () => {
     expect(output.totalCount).toBe(3);
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
-      topicId: '0.0.5678',
+      topicId: MOCK_TOPIC_ID,
       filter: undefined,
     });
   });
@@ -342,7 +343,7 @@ describe('topic plugin - message-find command', () => {
     const args = makeArgs(
       { ...api, logger },
       {
-        topic: '0.0.5678',
+        topic: MOCK_TOPIC_ID,
         sequenceGte: 5,
       },
     );
@@ -370,7 +371,7 @@ describe('topic plugin - message-find command', () => {
     const args = makeArgs(
       { ...api, logger },
       {
-        topic: '0.0.5678',
+        topic: MOCK_TOPIC_ID,
         sequenceGte: 1000,
       },
     );
@@ -399,7 +400,7 @@ describe('topic plugin - message-find command', () => {
     const args1 = makeArgs(
       { ...api, logger },
       {
-        topic: '0.0.5678',
+        topic: MOCK_TOPIC_ID,
         sequenceEq: 5,
         sequenceGt: 3,
       },
@@ -411,7 +412,7 @@ describe('topic plugin - message-find command', () => {
     const args2 = makeArgs(
       { ...api, logger },
       {
-        topic: '0.0.5678',
+        topic: MOCK_TOPIC_ID,
         sequenceGt: 10,
         sequenceLt: 5,
       },
@@ -423,7 +424,7 @@ describe('topic plugin - message-find command', () => {
     const args3 = makeArgs(
       { ...api, logger },
       {
-        topic: '0.0.5678',
+        topic: MOCK_TOPIC_ID,
         sequenceGt: 5,
         sequenceLt: 5,
       },
@@ -458,7 +459,7 @@ describe('topic plugin - message-find command', () => {
     const args = makeArgs(
       { ...api, logger },
       {
-        topic: '0.0.5678',
+        topic: MOCK_TOPIC_ID,
         sequenceGt: 5,
         sequenceLt: 9,
       },
@@ -476,7 +477,7 @@ describe('topic plugin - message-find command', () => {
     expect(sequenceNumbers).toContain(8);
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
-      topicId: '0.0.5678',
+      topicId: MOCK_TOPIC_ID,
       filters: [
         {
           field: 'sequenceNumber',
@@ -517,7 +518,7 @@ describe('topic plugin - message-find command', () => {
     const args = makeArgs(
       { ...api, logger },
       {
-        topic: '0.0.5678',
+        topic: MOCK_TOPIC_ID,
         sequenceGte: 5,
         sequenceLte: 7,
       },
@@ -534,7 +535,7 @@ describe('topic plugin - message-find command', () => {
     expect(sequenceNumbers).toContain(7);
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
-      topicId: '0.0.5678',
+      topicId: MOCK_TOPIC_ID,
       filters: [
         {
           field: 'sequenceNumber',

@@ -6,6 +6,7 @@
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 
+import { makeAliasMock, makeReceiptMock } from '@/__tests__/mocks/mocks';
 import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
 import { mockMultipleTokens, mockStateTokenData } from './helpers/fixtures';
@@ -45,7 +46,12 @@ describe('Token State Management', () => {
       setLevel: jest.fn(),
     };
 
-    stateHelper = new TokenStateServiceImpl(mockStateService, mockLogger);
+    stateHelper = new TokenStateServiceImpl(
+      mockStateService,
+      mockLogger,
+      makeReceiptMock(),
+      makeAliasMock(),
+    );
   });
 
   describe('saveToken', () => {

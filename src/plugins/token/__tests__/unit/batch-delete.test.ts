@@ -1,236 +1,67 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { BatchDataItem } from '@/core/types/shared.types';
 
-import {
-  createBatchExecuteParams,
-  makeArgs,
-  makeLogger,
-} from '@/__tests__/mocks/mocks';
-import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
+import { createBatchExecuteParams, makeArgs } from '@/__tests__/mocks/mocks';
 import { TOKEN_DELETE_COMMAND_NAME } from '@/plugins/token/commands/delete';
-import { tokenDeleteStateHook } from '@/plugins/token/hooks/token-delete-state';
+import { TokenDeleteStateHook } from '@/plugins/token/hooks/token-delete-state';
 import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
-jest.mock('../../services/token-state.service', () => ({
-  TokenStateServiceImpl: jest.fn(),
-}));
+jest.mock('@/plugins/token/services/token-state.service');
 
-const MockedHelper = TokenStateServiceImpl as jest.Mock;
+const MockedTokenStateService = TokenStateServiceImpl as jest.Mock;
 
-const createDeleteBatchDataItem = (
+const createBatchItem = (
   overrides: Partial<BatchDataItem> = {},
 ): BatchDataItem => ({
-  transactionBytes: 'abcdef1234567890',
+  transactionBytes: 'abcdef',
   order: 1,
   command: TOKEN_DELETE_COMMAND_NAME,
   keyRefIds: [],
-  normalizedParams: {
-    network: SupportedNetwork.TESTNET,
-    tokenId: '0.0.123456',
-    tokenName: 'TestToken',
-  },
+  normalizedParams: {},
   transactionId: '0.0.1234@1234567890.000000000',
   ...overrides,
 });
 
-describe('token plugin - batch-delete hook', () => {
-  const hook = tokenDeleteStateHook;
+describe('token plugin - TokenDeleteStateHook', () => {
+  let applyMock: jest.Mock;
+  let hook: TokenDeleteStateHook;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    MockedHelper.mockImplementation(() => ({
-      getToken: jest
-        .fn()
-        .mockReturnValue({ tokenId: '0.0.123456', name: 'TestToken' }),
-      removeToken: jest.fn(),
+    applyMock = jest.fn().mockResolvedValue(undefined);
+    MockedTokenStateService.mockImplementation(() => ({
+      applyDeleteFromBatchItem: applyMock,
     }));
+    hook = new TokenDeleteStateHook();
   });
 
-  test('returns batch failure message when batch success is false', async () => {
-    const logger = makeLogger();
+  test('returns breakFlow false when batch failed', async () => {
     const api = {} as Partial<CoreApi>;
-    const args = makeArgs({ ...api, logger }, {});
-
+    const args = makeArgs(api, {});
     const params = createBatchExecuteParams({
-      name: 'batch',
+      name: 'b',
       keyRefId: 'kr',
       executed: true,
       success: false,
-      transactions: [createDeleteBatchDataItem()],
+      transactions: [createBatchItem()],
     });
-
     const result = await hook.execute({ ...params, args });
-
     expect(result.breakFlow).toBe(false);
+    expect(applyMock).not.toHaveBeenCalled();
   });
 
-  test('returns success when no token_delete transactions in batch', async () => {
-    const removeTokenMock = jest.fn();
-    MockedHelper.mockImplementation(() => ({
-      getToken: jest.fn().mockReturnValue({}),
-      removeToken: removeTokenMock,
-    }));
-
-    const api = {} as unknown as Partial<CoreApi>;
-    const args = makeArgs({ ...api, logger: makeLogger() }, {});
-
+  test('delegates to apply', async () => {
+    const api = {} as Partial<CoreApi>;
+    const args = makeArgs(api, {});
+    const item = createBatchItem();
     const params = createBatchExecuteParams({
-      name: 'batch',
+      name: 'b',
       keyRefId: 'kr',
       executed: true,
       success: true,
-      transactions: [
-        { ...createDeleteBatchDataItem(), command: 'token_mint-ft' },
-      ],
+      transactions: [item],
     });
-
-    const result = await hook.execute({ ...params, args });
-
-    expect(result.breakFlow).toBe(false);
-    expect(removeTokenMock).not.toHaveBeenCalled();
-  });
-
-  test('skips items with invalid normalizedParams and logs warn', async () => {
-    const removeTokenMock = jest.fn();
-    MockedHelper.mockImplementation(() => ({
-      getToken: jest.fn().mockReturnValue({}),
-      removeToken: removeTokenMock,
-    }));
-
-    const logger = makeLogger();
-    const api = {} as unknown as Partial<CoreApi>;
-    const args = makeArgs({ ...api, logger }, {});
-
-    const params = createBatchExecuteParams({
-      name: 'batch',
-      keyRefId: 'kr',
-      executed: true,
-      success: true,
-      transactions: [
-        createDeleteBatchDataItem({ normalizedParams: { invalid: 'data' } }),
-      ],
-    });
-
-    const result = await hook.execute({ ...params, args });
-
-    expect(result.breakFlow).toBe(false);
-    expect(removeTokenMock).not.toHaveBeenCalled();
-    expect(logger.warn).toHaveBeenCalledWith(
-      'Problem parsing delete batch data. State cleanup skipped.',
-    );
-  });
-
-  test('cleans up state when token found - removeToken + aliases removed', async () => {
-    const removeTokenMock = jest.fn();
-    MockedHelper.mockImplementation(() => ({
-      getToken: jest
-        .fn()
-        .mockReturnValue({ tokenId: '0.0.123456', name: 'TestToken' }),
-      removeToken: removeTokenMock,
-    }));
-
-    const removeAliasMock = jest.fn();
-    const api = {
-      alias: {
-        list: jest.fn().mockReturnValue([
-          {
-            alias: 'my-token',
-            entityId: '0.0.123456',
-            type: AliasType.Token,
-            network: SupportedNetwork.TESTNET,
-          },
-        ]),
-        remove: removeAliasMock,
-      },
-    } as unknown as Partial<CoreApi>;
-    const args = makeArgs({ ...api, logger: makeLogger() }, {});
-
-    const params = createBatchExecuteParams({
-      name: 'batch',
-      keyRefId: 'kr',
-      executed: true,
-      success: true,
-      transactions: [createDeleteBatchDataItem()],
-    });
-
-    const result = await hook.execute({ ...params, args });
-
-    expect(result.breakFlow).toBe(false);
-    expect(removeTokenMock).toHaveBeenCalledWith('testnet:0.0.123456');
-    expect(removeAliasMock).toHaveBeenCalledWith(
-      'my-token',
-      SupportedNetwork.TESTNET,
-    );
-  });
-
-  test('skips state cleanup when token not in state', async () => {
-    const removeTokenMock = jest.fn();
-    MockedHelper.mockImplementation(() => ({
-      getToken: jest.fn().mockReturnValue(null),
-      removeToken: removeTokenMock,
-    }));
-
-    const api = {
-      alias: { list: jest.fn().mockReturnValue([]) },
-    } as unknown as Partial<CoreApi>;
-    const args = makeArgs({ ...api, logger: makeLogger() }, {});
-
-    const params = createBatchExecuteParams({
-      name: 'batch',
-      keyRefId: 'kr',
-      executed: true,
-      success: true,
-      transactions: [createDeleteBatchDataItem()],
-    });
-
-    const result = await hook.execute({ ...params, args });
-
-    expect(result.breakFlow).toBe(false);
-    expect(removeTokenMock).not.toHaveBeenCalled();
-  });
-
-  test('processes multiple token_delete items', async () => {
-    const removeTokenMock = jest.fn();
-    MockedHelper.mockImplementation(() => ({
-      getToken: jest.fn().mockReturnValue({ tokenId: 'mock', name: 'mock' }),
-      removeToken: removeTokenMock,
-    }));
-
-    const api = {
-      alias: { list: jest.fn().mockReturnValue([]) },
-    } as unknown as Partial<CoreApi>;
-    const args = makeArgs({ ...api, logger: makeLogger() }, {});
-
-    const params = createBatchExecuteParams({
-      name: 'batch',
-      keyRefId: 'kr',
-      executed: true,
-      success: true,
-      transactions: [
-        createDeleteBatchDataItem({
-          order: 1,
-          normalizedParams: {
-            network: SupportedNetwork.TESTNET,
-            tokenId: '0.0.1001',
-            tokenName: 'Token1',
-          },
-        }),
-        createDeleteBatchDataItem({
-          order: 2,
-          normalizedParams: {
-            network: SupportedNetwork.TESTNET,
-            tokenId: '0.0.1002',
-            tokenName: 'Token2',
-          },
-        }),
-      ],
-    });
-
-    const result = await hook.execute({ ...params, args });
-
-    expect(result.breakFlow).toBe(false);
-    expect(removeTokenMock).toHaveBeenCalledTimes(2);
-    expect(removeTokenMock).toHaveBeenCalledWith('testnet:0.0.1001');
-    expect(removeTokenMock).toHaveBeenCalledWith('testnet:0.0.1002');
+    await hook.execute({ ...params, args });
+    expect(applyMock).toHaveBeenCalledWith(item);
   });
 });

@@ -1,507 +1,67 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { BatchDataItem } from '@/core/types/shared.types';
 
-import {
-  createBatchExecuteParams,
-  makeArgs,
-  makeLogger,
-} from '@/__tests__/mocks/mocks';
-import { KeyManager } from '@/core/services/kms/kms-types.interface';
-import { HederaTokenType } from '@/core/shared/constants';
-import {
-  AliasType,
-  SupplyType,
-  SupportedNetwork,
-} from '@/core/types/shared.types';
+import { createBatchExecuteParams, makeArgs } from '@/__tests__/mocks/mocks';
 import { TOKEN_CREATE_FT_COMMAND_NAME } from '@/plugins/token/commands/create-ft';
-import { tokenCreateFtStateHook } from '@/plugins/token/hooks/token-create-ft-state';
+import { TokenCreateFtStateHook } from '@/plugins/token/hooks/token-create-ft-state';
 import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
-jest.mock('../../services/token-state.service', () => ({
-  TokenStateServiceImpl: jest.fn(),
-}));
+jest.mock('@/plugins/token/services/token-state.service');
 
-const MockedHelper = TokenStateServiceImpl as jest.Mock;
+const MockedTokenStateService = TokenStateServiceImpl as jest.Mock;
 
-const createFtBatchDataItem = (
+const createBatchItem = (
   overrides: Partial<BatchDataItem> = {},
 ): BatchDataItem => ({
-  transactionBytes: '0xabcdef1234567890',
+  transactionBytes: 'abcdef',
   order: 1,
   command: TOKEN_CREATE_FT_COMMAND_NAME,
   keyRefIds: [],
-  normalizedParams: {
-    name: 'TestToken',
-    symbol: 'TEST',
-    decimals: 2,
-    initialSupply: 1000n,
-    supplyType: SupplyType.INFINITE,
-    tokenType: HederaTokenType.FUNGIBLE_COMMON,
-    network: SupportedNetwork.TESTNET,
-    keyManager: KeyManager.local,
-    treasury: {
-      accountId: '0.0.123456',
-      keyRefId: 'kr-treasury',
-      publicKey: 'pk-treasury',
-    },
-    adminKeys: [
-      {
-        accountId: '0.0.100000',
-        keyRefId: 'kr-admin',
-        publicKey: 'pk-admin',
-      },
-    ],
-    adminKeyThreshold: 0,
-    freezeDefault: false,
-  },
+  normalizedParams: {},
   transactionId: '0.0.1234@1234567890.000000000',
   ...overrides,
 });
 
-describe('token plugin - batch-create-ft hook', () => {
-  const hook = tokenCreateFtStateHook;
+describe('token plugin - TokenCreateFtStateHook', () => {
+  let applyMock: jest.Mock;
+  let hook: TokenCreateFtStateHook;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    MockedHelper.mockImplementation(() => ({
-      saveToken: jest.fn(),
+    applyMock = jest.fn().mockResolvedValue(undefined);
+    MockedTokenStateService.mockImplementation(() => ({
+      applyCreateFtFromBatchItem: applyMock,
     }));
+    hook = new TokenCreateFtStateHook();
   });
 
-  test('returns success when no token_create-ft transactions in batch', async () => {
-    const logger = makeLogger();
-    const saveTokenMock = jest.fn();
-    MockedHelper.mockImplementation(() => ({ saveToken: saveTokenMock }));
-
-    const api = {
-      receipt: { getReceipt: jest.fn() },
-      alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
-    } as unknown as Partial<CoreApi>;
-    const args = makeArgs({ ...api, logger }, {});
-
+  test('returns breakFlow false when batch failed', async () => {
+    const api = {} as Partial<CoreApi>;
+    const args = makeArgs(api, {});
     const params = createBatchExecuteParams({
-      name: 'batch',
+      name: 'b',
       keyRefId: 'kr',
       executed: true,
-      success: true,
-      transactions: [
-        {
-          ...createFtBatchDataItem(),
-          command: 'token_create',
-        },
-      ],
+      success: false,
+      transactions: [createBatchItem()],
     });
-
     const result = await hook.execute({ ...params, args });
-
     expect(result.breakFlow).toBe(false);
-    expect(saveTokenMock).not.toHaveBeenCalled();
-    expect(api.receipt?.getReceipt).not.toHaveBeenCalled();
+    expect(applyMock).not.toHaveBeenCalled();
   });
 
-  test('skips items with invalid normalizedParams and logs warn', async () => {
-    const logger = makeLogger();
-    const saveTokenMock = jest.fn();
-    MockedHelper.mockImplementation(() => ({ saveToken: saveTokenMock }));
-
-    const api = {
-      receipt: { getReceipt: jest.fn() },
-      alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
-    } as unknown as Partial<CoreApi>;
-    const args = makeArgs({ ...api, logger }, {});
-
+  test('delegates to apply', async () => {
+    const api = {} as Partial<CoreApi>;
+    const args = makeArgs(api, {});
+    const item = createBatchItem();
     const params = createBatchExecuteParams({
-      name: 'batch',
+      name: 'b',
       keyRefId: 'kr',
       executed: true,
       success: true,
-      transactions: [
-        createFtBatchDataItem({
-          normalizedParams: { invalid: 'data' },
-        }),
-      ],
+      transactions: [item],
     });
-
-    const result = await hook.execute({ ...params, args });
-
-    expect(result.breakFlow).toBe(false);
-    expect(saveTokenMock).not.toHaveBeenCalled();
-    expect(logger.warn).toHaveBeenCalledWith(
-      'There was a problem with parsing data schema. The saving will not be done',
-    );
-  });
-
-  test('skips items without transactionId and logs warn', async () => {
-    const logger = makeLogger();
-    const saveTokenMock = jest.fn();
-    MockedHelper.mockImplementation(() => ({ saveToken: saveTokenMock }));
-
-    const api = {
-      receipt: { getReceipt: jest.fn() },
-      alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
-    } as unknown as Partial<CoreApi>;
-    const args = makeArgs({ ...api, logger }, {});
-
-    const params = createBatchExecuteParams({
-      name: 'batch',
-      keyRefId: 'kr',
-      executed: true,
-      success: true,
-      transactions: [createFtBatchDataItem({ transactionId: undefined })],
-    });
-
-    const result = await hook.execute({ ...params, args });
-
-    expect(result.breakFlow).toBe(false);
-    expect(saveTokenMock).not.toHaveBeenCalled();
-    expect(logger.warn).toHaveBeenCalledWith(
-      'No transaction ID found for batch transaction 1',
-    );
-  });
-
-  test('skips save when receipt has no tokenId and logs warn', async () => {
-    const logger = makeLogger();
-    const saveTokenMock = jest.fn();
-    MockedHelper.mockImplementation(() => ({ saveToken: saveTokenMock }));
-
-    const getReceiptMock = jest.fn().mockResolvedValue({
-      consensusTimestamp: '2024-01-01T00:00:00.000Z',
-      transactionId: '0.0.1234@1234567890.000000000',
-      tokenId: undefined,
-    });
-
-    const api = {
-      receipt: { getReceipt: getReceiptMock },
-      alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
-    } as unknown as Partial<CoreApi>;
-    const args = makeArgs({ ...api, logger }, {});
-
-    const params = createBatchExecuteParams({
-      name: 'batch',
-      keyRefId: 'kr',
-      executed: true,
-      success: true,
-      transactions: [createFtBatchDataItem()],
-    });
-
-    const result = await hook.execute({ ...params, args });
-
-    expect(result.breakFlow).toBe(false);
-    expect(saveTokenMock).not.toHaveBeenCalled();
-    expect(logger.warn).toHaveBeenCalledWith(
-      'Transaction completed but did not return a token ID, skipping state save',
-    );
-    expect(getReceiptMock).toHaveBeenCalledWith({
-      transactionId: '0.0.1234@1234567890.000000000',
-    });
-  });
-
-  test('saves token when batch has valid token_create-ft item without alias', async () => {
-    const logger = makeLogger();
-    const saveTokenMock = jest.fn();
-    MockedHelper.mockImplementation(() => ({ saveToken: saveTokenMock }));
-
-    const getReceiptMock = jest.fn().mockResolvedValue({
-      tokenId: '0.0.9999',
-      consensusTimestamp: '2024-01-01T00:00:00.000Z',
-    });
-
-    const api = {
-      receipt: { getReceipt: getReceiptMock },
-      alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
-    } as unknown as Partial<CoreApi>;
-    const args = makeArgs({ ...api, logger }, {});
-
-    const params = createBatchExecuteParams({
-      name: 'batch',
-      keyRefId: 'kr',
-      executed: true,
-      success: true,
-      transactions: [
-        createFtBatchDataItem({
-          normalizedParams: {
-            name: 'MyToken',
-            symbol: 'MTK',
-            decimals: 6,
-            initialSupply: 1000000n,
-            supplyType: SupplyType.FINITE,
-            tokenType: HederaTokenType.FUNGIBLE_COMMON,
-            network: SupportedNetwork.TESTNET,
-            keyManager: KeyManager.local,
-            treasury: {
-              accountId: '0.0.123456',
-              keyRefId: 'kr-treasury',
-              publicKey: 'pk-treasury',
-            },
-            adminKeys: [
-              {
-                accountId: '0.0.100000',
-                keyRefId: 'kr-admin',
-                publicKey: 'pk-admin',
-              },
-            ],
-            adminKeyThreshold: 0,
-          },
-        }),
-      ],
-    });
-
-    const result = await hook.execute({ ...params, args });
-
-    expect(result.breakFlow).toBe(false);
-    expect(saveTokenMock).toHaveBeenCalledWith(
-      'testnet:0.0.9999',
-      expect.objectContaining({
-        tokenId: '0.0.9999',
-        name: 'MyToken',
-        symbol: 'MTK',
-        treasuryId: '0.0.123456',
-        decimals: 6,
-        initialSupply: 1000000n,
-        tokenType: HederaTokenType.FUNGIBLE_COMMON,
-        supplyType: SupplyType.FINITE,
-        adminKeyRefIds: ['kr-admin'],
-        adminKeyThreshold: 0,
-        network: SupportedNetwork.TESTNET,
-      }),
-    );
-    expect(api.alias?.register).not.toHaveBeenCalled();
-    expect(logger.info).toHaveBeenCalledWith('   Token data saved to state');
-  });
-
-  test('registers alias and saves token when batch has token_create-ft item with alias', async () => {
-    const logger = makeLogger();
-    const saveTokenMock = jest.fn();
-    const registerMock = jest.fn();
-    MockedHelper.mockImplementation(() => ({ saveToken: saveTokenMock }));
-
-    const getReceiptMock = jest.fn().mockResolvedValue({
-      tokenId: '0.0.8888',
-      consensusTimestamp: '2024-01-15T12:00:00.000Z',
-    });
-
-    const api = {
-      receipt: { getReceipt: getReceiptMock },
-      alias: {
-        register: registerMock,
-        exists: jest.fn().mockReturnValue(false),
-      },
-    } as unknown as Partial<CoreApi>;
-    const args = makeArgs({ ...api, logger }, {});
-
-    const params = createBatchExecuteParams({
-      name: 'batch',
-      keyRefId: 'kr',
-      executed: true,
-      success: true,
-      transactions: [
-        createFtBatchDataItem({
-          transactionId: '0.0.8888@1234567890.000000001',
-          normalizedParams: {
-            name: 'AliasedToken',
-            symbol: 'ALT',
-            decimals: 2,
-            initialSupply: 500n,
-            supplyType: SupplyType.INFINITE,
-            tokenType: HederaTokenType.FUNGIBLE_COMMON,
-            network: SupportedNetwork.TESTNET,
-            keyManager: KeyManager.local,
-            alias: 'my-token-alias',
-            treasury: {
-              accountId: '0.0.123456',
-              keyRefId: 'kr-treasury',
-              publicKey: 'pk-treasury',
-            },
-            adminKeys: [
-              {
-                accountId: '0.0.100000',
-                keyRefId: 'kr-admin',
-                publicKey: 'pk-admin',
-              },
-            ],
-            adminKeyThreshold: 0,
-          },
-        }),
-      ],
-    });
-
-    const result = await hook.execute({ ...params, args });
-
-    expect(result.breakFlow).toBe(false);
-    expect(registerMock).toHaveBeenCalledWith({
-      alias: 'my-token-alias',
-      type: AliasType.Token,
-      network: SupportedNetwork.TESTNET,
-      entityId: '0.0.8888',
-      createdAt: '2024-01-15T12:00:00.000Z',
-    });
-    expect(saveTokenMock).toHaveBeenCalledWith(
-      'testnet:0.0.8888',
-      expect.objectContaining({
-        name: 'AliasedToken',
-        tokenId: '0.0.8888',
-      }),
-    );
-    expect(logger.info).toHaveBeenCalledWith(
-      '   Name registered: my-token-alias',
-    );
-  });
-
-  test('processes multiple token_create-ft items', async () => {
-    const logger = makeLogger();
-    const saveTokenMock = jest.fn();
-    MockedHelper.mockImplementation(() => ({ saveToken: saveTokenMock }));
-
-    const getReceiptMock = jest
-      .fn()
-      .mockResolvedValueOnce({
-        tokenId: '0.0.1001',
-        consensusTimestamp: '2024-01-01T00:00:00.000Z',
-      })
-      .mockResolvedValueOnce({
-        tokenId: '0.0.1002',
-        consensusTimestamp: '2024-01-01T00:00:01.000Z',
-      });
-
-    const api = {
-      receipt: { getReceipt: getReceiptMock },
-      alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
-    } as unknown as Partial<CoreApi>;
-    const args = makeArgs({ ...api, logger }, {});
-
-    const params = createBatchExecuteParams({
-      name: 'batch',
-      keyRefId: 'kr',
-      executed: true,
-      success: true,
-      transactions: [
-        createFtBatchDataItem({
-          order: 1,
-          transactionId: '0.0.1001@1234567890.000000000',
-          normalizedParams: {
-            name: 'Token1',
-            symbol: 'TK1',
-            decimals: 2,
-            initialSupply: 100n,
-            supplyType: SupplyType.INFINITE,
-            tokenType: HederaTokenType.FUNGIBLE_COMMON,
-            network: SupportedNetwork.TESTNET,
-            keyManager: KeyManager.local,
-            treasury: {
-              accountId: '0.0.123456',
-              keyRefId: 'kr-treasury',
-              publicKey: 'pk-treasury',
-            },
-            adminKeys: [
-              {
-                accountId: '0.0.100000',
-                keyRefId: 'kr-admin',
-                publicKey: 'pk-admin',
-              },
-            ],
-            adminKeyThreshold: 0,
-          },
-        }),
-        createFtBatchDataItem({
-          order: 2,
-          transactionId: '0.0.1002@1234567890.000000001',
-          normalizedParams: {
-            name: 'Token2',
-            symbol: 'TK2',
-            decimals: 6,
-            initialSupply: 1000n,
-            supplyType: SupplyType.FINITE,
-            tokenType: HederaTokenType.FUNGIBLE_COMMON,
-            network: SupportedNetwork.TESTNET,
-            keyManager: KeyManager.local,
-            treasury: {
-              accountId: '0.0.123456',
-              keyRefId: 'kr-treasury',
-              publicKey: 'pk-treasury',
-            },
-            adminKeys: [
-              {
-                accountId: '0.0.100000',
-                keyRefId: 'kr-admin',
-                publicKey: 'pk-admin',
-              },
-            ],
-            adminKeyThreshold: 0,
-          },
-        }),
-      ],
-    });
-
-    const result = await hook.execute({ ...params, args });
-
-    expect(result.breakFlow).toBe(false);
-    expect(saveTokenMock).toHaveBeenCalledTimes(2);
-    expect(saveTokenMock).toHaveBeenNthCalledWith(
-      1,
-      'testnet:0.0.1001',
-      expect.objectContaining({ name: 'Token1', tokenId: '0.0.1001' }),
-    );
-    expect(saveTokenMock).toHaveBeenNthCalledWith(
-      2,
-      'testnet:0.0.1002',
-      expect.objectContaining({ name: 'Token2', tokenId: '0.0.1002' }),
-    );
-  });
-
-  test('warns and skips alias registration when alias already exists', async () => {
-    const logger = makeLogger();
-    const saveTokenMock = jest.fn();
-    MockedHelper.mockImplementation(() => ({ saveToken: saveTokenMock }));
-
-    const getReceiptMock = jest.fn().mockResolvedValue({
-      tokenId: '0.0.8888',
-      consensusTimestamp: '2024-01-15T12:00:00.000Z',
-    });
-
-    const api = {
-      receipt: { getReceipt: getReceiptMock },
-      alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(true) },
-    } as unknown as Partial<CoreApi>;
-    const args = makeArgs({ ...api, logger }, {});
-
-    const params = createBatchExecuteParams({
-      name: 'batch',
-      keyRefId: 'kr',
-      executed: true,
-      success: true,
-      transactions: [
-        createFtBatchDataItem({
-          transactionId: '0.0.8888@1234567890.000000001',
-          normalizedParams: {
-            name: 'MyToken',
-            symbol: 'MTK',
-            decimals: 2,
-            initialSupply: 500n,
-            supplyType: SupplyType.INFINITE,
-            tokenType: HederaTokenType.FUNGIBLE_COMMON,
-            network: SupportedNetwork.TESTNET,
-            keyManager: KeyManager.local,
-            alias: 'my-alias',
-            treasury: {
-              accountId: '0.0.123456',
-              keyRefId: 'kr-treasury',
-              publicKey: 'pk-treasury',
-            },
-            admin: {
-              accountId: '0.0.100000',
-              keyRefId: 'kr-admin',
-              publicKey: 'pk-admin',
-            },
-          },
-        }),
-      ],
-    });
-
     await hook.execute({ ...params, args });
-
-    expect(api.alias?.register).not.toHaveBeenCalled();
-    expect(logger.warn).toHaveBeenCalledWith(
-      'Alias "my-alias" already exists, skipping registration',
-    );
+    expect(applyMock).toHaveBeenCalledWith(item);
   });
 });

@@ -1,7 +1,7 @@
 import type { HederaMirrornodeService } from '@/core';
+import type { ScheduledTransactionData } from '@/core/schemas/common-schemas';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { ScheduledTransactionData } from '@/plugins/schedule/schema';
 import type { ScheduleKeysService } from '@/plugins/schedule/services/schedule-keys.service.interface';
 import type { ScheduleStateService } from '@/plugins/schedule/services/schedule-state.service.interface';
 import type { ScheduleSyncService } from '@/plugins/schedule/services/schedule-sync.service.interface';

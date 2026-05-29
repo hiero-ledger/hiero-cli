@@ -1,3 +1,4 @@
+import { MOCK_TOPIC_ID } from '@/__tests__/mocks/fixtures';
 import { makeAliasMock, makeLogger } from '@/__tests__/mocks/mocks';
 import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 import { TopicAliasServiceImpl } from '@/plugins/topic/services/topic-alias.service';
@@ -5,7 +6,7 @@ import { TopicAliasServiceImpl } from '@/plugins/topic/services/topic-alias.serv
 const aliasParams = {
   alias: 'topic-alias',
   network: SupportedNetwork.TESTNET,
-  topicId: '0.0.1234',
+  topicId: MOCK_TOPIC_ID,
   createdAt: '2024-01-01T00:00:00.000Z',
 };
 
@@ -33,7 +34,7 @@ describe('topic plugin - TopicAliasService', () => {
       alias: 'topic-alias',
       type: AliasType.Topic,
       network: SupportedNetwork.TESTNET,
-      entityId: '0.0.1234',
+      entityId: MOCK_TOPIC_ID,
       createdAt: '2024-01-01T00:00:00.000Z',
     });
   });

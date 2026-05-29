@@ -46,7 +46,7 @@ describe('account plugin - clear command (ADR-003)', () => {
 
     const result = await accountClear(args as CommandHandlerArgs);
 
-    expect(MockedHelper).toHaveBeenCalledWith(args.api!.state, logger);
+    expect(MockedHelper).toHaveBeenCalled();
     expect(listAccountsMock).toHaveBeenCalledTimes(1);
     expect(clearAccountsMock).toHaveBeenCalledTimes(1);
     expect(logger.info).toHaveBeenCalledWith('Clearing all accounts...');

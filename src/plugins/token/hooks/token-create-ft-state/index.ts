@@ -1,1 +1,1 @@
-export { TokenCreateFtStateHook, tokenCreateFtStateHook } from './handler';
+export { TokenCreateFtStateHook } from './handler';

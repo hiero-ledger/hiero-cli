@@ -431,7 +431,7 @@ export async function tokenUpdate(
   const { api } = args;
   return new TokenUpdateCommand(
     new TokenReferenceServiceImpl(api.identityResolution),
-    new TokenStateServiceImpl(api.state, api.logger),
+    new TokenStateServiceImpl(api.state, api.logger, api.receipt, api.alias),
     new TokenKeysServiceImpl(api.keyResolver, api.mirror, api.kms),
   ).execute(args);
 }

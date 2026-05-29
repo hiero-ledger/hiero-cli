@@ -223,6 +223,14 @@ export async function accountCreate(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new AccountCreateCommand(
-    new AccountStateServiceImpl(args.api.state, args.api.logger),
+    new AccountStateServiceImpl(
+      args.api.state,
+      args.api.logger,
+      args.api.receipt,
+      args.api.mirror,
+      args.api.alias,
+      args.api.kms,
+      args.api.network,
+    ),
   ).execute(args);
 }

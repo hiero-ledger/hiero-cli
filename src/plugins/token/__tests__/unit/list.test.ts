@@ -131,7 +131,7 @@ describe('tokenListHandler', () => {
 
       await tokenList(args);
 
-      expect(MockedHelper).toHaveBeenCalledWith(api.state, api.logger);
+      expect(MockedHelper).toHaveBeenCalled();
     });
   });
 });

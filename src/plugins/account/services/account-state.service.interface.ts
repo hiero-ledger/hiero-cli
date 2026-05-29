@@ -1,3 +1,5 @@
+import type { ScheduledTransactionData } from '@/core/schemas/common-schemas';
+import type { BatchDataItem } from '@/core/types/shared.types';
 import type { AccountData } from '@/plugins/account/schema';
 
 export interface AccountStateService {
@@ -7,4 +9,10 @@ export interface AccountStateService {
   deleteAccount(key: string): void;
   clearAccounts(): void;
   hasAccount(key: string): boolean;
+
+  applyAccountCreateFromBatchItem(item: BatchDataItem): Promise<void>;
+  applyAccountCreateFromSchedule(data: ScheduledTransactionData): Promise<void>;
+  applyAccountUpdateFromBatchItem(item: BatchDataItem): Promise<void>;
+  applyAccountUpdateFromSchedule(data: ScheduledTransactionData): Promise<void>;
+  applyAccountDeleteFromBatchItem(item: BatchDataItem): Promise<void>;
 }

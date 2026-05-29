@@ -8,8 +8,10 @@ import {
   ED25519_DER_PRIVATE_KEY_SUBMIT_2,
   MOCK_TOPIC_ADMIN_KEY_REF_ID,
   MOCK_TOPIC_ADMIN_KEY_REF_ID_2,
+  MOCK_TOPIC_ID,
   MOCK_TOPIC_SUBMIT_KEY_REF_ID,
   MOCK_TOPIC_SUBMIT_KEY_REF_ID_2,
+  MOCK_TX_ID_1,
 } from '@/__tests__/mocks/fixtures';
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
@@ -106,9 +108,9 @@ describe('topic plugin - create command', () => {
           transaction: {},
         }),
         executeImpl: jest.fn().mockResolvedValue({
-          transactionId: '0.0.100000@1700000000.000000000',
+          transactionId: MOCK_TX_ID_1,
           success: true,
-          topicId: '0.0.9999',
+          topicId: MOCK_TOPIC_ID,
           consensusTimestamp: '2024-01-01T00:00:00.000Z',
           receipt: { status: { status: 'success' } },
         }),
@@ -134,10 +136,10 @@ describe('topic plugin - create command', () => {
     const result = await topicCreate(args);
 
     const output = assertOutput(result.result, TopicCreateOutputSchema);
-    expect(output.topicId).toBe('0.0.9999');
+    expect(output.topicId).toBe(MOCK_TOPIC_ID);
     expect(output.memo).toBe('Test topic memo');
     expect(output.network).toBe(SupportedNetwork.TESTNET);
-    expect(output.transactionId).toBe('0.0.100000@1700000000.000000000');
+    expect(output.transactionId).toBe(MOCK_TX_ID_1);
 
     expect(topicTransactions.createTopic).toHaveBeenCalledWith({
       memo: 'Test topic memo',
@@ -146,9 +148,9 @@ describe('topic plugin - create command', () => {
     });
     expect(txExecute.execute).toHaveBeenCalled();
     expect(saveTopicMock).toHaveBeenCalledWith(
-      `${SupportedNetwork.TESTNET}:0.0.9999`,
+      `${SupportedNetwork.TESTNET}:${MOCK_TOPIC_ID}`,
       expect.objectContaining({
-        topicId: '0.0.9999',
+        topicId: MOCK_TOPIC_ID,
         memo: 'Test topic memo',
         network: SupportedNetwork.TESTNET,
       }),
@@ -169,9 +171,9 @@ describe('topic plugin - create command', () => {
           transaction: {},
         }),
         executeImpl: jest.fn().mockResolvedValue({
-          transactionId: '0.0.100000@1700000000.000000001',
+          transactionId: MOCK_TX_ID_1,
           success: true,
-          topicId: '0.0.8888',
+          topicId: MOCK_TOPIC_ID,
           consensusTimestamp: '2024-01-01T00:00:00.000Z',
           receipt: { status: { status: 'success' } },
         }),
@@ -199,7 +201,7 @@ describe('topic plugin - create command', () => {
     const result = await topicCreate(args);
 
     const output = assertOutput(result.result, TopicCreateOutputSchema);
-    expect(output.topicId).toBe('0.0.8888');
+    expect(output.topicId).toBe(MOCK_TOPIC_ID);
     expect(output.adminKeyPresent).toBe(true);
     expect(output.submitKeyPresent).toBe(true);
 
@@ -222,9 +224,9 @@ describe('topic plugin - create command', () => {
     );
     expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());
     expect(saveTopicMock).toHaveBeenCalledWith(
-      `${SupportedNetwork.TESTNET}:0.0.8888`,
+      `${SupportedNetwork.TESTNET}:${MOCK_TOPIC_ID}`,
       expect.objectContaining({
-        topicId: '0.0.8888',
+        topicId: MOCK_TOPIC_ID,
         memo: 'Test topic',
         adminKeyRefIds: [MOCK_TOPIC_ADMIN_KEY_REF_ID],
         submitKeyRefIds: [MOCK_TOPIC_SUBMIT_KEY_REF_ID],
@@ -249,9 +251,9 @@ describe('topic plugin - create command', () => {
           transaction: {},
         }),
         executeImpl: jest.fn().mockResolvedValue({
-          transactionId: '0.0.100000@1700000000.000000003',
+          transactionId: MOCK_TX_ID_1,
           success: true,
-          topicId: '0.0.6666',
+          topicId: MOCK_TOPIC_ID,
           consensusTimestamp: '2024-01-01T00:00:00.000Z',
           receipt: { status: { status: 'success' } },
         }),
@@ -279,7 +281,7 @@ describe('topic plugin - create command', () => {
     const result = await topicCreate(args);
 
     const output = assertOutput(result.result, TopicCreateOutputSchema);
-    expect(output.topicId).toBe('0.0.6666');
+    expect(output.topicId).toBe(MOCK_TOPIC_ID);
     expect(output.adminKeyPresent).toBe(true);
     expect(output.submitKeyPresent).toBe(true);
 
@@ -289,9 +291,9 @@ describe('topic plugin - create command', () => {
       submitKey: expect.any(Object),
     });
     expect(saveTopicMock).toHaveBeenCalledWith(
-      `${SupportedNetwork.TESTNET}:0.0.6666`,
+      `${SupportedNetwork.TESTNET}:${MOCK_TOPIC_ID}`,
       expect.objectContaining({
-        topicId: '0.0.6666',
+        topicId: MOCK_TOPIC_ID,
         memo: 'Multi-key topic',
         adminKeyRefIds: [
           MOCK_TOPIC_ADMIN_KEY_REF_ID,
@@ -317,9 +319,9 @@ describe('topic plugin - create command', () => {
           transaction: {},
         }),
         executeImpl: jest.fn().mockResolvedValue({
-          transactionId: '0.0.100000@1700000000.000000002',
+          transactionId: MOCK_TX_ID_1,
           success: true,
-          topicId: '0.0.7777',
+          topicId: MOCK_TOPIC_ID,
           consensusTimestamp: '2024-01-01T00:00:00.000Z',
           receipt: { status: { status: 'success' } },
         }),
@@ -340,7 +342,7 @@ describe('topic plugin - create command', () => {
     const result = await topicCreate(args);
 
     const output = assertOutput(result.result, TopicCreateOutputSchema);
-    expect(output.topicId).toBe('0.0.7777');
+    expect(output.topicId).toBe(MOCK_TOPIC_ID);
     expect(output.memo).toBeUndefined();
 
     expect(topicTransactions.createTopic).toHaveBeenCalledWith({
@@ -349,9 +351,9 @@ describe('topic plugin - create command', () => {
       submitKey: undefined,
     });
     expect(saveTopicMock).toHaveBeenCalledWith(
-      `${SupportedNetwork.TESTNET}:0.0.7777`,
+      `${SupportedNetwork.TESTNET}:${MOCK_TOPIC_ID}`,
       expect.objectContaining({
-        topicId: '0.0.7777',
+        topicId: MOCK_TOPIC_ID,
         memo: '(No memo)',
         network: SupportedNetwork.TESTNET,
       }),

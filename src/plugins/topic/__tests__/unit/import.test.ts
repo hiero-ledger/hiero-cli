@@ -7,6 +7,7 @@ import {
   ED25519_DER_PUBLIC_KEY,
   ED25519_HEX_PUBLIC_KEY,
   MOCK_TOPIC_ADMIN_KEY_REF_ID,
+  MOCK_TOPIC_ID,
   MOCK_TOPIC_SUBMIT_KEY_REF_ID,
 } from '@/__tests__/mocks/fixtures';
 import {
@@ -48,7 +49,7 @@ describe('topic plugin - import command (ADR-007)', () => {
     }));
 
     const topicInfo = createMockTopicInfo({
-      topic_id: '0.0.123456',
+      topic_id: MOCK_TOPIC_ID,
       memo: 'Imported topic memo',
       created_timestamp: '1704067200.000000000',
     });
@@ -72,34 +73,34 @@ describe('topic plugin - import command (ADR-007)', () => {
     const args = makeArgs(
       { ...api, logger },
       {
-        topic: '0.0.123456',
+        topic: MOCK_TOPIC_ID,
         name: 'my-topic',
       },
     );
 
     const result = await topicImport(args);
 
-    expect(mirrorMock.getTopicInfo).toHaveBeenCalledWith('0.0.123456');
+    expect(mirrorMock.getTopicInfo).toHaveBeenCalledWith(MOCK_TOPIC_ID);
     expect(alias.register).toHaveBeenCalledWith(
       expect.objectContaining({
         alias: 'my-topic',
         type: AliasType.Topic,
         network: SupportedNetwork.TESTNET,
-        entityId: '0.0.123456',
+        entityId: MOCK_TOPIC_ID,
       }),
     );
     expect(saveTopicMock).toHaveBeenCalledWith(
-      `${SupportedNetwork.TESTNET}:0.0.123456`,
+      `${SupportedNetwork.TESTNET}:${MOCK_TOPIC_ID}`,
       expect.objectContaining({
         name: 'my-topic',
-        topicId: '0.0.123456',
+        topicId: MOCK_TOPIC_ID,
         memo: 'Imported topic memo',
         network: SupportedNetwork.TESTNET,
       }),
     );
 
     const output = assertOutput(result.result, TopicImportOutputSchema);
-    expect(output.topicId).toBe('0.0.123456');
+    expect(output.topicId).toBe(MOCK_TOPIC_ID);
     expect(output.name).toBe('my-topic');
     expect(output.network).toBe(SupportedNetwork.TESTNET);
     expect(output.memo).toBe('Imported topic memo');
@@ -115,7 +116,7 @@ describe('topic plugin - import command (ADR-007)', () => {
     }));
 
     const topicInfo = createMockTopicInfo({
-      topic_id: '0.0.999999',
+      topic_id: MOCK_TOPIC_ID,
       created_timestamp: '1704067200.000000000',
     });
 
@@ -138,24 +139,24 @@ describe('topic plugin - import command (ADR-007)', () => {
     const args = makeArgs(
       { ...api, logger },
       {
-        topic: '0.0.999999',
+        topic: MOCK_TOPIC_ID,
       },
     );
 
     const result = await topicImport(args);
 
-    expect(mirrorMock.getTopicInfo).toHaveBeenCalledWith('0.0.999999');
+    expect(mirrorMock.getTopicInfo).toHaveBeenCalledWith(MOCK_TOPIC_ID);
     expect(alias.register).not.toHaveBeenCalled();
     expect(saveTopicMock).toHaveBeenCalledWith(
-      `${SupportedNetwork.TESTNET}:0.0.999999`,
+      `${SupportedNetwork.TESTNET}:${MOCK_TOPIC_ID}`,
       expect.objectContaining({
-        topicId: '0.0.999999',
+        topicId: MOCK_TOPIC_ID,
         network: SupportedNetwork.TESTNET,
       }),
     );
 
     const output = assertOutput(result.result, TopicImportOutputSchema);
-    expect(output.topicId).toBe('0.0.999999');
+    expect(output.topicId).toBe(MOCK_TOPIC_ID);
     expect(output.name).toBe(undefined);
   });
 
@@ -169,7 +170,7 @@ describe('topic plugin - import command (ADR-007)', () => {
     }));
 
     const topicInfo = createMockTopicInfo({
-      topic_id: '0.0.123456',
+      topic_id: MOCK_TOPIC_ID,
       memo: 'Topic with keys',
       created_timestamp: '1704067200.000000000',
       admin_key: {
@@ -205,14 +206,14 @@ describe('topic plugin - import command (ADR-007)', () => {
       kms,
     };
 
-    const args = makeArgs({ ...api, logger }, { topic: '0.0.123456' });
+    const args = makeArgs({ ...api, logger }, { topic: MOCK_TOPIC_ID });
 
     const result = await topicImport(args);
 
     expect(saveTopicMock).toHaveBeenCalledWith(
-      `${SupportedNetwork.TESTNET}:0.0.123456`,
+      `${SupportedNetwork.TESTNET}:${MOCK_TOPIC_ID}`,
       expect.objectContaining({
-        topicId: '0.0.123456',
+        topicId: MOCK_TOPIC_ID,
         adminKeyRefIds: [MOCK_TOPIC_ADMIN_KEY_REF_ID],
         submitKeyRefIds: [MOCK_TOPIC_SUBMIT_KEY_REF_ID],
       }),
@@ -233,7 +234,7 @@ describe('topic plugin - import command (ADR-007)', () => {
     }));
 
     const topicInfo = createMockTopicInfo({
-      topic_id: '0.0.123456',
+      topic_id: MOCK_TOPIC_ID,
       created_timestamp: '1704067200.000000000',
       admin_key: {
         _type: MirrorNodeKeyType.ED25519,
@@ -258,14 +259,14 @@ describe('topic plugin - import command (ADR-007)', () => {
       kms,
     };
 
-    const args = makeArgs({ ...api, logger }, { topic: '0.0.123456' });
+    const args = makeArgs({ ...api, logger }, { topic: MOCK_TOPIC_ID });
 
     const result = await topicImport(args);
 
     expect(saveTopicMock).toHaveBeenCalledWith(
-      `${SupportedNetwork.TESTNET}:0.0.123456`,
+      `${SupportedNetwork.TESTNET}:${MOCK_TOPIC_ID}`,
       expect.objectContaining({
-        topicId: '0.0.123456',
+        topicId: MOCK_TOPIC_ID,
         adminKeyRefIds: [],
       }),
     );
@@ -284,7 +285,7 @@ describe('topic plugin - import command (ADR-007)', () => {
     }));
 
     const topicInfo = createMockTopicInfo({
-      topic_id: '0.0.123456',
+      topic_id: MOCK_TOPIC_ID,
       created_timestamp: '1704067200.000000000',
       submit_key: {
         _type: MirrorNodeKeyType.ED25519,
@@ -313,12 +314,12 @@ describe('topic plugin - import command (ADR-007)', () => {
       kms,
     };
 
-    const args = makeArgs({ ...api, logger }, { topic: '0.0.123456' });
+    const args = makeArgs({ ...api, logger }, { topic: MOCK_TOPIC_ID });
 
     const result = await topicImport(args);
 
     expect(saveTopicMock).toHaveBeenCalledWith(
-      `${SupportedNetwork.TESTNET}:0.0.123456`,
+      `${SupportedNetwork.TESTNET}:${MOCK_TOPIC_ID}`,
       expect.objectContaining({
         submitKeyRefIds: [MOCK_TOPIC_SUBMIT_KEY_REF_ID],
       }),
@@ -333,14 +334,14 @@ describe('topic plugin - import command (ADR-007)', () => {
 
     MockedHelper.mockImplementation(() => ({
       loadTopic: jest.fn().mockReturnValue({
-        topicId: '0.0.123456',
+        topicId: MOCK_TOPIC_ID,
         name: 'existing',
       }),
       saveTopic: jest.fn(),
     }));
 
     const topicInfo = createMockTopicInfo({
-      topic_id: '0.0.123456',
+      topic_id: MOCK_TOPIC_ID,
       created_timestamp: '1704067200.000000000',
     });
 
@@ -360,13 +361,13 @@ describe('topic plugin - import command (ADR-007)', () => {
     const args = makeArgs(
       { ...api, logger },
       {
-        topic: '0.0.123456',
+        topic: MOCK_TOPIC_ID,
         name: 'new-topic',
       },
     );
 
     await expect(topicImport(args)).rejects.toThrow(
-      "Topic with ID '0.0.123456' already exists in state",
+      `Topic with ID '${MOCK_TOPIC_ID}' already exists in state`,
     );
   });
 
@@ -396,7 +397,7 @@ describe('topic plugin - import command (ADR-007)', () => {
     const args = makeArgs(
       { ...api, logger },
       {
-        topic: '0.0.123456',
+        topic: MOCK_TOPIC_ID,
       },
     );
 

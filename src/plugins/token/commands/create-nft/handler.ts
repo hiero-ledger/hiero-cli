@@ -361,7 +361,7 @@ export async function tokenCreateNft(
 ): Promise<CommandResult> {
   const { api } = args;
   return new TokenCreateNftCommand(
-    new TokenStateServiceImpl(api.state, api.logger),
+    new TokenStateServiceImpl(api.state, api.logger, api.receipt, api.alias),
     new TokenKeysServiceImpl(api.keyResolver),
   ).execute(args);
 }

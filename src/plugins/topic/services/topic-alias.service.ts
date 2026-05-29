@@ -1,9 +1,7 @@
 import type { Logger } from '@/core';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
-import type {
-  RegisterTopicAliasParams,
-  TopicAliasService,
-} from './topic-alias.service.interface';
+import type { TopicAliasService } from './topic-alias.service.interface';
+import type { RegisterTopicAliasParams } from './topic-alias.types';
 
 import { AliasType } from '@/core/types/shared.types';
 

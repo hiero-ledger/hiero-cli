@@ -1,10 +1,10 @@
 import type { AliasService, KmsService, Logger, NetworkService } from '@/core';
 import type { SupportedNetwork } from '@/core/types/shared.types';
+import type { AccountCleanupService } from '@/plugins/account/services/account-cleanup.service.interface';
 import type {
-  AccountCleanupService,
   AccountDeleteKmsCleanupInput,
   AccountDeleteLocalStateInput,
-} from '@/plugins/account/services/account-cleanup.service.interface';
+} from '@/plugins/account/services/account-cleanup.types';
 import type { AccountStateService } from '@/plugins/account/services/account-state.service.interface';
 
 import { AliasType } from '@/core/types/shared.types';

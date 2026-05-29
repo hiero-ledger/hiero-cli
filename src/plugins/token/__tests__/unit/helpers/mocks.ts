@@ -638,24 +638,18 @@ export const mockTokenStateServiceImpl = (
   overrides?: Partial<{
     saveToken: jest.Mock;
     addToken: jest.Mock;
-    addAssociation: jest.Mock;
     getToken: jest.Mock;
     getAllTokens: jest.Mock;
     removeToken: jest.Mock;
-    addTokenAssociation: jest.Mock;
-    removeTokenAssociation: jest.Mock;
   }>,
 ) => {
   TokenStateServiceImplClass.mockClear();
   TokenStateServiceImplClass.mockImplementation(() => ({
     saveToken: jest.fn().mockResolvedValue(undefined),
     addToken: jest.fn(),
-    addAssociation: jest.fn(),
     getToken: jest.fn(),
     getAllTokens: jest.fn(),
     removeToken: jest.fn(),
-    addTokenAssociation: jest.fn(),
-    removeTokenAssociation: jest.fn(),
     ...overrides,
   }));
   return TokenStateServiceImplClass;

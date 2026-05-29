@@ -187,6 +187,6 @@ export async function tokenMintNft(
   const { api } = args;
   return new TokenMintNftCommand(
     new TokenReferenceServiceImpl(api.identityResolution),
-    new TokenStateServiceImpl(api.state, api.logger),
+    new TokenStateServiceImpl(api.state, api.logger, api.receipt, api.alias),
   ).execute(args);
 }

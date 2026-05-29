@@ -11,12 +11,12 @@ import type {
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { TokenCreateFtInput } from '@/plugins/token/commands/create-ft/input';
 import type { FungibleTokenFileDefinition } from '@/plugins/token/schema';
+import type { TokenKeysService } from '@/plugins/token/services/token-keys.service.interface';
 import type {
   TokenCreateFtFromFileKeys,
   TokenCreateFtKeys,
-  TokenKeysService,
   TokenUpdatedTreasuryParams,
-} from '@/plugins/token/services/token-keys.service.interface';
+} from '@/plugins/token/services/token-keys.types';
 
 import { ValidationError } from '@/core/errors';
 
