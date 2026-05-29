@@ -148,6 +148,15 @@ export const TokenDataSchema = z.object({
 
   customFees: z.array(TokenFileCustomFeeSchema).default([]),
 
+  associations: z
+    .array(
+      z.object({
+        name: z.string(),
+        accountId: EntityIdSchema,
+      }),
+    )
+    .default([]),
+
   memo: z.string().max(100).optional(),
 });
 

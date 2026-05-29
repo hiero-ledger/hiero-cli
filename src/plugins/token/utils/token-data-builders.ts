@@ -76,6 +76,7 @@ export function buildTokenData(
     metadataKeyThreshold: params.metadataKeyThreshold ?? 0,
     network: params.network,
     customFees: [],
+    associations: [],
   };
 }
 
@@ -115,6 +116,7 @@ export function buildTokenDataFromFile(
     maxSupply: normalisedParams.maxSupply,
     network: normalisedParams.network,
     customFees: normalisedParams.customFees,
+    associations: [],
     memo: normalisedParams.memo,
   };
 }
@@ -151,6 +153,7 @@ export function buildNftTokenDataFromFile(
     maxSupply: normalisedParams.maxSupply ?? 0n,
     network: normalisedParams.network,
     customFees: [],
+    associations: [],
     memo: normalisedParams.memo,
   };
 }
@@ -276,6 +279,7 @@ export function buildUpdatedTokenData(
           : (existing?.memo ?? (tokenInfo.memo || undefined)),
     network: normalisedParams.network,
     customFees: existing?.customFees ?? [],
+    associations: existing?.associations ?? [],
   };
 }
 

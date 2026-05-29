@@ -4,9 +4,9 @@ import type {
   BaseNormalizedParams,
   BaseSignTransactionResult,
 } from '@/core';
+import type { ScheduledTransactionData } from '@/core/schemas/common-schemas';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { ScheduledTransactionData } from '@/plugins/schedule/schema';
 
 export interface ScheduleSignNormalisedParams extends BaseNormalizedParams {
   scheduleName?: string;

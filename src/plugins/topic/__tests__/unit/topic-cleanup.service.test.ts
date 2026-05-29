@@ -1,5 +1,6 @@
 import type { TopicStateService } from '@/plugins/topic/services/topic-state.service.interface';
 
+import { MOCK_TOPIC_ID } from '@/__tests__/mocks/fixtures';
 import {
   makeAliasMock,
   makeLogger,
@@ -16,21 +17,21 @@ describe('topic plugin - TopicCleanupService', () => {
         alias: 'topic-a',
         type: AliasType.Topic,
         network: SupportedNetwork.TESTNET,
-        entityId: '0.0.1234',
+        entityId: MOCK_TOPIC_ID,
         createdAt: '2024-01-01T00:00:00.000Z',
       },
       {
         alias: 'topic-mainnet',
         type: AliasType.Topic,
         network: SupportedNetwork.MAINNET,
-        entityId: '0.0.1234',
+        entityId: MOCK_TOPIC_ID,
         createdAt: '2024-01-01T00:00:00.000Z',
       },
       {
         alias: 'account-a',
         type: AliasType.Account,
         network: SupportedNetwork.TESTNET,
-        entityId: '0.0.1234',
+        entityId: MOCK_TOPIC_ID,
         createdAt: '2024-01-01T00:00:00.000Z',
       },
     ]);
@@ -39,6 +40,9 @@ describe('topic plugin - TopicCleanupService', () => {
       loadTopic: jest.fn(),
       listTopics: jest.fn(),
       deleteTopic: jest.fn(),
+      applyTopicCreateFromBatchItem: jest.fn().mockResolvedValue(undefined),
+      applyTopicUpdateFromBatchItem: jest.fn().mockResolvedValue(undefined),
+      applyTopicDeleteFromBatchItem: jest.fn().mockResolvedValue(undefined),
     };
     const service = new TopicCleanupServiceImpl(
       alias,
@@ -47,7 +51,7 @@ describe('topic plugin - TopicCleanupService', () => {
     );
 
     const result = service.removeTopicFromLocalState(
-      makeTopicData({ topicId: '0.0.1234' }),
+      makeTopicData({ topicId: MOCK_TOPIC_ID }),
       SupportedNetwork.TESTNET,
     );
 
@@ -60,7 +64,9 @@ describe('topic plugin - TopicCleanupService', () => {
       'topic-a',
       SupportedNetwork.TESTNET,
     );
-    expect(topicState.deleteTopic).toHaveBeenCalledWith('testnet:0.0.1234');
+    expect(topicState.deleteTopic).toHaveBeenCalledWith(
+      `testnet:${MOCK_TOPIC_ID}`,
+    );
     expect(result).toEqual(['topic-a (testnet)']);
   });
 });

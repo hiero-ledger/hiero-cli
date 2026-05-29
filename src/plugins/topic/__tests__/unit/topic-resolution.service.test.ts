@@ -1,3 +1,4 @@
+import { MOCK_TOPIC_ID } from '@/__tests__/mocks/fixtures';
 import { makeAliasMock } from '@/__tests__/mocks/mocks';
 import { NotFoundError, StateError } from '@/core/errors';
 import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
@@ -8,9 +9,12 @@ describe('topic plugin - TopicResolutionService', () => {
     const alias = makeAliasMock();
     const service = new TopicResolutionServiceImpl(alias);
 
-    const result = service.resolveTopicId('0.0.1234', SupportedNetwork.TESTNET);
+    const result = service.resolveTopicId(
+      MOCK_TOPIC_ID,
+      SupportedNetwork.TESTNET,
+    );
 
-    expect(result).toBe('0.0.1234');
+    expect(result).toBe(MOCK_TOPIC_ID);
     expect(alias.resolve).not.toHaveBeenCalled();
   });
 
@@ -20,7 +24,7 @@ describe('topic plugin - TopicResolutionService', () => {
       alias: 'topic-alias',
       type: AliasType.Topic,
       network: SupportedNetwork.TESTNET,
-      entityId: '0.0.1234',
+      entityId: MOCK_TOPIC_ID,
       createdAt: '2024-01-01T00:00:00.000Z',
     });
     const service = new TopicResolutionServiceImpl(alias);
@@ -30,7 +34,7 @@ describe('topic plugin - TopicResolutionService', () => {
       SupportedNetwork.TESTNET,
     );
 
-    expect(result).toBe('0.0.1234');
+    expect(result).toBe(MOCK_TOPIC_ID);
     expect(alias.resolve).toHaveBeenCalledWith(
       'topic-alias',
       AliasType.Topic,

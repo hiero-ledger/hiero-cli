@@ -1,7 +1,5 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
-import type { Logger } from '@/core/services/logger/logger-service.interface';
-import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { TokenAirdropItem } from '@/core/services/mirrornode/types';
 import type { ClaimAirdropItem } from '@/core/types/token.types';
 import type { TokenClaimAirdropOutput } from './output';
@@ -59,11 +57,12 @@ export class TokenClaimAirdropCommand extends BaseTransactionCommand<
     const uniqueTokenIds = [
       ...new Set(selectedAirdrops.map((a) => a.token_id)),
     ];
-    const tokenInfoMap = await this.fetchTokenInfoMap(
-      api.mirror,
-      api.logger,
-      uniqueTokenIds,
-    );
+    const tokenInfoMap = new Map<string, { name: string; symbol: string }>();
+    for (const tokenId of uniqueTokenIds) {
+      api.logger.info(`Fetching token info for ${tokenId}...`);
+      const info = await api.mirror.getTokenInfo(tokenId);
+      tokenInfoMap.set(tokenId, { name: info.name, symbol: info.symbol });
+    }
 
     const claimItems: ClaimAirdropItem[] = selectedAirdrops.map((item) => ({
       tokenId: item.token_id,
@@ -217,21 +216,6 @@ export class TokenClaimAirdropCommand extends BaseTransactionCommand<
       type: AirdropTokenType.FUNGIBLE,
       amount: item.amount ?? undefined,
     };
-  }
-
-  private async fetchTokenInfoMap(
-    mirror: HederaMirrornodeService,
-    logger: Logger,
-    tokenIds: string[],
-  ): Promise<Map<string, { name: string; symbol: string }>> {
-    const entries = await Promise.all(
-      tokenIds.map(async (tokenId) => {
-        logger.info(`Fetching token info for ${tokenId}...`);
-        const info = await mirror.getTokenInfo(tokenId);
-        return [tokenId, { name: info.name, symbol: info.symbol }] as const;
-      }),
-    );
-    return new Map(entries);
   }
 }
 

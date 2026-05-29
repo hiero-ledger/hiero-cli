@@ -1706,7 +1706,7 @@ When you pass `--batch <batch-name>`:
 
 1. **No immediate execution** – The transaction is not submitted to the network. Instead, it is serialized and added to the specified batch.
 2. **Deferred execution** – Run `hcli batch execute --name <batch-name>` to submit all batched transactions atomically.
-3. **State persistence** – After successful batch execution, the corresponding batch-state hooks run for create/associate commands to persist token data, associations, and aliases.
+3. **State persistence** – After successful batch execution, the corresponding batch-state hooks run for create/update/delete commands to persist token data and aliases.
 
 **Example workflow:**
 

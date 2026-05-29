@@ -297,7 +297,12 @@ export async function tokenCreateNftFromFile(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   const { api } = args;
-  const tokenStateService = new TokenStateServiceImpl(api.state, api.logger);
+  const tokenStateService = new TokenStateServiceImpl(
+    api.state,
+    api.logger,
+    api.receipt,
+    api.alias,
+  );
   return new TokenCreateNftFromFileCommand(
     tokenStateService,
     new TokenFileServiceImpl(api.logger),

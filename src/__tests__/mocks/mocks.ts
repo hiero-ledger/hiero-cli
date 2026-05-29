@@ -5,6 +5,7 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+import type { ScheduledTransactionData } from '@/core/schemas/common-schemas';
 import type {
   AliasRecord,
   AliasService,
@@ -42,7 +43,6 @@ import type { TransferService } from '@/core/services/transfer/transfer-service.
 import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
 import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
 import type { BatchData, TransactionResult } from '@/core/types/shared.types';
-import type { ScheduledTransactionData } from '@/plugins/schedule/schema';
 import type { TopicData } from '@/plugins/topic/schema';
 
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
@@ -395,6 +395,17 @@ export const makeStateMock = (
   getState: jest.fn(),
   getStorageDirectory: jest.fn().mockReturnValue(''),
   isInitialized: jest.fn().mockReturnValue(true),
+});
+
+/**
+ * Create a mocked ReceiptService
+ */
+export const makeReceiptMock = (): jest.Mocked<ReceiptService> => ({
+  getReceipt: jest.fn().mockResolvedValue({
+    success: true,
+    transactionId: 'mock-tx-id',
+    consensusTimestamp: '2024-01-01T00:00:00.000Z',
+  }),
 });
 
 /**

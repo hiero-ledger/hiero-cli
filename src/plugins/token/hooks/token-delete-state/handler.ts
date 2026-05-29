@@ -1,80 +1,36 @@
-import type { CoreApi } from '@/core';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
-import type { BatchDataItem } from '@/core/types/shared.types';
-import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 
 import { OrchestratorSource } from '@/core';
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
-import { AliasType } from '@/core/types/shared.types';
-import { composeKey } from '@/core/utils/key-composer';
 import { TOKEN_DELETE_COMMAND_NAME } from '@/plugins/token/commands/delete';
 import { TokenStateServiceImpl } from '@/plugins/token/services/token-state.service';
 
-import { DeleteNormalizedParamsSchema } from './types';
-
 export class TokenDeleteStateHook implements Hook<PostOutputPreparationHookParams> {
-  constructor(private readonly tokenStateService: TokenStateService) {}
-
-  execute(params: PostOutputPreparationHookParams): Promise<HookResult> {
+  async execute(params: PostOutputPreparationHookParams): Promise<HookResult> {
     const parsed = OrchestratorResultSchema.safeParse(
       params.executeTransactionResult,
     );
     if (!parsed.success || parsed.data.source !== OrchestratorSource.BATCH) {
-      return Promise.resolve({ breakFlow: false });
+      return { breakFlow: false };
     }
-    const batchData = parsed.data.batchData;
+    if (!parsed.data.batchData.success) {
+      return { breakFlow: false };
+    }
+
     const { api } = params.args;
-
-    if (!batchData.success) {
-      return Promise.resolve({ breakFlow: false });
-    }
-
-    for (const batchDataItem of [...batchData.transactions].filter(
-      (item) => item.command === TOKEN_DELETE_COMMAND_NAME,
-    )) {
-      this.cleanupState(api, batchDataItem);
-    }
-
-    return Promise.resolve({ breakFlow: false });
-  }
-
-  private cleanupState(api: CoreApi, batchDataItem: BatchDataItem): void {
-    const parseResult = DeleteNormalizedParamsSchema.safeParse(
-      batchDataItem.normalizedParams,
+    const tokenState = new TokenStateServiceImpl(
+      api.state,
+      api.logger,
+      api.receipt,
+      api.alias,
     );
 
-    if (!parseResult.success) {
-      api.logger.warn(
-        'Problem parsing delete batch data. State cleanup skipped.',
-      );
-      return;
+    for (const item of parsed.data.batchData.transactions.filter(
+      (i) => i.command === TOKEN_DELETE_COMMAND_NAME,
+    )) {
+      await tokenState.applyDeleteFromBatchItem(item);
     }
-
-    const { network, tokenId } = parseResult.data;
-    const key = composeKey(network, tokenId);
-    const tokenInState = this.tokenStateService.getToken(key);
-
-    if (!tokenInState) return;
-
-    const aliases = api.alias
-      .list({ network, type: AliasType.Token })
-      .filter((rec) => rec.entityId === tokenId);
-
-    for (const rec of aliases) {
-      api.alias.remove(rec.alias, network);
-    }
-
-    this.tokenStateService.removeToken(key);
-    api.logger.debug(`Cleaned up state for deleted token ${tokenId}`);
+    return { breakFlow: false };
   }
 }
-
-export const tokenDeleteStateHook: Hook<PostOutputPreparationHookParams> = {
-  execute: (params: PostOutputPreparationHookParams) => {
-    const { api } = params.args;
-    return new TokenDeleteStateHook(
-      new TokenStateServiceImpl(api.state, api.logger),
-    ).execute(params);
-  },
-};

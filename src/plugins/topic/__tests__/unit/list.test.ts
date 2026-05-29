@@ -1,6 +1,13 @@
 import type { CoreApi } from '@/core';
 
 import {
+  MOCK_HEDERA_ENTITY_ID_1,
+  MOCK_HEDERA_ENTITY_ID_2,
+  MOCK_HEDERA_ENTITY_ID_3,
+  MOCK_HEDERA_ENTITY_ID_4,
+  MOCK_HEDERA_ENTITY_ID_5,
+} from '@/__tests__/mocks/fixtures';
+import {
   makeArgs,
   makeLogger,
   makeStateMock,
@@ -44,8 +51,16 @@ describe('topic plugin - list command', () => {
   test('lists topics without keys', async () => {
     const logger = makeLogger();
     const topics = [
-      makeTopicData({ topicId: '0.0.1111', memo: 'Topic 1', name: 'Topic 1' }),
-      makeTopicData({ topicId: '0.0.2222', memo: 'Topic 2', name: 'Topic 2' }),
+      makeTopicData({
+        topicId: MOCK_HEDERA_ENTITY_ID_1,
+        memo: 'Topic 1',
+        name: 'Topic 1',
+      }),
+      makeTopicData({
+        topicId: MOCK_HEDERA_ENTITY_ID_2,
+        memo: 'Topic 2',
+        name: 'Topic 2',
+      }),
     ];
 
     MockedHelper.mockImplementation(() => ({
@@ -61,9 +76,9 @@ describe('topic plugin - list command', () => {
     expect(output.totalCount).toBe(2);
     expect(output.topics).toHaveLength(2);
     expect(output.topics[0].name).toBe('Topic 1');
-    expect(output.topics[0].topicId).toBe('0.0.1111');
+    expect(output.topics[0].topicId).toBe(MOCK_HEDERA_ENTITY_ID_1);
     expect(output.topics[1].name).toBe('Topic 2');
-    expect(output.topics[1].topicId).toBe('0.0.2222');
+    expect(output.topics[1].topicId).toBe(MOCK_HEDERA_ENTITY_ID_2);
     expect(output.stats.withAdminKey).toBe(0);
     expect(output.stats.withSubmitKey).toBe(0);
   });
@@ -72,7 +87,7 @@ describe('topic plugin - list command', () => {
     const logger = makeLogger();
     const topics = [
       makeTopicData({
-        topicId: '0.0.3333',
+        topicId: MOCK_HEDERA_ENTITY_ID_3,
         memo: 'Topic 3',
         name: 'Topic 3',
         adminKeyRefIds: ['kr_admin'],
@@ -100,14 +115,14 @@ describe('topic plugin - list command', () => {
     const logger = makeLogger();
 
     const MAINNET_TOPIC = makeTopicData({
-      topicId: '0.0.4444',
+      topicId: MOCK_HEDERA_ENTITY_ID_4,
       memo: 'Mainnet Topic',
       name: 'Mainnet Topic',
       network: SupportedNetwork.MAINNET,
     });
 
     const TESTNET_TOPIC = makeTopicData({
-      topicId: '0.0.5555',
+      topicId: MOCK_HEDERA_ENTITY_ID_5,
       memo: 'Testnet Topic',
       name: 'Testnet Topic',
       network: SupportedNetwork.TESTNET,
@@ -137,7 +152,7 @@ describe('topic plugin - list command', () => {
     MockedHelper.mockImplementation(() => ({
       listTopics: jest.fn().mockReturnValue([
         makeTopicData({
-          topicId: '0.0.5555',
+          topicId: MOCK_HEDERA_ENTITY_ID_5,
           memo: 'Testnet Topic',
           name: 'Testnet Topic',
           network: SupportedNetwork.TESTNET,
@@ -162,21 +177,21 @@ describe('topic plugin - list command', () => {
     const logger = makeLogger();
     const topics = [
       makeTopicData({
-        topicId: '0.0.1111',
+        topicId: MOCK_HEDERA_ENTITY_ID_1,
         memo: 'Topic 1',
         name: 'Topic 1',
         adminKeyRefIds: ['kr_admin1'],
         network: SupportedNetwork.TESTNET,
       }),
       makeTopicData({
-        topicId: '0.0.2222',
+        topicId: MOCK_HEDERA_ENTITY_ID_2,
         memo: 'Topic 2',
         name: 'Topic 2',
         submitKeyRefIds: ['kr_submit1'],
         network: SupportedNetwork.MAINNET,
       }),
       makeTopicData({
-        topicId: '0.0.3333',
+        topicId: MOCK_HEDERA_ENTITY_ID_3,
         memo: '(No memo)',
         name: 'Topic 3',
         network: SupportedNetwork.TESTNET,
@@ -204,7 +219,7 @@ describe('topic plugin - list command', () => {
     const logger = makeLogger();
     const topics = [
       makeTopicData({
-        topicId: '0.0.1111',
+        topicId: MOCK_HEDERA_ENTITY_ID_1,
         memo: '(No memo)',
         name: 'Topic 1',
       }),

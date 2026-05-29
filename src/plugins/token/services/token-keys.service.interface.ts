@@ -8,37 +8,11 @@ import type {
 } from '@/core/services/kms/kms-types.interface';
 import type { TokenCreateFtInput } from '@/plugins/token/commands/create-ft/input';
 import type { FungibleTokenFileDefinition } from '@/plugins/token/schema';
-
-export interface TokenCreateFtKeys {
-  treasury: ResolvedAccountCredential;
-  admin: ResolvedPublicKey[];
-  supply: ResolvedPublicKey[];
-  freeze: ResolvedPublicKey[];
-  wipe: ResolvedPublicKey[];
-  kyc: ResolvedPublicKey[];
-  pause: ResolvedPublicKey[];
-  feeSchedule: ResolvedPublicKey[];
-  metadata: ResolvedPublicKey[];
-}
-
-export interface TokenCreateFtFromFileKeys {
-  treasury: ResolvedAccountCredential;
-  adminKeys: ResolvedPublicKey[];
-  supplyKeys: ResolvedPublicKey[];
-  wipeKeys: ResolvedPublicKey[];
-  kycKeys: ResolvedPublicKey[];
-  freezeKeys: ResolvedPublicKey[];
-  pauseKeys: ResolvedPublicKey[];
-  feeScheduleKeys: ResolvedPublicKey[];
-  metadataKeys: ResolvedPublicKey[];
-  keyRefIds: string[];
-}
-
-export interface TokenUpdatedTreasuryParams {
-  explicitKey?: Credential;
-  treasuryAccountId: string;
-  keyManager: KeyManager;
-}
+import type {
+  TokenCreateFtFromFileKeys,
+  TokenCreateFtKeys,
+  TokenUpdatedTreasuryParams,
+} from '@/plugins/token/services/token-keys.types';
 
 export interface TokenKeysService {
   resolveOptionalKeys(

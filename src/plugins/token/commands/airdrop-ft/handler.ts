@@ -225,6 +225,6 @@ export async function tokenAirdropFt(
   const { api } = args;
   return new TokenAirdropFtCommand(
     new TokenReferenceServiceImpl(api.identityResolution),
-    new TokenStateServiceImpl(api.state, api.logger),
+    new TokenStateServiceImpl(api.state, api.logger, api.receipt, api.alias),
   ).execute(args);
 }

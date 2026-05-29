@@ -1,74 +1,55 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { BatchDataItem } from '@/core/types/shared.types';
-import type { TopicData } from '@/plugins/topic/schema';
 
+import { MOCK_TOPIC_ID, MOCK_TX_ID_1 } from '@/__tests__/mocks/fixtures';
 import {
   createBatchExecuteParams,
   makeArgs,
-  makeLogger,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { TOPIC_DELETE_COMMAND_NAME } from '@/plugins/topic/commands/delete/handler';
 import { TopicDeleteStateHook } from '@/plugins/topic/hooks/topic-delete-state';
-import { TopicCleanupServiceImpl } from '@/plugins/topic/services/topic-cleanup.service';
+import { TopicStateServiceImpl } from '@/plugins/topic/services/topic-state.service';
 
-jest.mock('../../services/topic-cleanup.service', () => ({
-  TopicCleanupServiceImpl: jest.fn(),
-}));
+jest.mock('@/plugins/topic/services/topic-state.service');
+jest.mock('@/plugins/topic/services/topic-alias.service');
 
-const MockedTopicCleanupService = TopicCleanupServiceImpl as jest.Mock;
-
-const baseTopicToDelete = (): TopicData => ({
-  topicId: '0.0.9999',
-  network: SupportedNetwork.TESTNET,
-  createdAt: '2024-01-01T00:00:00.000Z',
-  adminKeyRefIds: [],
-  submitKeyRefIds: [],
-  adminKeyThreshold: 0,
-  submitKeyThreshold: 0,
-});
-
-const validDeleteNormalizedParams = () => ({
-  topicRef: 'my-topic-ref',
-  network: SupportedNetwork.TESTNET,
-  key: 'kr-delete',
-  topicToDelete: baseTopicToDelete(),
-  stateOnly: false,
-});
+const MockedTopicStateService = TopicStateServiceImpl as jest.Mock;
 
 const createDeleteBatchDataItem = (
   overrides: Partial<BatchDataItem> = {},
 ): BatchDataItem => ({
-  transactionBytes: 'abcdef1234567890',
+  transactionBytes: 'abcdef',
   order: 1,
   keyRefIds: [],
   command: TOPIC_DELETE_COMMAND_NAME,
-  normalizedParams: validDeleteNormalizedParams(),
-  transactionId: '0.0.1234@1234567890.000000000',
+  normalizedParams: {
+    network: SupportedNetwork.TESTNET,
+    topicId: MOCK_TOPIC_ID,
+  },
+  transactionId: MOCK_TX_ID_1,
   ...overrides,
 });
 
 describe('topic plugin - TopicDeleteStateHook', () => {
+  let applyMock: jest.Mock;
   let hook: TopicDeleteStateHook;
-  let removeTopicFromLocalStateMock: jest.Mock;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    removeTopicFromLocalStateMock = jest.fn();
-    MockedTopicCleanupService.mockImplementation(() => ({
-      removeTopicFromLocalState: removeTopicFromLocalStateMock,
+    applyMock = jest.fn().mockResolvedValue(undefined);
+    MockedTopicStateService.mockImplementation(() => ({
+      applyTopicDeleteFromBatchItem: applyMock,
     }));
     hook = new TopicDeleteStateHook();
   });
 
-  test('returns breakFlow false when batch execution failed', async () => {
-    const logger = makeLogger();
+  test('returns breakFlow false when batch failed', async () => {
     const api = {} as Partial<CoreApi>;
-    const args = makeArgs({ ...api, logger }, {});
-
+    const args = makeArgs(api, {});
     const params = createBatchExecuteParams({
-      name: 'batch',
+      name: 'b',
       keyRefId: 'kr',
       executed: true,
       success: false,
@@ -78,16 +59,31 @@ describe('topic plugin - TopicDeleteStateHook', () => {
     const result = await hook.execute({ ...params, args });
 
     expect(result.breakFlow).toBe(false);
-    expect(removeTopicFromLocalStateMock).not.toHaveBeenCalled();
+    expect(applyMock).not.toHaveBeenCalled();
   });
 
-  test('skips when batch has no topic_delete transactions', async () => {
-    const logger = makeLogger();
-    const api = { state: makeStateMock() } as unknown as Partial<CoreApi>;
-    const args = makeArgs({ ...api, logger }, {});
-
+  test('delegates to apply for delete transactions', async () => {
+    const api = { state: makeStateMock() } as Partial<CoreApi>;
+    const args = makeArgs(api, {});
+    const item = createDeleteBatchDataItem();
     const params = createBatchExecuteParams({
-      name: 'batch',
+      name: 'b',
+      keyRefId: 'kr',
+      executed: true,
+      success: true,
+      transactions: [item],
+    });
+
+    await hook.execute({ ...params, args });
+
+    expect(applyMock).toHaveBeenCalledWith(item);
+  });
+
+  test('filters out non-delete commands', async () => {
+    const api = { state: makeStateMock() } as Partial<CoreApi>;
+    const args = makeArgs(api, {});
+    const params = createBatchExecuteParams({
+      name: 'b',
       keyRefId: 'kr',
       executed: true,
       success: true,
@@ -96,101 +92,8 @@ describe('topic plugin - TopicDeleteStateHook', () => {
       ],
     });
 
-    const result = await hook.execute({ ...params, args });
+    await hook.execute({ ...params, args });
 
-    expect(result.breakFlow).toBe(false);
-    expect(removeTopicFromLocalStateMock).not.toHaveBeenCalled();
-  });
-
-  test('logs warn and skips cleanup when normalized params are invalid', async () => {
-    const logger = makeLogger();
-    const api = {
-      state: makeStateMock(),
-      alias: { list: jest.fn().mockReturnValue([]), remove: jest.fn() },
-    } as unknown as Partial<CoreApi>;
-    const args = makeArgs({ ...api, logger }, {});
-
-    const params = createBatchExecuteParams({
-      name: 'batch',
-      keyRefId: 'kr',
-      executed: true,
-      success: true,
-      transactions: [
-        createDeleteBatchDataItem({
-          normalizedParams: { invalid: 'data' },
-        }),
-      ],
-    });
-
-    const result = await hook.execute({ ...params, args });
-
-    expect(result.breakFlow).toBe(false);
-    expect(removeTopicFromLocalStateMock).not.toHaveBeenCalled();
-    expect(logger.warn).toHaveBeenCalledWith(
-      'Topic delete batch item skipped: normalized params did not match schema',
-    );
-  });
-
-  test('does not remove from state when stateOnly is true', async () => {
-    const logger = makeLogger();
-    const api = {
-      state: makeStateMock(),
-      alias: { list: jest.fn().mockReturnValue([]), remove: jest.fn() },
-    } as unknown as Partial<CoreApi>;
-    const args = makeArgs({ ...api, logger }, {});
-
-    const params = createBatchExecuteParams({
-      name: 'batch',
-      keyRefId: 'kr',
-      executed: true,
-      success: true,
-      transactions: [
-        createDeleteBatchDataItem({
-          normalizedParams: {
-            ...validDeleteNormalizedParams(),
-            stateOnly: true,
-          },
-        }),
-      ],
-    });
-
-    const result = await hook.execute({ ...params, args });
-
-    expect(result.breakFlow).toBe(false);
-    expect(removeTopicFromLocalStateMock).not.toHaveBeenCalled();
-  });
-
-  test('calls TopicCleanupService.removeTopicFromLocalState when delete succeeds', async () => {
-    const logger = makeLogger();
-    const api = {
-      state: makeStateMock(),
-      alias: { list: jest.fn().mockReturnValue([]), remove: jest.fn() },
-    } as unknown as Partial<CoreApi>;
-    const args = makeArgs({ ...api, logger }, {});
-
-    const topicToDelete = baseTopicToDelete();
-    const params = createBatchExecuteParams({
-      name: 'batch',
-      keyRefId: 'kr',
-      executed: true,
-      success: true,
-      transactions: [
-        createDeleteBatchDataItem({
-          normalizedParams: {
-            ...validDeleteNormalizedParams(),
-            topicToDelete,
-          },
-        }),
-      ],
-    });
-
-    const result = await hook.execute({ ...params, args });
-
-    expect(result.breakFlow).toBe(false);
-    expect(removeTopicFromLocalStateMock).toHaveBeenCalledTimes(1);
-    expect(removeTopicFromLocalStateMock).toHaveBeenCalledWith(
-      topicToDelete,
-      SupportedNetwork.TESTNET,
-    );
+    expect(applyMock).not.toHaveBeenCalled();
   });
 });

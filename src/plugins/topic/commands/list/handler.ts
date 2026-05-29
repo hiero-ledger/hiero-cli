@@ -4,6 +4,7 @@ import type { TopicStateService } from '@/plugins/topic/services/topic-state.ser
 import type { TopicListOutput } from './output';
 import type { ListTopicsNormalisedParams } from './types';
 
+import { TopicAliasServiceImpl } from '@/plugins/topic/services/topic-alias.service';
 import { TopicStateServiceImpl } from '@/plugins/topic/services/topic-state.service';
 
 import { TopicListInputSchema } from './input';
@@ -71,8 +72,13 @@ export class TopicListCommand implements Command {
 export async function topicList(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  const { logger, state } = args.api;
-  const topicState = new TopicStateServiceImpl(state, logger);
+  const topicState = new TopicStateServiceImpl(
+    args.api.state,
+    args.api.logger,
+    args.api.receipt,
+    args.api.alias,
+    new TopicAliasServiceImpl(args.api.alias, args.api.logger),
+  );
 
   return new TopicListCommand(topicState).execute(args);
 }

@@ -1,11 +1,4 @@
-import type { SupportedNetwork } from '@/core/types/shared.types';
-
-export interface RegisterTopicAliasParams {
-  alias: string;
-  network: SupportedNetwork;
-  topicId: string;
-  createdAt: string;
-}
+import type { RegisterTopicAliasParams } from '@/plugins/topic/services/topic-alias.types';
 
 export interface TopicAliasService {
   tryRegisterTopicAlias(params: RegisterTopicAliasParams): boolean;

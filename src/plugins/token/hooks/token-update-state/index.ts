@@ -1,1 +1,1 @@
-export { TokenUpdateStateHook, tokenUpdateStateHook } from './handler';
+export { TokenUpdateStateHook } from './handler';

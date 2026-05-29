@@ -25,6 +25,7 @@ import { composeKey } from '@/core/utils/key-composer';
 import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
 import { matchPublicKeysToKmsRefIds } from '@/core/utils/match-keys-to-kms';
 import { resolveFieldUpdate } from '@/core/utils/resolve-field-update';
+import { TopicAliasServiceImpl } from '@/plugins/topic/services/topic-alias.service';
 import { TopicResolutionServiceImpl } from '@/plugins/topic/services/topic-resolution.service';
 import { TopicStateServiceImpl } from '@/plugins/topic/services/topic-state.service';
 
@@ -71,9 +72,8 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
     const submitKeyInput =
       validArgs.submitKey === NULL_TOKEN ? null : validArgs.submitKey;
     const isSubmitKeyClear = submitKeyInput === null;
-    const submitKeyCredentials = isSubmitKeyClear
-      ? []
-      : (submitKeyInput as Credential[]);
+    const submitKeyCredentials: Credential[] =
+      submitKeyInput === null ? [] : submitKeyInput;
 
     const hasAdminKey = !!topicInfo.admin_key;
     const hasOnlyExpirationTime =
@@ -410,8 +410,14 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
 export async function topicUpdate(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  const { alias, logger, state } = args.api;
-  const topicState = new TopicStateServiceImpl(state, logger);
+  const { alias } = args.api;
+  const topicState = new TopicStateServiceImpl(
+    args.api.state,
+    args.api.logger,
+    args.api.receipt,
+    args.api.alias,
+    new TopicAliasServiceImpl(args.api.alias, args.api.logger),
+  );
   const topicResolution = new TopicResolutionServiceImpl(alias);
 
   return new TopicUpdateCommand(topicState, topicResolution).execute(args);

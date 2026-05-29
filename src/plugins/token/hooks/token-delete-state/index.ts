@@ -1,1 +1,1 @@
-export { TokenDeleteStateHook, tokenDeleteStateHook } from './handler';
+export { TokenDeleteStateHook } from './handler';

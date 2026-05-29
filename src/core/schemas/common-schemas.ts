@@ -1224,3 +1224,7 @@ export const BooleanStringSchema = z.preprocess(
   (v) => (v === 'true' ? true : v === 'false' ? false : v),
   z.boolean({ error: 'Value must be true or false' }),
 );
+
+export type ScheduledTransactionData = z.infer<
+  typeof ScheduledTransactionDataSchema
+>;
