@@ -63,8 +63,10 @@ export class HbarTransferCommand extends BaseTransactionCommand<
     );
     const toAccount = await api.keyResolver.resolveDestination(to, keyManager);
 
-    // In resolved destination at least one field is present
-    const destination = toAccount.evmAddress || <string>toAccount.accountId;
+    const destination = toAccount.evmAddress || toAccount.accountId;
+    if (!destination) {
+      throw new ValidationError('Could not resolve transfer destination');
+    }
 
     if (fromAccount.accountId === toAccount.accountId) {
       throw new ValidationError('Cannot transfer to the same account');
