@@ -6,8 +6,6 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { AccountService } from '@/core/services/account/account-transaction-service.interface';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { AllowanceService } from '@/core/services/allowance/allowance-service.interface';
-import type { BatchTransactionService } from '@/core/services/batch/batch-transaction-service.interface';
-import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { ContractCompilerService } from '@/core/services/contract-compiler/contract-compiler-service.interface';
 import type { ContractQueryService } from '@/core/services/contract-query/contract-query-service.interface';
 import type { ContractTransactionService } from '@/core/services/contract-transaction/contract-transaction-service.interface';
@@ -15,13 +13,9 @@ import type { ContractVerifierService } from '@/core/services/contract-verifier/
 import type { IdentityResolutionService } from '@/core/services/identity-resolution/identity-resolution-service.interface';
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
-import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
-import type { OutputService } from '@/core/services/output/output-service.interface';
 import type { OutputHandlerOptions } from '@/core/services/output/types';
-import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
-import type { ReceiptService } from '@/core/services/receipt/receipt-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type { TokenService } from '@/core/services/token/token-service.interface';
 import type { TopicService } from '@/core/services/topic/topic-transaction-service.interface';
@@ -397,10 +391,10 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
     txExecute,
     batch: {
       createBatchTransaction: jest.fn(),
-    } as unknown as BatchTransactionService,
+    },
     receipt: {
       getReceipt: jest.fn(),
-    } as unknown as ReceiptService,
+    },
     kms,
     alias,
     state,
@@ -418,29 +412,29 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
       getOption: jest.fn().mockReturnValue(KeyManager.local),
       setOption: jest.fn(),
       listOptions: jest.fn().mockReturnValue([]),
-    } as unknown as ConfigService,
+    },
     logger: {
       info: jest.fn(),
       error: jest.fn(),
       debug: jest.fn(),
       warn: jest.fn(),
       setLevel: jest.fn(),
-    } as jest.Mocked<Logger>,
+    },
     transfer: {
       buildTransferTransaction: jest.fn(),
       ...config?.transfer,
-    } as jest.Mocked<TransferService>,
+    },
     allowance: {
       buildAllowanceApprove: jest.fn(),
       buildNftAllowanceDelete: jest.fn(),
       ...config?.allowance,
-    } as jest.Mocked<AllowanceService>,
+    },
     output: {
       handleOutput: jest.fn<never, [OutputHandlerOptions]>(),
       getFormat: jest.fn().mockReturnValue('human'),
       setFormat: jest.fn(),
       emptyLine: jest.fn(),
-    } as jest.Mocked<OutputService>,
+    },
     pluginManagement: {
       listPlugins: jest.fn().mockReturnValue([]),
       getPlugin: jest.fn(),
@@ -453,21 +447,21 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
       getInitializedDefaults: jest.fn().mockReturnValue([]),
       setInitializedDefaults: jest.fn(),
       addToInitializedDefaults: jest.fn(),
-    } as PluginManagementService,
+    },
     contract: {
       contractCreateFlowTransaction: jest.fn(),
     } as unknown as ContractTransactionService,
     contractCompiler: {
       compileContract: jest.fn(),
-    } as ContractCompilerService,
+    },
     contractVerifier: {
       verifyContract: jest.fn(),
       isVerifiedFullMatchOnRepository: jest.fn().mockResolvedValue(false),
       ...(config?.contractVerifier || {}),
-    } as ContractVerifierService,
+    },
     contractQuery: {
       queryContractFunction: jest.fn(),
-    } as ContractQueryService,
+    },
     identityResolution: {
       resolveAccount: jest
         .fn()

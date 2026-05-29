@@ -1,8 +1,5 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { AliasService } from '@/core/services/alias/alias-service.interface';
-import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
-import type { TransactionResult } from '@/core/types/shared.types';
 
 import {
   ED25519_DER_PUBLIC_KEY,
@@ -120,7 +117,7 @@ describe('topic plugin - message-submit command', () => {
           success: true,
           topicSequenceNumber: 5,
           receipt: { status: { status: 'success' } },
-        } as TransactionResult),
+        }),
         executeContractCreateFlowImpl: jest.fn(),
       });
 
@@ -129,7 +126,7 @@ describe('topic plugin - message-submit command', () => {
       txSign,
       txExecute,
       network: networkMock,
-      alias: alias as AliasService,
+      alias,
       logger,
       mirror: mirrorWithNoSubmitKey('0.0.1234'),
     };
@@ -169,7 +166,7 @@ describe('topic plugin - message-submit command', () => {
           success: true,
           topicSequenceNumber: 10,
           receipt: { status: { status: 'success' } },
-        } as TransactionResult),
+        }),
       });
 
     const kms = makeKmsMock();
@@ -186,10 +183,10 @@ describe('topic plugin - message-submit command', () => {
       txSign,
       txExecute,
       network: networkMock,
-      alias: alias as AliasService,
+      alias,
       logger,
       mirror: mirrorWithSubmitKey('0.0.5678'),
-      keyResolver: keyResolverMock as KeyResolverService,
+      keyResolver: keyResolverMock,
       config: makeConfigMock(),
     };
 
@@ -221,7 +218,7 @@ describe('topic plugin - message-submit command', () => {
       txSign,
       txExecute,
       network: networkMock,
-      alias: alias as AliasService,
+      alias,
       logger,
       mirror: mirrorThrowingNotFound(),
     };
@@ -248,7 +245,7 @@ describe('topic plugin - message-submit command', () => {
       txSign,
       txExecute,
       network: networkMock,
-      alias: alias as AliasService,
+      alias,
       logger,
       mirror: mirrorWithSubmitKey('0.0.1234'),
     };
@@ -276,7 +273,7 @@ describe('topic plugin - message-submit command', () => {
           transactionId: 'tx-123',
           success: false,
           receipt: { status: { status: 'success' } },
-        } as TransactionResult),
+        }),
       });
 
     const api: Partial<CoreApi> = {
@@ -284,7 +281,7 @@ describe('topic plugin - message-submit command', () => {
       txSign,
       txExecute,
       network: networkMock,
-      alias: alias as AliasService,
+      alias,
       logger,
       mirror: mirrorWithNoSubmitKey('0.0.1234'),
     };
@@ -315,7 +312,7 @@ describe('topic plugin - message-submit command', () => {
       txSign,
       txExecute,
       network: networkMock,
-      alias: alias as AliasService,
+      alias,
       logger,
       mirror: mirrorWithNoSubmitKey('0.0.1234'),
     };

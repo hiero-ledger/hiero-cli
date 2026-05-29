@@ -1,5 +1,4 @@
-import type { CoreApi, TransactionResult } from '@/core';
-import type { AliasService } from '@/core/services/alias/alias-service.interface';
+import type { CoreApi } from '@/core';
 
 import {
   ECDSA_HEX_PUBLIC_KEY,
@@ -112,7 +111,7 @@ describe('topic plugin - create command', () => {
           topicId: '0.0.9999',
           consensusTimestamp: '2024-01-01T00:00:00.000Z',
           receipt: { status: { status: 'success' } },
-        } as TransactionResult),
+        }),
       });
 
     const api: Partial<CoreApi> = {
@@ -121,7 +120,7 @@ describe('topic plugin - create command', () => {
       txExecute,
       network: networkMock,
       kms,
-      alias: alias as AliasService,
+      alias,
       logger,
     };
 
@@ -175,7 +174,7 @@ describe('topic plugin - create command', () => {
           topicId: '0.0.8888',
           consensusTimestamp: '2024-01-01T00:00:00.000Z',
           receipt: { status: { status: 'success' } },
-        } as TransactionResult),
+        }),
       });
 
     const api: Partial<CoreApi> = {
@@ -184,7 +183,7 @@ describe('topic plugin - create command', () => {
       txExecute,
       network: networkMock,
       kms,
-      alias: alias as AliasService,
+      alias,
       logger,
     };
 
@@ -255,7 +254,7 @@ describe('topic plugin - create command', () => {
           topicId: '0.0.6666',
           consensusTimestamp: '2024-01-01T00:00:00.000Z',
           receipt: { status: { status: 'success' } },
-        } as TransactionResult),
+        }),
       });
 
     const api: Partial<CoreApi> = {
@@ -264,7 +263,7 @@ describe('topic plugin - create command', () => {
       txExecute,
       network: networkMock,
       kms,
-      alias: alias as AliasService,
+      alias,
       logger,
     };
 
@@ -323,7 +322,7 @@ describe('topic plugin - create command', () => {
           topicId: '0.0.7777',
           consensusTimestamp: '2024-01-01T00:00:00.000Z',
           receipt: { status: { status: 'success' } },
-        } as TransactionResult),
+        }),
       });
 
     const api: Partial<CoreApi> = {
@@ -332,7 +331,7 @@ describe('topic plugin - create command', () => {
       txExecute,
       network: networkMock,
       kms,
-      alias: alias as AliasService,
+      alias,
       logger,
     };
 
@@ -372,7 +371,7 @@ describe('topic plugin - create command', () => {
           transactionId: 'tx-123',
           success: false,
           receipt: { status: { status: 'success' } },
-        } as TransactionResult),
+        }),
       });
 
     const api: Partial<CoreApi> = {
@@ -381,7 +380,7 @@ describe('topic plugin - create command', () => {
       txExecute,
       network: networkMock,
       kms,
-      alias: alias as AliasService,
+      alias,
       logger,
     };
 
@@ -407,7 +406,7 @@ describe('topic plugin - create command', () => {
       txExecute,
       network: networkMock,
       kms,
-      alias: alias as AliasService,
+      alias,
       logger,
     };
 

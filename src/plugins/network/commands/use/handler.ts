@@ -1,7 +1,6 @@
 import type { CommandHandlerArgs } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { CommandResult } from '@/core/plugins/plugin.types';
-import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { UseNetworkOutput } from './output';
 import type { UseNetworkNormalisedParams } from './types';
 
@@ -13,7 +12,7 @@ const normalizeParams = (
   const validArgs = NetworkUseInputSchema.parse(args.args);
 
   return {
-    network: (validArgs.global || validArgs.g) as SupportedNetwork,
+    network: validArgs.global || validArgs.g,
   };
 };
 

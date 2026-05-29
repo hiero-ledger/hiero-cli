@@ -785,7 +785,7 @@ export const makeMintFtCommandArgs = (params: {
       supplyKey: ['test-supply-key'],
       ...params.args,
     },
-    api: { ...params.api, logger: params.logger } as CoreApi,
+    api: { ...params.api, logger: params.logger },
   };
 };
 
@@ -804,7 +804,7 @@ export const makeBurnFtCommandArgs = (params: {
       supplyKey: [],
       ...params.args,
     },
-    api: { ...params.api, logger: params.logger } as CoreApi,
+    api: { ...params.api, logger: params.logger },
   };
 };
 
@@ -823,7 +823,7 @@ export const makeBurnNftCommandArgs = (params: {
       supplyKey: [],
       ...params.args,
     },
-    api: { ...params.api, logger: params.logger } as CoreApi,
+    api: { ...params.api, logger: params.logger },
   };
 };
 
@@ -850,7 +850,7 @@ export const makeTokenMintNftCommandArgs = (params: {
       supplyKey: ['test-supply-key'],
       ...params.args,
     },
-    api: { ...params.api, logger: params.logger } as CoreApi,
+    api: { ...params.api, logger: params.logger },
   };
 };
 
@@ -870,7 +870,7 @@ export const makeUpdateNftMetadataCommandArgs = (params: {
       metadataKey: [],
       ...params.args,
     },
-    api: { ...params.api, logger: params.logger } as CoreApi,
+    api: { ...params.api, logger: params.logger },
   };
 };
 

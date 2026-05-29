@@ -1,4 +1,4 @@
-import type { CoreApi, TransactionResult } from '@/core';
+import type { CoreApi } from '@/core';
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { SigningKeysResult } from '@/core/services/key-resolver/types';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
@@ -379,7 +379,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
           success: true,
           consensusTimestamp: '2024-01-01T00:00:00.000Z',
           receipt: { status: { status: 'success' } },
-        } as TransactionResult),
+        }),
         executeContractCreateFlow: jest.fn(),
       };
 
@@ -498,7 +498,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
           success: false,
           consensusTimestamp: '2024-01-01T00:00:00.000Z',
           receipt: { status: { status: 'failed' } },
-        } as TransactionResult),
+        }),
         executeContractCreateFlow: jest.fn(),
       };
 
@@ -559,7 +559,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
           success: true,
           consensusTimestamp: '2024-01-01T00:00:00.000Z',
           receipt: { status: { status: 'success' } },
-        } as TransactionResult),
+        }),
         executeContractCreateFlow: jest.fn(),
       };
 

@@ -94,7 +94,7 @@ describe('TokenUpdateStateHook', () => {
         args: makeArgs({ ...api, logger: makeLogger() }, {}),
       };
 
-      const result = await hook.execute(params as never);
+      const result = await hook.execute(params);
 
       expect(result.breakFlow).toBe(false);
       expect(saveTokenMock).not.toHaveBeenCalled();

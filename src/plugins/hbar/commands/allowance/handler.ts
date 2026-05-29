@@ -106,7 +106,7 @@ export class HbarAllowanceCommand extends BaseTransactionCommand<
       buildResult.transaction,
       normalizedParams.keyRefIds,
     );
-    return { signedTransaction } as AllowanceSignTransactionResult;
+    return { signedTransaction };
   }
 
   async executeTransaction(

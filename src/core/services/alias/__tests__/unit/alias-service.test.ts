@@ -354,7 +354,7 @@ describe('AliasServiceImpl', () => {
         null,
         createAliasRecord({ alias: 'alias2' }),
       ];
-      stateMock.list.mockReturnValue(records as AliasRecord[]);
+      stateMock.list.mockReturnValue(records);
 
       const result = aliasService.list();
 

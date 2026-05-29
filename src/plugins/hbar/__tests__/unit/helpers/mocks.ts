@@ -4,7 +4,6 @@
  */
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { AllowanceService } from '@/core/services/allowance/allowance-service.interface';
-import type { StateService } from '@/core/services/state/state-service.interface';
 import type { TransferService } from '@/core/services/transfer/transfer-service.interface';
 
 import {
@@ -114,7 +113,7 @@ export const setupTransferTest = (options: SetupTransferTestOptions = {}) => {
     kms,
     alias,
     logger,
-    state: stateMock as StateService,
+    state: stateMock,
     keyResolver: makeKeyResolverMock({
       network: networkMock,
       alias,

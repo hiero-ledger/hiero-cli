@@ -139,7 +139,7 @@ export class PluginManagementServiceImpl implements PluginManagementService {
   getInitializedDefaults(): string[] {
     const value = this.state.get<string[]>(
       PLUGIN_MANAGEMENT_NAMESPACE,
-      PLUGIN_INITIALIZED_DEFAULTS_KEY as string,
+      PLUGIN_INITIALIZED_DEFAULTS_KEY,
     );
     return Array.isArray(value) ? value : [];
   }
@@ -147,7 +147,7 @@ export class PluginManagementServiceImpl implements PluginManagementService {
   setInitializedDefaults(names: string[]): void {
     this.state.set<string[]>(
       PLUGIN_MANAGEMENT_NAMESPACE,
-      PLUGIN_INITIALIZED_DEFAULTS_KEY as string,
+      PLUGIN_INITIALIZED_DEFAULTS_KEY,
       names,
     );
   }
@@ -159,7 +159,7 @@ export class PluginManagementServiceImpl implements PluginManagementService {
     }
     this.state.set<string[]>(
       PLUGIN_MANAGEMENT_NAMESPACE,
-      PLUGIN_INITIALIZED_DEFAULTS_KEY as string,
+      PLUGIN_INITIALIZED_DEFAULTS_KEY,
       [...current, name],
     );
   }

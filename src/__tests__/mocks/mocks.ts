@@ -522,20 +522,19 @@ const makeOutputMock = (): jest.Mocked<OutputService> => ({
   emptyLine: jest.fn(),
 });
 
-const makePluginManagementServiceMock = (): PluginManagementService =>
-  ({
-    listPlugins: jest.fn().mockReturnValue([]),
-    getPlugin: jest.fn(),
-    addPlugin: jest.fn(),
-    removePlugin: jest.fn(),
-    enablePlugin: jest.fn(),
-    disablePlugin: jest.fn(),
-    resetPlugins: jest.fn(),
-    savePluginState: jest.fn(),
-    getInitializedDefaults: jest.fn().mockReturnValue([]),
-    setInitializedDefaults: jest.fn(),
-    addToInitializedDefaults: jest.fn(),
-  }) as unknown as PluginManagementService;
+const makePluginManagementServiceMock = (): PluginManagementService => ({
+  listPlugins: jest.fn().mockReturnValue([]),
+  getPlugin: jest.fn(),
+  addPlugin: jest.fn(),
+  removePlugin: jest.fn(),
+  enablePlugin: jest.fn(),
+  disablePlugin: jest.fn(),
+  resetPlugins: jest.fn(),
+  savePluginState: jest.fn(),
+  getInitializedDefaults: jest.fn().mockReturnValue([]),
+  setInitializedDefaults: jest.fn(),
+  addToInitializedDefaults: jest.fn(),
+});
 
 const makeContractTransactionServiceMock = (): ContractTransactionService =>
   ({
@@ -545,23 +544,20 @@ const makeContractTransactionServiceMock = (): ContractTransactionService =>
   }) as unknown as ContractTransactionService;
 
 export const makeScheduleTransactionServiceMock =
-  (): jest.Mocked<ScheduleTransactionService> =>
-    ({
-      buildScheduleCreateTransaction: jest.fn(),
-      buildScheduleSignTransaction: jest.fn(),
-      buildScheduleDeleteTransaction: jest.fn(),
-    }) as unknown as jest.Mocked<ScheduleTransactionService>;
+  (): jest.Mocked<ScheduleTransactionService> => ({
+    buildScheduleCreateTransaction: jest.fn(),
+    buildScheduleSignTransaction: jest.fn(),
+    buildScheduleDeleteTransaction: jest.fn(),
+  });
 
-const makeContractVerifierServiceMock = (): ContractVerifierService =>
-  ({
-    verifyContract: jest.fn(),
-    isVerifiedFullMatchOnRepository: jest.fn().mockResolvedValue(false),
-  }) as unknown as ContractVerifierService;
+const makeContractVerifierServiceMock = (): ContractVerifierService => ({
+  verifyContract: jest.fn(),
+  isVerifiedFullMatchOnRepository: jest.fn().mockResolvedValue(false),
+});
 
-const makeContractCompilerServiceMock = (): ContractCompilerService =>
-  ({
-    compileContract: jest.fn(),
-  }) as unknown as ContractCompilerService;
+const makeContractCompilerServiceMock = (): ContractCompilerService => ({
+  compileContract: jest.fn(),
+});
 
 /**
  * Create a mocked BatchTransactionService

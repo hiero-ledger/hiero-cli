@@ -333,7 +333,7 @@ describe('KmsServiceImpl', () => {
       signHashWithEcdsaKey: jest.fn(),
     };
     getLocalKeyManager(KeyManager.local).createSigner.mockReturnValue(
-      signerHandle as Signer,
+      signerHandle,
     );
     const transaction = {
       signWith: jest.fn(
@@ -370,7 +370,7 @@ describe('KmsServiceImpl', () => {
       signHashWithEcdsaKey: jest.fn(),
     };
     getLocalKeyManager(KeyManager.local).createSigner.mockReturnValue(
-      signerHandle as Signer,
+      signerHandle,
     );
     const contractCreateFlow = {
       signWith: jest.fn(

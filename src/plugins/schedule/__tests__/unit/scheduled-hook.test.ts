@@ -61,7 +61,7 @@ function makePreSignParams(
     commandName: HOOK_COMMAND_NAME,
     normalisedParams: {
       keyRefIds: [...keyRefIds],
-    } as ScheduledNormalizedParams,
+    },
     buildTransactionResult: {
       transaction: createMockTransaction() as unknown as Transaction,
     },
@@ -211,7 +211,7 @@ describe('schedule plugin — scheduled hook', () => {
       commandName: HOOK_COMMAND_NAME,
       normalisedParams: {
         keyRefIds: innerKeyRefIds,
-      } as ScheduledNormalizedParams,
+      },
       buildTransactionResult: {
         transaction: innerTx,
       },

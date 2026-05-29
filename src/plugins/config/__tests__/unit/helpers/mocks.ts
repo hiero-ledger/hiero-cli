@@ -11,13 +11,12 @@ import { makeLogger } from '@/__tests__/mocks/mocks';
 
 export const makeConfigServiceMock = (
   overrides?: Partial<jest.Mocked<ConfigService>>,
-): jest.Mocked<ConfigService> =>
-  ({
-    listOptions: jest.fn().mockReturnValue([]),
-    getOption: jest.fn(),
-    setOption: jest.fn(),
-    ...overrides,
-  }) as unknown as jest.Mocked<ConfigService>;
+): jest.Mocked<ConfigService> => ({
+  listOptions: jest.fn().mockReturnValue([]),
+  getOption: jest.fn(),
+  setOption: jest.fn(),
+  ...overrides,
+});
 
 export const makeApiMock = (configSvc: jest.Mocked<ConfigService>) =>
   ({

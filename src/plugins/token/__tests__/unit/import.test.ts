@@ -1,6 +1,5 @@
 import type { CoreApi } from '@/core';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
-import type { NetworkService } from '@/core/services/network/network-service.interface';
 
 import {
   makeAliasMock,
@@ -64,7 +63,7 @@ describe('token plugin - import command (ADR-007)', () => {
 
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
-      network: networkMock as NetworkService,
+      network: networkMock,
       alias,
       logger,
     };
@@ -136,7 +135,7 @@ describe('token plugin - import command (ADR-007)', () => {
 
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
-      network: networkMock as NetworkService,
+      network: networkMock,
       alias,
       logger,
     };
@@ -193,7 +192,7 @@ describe('token plugin - import command (ADR-007)', () => {
 
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
-      network: makeNetworkMock(SupportedNetwork.TESTNET) as NetworkService,
+      network: makeNetworkMock(SupportedNetwork.TESTNET),
       alias: makeAliasMock(),
       logger,
     };
@@ -232,7 +231,7 @@ describe('token plugin - import command (ADR-007)', () => {
 
     const api: Partial<CoreApi> = {
       mirror: makeMirrorMock() as HederaMirrornodeService,
-      network: makeNetworkMock(SupportedNetwork.TESTNET) as NetworkService,
+      network: makeNetworkMock(SupportedNetwork.TESTNET),
       alias: makeAliasMock(),
       logger,
     };
@@ -267,7 +266,7 @@ describe('token plugin - import command (ADR-007)', () => {
 
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
-      network: makeNetworkMock(SupportedNetwork.TESTNET) as NetworkService,
+      network: makeNetworkMock(SupportedNetwork.TESTNET),
       alias: makeAliasMock(),
       logger,
     };

@@ -1,7 +1,6 @@
 import type { CoreApi } from '@/core';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
-import type { Credential } from '@/core/services/kms/kms-types.interface';
 import type { TokenAssociationsService } from '@/plugins/token/services/token-associations.service.interface';
 import type { TokenStateService } from '@/plugins/token/services/token-state.service.interface';
 
@@ -87,7 +86,7 @@ export class TokenCreateNftFromFileStateHook implements Hook<PostOutputPreparati
 
     await this.tokenAssociationsService.processTokenAssociations(
       innerTransactionResult.tokenId,
-      normalisedParams.associations as Credential[],
+      normalisedParams.associations,
       normalisedParams.keyManager,
     );
 

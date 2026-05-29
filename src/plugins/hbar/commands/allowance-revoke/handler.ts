@@ -102,7 +102,7 @@ export class HbarAllowanceRevokeCommand extends BaseTransactionCommand<
       buildResult.transaction,
       normalizedParams.keyRefIds,
     );
-    return { signedTransaction } as AllowanceRevokeSignTransactionResult;
+    return { signedTransaction };
   }
 
   async executeTransaction(
