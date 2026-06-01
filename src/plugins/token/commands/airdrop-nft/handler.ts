@@ -93,7 +93,7 @@ export class TokenAirdropNftCommand extends BaseTransactionCommand<
           network,
         );
 
-      if (!resolvedAccount) {
+      if (!resolvedAccount?.accountId) {
         throw new NotFoundError(
           `Destination account not found: ${recipientInput}`,
           {

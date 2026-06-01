@@ -74,7 +74,7 @@ export class TokenAllowanceNftCommand extends BaseTransactionCommand<
         validArgs.spender,
         network,
       );
-    if (!resolvedSpender) {
+    if (!resolvedSpender?.accountId) {
       throw new NotFoundError(
         `Spender account not found: ${validArgs.spender}`,
         {

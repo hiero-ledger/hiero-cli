@@ -3,6 +3,8 @@ import type { TransferEntry } from './transfer-entry.interface';
 
 import { AccountId, Long, TokenId } from '@hiero-ledger/sdk';
 
+import { toSdkAccountId } from '@/core/utils/account-id';
+
 export class FtTransferEntry implements TransferEntry {
   constructor(
     public readonly from: string,
@@ -19,7 +21,7 @@ export class FtTransferEntry implements TransferEntry {
     );
     tx.addTokenTransfer(
       TokenId.fromString(this.tokenId),
-      AccountId.fromString(this.to),
+      toSdkAccountId(this.to),
       Long.fromString(this.amount.toString()),
     );
   }

@@ -3,6 +3,8 @@ import type { TransferEntry } from './transfer-entry.interface';
 
 import { AccountId, Hbar, HbarUnit } from '@hiero-ledger/sdk';
 
+import { toSdkAccountId } from '@/core/utils/account-id';
+
 export class HbarTransferEntry implements TransferEntry {
   constructor(
     public readonly from: string,
@@ -16,7 +18,7 @@ export class HbarTransferEntry implements TransferEntry {
       new Hbar((-this.amountTinybar).toString(), HbarUnit.Tinybar),
     );
     tx.addHbarTransfer(
-      AccountId.fromString(this.to),
+      toSdkAccountId(this.to),
       new Hbar(this.amountTinybar.toString(), HbarUnit.Tinybar),
     );
   }

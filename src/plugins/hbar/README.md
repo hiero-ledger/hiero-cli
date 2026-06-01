@@ -77,7 +77,7 @@ hcli hbar transfer \
 **Options:**
 
 - `-a, --amount <string>` - Amount in HBAR (display units by default, add "t" for tinybar). Example: "1" = 1 HBAR, "100t" = 100 tinybar (required)
-- `-t, --to <string>` - Recipient account ID or name (required)
+- `-t, --to <string>` - Recipient account ID, name, or EVM address (required)
 - `-f, --from <string>` - Sender account: either an account-id:private-key pair or account name (optional, defaults to operator)
 - `-m, --memo <string>` - Transfer memo (optional)
 
@@ -92,6 +92,9 @@ hcli hbar transfer -a 5000000 -f 0.0.123456 -t 0.0.789012
 
 # Transfer from operator account
 hcli hbar transfer -a 100000 -t myaccount
+
+# Transfer to an EVM address (auto-creates the account if it does not exist)
+hcli hbar transfer -a 10 -t 0xcfaa1c85161e2d44df55291896b35a3cd7f98b53
 ```
 
 ### HBAR Allowance

@@ -2,9 +2,12 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 
 import '@/core/utils/json-serialize';
 
-import { ECDSA_HEX_PRIVATE_KEY } from '@/__tests__/mocks/fixtures';
+import {
+  ECDSA_HEX_PRIVATE_KEY,
+  MOCK_EVM_ADDRESS,
+} from '@/__tests__/mocks/fixtures';
 import { assertOutput } from '@/__tests__/utils/assert-output';
-import { NetworkError, SupportedNetwork } from '@/core';
+import { NetworkError, NotFoundError, SupportedNetwork } from '@/core';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { FtTransferEntry } from '@/core/services/transfer';
 import { KeyAlgorithm } from '@/core/shared/constants';
@@ -219,6 +222,66 @@ describe('transferTokenHandler', () => {
         new FtTransferEntry(
           mockAccountIds.sender,
           mockAccountIds.association,
+          mockAccountIds.treasury,
+          100000000n,
+        ),
+      ]);
+    });
+
+    test('should transfer tokens to a non-existent EVM address (auto-create)', async () => {
+      const mockTransferTransaction = { test: 'transfer-transaction' };
+      const mockSignResult = {
+        ...mockTransactionResults.success,
+        consensusTimestamp: '1234567890.123456789',
+      };
+
+      const { api, transfer } = makeApiMocks({
+        transfer: {
+          buildTransferTransaction: jest
+            .fn()
+            .mockReturnValue(mockTransferTransaction),
+        },
+        txExecute: {
+          execute: jest.fn().mockResolvedValue(mockSignResult),
+        },
+        alias: {
+          resolve: jest.fn().mockReturnValue(null),
+        },
+        mirror: {
+          getTokenInfo: jest.fn().mockResolvedValue({ decimals: 6 }),
+        },
+        kms: {
+          importPrivateKey: jest.fn().mockReturnValue({
+            keyRefId: 'imported-key-ref-id',
+            publicKey: 'imported-public-key',
+          }),
+        },
+        identityResolution: {
+          resolveAccount: jest
+            .fn()
+            .mockRejectedValue(new NotFoundError('Account not found')),
+        },
+      });
+
+      const args: CommandHandlerArgs = {
+        args: {
+          token: mockAccountIds.treasury,
+          to: MOCK_EVM_ADDRESS,
+          from: FROM_ACCOUNT,
+          amount: '100',
+        },
+        api,
+      };
+
+      const result = await tokenTransferFt(args);
+
+      const output = assertOutput(result.result, TokenTransferFtOutputSchema);
+      expect(output.to).toBe(MOCK_EVM_ADDRESS);
+
+      expect(transfer.buildTransferTransaction).toHaveBeenCalledWith([
+        new FtTransferEntry(
+          mockAccountIds.sender,
+          MOCK_EVM_ADDRESS,
           mockAccountIds.treasury,
           100000000n,
         ),

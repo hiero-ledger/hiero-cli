@@ -25,12 +25,22 @@ export class TokenReferenceServiceImpl implements TokenReferenceService {
     }
 
     const accountReference = AccountReferenceObjectSchema.parse(account);
-    const resolved = await this.identityResolution.resolveAccount({
-      accountReference: accountReference.value,
-      type: accountReference.type,
-      network,
-    });
-    return { accountId: resolved.accountId };
+    try {
+      const resolved = await this.identityResolution.resolveAccount({
+        accountReference: accountReference.value,
+        type: accountReference.type,
+        network,
+      });
+      return { accountId: resolved.accountId };
+    } catch (error) {
+      if (
+        error instanceof NotFoundError &&
+        accountReference.type === EntityReferenceType.EVM_ADDRESS
+      ) {
+        return { evmAddress: accountReference.value };
+      }
+      throw error;
+    }
   }
 
   resolveToken(

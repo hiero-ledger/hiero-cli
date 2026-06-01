@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import {
   EntityIdSchema,
+  EvmAddressSchema,
   NetworkSchema,
   TransactionIdSchema,
 } from '@/core/schemas/common-schemas';
@@ -10,7 +11,7 @@ export const TokenTransferNftOutputSchema = z.object({
   transactionId: TransactionIdSchema,
   tokenId: EntityIdSchema,
   from: EntityIdSchema,
-  to: EntityIdSchema,
+  to: z.union([EntityIdSchema, EvmAddressSchema]),
   serials: z.array(z.number()).describe('NFT serial numbers transferred'),
   network: NetworkSchema,
 });

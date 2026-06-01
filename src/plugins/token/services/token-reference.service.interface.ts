@@ -1,7 +1,8 @@
 import type { SupportedNetwork } from '@/core/types/shared.types';
 
 export interface ResolvedDestinationAccount {
-  accountId: string;
+  accountId?: string;
+  evmAddress?: string;
 }
 
 export interface ResolvedToken {

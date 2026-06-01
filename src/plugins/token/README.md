@@ -919,7 +919,24 @@ hcli token transfer-ft \
   --from 0.0.111111:302e020100300506032b657004220420... \
   --to 0.0.222222 \
   --amount 100t
+
+# Transfer to an EVM address (auto-creates the account if it does not exist)
+hcli token transfer-ft \
+  --token 0.0.123456 \
+  --to 0xcfaa1c85161e2d44df55291896b35a3cd7f98b53 \
+  --amount 100
 ```
+
+**Parameters:**
+
+- `--token` / `-T`: Token identifier (alias or token ID) - **Required**
+- `--to` / `-t`: Destination account (alias, account-id, or EVM address) - **Required**
+- `--from` / `-f`: Source account (alias or account-id:private-key pair) - **Optional** (defaults to operator)
+- `--amount` / `-a`: Amount to transfer - **Required**
+  - Display units (default): `100` (will be multiplied by token decimals)
+  - Base units: `100t` (raw amount without decimals)
+- `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
+  - `local` or `local_encrypted`
 
 ### Token Airdrop (Non-Fungible Token)
 

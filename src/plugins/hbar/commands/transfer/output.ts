@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import {
   EntityIdSchema,
+  EvmAddressSchema,
   NetworkSchema,
   TinybarSchema,
   TransactionIdSchema,
@@ -10,7 +11,7 @@ import {
 export const HbarTransferOutputSchema = z.object({
   transactionId: TransactionIdSchema,
   fromAccountId: EntityIdSchema,
-  toAccountId: EntityIdSchema,
+  toAccountId: z.union([EntityIdSchema, EvmAddressSchema]),
   amountTinybar: TinybarSchema,
   network: NetworkSchema,
   memo: z.string().optional(),

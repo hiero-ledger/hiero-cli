@@ -21,7 +21,9 @@ export const HbarTransferInputSchema = z.object({
       message: 'Transfer amount must be greater than zero',
     },
   ).describe('Amount to transfer. Format: "100" (HBAR) or "100t" (tinybars)'),
-  to: KeySchema.describe('Destination account. Accepts any key format.'),
+  to: KeySchema.describe(
+    'Destination account. Accepts any key format, including an EVM address.',
+  ),
   from: KeySchema.optional().describe(
     'Source account. Accepts any key format. Defaults to operator.',
   ),
