@@ -2,6 +2,7 @@ import '@/core/utils/json-serialize';
 
 import { ZodError } from 'zod';
 
+import { MOCK_EVM_ADDRESS } from '@/__tests__/mocks/fixtures';
 import { makeArgs } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { StateError, ValidationError } from '@/core/errors';
@@ -70,6 +71,42 @@ describe('hbar plugin - transfer command (unit)', () => {
     expect(logger.info).toHaveBeenCalledWith('[HBAR] Transfer command invoked');
     expect(logger.info).toHaveBeenCalledWith(
       `[HBAR] Transfer submitted successfully, txId=${mockTransactionResults.success.transactionId}`,
+    );
+  });
+
+  test('transfers HBAR to an EVM address destination', async () => {
+    const { api, logger, transfer } = setupTransferTest({
+      transferImpl: jest
+        .fn()
+        .mockReturnValue(mockTransferTransactionResults.empty.transaction),
+      signAndExecuteImpl: jest
+        .fn()
+        .mockResolvedValue(mockTransactionResults.success),
+    });
+
+    const args = makeArgs(
+      { ...api, logger },
+      {
+        amount: mockAmounts.small,
+        from: mockAccountIdKeyPairs.sender,
+        to: MOCK_EVM_ADDRESS,
+      },
+    );
+
+    const result = await hbarTransfer(args);
+    const output = assertOutput(result.result, HbarTransferOutputSchema);
+
+    expect(output.toAccountId).toBe(MOCK_EVM_ADDRESS);
+
+    expect(transfer.buildTransferTransaction).toHaveBeenCalledWith(
+      [
+        new HbarTransferEntry(
+          mockAccountIds.sender,
+          MOCK_EVM_ADDRESS,
+          mockParsedBalances.small,
+        ),
+      ],
+      undefined,
     );
   });
 

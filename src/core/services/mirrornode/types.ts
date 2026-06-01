@@ -40,7 +40,7 @@ export interface AccountAPIResponse {
   balance: AccountAPIBalance;
   created_timestamp: string;
   evm_address?: string;
-  key?: AccountAPIKey;
+  key?: AccountAPIKey | null;
   max_automatic_token_associations: number;
   memo: string;
   receiver_sig_required: boolean;

@@ -5,6 +5,7 @@ import { z } from 'zod';
 
 import {
   EntityIdSchema,
+  EvmAddressSchema,
   NetworkSchema,
   TokenAmountSchema,
   TransactionIdSchema,
@@ -17,7 +18,7 @@ export const TokenTransferFtOutputSchema = z.object({
   transactionId: TransactionIdSchema,
   tokenId: EntityIdSchema,
   from: EntityIdSchema,
-  to: EntityIdSchema,
+  to: z.union([EntityIdSchema, EvmAddressSchema]),
   amount: TokenAmountSchema.describe('Amount transferred in base units'),
   network: NetworkSchema,
 });

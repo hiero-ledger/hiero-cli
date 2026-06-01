@@ -55,7 +55,7 @@ export class TokenPendingAirdropsServiceImpl implements TokenPendingAirdropsServ
       accountOrAlias,
       network,
     );
-    if (!resolved) {
+    if (!resolved?.accountId) {
       throw new NotFoundError(
         `Account not found with ID or alias: ${accountOrAlias}`,
       );

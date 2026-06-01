@@ -3,6 +3,8 @@ import type { TransferEntry } from './transfer-entry.interface';
 
 import { AccountId, Long, NftId, TokenId } from '@hiero-ledger/sdk';
 
+import { toSdkAccountId } from '@/core/utils/account-id';
+
 export class NftTransferEntry implements TransferEntry {
   constructor(
     public readonly from: string,
@@ -18,7 +20,7 @@ export class NftTransferEntry implements TransferEntry {
         Long.fromNumber(this.serialNumber),
       ),
       AccountId.fromString(this.from),
-      AccountId.fromString(this.to),
+      toSdkAccountId(this.to),
     );
   }
 }

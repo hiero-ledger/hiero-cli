@@ -105,7 +105,14 @@ export class TokenTransferFtCommand extends BaseTransactionCommand<
       });
     }
 
-    const toAccountId = resolvedToAccount.accountId;
+    const toAccountId =
+      resolvedToAccount.accountId ?? resolvedToAccount.evmAddress;
+
+    if (!toAccountId) {
+      throw new NotFoundError(`Destination account not found: ${to}`, {
+        context: { to },
+      });
+    }
 
     api.logger.info(
       `Transferring ${rawAmount.toString()} tokens of ${tokenId} from ${fromAccountId} to ${toAccountId}`,

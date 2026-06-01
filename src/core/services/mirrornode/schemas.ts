@@ -100,7 +100,7 @@ export const AccountAPIResponseSchema: z.ZodType<AccountAPIResponse> = z.object(
     balance: AccountAPIBalanceSchema,
     created_timestamp: z.string(),
     evm_address: z.string().optional(),
-    key: AccountAPIKeySchema.optional(),
+    key: z.union([AccountAPIKeySchema, z.null()]).optional(),
     max_automatic_token_associations: z.number(),
     memo: z.string(),
     receiver_sig_required: z.boolean(),

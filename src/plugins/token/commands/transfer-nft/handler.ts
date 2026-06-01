@@ -102,15 +102,27 @@ export class TokenTransferNftCommand extends BaseTransactionCommand<
       );
     }
 
+    const toAccountId =
+      resolvedToAccount.accountId ?? resolvedToAccount.evmAddress;
+
+    if (!toAccountId) {
+      throw new NotFoundError(
+        `Destination account not found: ${validArgs.to}`,
+        {
+          context: { to: validArgs.to },
+        },
+      );
+    }
+
     api.logger.info(
-      `Transferring ${validArgs.serials.length} NFT(s) of ${tokenId} from ${fromAccountId} to ${resolvedToAccount.accountId}`,
+      `Transferring ${validArgs.serials.length} NFT(s) of ${tokenId} from ${fromAccountId} to ${toAccountId}`,
     );
 
     return {
       network,
       tokenId,
       fromAccountId,
-      toAccountId: resolvedToAccount.accountId,
+      toAccountId,
       serials: validArgs.serials,
       signerKeyRefId,
       keyRefIds: [signerKeyRefId],
