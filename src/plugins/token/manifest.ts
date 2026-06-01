@@ -442,7 +442,8 @@ export const tokenPluginManifest: PluginManifest = {
           short: 't',
           type: OptionType.STRING,
           required: true,
-          description: 'Destination to transfer to. Can be accountID or alias',
+          description:
+            'Destination to transfer to. Can be accountID, alias, or EVM address',
         },
         {
           name: 'from',
@@ -553,7 +554,8 @@ export const tokenPluginManifest: PluginManifest = {
           short: 't',
           type: OptionType.STRING,
           required: true,
-          description: 'Destination account. Can be accountID or alias',
+          description:
+            'Destination account. Can be accountID, alias, or EVM address',
         },
         {
           name: 'from',

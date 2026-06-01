@@ -52,7 +52,7 @@ export const hbarPluginManifest: PluginManifest = {
           short: 't',
           type: OptionType.STRING,
           required: true,
-          description: 'Account ID or name to transfer to',
+          description: 'Account ID, name, or EVM address to transfer to',
         },
         {
           name: 'from',
