@@ -28,6 +28,7 @@ export const MOCK_PUBLIC_KEY =
 
 export const MOCK_CONTRACT_ID = '0.0.1234';
 export const MOCK_CONTRACT_ID_UNKNOWN = '0.0.9999';
+export const MOCK_TOKEN_ID = '0.0.6666';
 export const MOCK_ACCOUNT_ID = '0.0.5678';
 export const MOCK_ACCOUNT_ID_ALT = '0.0.5679';
 export const MOCK_ACCOUNT_ID_TO = '0.0.8888';

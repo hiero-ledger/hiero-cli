@@ -1,8 +1,11 @@
 import type { AccountId, TransferTransaction } from '@hiero-ledger/sdk';
 
 import {
+  MOCK_ACCOUNT_ID,
+  MOCK_ACCOUNT_ID_TO,
   MOCK_EVM_ADDRESS,
   MOCK_EVM_ADDRESS_RAW,
+  MOCK_TOKEN_ID,
 } from '@/__tests__/mocks/fixtures';
 import {
   FtTransferEntry,
@@ -10,9 +13,10 @@ import {
   NftTransferEntry,
 } from '@/core/services/transfer';
 
-const FROM = '0.0.1001';
-const TO_ACCOUNT_ID = '0.0.2002';
-const TOKEN_ID = '0.0.3003';
+const FROM = MOCK_ACCOUNT_ID;
+const TO_ACCOUNT_ID = MOCK_ACCOUNT_ID_TO;
+const TOKEN_ID = MOCK_TOKEN_ID;
+const TO_ACCOUNT_NUM = TO_ACCOUNT_ID.split('.').pop() as string;
 
 const makeTx = () =>
   ({
@@ -39,7 +43,7 @@ describe('transfer entries - EVM-aware recipient', () => {
 
       const recipient = tx.addHbarTransfer.mock.calls[1][0] as AccountId;
       expect(recipient.evmAddress).toBeNull();
-      expect(recipient.num.toString()).toBe('2002');
+      expect(recipient.num.toString()).toBe(TO_ACCOUNT_NUM);
     });
   });
 
@@ -60,7 +64,7 @@ describe('transfer entries - EVM-aware recipient', () => {
 
       const recipient = tx.addTokenTransfer.mock.calls[1][1] as AccountId;
       expect(recipient.evmAddress).toBeNull();
-      expect(recipient.num.toString()).toBe('2002');
+      expect(recipient.num.toString()).toBe(TO_ACCOUNT_NUM);
     });
   });
 
@@ -81,7 +85,7 @@ describe('transfer entries - EVM-aware recipient', () => {
 
       const recipient = tx.addNftTransfer.mock.calls[0][2] as AccountId;
       expect(recipient.evmAddress).toBeNull();
-      expect(recipient.num.toString()).toBe('2002');
+      expect(recipient.num.toString()).toBe(TO_ACCOUNT_NUM);
     });
   });
 });

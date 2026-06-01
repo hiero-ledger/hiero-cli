@@ -1,12 +1,12 @@
 import type { IdentityResolutionService } from '@/core/services/identity-resolution/identity-resolution-service.interface';
 
-import { MOCK_EVM_ADDRESS } from '@/__tests__/mocks/fixtures';
+import { MOCK_ACCOUNT_ID, MOCK_EVM_ADDRESS } from '@/__tests__/mocks/fixtures';
 import { NotFoundError, StateError } from '@/core/errors';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { TokenReferenceServiceImpl } from '@/plugins/token/services/token-reference.service';
 
 const NETWORK = SupportedNetwork.TESTNET;
-const ACCOUNT_ID = '0.0.2002';
+const ACCOUNT_ID = MOCK_ACCOUNT_ID;
 
 const makeService = (resolveAccount: jest.Mock): TokenReferenceServiceImpl => {
   const identityResolution = {
