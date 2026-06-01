@@ -410,7 +410,7 @@ describe('account plugin - delete command (ADR-003)', () => {
         logger,
         alias,
         network: networkMock,
-        kms: kms as unknown as KmsService,
+        kms: kms,
         account: accountSvc,
         txSign,
         txExecute,
@@ -464,7 +464,7 @@ describe('account plugin - delete command (ADR-003)', () => {
         executeImpl: jest.fn().mockResolvedValue({
           ...mockTransactionResults.failure,
           consensusTimestamp: '2024-01-01T00:00:00.000Z',
-        } as TransactionResult),
+        }),
       });
 
       MockedHelper.mockImplementation(() => ({
@@ -480,7 +480,7 @@ describe('account plugin - delete command (ADR-003)', () => {
         logger,
         alias,
         network: networkMock,
-        kms: kms as unknown as KmsService,
+        kms: kms,
         account: accountSvc,
         txSign,
         txExecute,

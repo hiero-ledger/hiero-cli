@@ -26,13 +26,12 @@ export const makeLogger = (): jest.Mocked<Logger> => ({
 
 export const makeSignerMock = (
   overrides?: Partial<jest.Mocked<Signer>>,
-): jest.Mocked<Signer> =>
-  ({
-    sign: jest.fn().mockReturnValue(new Uint8Array(64)),
-    signHashWithEcdsaKey: jest.fn().mockReturnValue(mockSignature65Bytes),
-    getPublicKey: jest.fn().mockReturnValue(mockEcdsaPublicKey),
-    ...overrides,
-  }) as jest.Mocked<Signer>;
+): jest.Mocked<Signer> => ({
+  sign: jest.fn().mockReturnValue(new Uint8Array(64)),
+  signHashWithEcdsaKey: jest.fn().mockReturnValue(mockSignature65Bytes),
+  getPublicKey: jest.fn().mockReturnValue(mockEcdsaPublicKey),
+  ...overrides,
+});
 
 export const makeKmsMock = (
   overrides?: Partial<jest.Mocked<KmsService>>,

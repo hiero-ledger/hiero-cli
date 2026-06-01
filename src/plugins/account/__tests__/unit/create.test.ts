@@ -1,7 +1,5 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
-import type { TransactionResult } from '@/core/types/shared.types';
 
 import '@/core/utils/json-serialize';
 
@@ -51,7 +49,7 @@ describe('account plugin - create command (ADR-003)', () => {
           success: true,
           accountId: '0.0.9999',
           receipt: { status: { status: 'success' } },
-        } as Partial<TransactionResult>),
+        }),
       });
 
     const api: Partial<CoreApi> = {
@@ -134,7 +132,7 @@ describe('account plugin - create command (ADR-003)', () => {
           transactionId: '0.0.1234@1234567890.000000000',
           success: false,
           receipt: { status: { status: 'failed' } },
-        } as Partial<TransactionResult>),
+        }),
       });
 
     const api: Partial<CoreApi> = {
@@ -205,7 +203,7 @@ describe('account plugin - create command (ADR-003)', () => {
           success: true,
           accountId: '0.0.8888',
           receipt: { status: { status: 'success' } },
-        } as Partial<TransactionResult>),
+        }),
       });
 
     const api: Partial<CoreApi> = {
@@ -296,7 +294,7 @@ describe('account plugin - create command (ADR-003)', () => {
       kms,
       alias,
       mirror: mirror as HederaMirrornodeService,
-      keyResolver: keyResolver as KeyResolverService,
+      keyResolver: keyResolver,
       logger,
     };
 
@@ -373,7 +371,7 @@ describe('account plugin - create command (ADR-003)', () => {
       kms,
       alias,
       mirror: mirror as HederaMirrornodeService,
-      keyResolver: keyResolver as KeyResolverService,
+      keyResolver: keyResolver,
       logger,
     };
 
@@ -422,7 +420,7 @@ describe('account plugin - create command (ADR-003)', () => {
       kms,
       alias,
       mirror: mirror as HederaMirrornodeService,
-      keyResolver: keyResolver as KeyResolverService,
+      keyResolver: keyResolver,
       logger,
     };
 
@@ -454,7 +452,7 @@ describe('account plugin - create command (ADR-003)', () => {
           success: true,
           accountId: '0.0.7777',
           receipt: { status: { status: 'success' } },
-        } as Partial<TransactionResult>),
+        }),
       });
 
     const api: Partial<CoreApi> = {

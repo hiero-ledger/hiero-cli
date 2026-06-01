@@ -1,5 +1,4 @@
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
-import type { NetworkService } from '@/core/services/network/network-service.interface';
 
 import '@/core/utils/json-serialize';
 
@@ -289,7 +288,7 @@ describe('transferTokenHandler', () => {
           accountId: '0.0.2',
           keyRefId: 'operator-key-ref-id',
         }),
-      } as NetworkService;
+      };
 
       const args: CommandHandlerArgs = {
         args: {

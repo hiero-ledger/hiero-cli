@@ -1,6 +1,5 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
-import type { NetworkService } from '@/core/services/network/network-service.interface';
 
 import '@/core/utils/json-serialize';
 
@@ -50,7 +49,7 @@ describe('account plugin - import command (ADR-003)', () => {
 
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
-      network: networkMock as NetworkService,
+      network: networkMock,
       kms,
       alias,
       logger,
@@ -114,7 +113,7 @@ describe('account plugin - import command (ADR-003)', () => {
 
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
-      network: networkMock as NetworkService,
+      network: networkMock,
       kms,
       alias,
       logger,
@@ -149,7 +148,7 @@ describe('account plugin - import command (ADR-003)', () => {
 
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
-      network: networkMock as NetworkService,
+      network: networkMock,
       kms,
       alias,
       logger,

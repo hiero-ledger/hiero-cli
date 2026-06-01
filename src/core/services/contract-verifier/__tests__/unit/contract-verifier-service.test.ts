@@ -39,7 +39,7 @@ describe('ContractVerifierServiceImpl', () => {
     jest.clearAllMocks();
 
     // reset global.fetch before each test
-    global.fetch = jest.fn() as unknown as typeof fetch;
+    global.fetch = jest.fn();
 
     networkServiceMock = {
       getCurrentNetwork: jest.fn().mockReturnValue(NETWORK),

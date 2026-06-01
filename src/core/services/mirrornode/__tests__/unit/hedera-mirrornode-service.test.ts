@@ -256,7 +256,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
     it('should throw error when account field is missing', async () => {
       const { service } = setupService();
       const mockResponse = createMockAccountAPIResponse({
-        account: '' as never,
+        account: '',
       });
       (global.fetch as jest.Mock).mockResolvedValue({
         ok: true,

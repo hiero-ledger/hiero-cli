@@ -1,5 +1,4 @@
-import type { CoreApi, TransactionResult } from '@/core';
-import type { AliasService } from '@/core/services/alias/alias-service.interface';
+import type { CoreApi } from '@/core';
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { SigningKeysResult } from '@/core/services/key-resolver/types';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
@@ -116,7 +115,7 @@ const makeApiMocks = ({
         success: true,
         consensusTimestamp: '2024-01-02T00:00:00.000Z',
         receipt: { status: { status: 'success' } },
-      } as TransactionResult),
+      }),
     executeContractCreateFlow: jest.fn(),
   };
 
@@ -157,7 +156,7 @@ const makeApiMocks = ({
     txExecute,
     network: networkMock,
     kms,
-    alias: alias as AliasService,
+    alias,
     mirror,
   };
 
@@ -467,7 +466,7 @@ describe('topic plugin - update command', () => {
         success: false,
         consensusTimestamp: '2024-01-02T00:00:00.000Z',
         receipt: { status: { status: 'failure' } },
-      } as unknown as TransactionResult),
+      }),
     });
     const api: Partial<CoreApi> = { ...baseApi, logger };
 

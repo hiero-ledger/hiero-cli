@@ -1,5 +1,4 @@
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
-import type { TransactionResult } from '@/core/types/shared.types';
 
 import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
@@ -235,9 +234,7 @@ describe('createTokenHandler', () => {
             .mockReturnValue(mockTokenTransaction),
         },
         txExecute: {
-          execute: jest
-            .fn()
-            .mockResolvedValue(mockSignResult as TransactionResult),
+          execute: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
           get: jest.fn().mockReturnValue({

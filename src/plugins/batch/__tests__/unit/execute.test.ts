@@ -1,5 +1,4 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { BatchTransactionService } from '@/core/services/batch/batch-transaction-service.interface';
 
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
@@ -70,7 +69,7 @@ describe('batch plugin - execute command', () => {
       kms: kmsMock,
       txSign: txSignMock,
       txExecute: txExecuteMock,
-      batch: batchServiceMock as BatchTransactionService,
+      batch: batchServiceMock,
     };
 
     const args = makeArgs({ ...api, logger }, { name: BATCH_NAME });
@@ -123,7 +122,7 @@ describe('batch plugin - execute command', () => {
       kms: kmsMock,
       txSign: txSignMock,
       txExecute: txExecuteMock,
-      batch: batchServiceMock as BatchTransactionService,
+      batch: batchServiceMock,
     };
 
     const args = makeArgs({ ...api, logger }, { name: BATCH_NAME });

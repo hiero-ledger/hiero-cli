@@ -44,7 +44,7 @@ describe('Token State Management', () => {
       warn: jest.fn(),
       error: jest.fn(),
       setLevel: jest.fn(),
-    } as jest.Mocked<Logger>;
+    };
 
     stateHelper = new TokenStateServiceImpl(
       mockStateService,

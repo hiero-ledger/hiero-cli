@@ -1,6 +1,5 @@
 import type { CoreApi } from '@/core';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
-import type { NetworkService } from '@/core/services/network/network-service.interface';
 
 import {
   ECDSA_DER_PUBLIC_KEY,
@@ -65,7 +64,7 @@ describe('topic plugin - import command (ADR-007)', () => {
 
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
-      network: networkMock as NetworkService,
+      network: networkMock,
       alias,
       logger,
       state: makeStateMock(),
@@ -131,7 +130,7 @@ describe('topic plugin - import command (ADR-007)', () => {
 
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
-      network: networkMock as NetworkService,
+      network: networkMock,
       alias,
       logger,
       state: makeStateMock(),
@@ -200,7 +199,7 @@ describe('topic plugin - import command (ADR-007)', () => {
 
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
-      network: makeNetworkMock(SupportedNetwork.TESTNET) as NetworkService,
+      network: makeNetworkMock(SupportedNetwork.TESTNET),
       alias: makeAliasMock(),
       logger,
       state: makeStateMock(),
@@ -253,7 +252,7 @@ describe('topic plugin - import command (ADR-007)', () => {
 
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
-      network: makeNetworkMock(SupportedNetwork.TESTNET) as NetworkService,
+      network: makeNetworkMock(SupportedNetwork.TESTNET),
       alias: makeAliasMock(),
       logger,
       state: makeStateMock(),
@@ -308,7 +307,7 @@ describe('topic plugin - import command (ADR-007)', () => {
 
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
-      network: makeNetworkMock(SupportedNetwork.TESTNET) as NetworkService,
+      network: makeNetworkMock(SupportedNetwork.TESTNET),
       alias: makeAliasMock(),
       logger,
       state: makeStateMock(),
@@ -353,7 +352,7 @@ describe('topic plugin - import command (ADR-007)', () => {
 
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
-      network: makeNetworkMock(SupportedNetwork.TESTNET) as NetworkService,
+      network: makeNetworkMock(SupportedNetwork.TESTNET),
       alias: makeAliasMock(),
       logger,
       state: makeStateMock(),
@@ -389,7 +388,7 @@ describe('topic plugin - import command (ADR-007)', () => {
 
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
-      network: makeNetworkMock(SupportedNetwork.TESTNET) as NetworkService,
+      network: makeNetworkMock(SupportedNetwork.TESTNET),
       alias: makeAliasMock(),
       logger,
       state: makeStateMock(),
