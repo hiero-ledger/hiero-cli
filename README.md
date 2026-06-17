@@ -297,7 +297,7 @@ The Hiero CLI is built on a plugin architecture. The following default plugins a
 - **[Token Plugin](src/plugins/token/README.md)** - Create, view, associate, and transfer fungible and non-fungible tokens
 - **[Network Plugin](src/plugins/network/README.md)** - Switch networks, manage operator credentials, and check network health
 - **[HBAR Plugin](src/plugins/hbar/README.md)** - Transfer HBAR between accounts
-- **[Credentials Plugin](src/plugins/credentials/README.md)** - Manage operator credentials and keys
+- **[Credentials Plugin](src/plugins/credentials/README.md)** - Generate and import standalone private keys, list and remove stored key credentials
 - **[Plugin Management Plugin](src/plugins/plugin-management/README.md)** - Add, remove, enable/disable, and inspect plugins
 - **[Topic Plugin](src/plugins/topic/README.md)** - Create topics and manage topic messages
 - **[Config Plugin](src/plugins/config/README.md)** - Inspect and update CLI configuration values
