@@ -129,6 +129,18 @@ src/plugins/token/
 │   │   ├── input.ts         # Input schema
 │   │   ├── output.ts        # Output schema and template
 │   │   └── index.ts         # Command exports
+│   ├── wipe-ft/
+│   │   ├── handler.ts       # Fungible token wipe handler
+│   │   ├── input.ts         # Input schema
+│   │   ├── output.ts        # Output schema and template
+│   │   ├── types.ts         # Command-specific type definitions
+│   │   └── index.ts         # Command exports
+│   ├── wipe-nft/
+│   │   ├── handler.ts       # NFT wipe handler
+│   │   ├── input.ts         # Input schema
+│   │   ├── output.ts        # Output schema and template
+│   │   ├── types.ts         # Command-specific type definitions
+│   │   └── index.ts         # Command exports
 │   └── view/
 │       ├── handler.ts       # Token view handler
 │       ├── input.ts         # Input schema
@@ -408,6 +420,118 @@ hcli token burn-nft \
   - `local` or `local_encrypted`
 
 **Note:** NFTs must be held by the treasury account. Burning NFTs not in treasury will fail with an SDK error.
+
+**Batch support:** Pass `--batch <batch-name>` to add to a batch. See the [Batch Support](#-batch-support) section.
+
+### Token Wipe FT
+
+Wipe a specified amount of fungible tokens from an account's balance. Requires the token wipe key. The account must be associated with the token.
+
+```bash
+# Auto-resolve wipe key from key manager
+hcli token wipe-ft \
+  --token mytoken-alias \
+  --account alice \
+  --amount 500
+
+# Explicit wipe key credential
+hcli token wipe-ft \
+  --token 0.0.123456 \
+  --account 0.0.789012 \
+  --amount 1000t \
+  --wipe-key 0.0.123456:302e020100300506032b657004220420...
+
+# Using account alias for wipe key
+hcli token wipe-ft \
+  --token 0.0.123456 \
+  --account 0.0.789012 \
+  --amount 100 \
+  --wipe-key wipe-account-alias
+```
+
+**Parameters:**
+
+- `--token` / `-T`: Token identifier (alias or token ID) - **Required**
+- `--account` / `-a`: Account to wipe from: account-id (0.0.X), account alias, or EVM address (0x...) - **Required**
+- `--amount` / `-m`: Amount to wipe - **Required**
+  - Display units (default): `100` (multiplied by token decimals)
+  - Base units: `100t` (raw amount without decimals)
+- `--wipe-key` / `-w`: Wipe key credential(s) - **Optional** (if omitted, resolved from key manager by matching the token's on-chain wipe key). **Repeatable** for KeyList / threshold keys
+- `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
+
+**Output:**
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.123456",
+  "accountId": "0.0.789012",
+  "amount": "1000",
+  "newTotalSupply": "999000",
+  "network": "testnet"
+}
+```
+
+**Notes:**
+
+- Amount is reported in base units in the output
+- The token must have a wipe key set at creation time; the command fails with a clear error if no wipe key exists
+- Wiping reduces both the account balance and the token's total supply
+
+**Batch support:** Pass `--batch <batch-name>` to add to a batch. See the [Batch Support](#-batch-support) section.
+
+### Token Wipe NFT
+
+Wipe specific NFT serial numbers from an account's balance. Requires the token wipe key.
+
+```bash
+# Auto-resolve wipe key from key manager
+hcli token wipe-nft \
+  --token my-nft-collection \
+  --account alice \
+  --serials 1,2,3
+
+# Explicit wipe key credential
+hcli token wipe-nft \
+  --token 0.0.123456 \
+  --account 0.0.789012 \
+  --serials 5 \
+  --wipe-key 0.0.123456:302e020100300506032b657004220420...
+
+# Using account alias for wipe key
+hcli token wipe-nft \
+  --token 0.0.123456 \
+  --account 0.0.789012 \
+  --serials 1,2 \
+  --wipe-key wipe-account-alias
+```
+
+**Parameters:**
+
+- `--token` / `-T`: Token identifier (alias or token ID) - **Required**
+- `--account` / `-a`: Account to wipe from: account-id (0.0.X), account alias, or EVM address (0x...) - **Required**
+- `--serials` / `-s`: Comma-separated serial numbers to wipe (e.g., `"1,2,3"`). Max 10 serials - **Required**
+- `--wipe-key` / `-w`: Wipe key credential(s) - **Optional** (if omitted, resolved from key manager by matching the token's on-chain wipe key). **Repeatable** for KeyList / threshold keys
+- `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
+
+**Output:**
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.123456",
+  "accountId": "0.0.789012",
+  "serialNumbers": [1, 2, 3],
+  "newTotalSupply": "97",
+  "network": "testnet"
+}
+```
+
+**Notes:**
+
+- Maximum 10 serial numbers per transaction (Hedera limit)
+- The token must have a wipe key set at creation time; the command fails with a clear error if no wipe key exists
+- Wiping reduces the token's total supply by the number of serials wiped
 
 **Batch support:** Pass `--batch <batch-name>` to add to a batch. See the [Batch Support](#-batch-support) section.
 
@@ -1717,7 +1841,7 @@ The following token commands support the `--batch` / `-B` flag via the batch plu
 - `associate` – can be batched (no state hook; association status is always resolved from the mirror node)
 - `dissociate` – can be batched (no state hook; association status is always resolved from the mirror node)
 - `update` – `TokenUpdateStateHook` persists updated token data (name, symbol, treasury, role keys, memo) after batch execution
-- `burn-ft`, `burn-nft`, `mint-ft`, `mint-nft`, `update-metadata-nft`, `transfer-ft`, `transfer-nft`, `allowance-nft`, `allowance-ft`, `delete-allowance-nft` – can be batched (no state hook; transactions execute atomically)
+- `burn-ft`, `burn-nft`, `mint-ft`, `mint-nft`, `wipe-ft`, `wipe-nft`, `update-metadata-nft`, `transfer-ft`, `transfer-nft`, `allowance-nft`, `allowance-ft`, `delete-allowance-nft` – can be batched (no state hook; transactions execute atomically)
 
 When you pass `--batch <batch-name>`:
 

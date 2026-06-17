@@ -504,7 +504,7 @@ Wipe fungible tokens from a specific account's balance. Wipe key required (resol
 | --------------- | ----- | ------ | -------- | -------------- | ------------------------------------------------------------------------------------------------------ |
 | `--token`       | `-T`  | string | **yes**  | —              | Token alias or token ID                                                                                |
 | `--account`     | `-a`  | string | **yes**  | —              | Account to wipe from (ID, alias, or EVM address)                                                       |
-| `--amount`      | `-A`  | string | **yes**  | —              | Amount to wipe. Default: display units. Append `"t"` for raw units                                     |
+| `--amount`      | `-m`  | string | **yes**  | —              | Amount to wipe. Default: display units. Append `"t"` for raw units                                     |
 | `--wipe-key`    | `-w`  | string | no       | —              | Wipe key credential. Omit to auto-resolve from KMS when on-chain public key matches stored credentials |
 | `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                                              |
 | `--batch`       | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately                                              |
