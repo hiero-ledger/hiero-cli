@@ -1699,8 +1699,8 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'freeze-key',
           short: 'f',
-          type: OptionType.STRING,
-          required: true,
+          type: OptionType.REPEATABLE,
+          required: false,
           description:
             'Freeze key of the token. Can be {accountId}:{privateKey} pair, key in {ed25519|ecdsa}:private:{private-key} format, key reference, or account alias.',
         },
@@ -1748,8 +1748,8 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'freeze-key',
           short: 'f',
-          type: OptionType.STRING,
-          required: true,
+          type: OptionType.REPEATABLE,
+          required: false,
           description:
             'Freeze key of the token. Can be {accountId}:{privateKey} pair, key in {ed25519|ecdsa}:private:{private-key} format, key reference, or account alias.',
         },
