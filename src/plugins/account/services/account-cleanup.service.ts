@@ -41,6 +41,23 @@ export class AccountCleanupServiceImpl implements AccountCleanupService {
     return removedAliases;
   }
 
+  removeKeyAliasesForCredential(
+    accountToDelete: AccountDeleteKmsCleanupInput,
+  ): string[] {
+    const keyAliases = this.alias
+      .list({ type: AliasType.Key })
+      .filter((rec) => rec.keyRefId === accountToDelete.keyRefId);
+
+    const removedAliases: string[] = [];
+    for (const rec of keyAliases) {
+      this.alias.remove(rec.alias, rec.network);
+      removedAliases.push(`${rec.alias} (${rec.network})`);
+      this.logger.info(`Removed key alias '${rec.alias}' on ${rec.network}`);
+    }
+
+    return removedAliases;
+  }
+
   removeKmsCredentialIfUnusedAfterAccountRemoved(
     accountToDelete: AccountDeleteKmsCleanupInput,
   ): void {

@@ -12,4 +12,7 @@ export interface AccountCleanupService {
   removeKmsCredentialIfUnusedAfterAccountRemoved(
     accountToDelete: AccountDeleteKmsCleanupInput,
   ): void;
+  removeKeyAliasesForCredential(
+    accountToDelete: AccountDeleteKmsCleanupInput,
+  ): string[];
 }

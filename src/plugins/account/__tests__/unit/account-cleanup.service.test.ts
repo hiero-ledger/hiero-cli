@@ -73,6 +73,86 @@ describe('AccountCleanupServiceImpl', () => {
     expect(kms.remove).not.toHaveBeenCalled();
   });
 
+  test('removes key aliases matching the given keyRefId across all networks', () => {
+    const logger = makeLogger();
+    const alias = makeAliasMock();
+    const accountState = makeAccountStateServiceMock();
+    const kms = makeKmsMock();
+    const network = makeNetworkMock(SupportedNetwork.TESTNET);
+    const records: AliasRecord[] = [
+      {
+        alias: 'my-key',
+        type: AliasType.Key,
+        network: SupportedNetwork.TESTNET,
+        keyRefId: 'kr_abc',
+        createdAt: '2026-01-01T00:00:00.000Z',
+      },
+      {
+        alias: 'my-key-mainnet',
+        type: AliasType.Key,
+        network: SupportedNetwork.MAINNET,
+        keyRefId: 'kr_abc',
+        createdAt: '2026-01-01T00:00:00.000Z',
+      },
+      {
+        alias: 'other-key',
+        type: AliasType.Key,
+        network: SupportedNetwork.TESTNET,
+        keyRefId: 'kr_other',
+        createdAt: '2026-01-01T00:00:00.000Z',
+      },
+    ];
+    alias.list.mockReturnValue(records);
+    const service = new AccountCleanupServiceImpl(
+      accountState,
+      alias,
+      kms,
+      network,
+      logger,
+    );
+
+    const removed = service.removeKeyAliasesForCredential({
+      keyRefId: 'kr_abc',
+    });
+
+    expect(alias.remove).toHaveBeenCalledWith(
+      'my-key',
+      SupportedNetwork.TESTNET,
+    );
+    expect(alias.remove).toHaveBeenCalledWith(
+      'my-key-mainnet',
+      SupportedNetwork.MAINNET,
+    );
+    expect(alias.remove).not.toHaveBeenCalledWith(
+      'other-key',
+      expect.anything(),
+    );
+    expect(removed).toEqual(['my-key (testnet)', 'my-key-mainnet (mainnet)']);
+  });
+
+  test('returns empty array when no key aliases exist for the given keyRefId', () => {
+    const logger = makeLogger();
+    const alias = makeAliasMock();
+    const accountState = makeAccountStateServiceMock();
+    const kms = makeKmsMock();
+    const network = makeNetworkMock(SupportedNetwork.TESTNET);
+    alias.list.mockReturnValue([]);
+    const service = new AccountCleanupServiceImpl(
+      accountState,
+      alias,
+      kms,
+      network,
+      logger,
+    );
+
+    const removed = service.removeKeyAliasesForCredential({
+      keyRefId: 'kr_none',
+    });
+
+    expect(alias.remove).not.toHaveBeenCalled();
+    expect(removed).toEqual([]);
+  });
+
   test('removes unused KMS credential when it is not operator key', () => {
     const logger = makeLogger();
     const alias = makeAliasMock();

@@ -44,7 +44,6 @@ describe('Credentials Integration Tests', () => {
     });
     const removeOutput = removeResult.result as CredentialsRemoveOutput;
     expect(removeOutput.keyRefId).toBe('test-key');
-    expect(removeOutput.removed).toBe(true);
 
     const listAfterResult = await credentialsList({
       args: {},

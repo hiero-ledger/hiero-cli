@@ -217,7 +217,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
       case CredentialType.KEY_REFERENCE:
         return this.resolveKeyReference(credential);
       case CredentialType.ALIAS:
-        return Promise.resolve(this.resolveAlias(credential));
+        return this.resolveAlias(credential);
       case CredentialType.EVM_ADDRESS:
         return this.resolveEvmAddress(credential, keyManager, labels);
     }
@@ -467,43 +467,65 @@ export class KeyResolverServiceImpl implements KeyResolverService {
     return { accountId, evmAddress, publicKey, keyRefId };
   }
 
-  private resolveAlias(aliasCredential: AliasCredential): ResolvedKey {
+  private async resolveAlias(
+    aliasCredential: AliasCredential,
+  ): Promise<ResolvedKey> {
     const currentNetwork = this.network.getCurrentNetwork();
 
-    const account = this.alias.resolve(
+    // Alias names are unique per network regardless of type, so resolve
+    // without a type expectation and branch on the record's type.
+    const record = this.alias.resolve(
       aliasCredential.alias,
-      AliasType.Account,
+      undefined,
       currentNetwork,
     );
 
-    if (!account) {
-      throw new NotFoundError(
-        `Account alias not found: ${aliasCredential.alias}`,
-        {
-          context: { alias: aliasCredential.alias, network: currentNetwork },
-        },
-      );
+    if (!record) {
+      throw new NotFoundError(`Alias not found: ${aliasCredential.alias}`, {
+        context: { alias: aliasCredential.alias, network: currentNetwork },
+      });
     }
 
-    if (!account.publicKey || !account.keyRefId || !account.entityId) {
-      throw new StateError(
-        'Account alias exists but missing required key data',
-        {
-          context: {
-            alias: aliasCredential.alias,
-            hasPublicKey: !!account.publicKey,
-            hasKeyRefId: !!account.keyRefId,
-            hasEntityId: !!account.entityId,
+    switch (record.type) {
+      case AliasType.Account: {
+        return {
+          accountId: record.entityId,
+          publicKey: record.publicKey,
+          keyRefId: record.keyRefId,
+        };
+      }
+
+      case AliasType.Key: {
+        const { accounts } = await this.mirror.getAccounts({
+          accountPublicKey: record.publicKey,
+        });
+        let accountId;
+        if (accounts.length == 1) {
+          accountId = accounts[0].accountId;
+        } else {
+          this.logger.warn(
+            `There cannot be one single account ID assigned to key as there are ${accounts.length} results from Hedera Mirror Node`,
+          );
+        }
+        return {
+          accountId,
+          publicKey: record.publicKey,
+          keyRefId: record.keyRefId,
+        };
+      }
+
+      default:
+        throw new ValidationError(
+          `Alias "${aliasCredential.alias}" is not a usable account or key`,
+          {
+            context: {
+              alias: aliasCredential.alias,
+              type: record.type,
+              network: currentNetwork,
+            },
           },
-        },
-      );
+        );
     }
-
-    return {
-      accountId: account.entityId,
-      publicKey: account.publicKey,
-      keyRefId: account.keyRefId,
-    };
   }
 
   public async resolveSigningKeys(

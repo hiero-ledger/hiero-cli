@@ -5,6 +5,7 @@ import { z } from 'zod';
 
 import { PublicKeyDefinitionSchema } from '@/core/schemas';
 import { keyManagerNameSchema } from '@/core/services/kms/kms-types.interface';
+import { KeyAlgorithm } from '@/core/shared/constants';
 
 /**
  * Credential entry schema
@@ -13,6 +14,11 @@ const CredentialEntrySchema = z.object({
   keyRefId: z.string().describe('Key reference ID'),
   keyManager: keyManagerNameSchema,
   publicKey: PublicKeyDefinitionSchema,
+  keyAlgorithm: z.enum(KeyAlgorithm).describe('Cryptographic key algorithm'),
+  alias: z
+    .string()
+    .describe('Linked key alias on the current network')
+    .optional(),
   labels: z.array(z.string()).describe('Associated labels').optional(),
 });
 
@@ -37,7 +43,11 @@ export const CREDENTIALS_LIST_TEMPLATE = `
 
 {{#each credentials}}
 {{add1 @index}}. Key Reference ID: {{keyRefId}}
+{{#if alias}}
+   Alias: {{alias}}
+{{/if}}
    Key Manager: {{keyManager}}
+   Key Algorithm: {{keyAlgorithm}}
    Public Key: {{publicKey}}
 {{#if labels}}
    Labels: {{#each labels}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}

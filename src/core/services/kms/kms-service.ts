@@ -281,14 +281,18 @@ export class KmsServiceImpl implements KmsService {
     keyManager: KeyManager;
     publicKey: string;
     labels?: string[];
+    keyAlgorithm: KeyAlgorithm;
   }> {
     const records = this.credentialStorage.list();
-    return records.map(({ keyRefId, keyManager, publicKey, labels }) => ({
-      keyRefId,
-      keyManager,
-      publicKey,
-      labels,
-    }));
+    return records.map(
+      ({ keyRefId, keyManager, publicKey, labels, keyAlgorithm }) => ({
+        keyRefId,
+        keyManager,
+        publicKey,
+        labels,
+        keyAlgorithm,
+      }),
+    );
   }
 
   remove(keyRefId: string): void {

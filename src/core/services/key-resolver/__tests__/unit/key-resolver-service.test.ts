@@ -78,10 +78,24 @@ const makeKmsMock = (): jest.Mocked<
 
 const makeAliasMock = (): jest.Mocked<Pick<AliasService, 'resolve'>> => ({
   resolve: jest.fn().mockReturnValue({
+    alias: 'my-alias',
+    type: AliasType.Account,
+    network: SupportedNetwork.TESTNET,
     entityId: ACCOUNT_ID,
     publicKey: PUBLIC_KEY,
     keyRefId: KEY_REF_ID,
+    createdAt: '2024-01-01T00:00:00Z',
   }),
+});
+
+const makeKeyAliasRecord = (overrides?: Record<string, unknown>) => ({
+  alias: 'my-key',
+  type: AliasType.Key,
+  network: SupportedNetwork.TESTNET,
+  publicKey: PUBLIC_KEY,
+  keyRefId: KEY_REF_ID,
+  createdAt: '2024-01-01T00:00:00Z',
+  ...overrides,
 });
 
 const makeNetworkMock = (): jest.Mocked<
@@ -173,7 +187,7 @@ describe('resolveAccountCredentials', () => {
 
     expect(alias.resolve).toHaveBeenCalledWith(
       'my-alias',
-      AliasType.Account,
+      undefined,
       SupportedNetwork.TESTNET,
     );
     expect(result.accountId).toBe(ACCOUNT_ID);
@@ -221,6 +235,86 @@ describe('resolveAccountCredentials', () => {
         KEY_MGR,
       ),
     ).rejects.toThrow(NotFoundError);
+  });
+});
+
+// ── resolveAlias (Key aliases) ────────────────────────────────────────────────
+
+describe('resolveAlias - Key aliases', () => {
+  test('resolves a Key alias to a signing key (publicKey + keyRefId, no accountId)', async () => {
+    const { service } = makeService({
+      alias: { resolve: jest.fn().mockReturnValue(makeKeyAliasRecord()) },
+    });
+
+    const result = await service.resolveSigningKey(
+      { type: CredentialType.ALIAS, alias: 'my-key', rawValue: 'my-key' },
+      KEY_MGR,
+    );
+
+    expect(result).toEqual({ keyRefId: KEY_REF_ID, publicKey: PUBLIC_KEY });
+  });
+
+  test('resolves a Key alias via getPublicKey', async () => {
+    const { service } = makeService({
+      alias: { resolve: jest.fn().mockReturnValue(makeKeyAliasRecord()) },
+    });
+
+    const result = await service.getPublicKey(
+      { type: CredentialType.ALIAS, alias: 'my-key', rawValue: 'my-key' },
+      KEY_MGR,
+    );
+
+    expect(result).toEqual({ keyRefId: KEY_REF_ID, publicKey: PUBLIC_KEY });
+  });
+
+  test('rejects a Key alias used as a full account credential (no accountId)', async () => {
+    const { service } = makeService({
+      alias: { resolve: jest.fn().mockReturnValue(makeKeyAliasRecord()) },
+      mirror: { getAccounts: jest.fn().mockResolvedValue({ accounts: [] }) },
+    });
+
+    await expect(
+      service.resolveAccountCredentials(
+        { type: CredentialType.ALIAS, alias: 'my-key', rawValue: 'my-key' },
+        KEY_MGR,
+      ),
+    ).rejects.toThrow(StateError);
+  });
+
+  test('throws StateError when Key alias is missing keyRefId', async () => {
+    const { service } = makeService({
+      alias: {
+        resolve: jest
+          .fn()
+          .mockReturnValue(makeKeyAliasRecord({ keyRefId: undefined })),
+      },
+    });
+
+    await expect(
+      service.resolveSigningKey(
+        { type: CredentialType.ALIAS, alias: 'my-key', rawValue: 'my-key' },
+        KEY_MGR,
+      ),
+    ).rejects.toThrow(StateError);
+  });
+
+  test('throws ValidationError when alias is neither account nor key (e.g. Token)', async () => {
+    const { service } = makeService({
+      alias: {
+        resolve: jest
+          .fn()
+          .mockReturnValue(
+            makeKeyAliasRecord({ type: AliasType.Token, alias: 'my-token' }),
+          ),
+      },
+    });
+
+    await expect(
+      service.resolveSigningKey(
+        { type: CredentialType.ALIAS, alias: 'my-token', rawValue: 'my-token' },
+        KEY_MGR,
+      ),
+    ).rejects.toThrow(ValidationError);
   });
 });
 
