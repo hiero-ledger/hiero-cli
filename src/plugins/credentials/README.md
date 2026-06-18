@@ -1,6 +1,6 @@
 # Credentials Plugin
 
-A plugin for managing operator credentials and keys in the Hiero CLI.
+A plugin for generating, importing, listing, and removing standalone private keys (key credentials) in the Hiero CLI KMS.
 
 ## 🏗️ Architecture
 
@@ -17,14 +17,24 @@ This plugin follows the plugin architecture principles:
 ```
 src/plugins/credentials/
 ├── manifest.ts              # Plugin manifest with command definitions
-├── schema.ts                # Credentials data schema with Zod validation
 ├── commands/
+│   ├── generate/
+│   │   ├── handler.ts      # Generate key handler
+│   │   ├── input.ts        # Input schema
+│   │   ├── output.ts       # Output schema and template
+│   │   └── index.ts        # Command exports
+│   ├── import/
+│   │   ├── handler.ts      # Import key handler
+│   │   ├── input.ts        # Input schema
+│   │   ├── output.ts       # Output schema and template
+│   │   └── index.ts        # Command exports
 │   ├── list/
 │   │   ├── handler.ts      # List credentials handler
 │   │   ├── output.ts       # Output schema and template
 │   │   └── index.ts        # Command exports
 │   └── remove/
 │       ├── handler.ts      # Remove credentials handler
+│       ├── input.ts        # Input schema
 │       ├── output.ts       # Output schema and template
 │       └── index.ts        # Command exports
 ├── __tests__/unit/         # Unit tests
@@ -37,9 +47,68 @@ All commands return `CommandResult` with structured output data in the `result` 
 
 Each command defines a Zod schema for output validation and a Handlebars template for human-readable formatting.
 
+### Generate Key
+
+Generate a new private key in KMS, optionally linked to a key alias.
+
+```bash
+hcli credentials generate
+hcli credentials generate --alias my-signing-key --key-type ed25519 --key-manager local_encrypted
+```
+
+**Options:**
+
+| Option          | Short | Required | Description                                   |
+| --------------- | ----- | -------- | --------------------------------------------- |
+| `--alias`       | `-a`  | no       | Human-readable alias to assign to this key    |
+| `--key-type`    | `-t`  | no       | Key algorithm: `ecdsa` (default) or `ed25519` |
+| `--key-manager` | `-k`  | no       | Storage method: `local` or `local_encrypted`  |
+
+**Output:**
+
+```json
+{
+  "keyRefId": "kr_abc123",
+  "publicKey": "02a1b2c3...",
+  "keyAlgorithm": "ecdsa",
+  "keyManager": "local",
+  "alias": "my-signing-key",
+  "network": "testnet"
+}
+```
+
+### Import Key
+
+Import an existing private key into KMS, optionally linked to a key alias.
+
+```bash
+hcli credentials import --key ecdsa:private:abc123... --alias my-key
+hcli credentials import --key 0.0.123456:302e... --key-manager local_encrypted
+```
+
+**Options:**
+
+| Option          | Short | Required | Description                                                                                             |
+| --------------- | ----- | -------- | ------------------------------------------------------------------------------------------------------- |
+| `--key`         | `-K`  | **yes**  | Key to import. Accepts: `{accountId}:{privateKey}`, `{ed25519\|ecdsa}:private:{hex}`, key ref, or alias |
+| `--alias`       | `-a`  | no       | Alias to assign to this key                                                                             |
+| `--key-manager` | `-k`  | no       | Storage method: `local` or `local_encrypted` (defaults to config setting)                               |
+
+**Output:**
+
+```json
+{
+  "keyRefId": "kr_abc123",
+  "publicKey": "02a1b2c3...",
+  "keyManager": "local",
+  "alias": "my-key",
+  "network": "testnet"
+}
+```
+
 ### List Credentials
 
-Show all stored credentials and their metadata.
+Show all stored credentials and their metadata, including any linked key alias on the current network.
 
 ```bash
 hcli credentials list
@@ -51,10 +120,12 @@ hcli credentials list
 {
   "credentials": [
     {
-      "keyRefId": "key-ref-123",
-      "type": "ecdsa",
+      "keyRefId": "kr_abc123",
+      "keyManager": "local",
       "publicKey": "02a1b2c3...",
-      "labels": ["default-operator"]
+      "keyAlgorithm": "ecdsa",
+      "alias": "my-signing-key",
+      "labels": ["credentials:generate"]
     }
   ],
   "totalCount": 1
@@ -63,48 +134,37 @@ hcli credentials list
 
 ### Remove Credentials
 
-Remove credentials for a specific key reference ID.
+Remove credentials by key reference ID or alias. Exactly one of `--id` or `--alias` must be provided.
+
+Removing by `--id` also unregisters any key alias on the current network that points to that key reference, preventing dangling alias references.
 
 ```bash
-hcli credentials remove --id key-ref-123
+hcli credentials remove --id kr_abc123 --confirm
+hcli credentials remove --alias my-signing-key --confirm
 ```
+
+⚠️ Requires confirmation. Use `--confirm` (`-Y`) to skip the prompt.
 
 **Options:**
 
-- `--id, -i` (required): Key reference ID to remove
-
-## 📊 State Management
-
-```bash
-hcli credentials remove --id key-ref-123
-```
+| Option    | Short | Required    | Description                                      |
+| --------- | ----- | ----------- | ------------------------------------------------ |
+| `--id`    | `-i`  | one of both | Key reference ID to remove from KMS              |
+| `--alias` | `-a`  | one of both | Key alias to remove (also unregisters the alias) |
 
 **Output:**
 
 ```json
 {
-  "keyRefId": "key-ref-123",
-  "removed": true
+  "keyRefId": "kr_abc123"
 }
 ```
 
-## Plugin Architecture
+## 🔑 Key Aliases
 
-### State Management
+The `generate` and `import` commands support an optional `--alias` flag that registers a **key alias** (`AliasType.Key`) in the alias store, scoped to the current network. Key aliases allow you to reference a key by a human-readable name instead of a `kr_xxx` key reference ID in any command that accepts keys.
 
-The plugin stores credentials metadata using the following schema:
-
-```typescript
-{
-  accountId: string; // Format: 0.0.123456
-  privateKey: string; // Encrypted private key
-  network: string; // mainnet|testnet|previewnet|localnet
-  isDefault: boolean; // Whether this is the default credential set
-  createdAt: string; // ISO timestamp
-}
-```
-
-The schema is validated using Zod (`CredentialsDataSchema`) and stored as JSON Schema in the plugin manifest for runtime validation.
+Key aliases are separate from account aliases (`AliasType.Account`). A key alias has no associated Hedera account ID — it is purely a named pointer to a KMS key reference.
 
 ## 📤 Output Formatting
 
@@ -120,18 +180,18 @@ interface CommandResult {
 
 - **Output Schemas**: Each command defines a Zod schema in `output.ts` for type-safe output validation
 - **Human Templates**: Handlebars templates provide human-readable output formatting
-- **Error Handling**: All errors are returned in the result structure, ensuring consistent error handling
+- **Error Handling**: All errors are thrown as typed `CliError` instances
 - **Format Selection**: Output format is controlled by the CLI's `--format` option (default: `human`, or `json` for machine-readable output)
-
-The `result` field contains a structured object conforming to the Zod schema defined in each command's `output.ts` file, ensuring type safety and consistent output structure.
 
 ## 🔧 Core API Integration
 
 The plugin uses the Core API services:
 
-- `api.kms` - Secure key storage and management
-- `api.network` - Operator configuration per network
-- `api.state` - Persistent credential metadata storage
+- `api.kms` - Secure key storage, management, and key generation
+- `api.alias` - Key alias registration and resolution
+- `api.keyResolver` - Resolving key inputs to KMS-stored key references
+- `api.network` - Current network context for alias scoping
+- `api.config` - Default key manager configuration
 - `api.logger` - Logging
 
 ## 🔐 Security Notes
@@ -139,11 +199,11 @@ The plugin uses the Core API services:
 - Private keys are stored securely via the KMS service using one of two storage modes:
   - **`local`**: Plain text storage (development/testing)
   - **`local_encrypted`**: AES-256-GCM encrypted storage (production)
-- Default storage mode configured via `hcli config set -o default_key_manager -V local|local_encrypted`
-- Per-operation override available using `--key-manager` flag on commands that import or create keys
+- Default storage mode configured via `hcli config set --default_key_manager local|local_encrypted`
+- Per-operation override available using `--key-manager` flag on `generate` and `import`
 - Only key reference IDs and public keys are exposed in outputs
-- Network-specific operator configuration prevents key reuse across environments
 - Private keys never logged in plaintext
+- Alias availability is validated before key creation to prevent orphaned keys from a taken alias name
 
 ## 🧪 Testing
 
@@ -155,7 +215,9 @@ npm test -- src/plugins/credentials/__tests__/unit
 
 Test coverage includes:
 
-- Listing credentials
+- Generating new key credentials
+- Importing existing keys
+- Listing credentials with alias resolution
 - Removing credentials by key reference ID
-- Error handling for invalid inputs
-- Missing credentials handling
+- Removing credentials by alias
+- Error handling for invalid inputs and missing credentials

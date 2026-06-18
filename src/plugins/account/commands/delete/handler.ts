@@ -64,6 +64,10 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
       resolved.accountToDelete,
       resolved.network,
     );
+    this.accountCleanup.removeKeyAliasesForCredential(resolved.accountToDelete);
+    this.accountCleanup.removeKmsCredentialIfUnusedAfterAccountRemoved(
+      resolved.accountToDelete,
+    );
 
     const outputData: AccountDeleteOutput = {
       deletedAccount: {
@@ -256,6 +260,9 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
     const removedAliases = this.accountCleanup.removeAccountFromLocalState(
       normalisedParams.accountToDelete,
       normalisedParams.network,
+    );
+    this.accountCleanup.removeKeyAliasesForCredential(
+      normalisedParams.accountToDelete,
     );
     this.accountCleanup.removeKmsCredentialIfUnusedAfterAccountRemoved(
       normalisedParams.accountToDelete,

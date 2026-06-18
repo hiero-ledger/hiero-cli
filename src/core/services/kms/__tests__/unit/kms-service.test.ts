@@ -421,4 +421,31 @@ describe('KmsServiceImpl', () => {
       expect.any(Object),
     );
   });
+
+  it('list() includes keyAlgorithm for each credential', () => {
+    const { service } = setupService();
+    credentialStorageMockInstance.list.mockReturnValue([
+      {
+        keyRefId: 'kr_one',
+        keyManager: KeyManager.local,
+        publicKey: 'pub-one',
+        labels: ['account:create'],
+        keyAlgorithm: KeyAlgorithm.ECDSA,
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+      },
+    ]);
+
+    const result = service.list();
+
+    expect(result).toEqual([
+      {
+        keyRefId: 'kr_one',
+        keyManager: KeyManager.local,
+        publicKey: 'pub-one',
+        labels: ['account:create'],
+        keyAlgorithm: KeyAlgorithm.ECDSA,
+      },
+    ]);
+  });
 });

@@ -88,6 +88,7 @@ export interface KmsService {
     keyManager: KeyManager;
     publicKey: string;
     labels?: string[];
+    keyAlgorithm: KeyAlgorithm;
   }>;
 
   /**
