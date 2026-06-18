@@ -16,6 +16,11 @@ import {
   ScheduleDeleteOutputSchema,
 } from './commands/delete';
 import {
+  SCHEDULE_LIST_TEMPLATE,
+  scheduleList,
+  ScheduleListOutputSchema,
+} from './commands/list';
+import {
   SCHEDULE_SIGN_TEMPLATE,
   scheduleSign,
   ScheduleSignOutputSchema,
@@ -49,6 +54,18 @@ export const schedulePluginManifest: PluginManifest = {
     },
   ],
   commands: [
+    {
+      name: 'list',
+      summary: 'List scheduled transactions in local state',
+      description:
+        'List all scheduled transaction records stored in local state for the current network',
+      options: [],
+      handler: scheduleList,
+      output: {
+        schema: ScheduleListOutputSchema,
+        humanTemplate: SCHEDULE_LIST_TEMPLATE,
+      },
+    },
     {
       name: 'create',
       summary: 'Register a named schedule in local state',
