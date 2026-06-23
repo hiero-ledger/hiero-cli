@@ -32,6 +32,7 @@ export const credentialsManifest: PluginManifest = {
   version: '1.0.0',
   displayName: 'Credentials Management',
   description: 'Manage operator credentials and keys',
+  skipWizardInitialization: true,
   commands: [
     {
       name: 'generate',

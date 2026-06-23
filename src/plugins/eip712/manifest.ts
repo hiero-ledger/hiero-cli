@@ -24,7 +24,7 @@ export const Eip712PluginManifest: PluginManifest = {
   displayName: 'EIP-712 Typed Data Signing',
   description:
     'Sign and verify EIP-712 structured typed data using keys managed by the CLI KMS',
-
+  skipWizardInitialization: true,
   commands: [
     {
       name: 'hash',
