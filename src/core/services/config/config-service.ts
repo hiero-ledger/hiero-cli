@@ -11,6 +11,8 @@ import { CONFIG_NAMESPACE, CONFIG_OPTIONS } from './config-service.interface';
 
 export class ConfigServiceImpl implements ConfigService {
   private state: StateService;
+  /** In-memory, per-process overrides set by global flags. Never persisted. */
+  private readonly runtimeOverrides = new Map<string, string>();
 
   constructor(stateService: StateService) {
     this.state = stateService;
@@ -44,7 +46,10 @@ export class ConfigServiceImpl implements ConfigService {
         context: { optionName: name },
       });
     }
-    const raw = this.state.get<unknown>(CONFIG_NAMESPACE, name);
+    // Runtime overrides (e.g. global flags) take precedence over persisted state.
+    const raw =
+      this.runtimeOverrides.get(name) ??
+      this.state.get<unknown>(CONFIG_NAMESPACE, name);
     if (raw === undefined || raw === null) {
       // return default
       return spec.default as unknown as T;
@@ -146,5 +151,14 @@ export class ConfigServiceImpl implements ConfigService {
           context: { optionName: name },
         });
     }
+  }
+
+  setRuntimeOverride(name: string, value: string): void {
+    if (!CONFIG_OPTIONS[name]) {
+      throw new ValidationError(`Unknown config option: ${name}`, {
+        context: { optionName: name },
+      });
+    }
+    this.runtimeOverrides.set(name, value);
   }
 }

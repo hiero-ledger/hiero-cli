@@ -24,6 +24,7 @@ import {
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { createClient } from '@/core/utils/client-init';
+import { parseMaxTransactionFee } from '@/core/utils/parse-max-transaction-fee';
 
 import { CredentialStorage } from './credential-storage';
 import { ALGORITHM_CONFIGS } from './encryption/algorithm-config';
@@ -343,10 +344,19 @@ export class KmsServiceImpl implements KmsService {
       throw new ConfigurationError('Operator keyRef record not found');
     }
 
+    // Resolve the optional default max transaction fee ceiling (flag override
+    // takes precedence over persisted config; empty/0 means use SDK default).
+    const maxTransactionFee = parseMaxTransactionFee(
+      this.configService.getOption<string>(
+        ConfigOptionKey.default_max_transaction_fee,
+      ),
+    );
+
     // Create client and set operator with credentials
     const client = createClient(
       network,
       this.networkService.getLocalnetConfig(),
+      maxTransactionFee,
     );
 
     const accountIdObj = AccountId.fromString(accountId);

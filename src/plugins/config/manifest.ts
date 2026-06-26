@@ -94,6 +94,14 @@ export const configPluginManifest: PluginManifest = {
           required: false,
           description: 'Set skip confirmations - true or false',
         },
+        {
+          name: 'default_max_transaction_fee',
+          short: 'f',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Set default max transaction fee ceiling applied to every client. HBAR (e.g. "20") or tinybars ("200000000t"). Set to 0 to clear the setting.',
+        },
       ],
       handler: configSet,
       output: {

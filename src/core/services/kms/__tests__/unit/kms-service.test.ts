@@ -72,6 +72,7 @@ jest.mock('../../encryption/encryption-service-impl', () => ({
 const buildClient = () => ({
   setOperator: jest.fn(),
   setMirrorNetwork: jest.fn(),
+  setDefaultMaxTransactionFee: jest.fn(),
 });
 
 jest.mock('@hiero-ledger/sdk', () => ({
@@ -103,6 +104,9 @@ jest.mock('@hiero-ledger/sdk', () => ({
     NonFungibleUnique: 'NON_FUNGIBLE_UNIQUE',
     FungibleCommon: 'FUNGIBLE_COMMON',
   },
+  Hbar: {
+    fromTinybars: jest.fn((tinybars: string) => ({ tinybars })),
+  },
 }));
 
 const getLocalKeyManager = (name: KeyManager = KeyManager.local) => {
@@ -110,13 +114,19 @@ const getLocalKeyManager = (name: KeyManager = KeyManager.local) => {
   return localKeyManagerInstances[index];
 };
 
-const setupService = (options?: { ed25519Enabled?: boolean }) => {
+const setupService = (options?: {
+  ed25519Enabled?: boolean;
+  defaultMaxTransactionFee?: string;
+}) => {
   const logger = makeLogger();
   const state = makeStateMock() as StateService;
   const configService = {
     getOption: jest.fn((name: string) => {
       if (name === (ConfigOptionKey.ed25519_support as string)) {
         return options?.ed25519Enabled ?? false;
+      }
+      if (name === (ConfigOptionKey.default_max_transaction_fee as string)) {
+        return options?.defaultMaxTransactionFee ?? '';
       }
       return undefined;
     }),
@@ -420,6 +430,34 @@ describe('KmsServiceImpl', () => {
       expect.objectContaining({ toString: expect.any(Function) }),
       expect.any(Object),
     );
+    // No fee configured (default '') => client default fee left untouched.
+    expect(client.setDefaultMaxTransactionFee).not.toHaveBeenCalled();
+  });
+
+  it('createClient applies the configured default max transaction fee', () => {
+    const { service, networkService } = setupService({
+      defaultMaxTransactionFee: '20',
+    });
+    networkService.getOperator.mockReturnValue({
+      accountId: '0.0.1001',
+      keyRefId: 'kr_operator',
+    });
+    credentialStorageMockInstance.get.mockReturnValue({
+      keyRefId: 'kr_operator',
+      keyManager: KeyManager.local,
+      publicKey: 'operator-public',
+      keyAlgorithm: KeyAlgorithm.ECDSA,
+    });
+    getLocalKeyManager(KeyManager.local).readSecret.mockReturnValue({
+      privateKey: 'operator-private-key',
+    });
+
+    const client = service.createClient(SupportedNetwork.TESTNET);
+
+    // 20 HBAR => 2_000_000_000 tinybars passed to Hbar.fromTinybars.
+    expect(client.setDefaultMaxTransactionFee).toHaveBeenCalledWith({
+      tinybars: '2000000000',
+    });
   });
 
   it('list() includes keyAlgorithm for each credential', () => {

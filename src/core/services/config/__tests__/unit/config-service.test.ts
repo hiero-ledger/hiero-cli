@@ -26,13 +26,18 @@ describe('ConfigServiceImpl', () => {
 
       const options = configService.listOptions();
 
-      expect(options).toHaveLength(4);
+      expect(options).toHaveLength(5);
       expect(options).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
             name: ConfigOptionKey.ed25519_support,
             type: 'boolean',
             value: false,
+          }),
+          expect.objectContaining({
+            name: ConfigOptionKey.default_max_transaction_fee,
+            type: 'string',
+            value: '',
           }),
           expect.objectContaining({
             name: ConfigOptionKey.log_level,
@@ -201,6 +206,54 @@ describe('ConfigServiceImpl', () => {
         ConfigOptionKey.default_key_manager,
         KeyManager.local,
       );
+    });
+
+    it('should set default_max_transaction_fee string option', () => {
+      configService.setOption(
+        ConfigOptionKey.default_max_transaction_fee,
+        '20',
+      );
+
+      expect(stateMock.set).toHaveBeenCalledWith(
+        'config',
+        ConfigOptionKey.default_max_transaction_fee,
+        '20',
+      );
+    });
+  });
+
+  describe('setRuntimeOverride', () => {
+    it('should take precedence over persisted state and never persist', () => {
+      stateMock.get.mockReturnValue('20');
+
+      configService.setRuntimeOverride(
+        ConfigOptionKey.default_max_transaction_fee,
+        '50',
+      );
+
+      expect(
+        configService.getOption<string>(
+          ConfigOptionKey.default_max_transaction_fee,
+        ),
+      ).toBe('50');
+      // runtime overrides must not be persisted
+      expect(stateMock.set).not.toHaveBeenCalled();
+    });
+
+    it('should fall back to persisted state when no override is set', () => {
+      stateMock.get.mockReturnValue('20');
+
+      expect(
+        configService.getOption<string>(
+          ConfigOptionKey.default_max_transaction_fee,
+        ),
+      ).toBe('20');
+    });
+
+    it('should throw for an unknown option', () => {
+      expect(() =>
+        configService.setRuntimeOverride('unknown_option', '1'),
+      ).toThrow(ValidationError);
     });
   });
 });
