@@ -5,7 +5,7 @@
 import type { StateService } from '@/core/services/state/state-service.interface';
 
 import { makeStateMock } from '@/__tests__/mocks/mocks';
-import { ValidationError } from '@/core/errors';
+import { TransactionValidationError } from '@/core/errors';
 import { ConfigServiceImpl } from '@/core/services/config/config-service';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
@@ -116,7 +116,7 @@ describe('ConfigServiceImpl', () => {
 
     it('should throw error for unknown option', () => {
       expect(() => configService.getOption('unknown_option')).toThrow(
-        ValidationError,
+        TransactionValidationError,
       );
     });
 
@@ -158,14 +158,14 @@ describe('ConfigServiceImpl', () => {
 
     it('should throw error for unknown option', () => {
       expect(() => configService.setOption('unknown_option', 'value')).toThrow(
-        ValidationError,
+        TransactionValidationError,
       );
     });
 
     it('should throw error when setting non-boolean for boolean option', () => {
       expect(() =>
         configService.setOption(ConfigOptionKey.ed25519_support, 'not_boolean'),
-      ).toThrow(ValidationError);
+      ).toThrow(TransactionValidationError);
     });
 
     it('should set enum option with valid value', () => {
@@ -181,13 +181,13 @@ describe('ConfigServiceImpl', () => {
     it('should throw error for invalid enum value', () => {
       expect(() =>
         configService.setOption(ConfigOptionKey.log_level, 'invalid'),
-      ).toThrow(ValidationError);
+      ).toThrow(TransactionValidationError);
     });
 
     it('should throw error when setting non-string for enum option', () => {
       expect(() =>
         configService.setOption(ConfigOptionKey.log_level, 123),
-      ).toThrow(ValidationError);
+      ).toThrow(TransactionValidationError);
     });
 
     it('should set default_key_manager enum option', () => {

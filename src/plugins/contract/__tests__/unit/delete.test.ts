@@ -20,7 +20,7 @@ import {
   makeLogger,
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
-import { InternalError, NotFoundError, ValidationError } from '@/core';
+import { InternalError, NotFoundError, StateError } from '@/core';
 import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
 import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 import { makeAliasServiceMock } from '@/plugins/account/__tests__/unit/helpers/mocks';
@@ -368,7 +368,7 @@ describe('contract plugin - delete command', () => {
 
     await expect(
       new DeleteContractCommand(contractState, contractCleanup).execute(args),
-    ).rejects.toThrow(ValidationError);
+    ).rejects.toThrow(StateError);
     await expect(
       new DeleteContractCommand(contractState, contractCleanup).execute(args),
     ).rejects.toThrow(

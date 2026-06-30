@@ -16,7 +16,7 @@ import {
   makeLogger,
   makeNetworkMock,
 } from '@/__tests__/mocks/mocks';
-import { StateError } from '@/core/errors';
+import { TransactionError } from '@/core/errors';
 import { TxSignServiceImpl } from '@/core/services/tx-sign/tx-sign-service';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
@@ -162,7 +162,7 @@ describe('TxSignServiceImpl', () => {
       expect(TransactionId.generate).toHaveBeenCalled();
     });
 
-    it('should throw StateError when payer is set and transaction is already frozen', async () => {
+    it('should throw TransactionError when payer is set and transaction is already frozen', async () => {
       const { service, networkService } = setupService();
       const mockTx = createMockTransaction({
         isFrozen: jest.fn().mockReturnValue(true),
@@ -175,7 +175,7 @@ describe('TxSignServiceImpl', () => {
 
       await expect(
         service.sign(mockTx as unknown as HederaTransaction, []),
-      ).rejects.toThrow(StateError);
+      ).rejects.toThrow(TransactionError);
     });
 
     it('should close client after freeze', async () => {

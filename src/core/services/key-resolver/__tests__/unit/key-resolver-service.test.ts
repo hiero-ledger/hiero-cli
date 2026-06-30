@@ -4,7 +4,7 @@ import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 
 import { makeLogger } from '@/__tests__/mocks/mocks';
-import { NotFoundError, StateError, ValidationError } from '@/core/errors';
+import { NotFoundError, StateError } from '@/core/errors';
 import { KeyResolverServiceImpl } from '@/core/services/key-resolver/key-resolver-service';
 import {
   CredentialType,
@@ -298,7 +298,7 @@ describe('resolveAlias - Key aliases', () => {
     ).rejects.toThrow(StateError);
   });
 
-  test('throws ValidationError when alias is neither account nor key (e.g. Token)', async () => {
+  test('throws StateError when alias is neither account nor key (e.g. Token)', async () => {
     const { service } = makeService({
       alias: {
         resolve: jest
@@ -314,7 +314,7 @@ describe('resolveAlias - Key aliases', () => {
         { type: CredentialType.ALIAS, alias: 'my-token', rawValue: 'my-token' },
         KEY_MGR,
       ),
-    ).rejects.toThrow(ValidationError);
+    ).rejects.toThrow(StateError);
   });
 });
 
@@ -471,14 +471,14 @@ describe('resolvedPublicKeysForStoredKeyRefs', () => {
     expect(result[0]).toEqual({ keyRefId: KEY_REF_ID, publicKey: PUBLIC_KEY });
   });
 
-  test('throws ValidationError when keyRefId not found in KMS', () => {
+  test('throws StateError when keyRefId not found in KMS', () => {
     const { service } = makeService({
       kms: { get: jest.fn().mockReturnValue(undefined) },
     });
 
     expect(() =>
       service.resolvedPublicKeysForStoredKeyRefs(['missing-ref']),
-    ).toThrow(ValidationError);
+    ).toThrow(StateError);
   });
 
   test('returns empty array for empty input', () => {
@@ -712,7 +712,7 @@ describe('resolveMirrorNodeSigningKeys', () => {
     expect(result.keyRefIds).toHaveLength(1);
   });
 
-  test('throws ValidationError when not enough keys found in KMS', () => {
+  test('throws StateError when not enough keys found in KMS', () => {
     const { service } = makeService({
       kms: { findByPublicKey: jest.fn().mockReturnValue(undefined) },
     });
@@ -722,7 +722,7 @@ describe('resolveMirrorNodeSigningKeys', () => {
         publicKeys: [PUBLIC_KEY],
         requiredSignatures: 1,
       }),
-    ).toThrow(ValidationError);
+    ).toThrow(StateError);
   });
 
   test('stops collecting once threshold is met', () => {

@@ -13,7 +13,7 @@ import {
   MOCK_ACCOUNT_ID,
 } from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
-import { ValidationError } from '@/core/errors';
+import { TransactionValidationError } from '@/core/errors';
 import { AccountServiceImpl } from '@/core/services/account/account-transaction-service';
 
 import {
@@ -192,7 +192,7 @@ describe('AccountServiceImpl', () => {
       };
 
       expect(() => accountService.createAccount(params)).toThrow(
-        ValidationError,
+        TransactionValidationError,
       );
 
       HbarMock.fromTinybars.mockReturnValue(mockHbarInstance);

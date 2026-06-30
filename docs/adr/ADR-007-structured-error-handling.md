@@ -124,16 +124,19 @@ export abstract class CliError extends Error {
 
 ### Error Type Hierarchy
 
-| Class                | Static `CODE`         | Recoverable          | Use Case                                                 |
-| -------------------- | --------------------- | -------------------- | -------------------------------------------------------- |
-| `ValidationError`    | `VALIDATION_ERROR`    | No                   | Input validation, Zod errors                             |
-| `NotFoundError`      | `NOT_FOUND`           | No                   | Entity not found (account, token, alias)                 |
-| `NetworkError`       | `NETWORK_ERROR`       | Yes                  | HTTP 5xx, timeouts, connection errors                    |
-| `AuthorizationError` | `AUTHORIZATION_ERROR` | No                   | Permission denied, invalid keys, HTTP 401/403            |
-| `ConfigurationError` | `CONFIGURATION_ERROR` | No                   | Missing config, invalid settings                         |
-| `TransactionError`   | `TRANSACTION_ERROR`   | explicit (2nd param) | Hedera transaction failures (BUSY_NETWORK → recoverable) |
-| `StateError`         | `STATE_ERROR`         | No                   | State corruption, invalid state                          |
-| `FileError`          | `FILE_ERROR`          | No                   | File I/O errors                                          |
+| Class                        | Static `CODE`                  | Recoverable          | Use Case                                                            |
+| ---------------------------- | ------------------------------ | -------------------- | ------------------------------------------------------------------- |
+| `ValidationError`            | `VALIDATION_ERROR`             | No                   | Input validation, Zod errors                                        |
+| `NotFoundError`              | `NOT_FOUND`                    | No                   | Entity not found (account, token, alias)                            |
+| `NetworkError`               | `NETWORK_ERROR`                | Yes                  | HTTP 5xx, timeouts, connection errors                               |
+| `AuthorizationError`         | `AUTHORIZATION_ERROR`          | No                   | Permission denied, invalid keys, HTTP 401/403                       |
+| `ConfigurationError`         | `CONFIGURATION_ERROR`          | No                   | Missing config, invalid settings                                    |
+| `TransactionError`           | `TRANSACTION_ERROR`            | explicit (2nd param) | Hedera transaction failures (BUSY_NETWORK → recoverable)            |
+| `TransactionPrecheckError`   | `TRANSACTION_PRECHECK_ERROR`   | No                   | Hedera precheck failures before submission (bad input, wrong payer) |
+| `TransactionValidationError` | `TRANSACTION_VALIDATION_ERROR` | No                   | Invalid parameters detected while building a transaction            |
+| `StateError`                 | `STATE_ERROR`                  | No                   | State corruption, invalid state                                     |
+| `FileError`                  | `FILE_ERROR`                   | No                   | File I/O errors                                                     |
+| `InternalError`              | `INTERNAL_ERROR`               | No                   | Unexpected internal failures; catch-all for unclassified errors     |
 
 **Note**: All errors exit with code 1. Scripts should use the JSON `code` field to differentiate error types. Human output uses `CliError.getTemplate()`; by default it renders `{{message}}`.
 
@@ -497,6 +500,9 @@ src/core/errors/
 ├── authorization-error.ts
 ├── configuration-error.ts
 ├── transaction-error.ts
+├── transaction-precheck-error.ts
+├── transaction-validation-error.ts
+├── internal-error.ts
 ├── state-error.ts
 └── file-error.ts
 ```

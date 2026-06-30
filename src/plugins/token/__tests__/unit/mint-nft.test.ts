@@ -5,6 +5,7 @@ import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
   NotFoundError,
+  StateError,
   TransactionError,
   ValidationError,
 } from '@/core/errors';
@@ -242,7 +243,7 @@ describe('tokenMintNftHandler', () => {
         },
       });
 
-      await expect(tokenMintNft(args)).rejects.toThrow(ValidationError);
+      await expect(tokenMintNft(args)).rejects.toThrow(StateError);
     });
 
     test('should handle fungible token (not NFT)', async () => {
