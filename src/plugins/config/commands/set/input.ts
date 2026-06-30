@@ -22,6 +22,10 @@ export const ConfigSetInputSchema = z
         "Log level - allowed values: silent | error | warn | info | debug',",
       ),
     skip_confirmations: BooleanStringSchema.optional(),
+    portal_pat: z
+      .string()
+      .optional()
+      .describe('Hedera Portal Personal Access Token for faucet commands'),
   })
   .refine(
     (data) => Object.values(data).filter((v) => v !== undefined).length === 1,

@@ -13,6 +13,7 @@ export enum ConfigOptionKey {
   log_level = 'log_level',
   default_key_manager = 'default_key_manager',
   skip_confirmations = 'skip_confirmations',
+  portal_pat = 'portal_pat',
 }
 
 type OptionSpec =
@@ -52,6 +53,10 @@ export const CONFIG_OPTIONS: Record<string, OptionSpec> = {
   skip_confirmations: {
     type: 'boolean',
     default: false,
+  },
+  portal_pat: {
+    type: 'string',
+    default: '',
   },
 } as const;
 
