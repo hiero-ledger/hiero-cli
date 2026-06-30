@@ -146,5 +146,6 @@ hiero-cli.config.*.local.json
 .claude
 .cursor
 CLAUDE.md
+docs/superpowers/
 
 pnpm-lock.yaml
