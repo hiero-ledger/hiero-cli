@@ -1,6 +1,6 @@
 # schedule plugin
 
-Manage Hedera scheduled transactions: create schedule records, sign, delete, and verify execution state.
+Manage Hedera scheduled transactions: create schedule records, sign, delete, verify execution state, and list local schedules.
 
 ## How scheduled transactions work
 
@@ -13,6 +13,20 @@ Manage Hedera scheduled transactions: create schedule records, sign, delete, and
 ## State storage
 
 Schedules are persisted in `~/.hiero-cli/state/schedule-transactions-storage.json`, keyed by `{network}:{name}`.
+
+---
+
+### `hcli schedule list`
+
+List all scheduled transaction records stored in local state for the current network. No options.
+
+**Example:**
+
+```
+hcli schedule list
+```
+
+**Output:** `{ network, schedules: [{ name, network, scheduled, executed, waitForExpiry, expirationTime?, createdAt? }], total }`
 
 ---
 
