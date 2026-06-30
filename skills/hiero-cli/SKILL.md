@@ -59,6 +59,7 @@ State is persisted in `~/.hiero-cli/state/` as JSON files, one per plugin namesp
 | `config`            | `config-storage.json`                                                |
 | `plugin-management` | `plugin-management-storage.json`                                     |
 | `credentials` (KMS) | `kms-credentials-storage.json`, `kms-secrets-encrypted-storage.json` |
+| `faucet`            | `faucet-storage.json`                                                |
 
 ## Amount notation
 
@@ -83,6 +84,7 @@ State is persisted in `~/.hiero-cli/state/` as JSON files, one per plugin namesp
 | `batch`             | Batch transactions         | create batch, add transactions, execute, list, delete                                                                                                                                                                                                                                   |
 | `swap`              | Multi-party asset exchange | create swap, add HBAR/FT/NFT transfers, view, list, execute, delete                                                                                                                                                                                                                     |
 | `eip712`            | EIP-712 typed data signing | `hash` compute digest, `sign-ecdsa` / `sign-ed25519` sign payload (accepts pre-computed hash or domain+types+message), `verify-ecdsa` recover signer EVM address, `verify-ed25519` verify Ed25519 signature against a public key                                                        |
+| `faucet`            | Testnet/previewnet faucet  | `request` — disburse up to 100 HBAR to any account ID, EVM address, or alias. Requires Portal PAT configured via `hcli config set --portal_pat`                                                                                                                                        |
 | `plugin-management` | Plugin lifecycle           | add, remove, enable, disable, list, reset, info                                                                                                                                                                                                                                         |
 
 ## Agent instruction
