@@ -4,6 +4,7 @@ import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
   NotFoundError,
+  StateError,
   TransactionError,
   ValidationError,
 } from '@/core/errors';
@@ -237,7 +238,7 @@ describe('tokenBurnNftHandler', () => {
         },
       });
 
-      await expect(tokenBurnNft(args)).rejects.toThrow(ValidationError);
+      await expect(tokenBurnNft(args)).rejects.toThrow(StateError);
     });
 
     test('should handle transaction failure', async () => {

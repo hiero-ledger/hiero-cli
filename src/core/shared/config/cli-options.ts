@@ -15,6 +15,7 @@ import schedulePluginManifest from '@/plugins/schedule/manifest';
 import swapPluginManifest from '@/plugins/swap/manifest';
 import tokenPluginManifest from '@/plugins/token/manifest';
 import topicPluginManifest from '@/plugins/topic/manifest';
+import x402PluginManifest from '@/plugins/x402/manifest';
 
 export const RESERVED_LONG_OPTIONS = new Set<string>([
   'format',
@@ -60,4 +61,5 @@ export const DEFAULT_PLUGIN_STATE: PluginManifest[] = [
   contractErc721PluginManifest,
   swapPluginManifest,
   eip712PluginManifest,
+  x402PluginManifest,
 ];

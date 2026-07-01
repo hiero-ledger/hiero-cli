@@ -4,7 +4,7 @@ import type {
   ConfigService,
 } from './config-service.interface';
 
-import { InternalError, ValidationError } from '@/core/errors';
+import { TransactionValidationError } from '@/core/errors';
 import { isStringifiable } from '@/core/utils/is-stringifiable';
 
 import { CONFIG_NAMESPACE, CONFIG_OPTIONS } from './config-service.interface';
@@ -42,7 +42,7 @@ export class ConfigServiceImpl implements ConfigService {
   getOption<T = boolean | number | string>(name: string): T {
     const spec = CONFIG_OPTIONS[name];
     if (!spec) {
-      throw new ValidationError(`Unknown config option: ${name}`, {
+      throw new TransactionValidationError(`Unknown config option: ${name}`, {
         context: { optionName: name },
       });
     }
@@ -88,14 +88,14 @@ export class ConfigServiceImpl implements ConfigService {
   setOption(name: string, value: boolean | number | string): void {
     const spec = CONFIG_OPTIONS[name];
     if (!spec) {
-      throw new ValidationError(`Unknown config option: ${name}`, {
+      throw new TransactionValidationError(`Unknown config option: ${name}`, {
         context: { optionName: name },
       });
     }
     switch (spec.type) {
       case 'boolean':
         if (typeof value !== 'boolean') {
-          throw new ValidationError(
+          throw new TransactionValidationError(
             `Invalid value for ${name}: expected boolean`,
             {
               context: { optionName: name, value, expectedType: 'boolean' },
@@ -106,7 +106,7 @@ export class ConfigServiceImpl implements ConfigService {
         return;
       case 'number': {
         if (typeof value !== 'number' || Number.isNaN(value)) {
-          throw new ValidationError(
+          throw new TransactionValidationError(
             `Invalid value for ${name}: expected number`,
             {
               context: { optionName: name, value, expectedType: 'number' },
@@ -118,7 +118,7 @@ export class ConfigServiceImpl implements ConfigService {
       }
       case 'string': {
         if (typeof value !== 'string') {
-          throw new ValidationError(
+          throw new TransactionValidationError(
             `Invalid value for ${name}: expected string`,
             {
               context: { optionName: name, value, expectedType: 'string' },
@@ -131,7 +131,7 @@ export class ConfigServiceImpl implements ConfigService {
       case 'enum': {
         if (typeof value !== 'string' || !spec.allowedValues.includes(value)) {
           const allowed = spec.allowedValues.join(', ');
-          throw new ValidationError(
+          throw new TransactionValidationError(
             `Invalid value for ${name}: expected one of (${allowed})`,
             {
               context: {
@@ -147,9 +147,12 @@ export class ConfigServiceImpl implements ConfigService {
         return;
       }
       default:
-        throw new InternalError(`Unsupported option type for ${name}`, {
-          context: { optionName: name },
-        });
+        throw new TransactionValidationError(
+          `Unsupported option type for ${name}`,
+          {
+            context: { optionName: name },
+          },
+        );
     }
   }
 

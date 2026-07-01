@@ -4,7 +4,7 @@ import type { Signer } from './signer.interface';
 import { PrivateKey } from '@hiero-ledger/sdk';
 import { SigningKey } from 'ethers';
 
-import { ConfigurationError, ValidationError } from '@/core/errors';
+import { ConfigurationError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
 
 /**
@@ -37,7 +37,7 @@ export class PrivateKeySigner implements Signer {
       throw new ConfigurationError('Missing private key in secret');
     }
     if (this.algorithm !== KeyAlgorithm.ECDSA) {
-      throw new ValidationError(
+      throw new ConfigurationError(
         'Wallet signing can be only done with ECDSA key',
       );
     }

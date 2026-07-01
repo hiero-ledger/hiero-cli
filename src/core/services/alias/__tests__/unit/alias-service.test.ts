@@ -7,7 +7,7 @@ import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 
 import { makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
-import { NotFoundError, ValidationError } from '@/core/errors';
+import { NotFoundError, StateError, ValidationError } from '@/core/errors';
 import { AliasServiceImpl } from '@/core/services/alias/alias-service';
 import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 
@@ -65,7 +65,7 @@ describe('AliasServiceImpl', () => {
 
       const record = createAliasRecord();
 
-      expect(() => aliasService.register(record)).toThrow(ValidationError);
+      expect(() => aliasService.register(record)).toThrow(StateError);
       expect(stateMock.set).not.toHaveBeenCalled();
     });
 

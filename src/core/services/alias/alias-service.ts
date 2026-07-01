@@ -3,7 +3,7 @@ import type { StateService } from '@/core/services/state/state-service.interface
 import type { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 import type { AliasRecord, AliasService } from './alias-service.interface';
 
-import { NotFoundError, ValidationError } from '@/core/errors';
+import { NotFoundError, StateError, ValidationError } from '@/core/errors';
 import { composeKey } from '@/core/utils/key-composer';
 
 const NAMESPACE = 'aliases';
@@ -19,7 +19,7 @@ export class AliasServiceImpl implements AliasService {
 
   register(record: AliasRecord): void {
     if (this.exists(record.alias, record.network)) {
-      throw new ValidationError(
+      throw new StateError(
         `Alias already exists for network=${record.network}: ${record.alias}`,
         { context: { alias: record.alias, network: record.network } },
       );

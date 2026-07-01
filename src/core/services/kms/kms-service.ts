@@ -1,7 +1,7 @@
 import type {
   Client,
   ContractCreateFlow,
-  Transaction as HederaTransaction,
+  Transaction,
 } from '@hiero-ledger/sdk';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
@@ -248,7 +248,7 @@ export class KmsServiceImpl implements KmsService {
 
     if (validationPublicKey !== publicKeyRaw) {
       throw new ValidationError(
-        "Given accountId doesn't correspond with private key",
+        'Imported private key is not valid against provided public key',
       );
     }
 
@@ -368,7 +368,7 @@ export class KmsServiceImpl implements KmsService {
   }
 
   async signTransaction(
-    transaction: HederaTransaction,
+    transaction: Transaction,
     keyRefId: string,
   ): Promise<void> {
     const handle = this.getSignerHandle(keyRefId);
