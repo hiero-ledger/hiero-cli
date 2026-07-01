@@ -26,7 +26,7 @@ import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type { KeyResolverService } from './key-resolver-service.interface';
 
-import { NotFoundError, StateError, ValidationError } from '@/core/errors';
+import { NotFoundError, StateError } from '@/core/errors';
 import { ERROR_MESSAGES } from '@/core/services/key-resolver/error-messages';
 import { CredentialType } from '@/core/services/kms/kms-types.interface';
 import { AliasType } from '@/core/types/shared.types';
@@ -163,7 +163,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
     for (const keyRefId of keyRefIds) {
       const credentialRecord = this.kms.get(keyRefId);
       if (!credentialRecord) {
-        throw new ValidationError(
+        throw new StateError(
           `No local credential record for key reference "${keyRefId}". Import the key or pass credentials on the command line.`,
           { context: { keyRefId } },
         );
@@ -515,7 +515,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
       }
 
       default:
-        throw new ValidationError(
+        throw new StateError(
           `Alias "${aliasCredential.alias}" is not a usable account or key`,
           {
             context: {
@@ -534,7 +534,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
     const extracted = extractPublicKeysFromMirrorNodeKey(params.mirrorRoleKey);
     const requirement = getEffectiveKeyRequirement(extracted);
     if (requirement.publicKeys.length === 0) {
-      throw new ValidationError(params.emptyMirrorRoleKeyMessage, {
+      throw new StateError(params.emptyMirrorRoleKeyMessage, {
         context: params.validationErrorOptions?.context,
       });
     }
@@ -553,8 +553,8 @@ export class KeyResolverServiceImpl implements KeyResolverService {
         requiredSignatures: requirement.requiredSignatures,
       });
     } catch (error) {
-      if (error instanceof ValidationError) {
-        throw new ValidationError(params.insufficientKmsMatchesMessage, {
+      if (error instanceof StateError) {
+        throw new StateError(params.insufficientKmsMatchesMessage, {
           context: params.validationErrorOptions?.context,
         });
       }
@@ -597,7 +597,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
       }
     }
     if (refIds.length < params.requiredSignatures) {
-      throw new ValidationError(
+      throw new StateError(
         `Not enough keys held in state to meet the threshold requirement`,
       );
     }

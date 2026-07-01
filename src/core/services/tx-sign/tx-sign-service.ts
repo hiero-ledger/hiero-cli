@@ -9,7 +9,7 @@ import type { TxSignService } from './tx-sign-service.interface';
 
 import { AccountId, TransactionId } from '@hiero-ledger/sdk';
 
-import { StateError } from '@/core/errors';
+import { TransactionError } from '@/core/errors';
 
 export class TxSignServiceImpl implements TxSignService {
   private logger: Logger;
@@ -34,8 +34,9 @@ export class TxSignServiceImpl implements TxSignService {
 
     if (payer && transaction.isFrozen()) {
       client.close();
-      throw new StateError(
+      throw new TransactionError(
         'Transaction is already frozen before setting requested payer',
+        false,
         { context: { payerAccountId: payer.accountId } },
       );
     }

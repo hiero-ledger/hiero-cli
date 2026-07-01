@@ -23,8 +23,8 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
   NetworkError,
   NotFoundError,
+  StateError,
   TransactionError,
-  ValidationError,
 } from '@/core/errors';
 import { createMockTopicInfo } from '@/core/services/mirrornode/__tests__/unit/mocks';
 import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
@@ -261,7 +261,7 @@ describe('topic plugin - message-submit command', () => {
       },
     );
 
-    await expect(topicSubmitMessage(args)).rejects.toThrow(ValidationError);
+    await expect(topicSubmitMessage(args)).rejects.toThrow(StateError);
   });
 
   test('throws TransactionError when execute returns failure', async () => {

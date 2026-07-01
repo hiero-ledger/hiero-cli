@@ -4,6 +4,7 @@ import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
   NotFoundError,
+  StateError,
   TransactionError,
   ValidationError,
 } from '@/core/errors';
@@ -163,7 +164,7 @@ describe('tokenBurnFtHandler', () => {
         },
       });
 
-      await expect(tokenBurnFt(args)).rejects.toThrow(ValidationError);
+      await expect(tokenBurnFt(args)).rejects.toThrow(StateError);
     });
 
     test('should handle NFT token (from mirror API)', async () => {
@@ -239,7 +240,7 @@ describe('tokenBurnFtHandler', () => {
         },
       });
 
-      await expect(tokenBurnFt(args)).rejects.toThrow(ValidationError);
+      await expect(tokenBurnFt(args)).rejects.toThrow(StateError);
     });
 
     test('should handle burn amount exceeding total supply', async () => {

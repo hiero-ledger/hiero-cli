@@ -12,7 +12,7 @@ import type {
   NetworkService,
 } from './network-service.interface';
 
-import { ConfigurationError, ValidationError } from '@/core/errors';
+import { ConfigurationError } from '@/core/errors';
 import { HASHSCAN_BASE_URL } from '@/core/shared/constants';
 import {
   NetworkChainMap,
@@ -67,7 +67,7 @@ export class NetworkServiceImpl implements NetworkService {
 
   switchNetwork(network: SupportedNetwork): void {
     if (!this.isNetworkAvailable(network)) {
-      throw new ValidationError(`Network not available: ${network}`, {
+      throw new ConfigurationError(`Network not available: ${network}`, {
         context: { network },
       });
     }

@@ -5,6 +5,7 @@ import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
   NotFoundError,
+  StateError,
   TransactionError,
   ValidationError,
 } from '@/core/errors';
@@ -189,7 +190,7 @@ describe('tokenMintFtHandler', () => {
         },
       });
 
-      await expect(tokenMintFt(args)).rejects.toThrow(ValidationError);
+      await expect(tokenMintFt(args)).rejects.toThrow(StateError);
     });
 
     test('should handle NFT token (no decimals)', async () => {

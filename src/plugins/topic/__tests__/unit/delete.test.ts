@@ -27,7 +27,7 @@ import {
   mockTopicAliasRecord,
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
-import { InternalError, TransactionError, ValidationError } from '@/core';
+import { InternalError, StateError, TransactionError } from '@/core';
 import { createMockTopicInfo } from '@/core/services/mirrornode/__tests__/unit/mocks';
 import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
 import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
@@ -448,7 +448,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
       );
     });
 
-    test('throws ValidationError when no admin keys on network path', async () => {
+    test('throws StateError when no admin keys on network path', async () => {
       const logger = makeLogger();
       const topic = makeTopicData({
         topicId: MOCK_HEDERA_ENTITY_ID_1,
@@ -476,7 +476,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
         },
       );
 
-      await expect(topicDelete(args)).rejects.toThrow(ValidationError);
+      await expect(topicDelete(args)).rejects.toThrow(StateError);
     });
 
     test('throws TransactionError when execute returns failure', async () => {
@@ -619,7 +619,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
       expect(output.transactionId).toBe(MOCK_TX_ID_3);
     });
 
-    test('throws ValidationError when topic not in state and no admin-key', async () => {
+    test('throws StateError when topic not in state and no admin-key', async () => {
       const logger = makeLogger();
       MockedHelper.mockImplementation(() => ({
         loadTopic: jest.fn().mockReturnValue(null),
@@ -641,7 +641,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
         },
       );
 
-      await expect(topicDelete(args)).rejects.toThrow(ValidationError);
+      await expect(topicDelete(args)).rejects.toThrow(StateError);
     });
   });
 });

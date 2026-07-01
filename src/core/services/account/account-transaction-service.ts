@@ -23,7 +23,7 @@ import {
   PublicKey,
 } from '@hiero-ledger/sdk';
 
-import { ValidationError } from '@/core/errors';
+import { TransactionValidationError } from '@/core/errors';
 
 export class AccountServiceImpl implements AccountService {
   private logger: Logger;
@@ -63,10 +63,13 @@ export class AccountServiceImpl implements AccountService {
         publicKey: params.publicKey,
       };
     } catch (error) {
-      throw new ValidationError('Invalid account creation parameters', {
-        context: { publicKey: params.publicKey, balance: params.balanceRaw },
-        cause: error,
-      });
+      throw new TransactionValidationError(
+        'Invalid account creation parameters',
+        {
+          context: { publicKey: params.publicKey, balance: params.balanceRaw },
+          cause: error,
+        },
+      );
     }
   }
 
@@ -82,13 +85,16 @@ export class AccountServiceImpl implements AccountService {
 
       return { transaction };
     } catch (error) {
-      throw new ValidationError('Invalid account delete parameters', {
-        context: {
-          accountId: params.accountId,
-          transferAccountId: params.transferAccountId,
+      throw new TransactionValidationError(
+        'Invalid account delete parameters',
+        {
+          context: {
+            accountId: params.accountId,
+            transferAccountId: params.transferAccountId,
+          },
+          cause: error,
         },
-        cause: error,
-      });
+      );
     }
   }
 
@@ -142,10 +148,13 @@ export class AccountServiceImpl implements AccountService {
 
       return { transaction };
     } catch (error) {
-      throw new ValidationError('Invalid account update parameters', {
-        context: { accountId: params.accountId },
-        cause: error,
-      });
+      throw new TransactionValidationError(
+        'Invalid account update parameters',
+        {
+          context: { accountId: params.accountId },
+          cause: error,
+        },
+      );
     }
   }
 
@@ -162,7 +171,7 @@ export class AccountServiceImpl implements AccountService {
       );
       return query;
     } catch (error) {
-      throw new ValidationError('Invalid account ID format', {
+      throw new TransactionValidationError('Invalid account ID format', {
         context: { accountId },
         cause: error,
       });

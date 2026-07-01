@@ -23,7 +23,7 @@ import {
   TopicUpdateTransaction,
 } from '@hiero-ledger/sdk';
 
-import { ValidationError } from '@/core/errors';
+import { TransactionValidationError } from '@/core/errors';
 
 export class TopicServiceImpl implements TopicService {
   createTopic(params: CreateTopicParams): TopicCreateResult {
@@ -57,7 +57,7 @@ export class TopicServiceImpl implements TopicService {
       );
       return { transaction };
     } catch (error) {
-      throw new ValidationError('Invalid topic ID for delete', {
+      throw new TransactionValidationError('Invalid topic ID for delete', {
         context: { topicId: params.topicId },
         cause: error,
       });
