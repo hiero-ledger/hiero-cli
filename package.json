@@ -84,7 +84,7 @@
     "handlebars": "4.7.9",
     "jiti": "2.7.0",
     "solc": "0.8.35",
-    "supports-hyperlinks": "3.0.0",
+    "supports-hyperlinks": "4.5.0",
     "zod": "4.4.3",
     "zustand": "5.0.14"
   },
