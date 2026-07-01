@@ -113,4 +113,70 @@ describe('config plugin - set', () => {
       KeyManager.local_encrypted,
     );
   });
+
+  test('accepts and stores a valid default_max_transaction_fee', async () => {
+    const configSvc = makeConfigServiceMock({
+      getOption: jest.fn().mockReturnValue(''),
+      listOptions: jest.fn().mockReturnValue([
+        {
+          name: ConfigOptionKey.default_max_transaction_fee,
+          type: 'string',
+          value: '',
+        },
+      ]),
+      setOption: jest.fn(),
+    });
+    const api = makeApiMock(configSvc);
+    const args = makeCommandArgs({
+      api,
+      args: { [ConfigOptionKey.default_max_transaction_fee]: '20' },
+    });
+
+    await configSet(args);
+    expect(configSvc.setOption).toHaveBeenCalledWith(
+      ConfigOptionKey.default_max_transaction_fee,
+      '20',
+    );
+  });
+
+  test('normalises a 0 default_max_transaction_fee to empty (clear)', async () => {
+    const configSvc = makeConfigServiceMock({
+      getOption: jest.fn().mockReturnValue('20'),
+      listOptions: jest.fn().mockReturnValue([
+        {
+          name: ConfigOptionKey.default_max_transaction_fee,
+          type: 'string',
+          value: '20',
+        },
+      ]),
+      setOption: jest.fn(),
+    });
+    const api = makeApiMock(configSvc);
+    const args = makeCommandArgs({
+      api,
+      args: { [ConfigOptionKey.default_max_transaction_fee]: '0' },
+    });
+
+    await configSet(args);
+    expect(configSvc.setOption).toHaveBeenCalledWith(
+      ConfigOptionKey.default_max_transaction_fee,
+      '',
+    );
+  });
+
+  test('rejects a negative default_max_transaction_fee at schema level', async () => {
+    const configSvc = makeConfigServiceMock({
+      getOption: jest.fn().mockReturnValue(''),
+      listOptions: jest.fn().mockReturnValue([]),
+      setOption: jest.fn(),
+    });
+    const api = makeApiMock(configSvc);
+    const args = makeCommandArgs({
+      api,
+      args: { [ConfigOptionKey.default_max_transaction_fee]: '-5' },
+    });
+
+    await expect(configSet(args)).rejects.toThrow();
+    expect(configSvc.setOption).not.toHaveBeenCalled();
+  });
 });

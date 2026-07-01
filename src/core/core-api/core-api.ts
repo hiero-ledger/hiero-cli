@@ -109,11 +109,17 @@ export class CoreApiImplementation implements CoreApi {
       this.network,
       this.config,
     );
-    this.txSign = new TxSignServiceImpl(this.logger, this.kms, this.network);
+    this.txSign = new TxSignServiceImpl(
+      this.logger,
+      this.kms,
+      this.network,
+      this.config,
+    );
     this.txExecute = new TxExecuteServiceImpl(
       this.logger,
       this.kms,
       this.network,
+      this.config,
     );
 
     // Initialize all services with dependencies

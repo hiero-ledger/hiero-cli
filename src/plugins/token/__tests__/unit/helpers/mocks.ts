@@ -412,6 +412,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
       getOption: jest.fn().mockReturnValue(KeyManager.local),
       setOption: jest.fn(),
       listOptions: jest.fn().mockReturnValue([]),
+      setRuntimeOverride: jest.fn(),
     },
     logger: {
       info: jest.fn(),

@@ -7,11 +7,14 @@ import {
 import { MOCK_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
 import {
   makeArgs,
+  makeConfigMock,
   makeKeyResolverMock,
   makeKmsMock,
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { ValidationError } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { TransferServiceImpl } from '@/core/services/transfer/transfer-service';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { x402Sign } from '@/plugins/x402/commands/sign/handler';
@@ -34,13 +37,22 @@ const setup = () => {
     publicKey: MOCK_PUBLIC_KEY,
   });
 
-  return { kms, keyResolver };
+  // Return a per-option config: the default key manager plus an unset
+  // default_max_transaction_fee (so signing uses the SDK default fee).
+  const config = makeConfigMock();
+  config.getOption.mockImplementation((name: string) =>
+    name === (ConfigOptionKey.default_max_transaction_fee as string)
+      ? ''
+      : KeyManager.local,
+  );
+
+  return { kms, keyResolver, config };
 };
 
 test('produces a PAYMENT-SIGNATURE header for an HBAR payment', async () => {
-  const { kms, keyResolver } = setup();
+  const { kms, keyResolver, config } = setup();
   const args = makeArgs(
-    { kms, keyResolver, transfer: new TransferServiceImpl() },
+    { kms, keyResolver, config, transfer: new TransferServiceImpl() },
     { challenge: makeChallenge() },
   );
 
@@ -55,9 +67,9 @@ test('produces a PAYMENT-SIGNATURE header for an HBAR payment', async () => {
 });
 
 test('never leaks a private key into the output', async () => {
-  const { kms, keyResolver } = setup();
+  const { kms, keyResolver, config } = setup();
   const args = makeArgs(
-    { kms, keyResolver, transfer: new TransferServiceImpl() },
+    { kms, keyResolver, config, transfer: new TransferServiceImpl() },
     { challenge: makeChallenge() },
   );
 

@@ -592,6 +592,7 @@ export const makeConfigMock = (): jest.Mocked<ConfigService> => ({
   listOptions: jest.fn().mockReturnValue([]),
   getOption: jest.fn().mockReturnValue(KeyManager.local),
   setOption: jest.fn(),
+  setRuntimeOverride: jest.fn(),
 });
 
 /**

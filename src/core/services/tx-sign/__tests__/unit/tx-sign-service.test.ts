@@ -12,6 +12,7 @@ import {
   createMockTransaction,
 } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
+  makeConfigMock,
   makeKmsMock,
   makeLogger,
   makeNetworkMock,
@@ -38,11 +39,19 @@ const setupService = () => {
   const logger = makeLogger();
   const kms = makeKmsMock();
   const networkService = makeNetworkMock(NETWORK);
+  const configService = makeConfigMock();
+  // No default max transaction fee configured for these tests.
+  configService.getOption.mockReturnValue('');
   const mockClient = createMockClient();
   kms.createClient.mockReturnValue(mockClient as unknown as Client);
 
-  const service = new TxSignServiceImpl(logger, kms, networkService);
-  return { service, logger, kms, networkService, mockClient };
+  const service = new TxSignServiceImpl(
+    logger,
+    kms,
+    networkService,
+    configService,
+  );
+  return { service, logger, kms, networkService, configService, mockClient };
 };
 
 describe('TxSignServiceImpl', () => {

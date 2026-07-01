@@ -366,7 +366,8 @@ export default MyPluginPluginManifest;
 Rules:
 
 - Every option must have: `name`, `short` (single char), `type`, `required`, `description`
-- `short` must not conflict with reserved chars: `h`, `V`, `N`, `P`; batchify hook reserves `B`; scheduled hook reserves `X`
+- `short` must not conflict with reserved chars: `h` (help), `v` (version), `N` (network), `P` (payer), `F` (format), `Y` (confirm), `M` (max-transaction-fee); batchify hook reserves `B`; scheduled hook reserves `X`
+- `name` must not conflict with reserved long options: `format`, `json`, `output`, `script`, `color`, `no-color`, `verbose`, `quiet`, `debug`, `help`, `version`, `network`, `payer`, `confirm`, `max-transaction-fee`
 - Prefer `command: new MyPlugin{Name}Command()` (class-based); use `handler: myPluginFn` only for the simplest commands
 - Include `registeredHooks` only for transaction commands opting into cross-plugin hooks (batchify, scheduled)
 - Include `requireConfirmation: true` for destructive commands (delete, clear, wipe)

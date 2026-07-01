@@ -1,6 +1,6 @@
 import { Client, Transaction, TransferTransaction } from '@hiero-ledger/sdk';
 
-import { makeKmsMock } from '@/__tests__/mocks/mocks';
+import { makeConfigMock, makeKmsMock } from '@/__tests__/mocks/mocks';
 import { ValidationError } from '@/core/errors';
 import { TransferServiceImpl } from '@/core/services/transfer/transfer-service';
 import { SupportedNetwork } from '@/core/types/shared.types';
@@ -22,7 +22,14 @@ const makeServiceWithKms = () => {
   const kms = makeKmsMock();
   kms.createClient.mockReturnValue(trackClient(Client.forTestnet()));
   kms.signTransaction.mockResolvedValue(undefined);
-  const service = new PaymentSignerServiceImpl(kms, new TransferServiceImpl());
+  const configService = makeConfigMock();
+  // No default max transaction fee configured for these tests.
+  configService.getOption.mockReturnValue('');
+  const service = new PaymentSignerServiceImpl(
+    kms,
+    new TransferServiceImpl(),
+    configService,
+  );
   return { service, kms };
 };
 
