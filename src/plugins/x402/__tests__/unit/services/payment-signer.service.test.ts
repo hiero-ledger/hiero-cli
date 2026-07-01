@@ -2,6 +2,7 @@ import { Client, Transaction, TransferTransaction } from '@hiero-ledger/sdk';
 
 import { makeKmsMock } from '@/__tests__/mocks/mocks';
 import { ValidationError } from '@/core/errors';
+import { TransferServiceImpl } from '@/core/services/transfer/transfer-service';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import {
   ASSET_HBAR,
@@ -21,7 +22,7 @@ const makeServiceWithKms = () => {
   const kms = makeKmsMock();
   kms.createClient.mockReturnValue(trackClient(Client.forTestnet()));
   kms.signTransaction.mockResolvedValue(undefined);
-  const service = new PaymentSignerServiceImpl(kms);
+  const service = new PaymentSignerServiceImpl(kms, new TransferServiceImpl());
   return { service, kms };
 };
 

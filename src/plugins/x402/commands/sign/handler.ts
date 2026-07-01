@@ -23,6 +23,8 @@ import { selectHederaRequirement } from '@/plugins/x402/utils/select-requirement
 
 import { X402SignInputSchema } from './input';
 
+const EXPECTED_X402_VERSION = 2;
+
 export class X402SignCommand implements Command {
   constructor(private readonly paymentSigner: PaymentSignerService) {}
 
@@ -43,7 +45,7 @@ export class X402SignCommand implements Command {
     );
 
     const paymentRequired = this.decodeChallenge(validArgs.challenge);
-    if (paymentRequired.x402Version !== 2) {
+    if (paymentRequired.x402Version !== EXPECTED_X402_VERSION) {
       throw new ValidationError(
         `Unsupported x402 protocol version ${paymentRequired.x402Version}; only version 2 is supported.`,
         { context: { x402Version: paymentRequired.x402Version } },
@@ -109,6 +111,9 @@ export class X402SignCommand implements Command {
 export async function x402Sign(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  const paymentSigner = new PaymentSignerServiceImpl(args.api.kms);
+  const paymentSigner = new PaymentSignerServiceImpl(
+    args.api.kms,
+    args.api.transfer,
+  );
   return new X402SignCommand(paymentSigner).execute(args);
 }

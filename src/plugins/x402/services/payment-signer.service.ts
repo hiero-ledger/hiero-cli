@@ -1,6 +1,7 @@
 import type { PaymentRequirements } from '@x402/core/types';
 import type { ClientHederaSigner } from '@x402/hedera';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
+import type { TransferService } from '@/core/services/transfer/transfer-service.interface';
 import type { PaymentSignerService } from './payment-signer.service.interface';
 import type {
   BuiltTransferContext,
@@ -8,19 +9,20 @@ import type {
   KmsClientSigner,
 } from './payment-signer.types';
 
-import {
-  AccountId,
-  Hbar,
-  TokenId,
-  TransactionId,
-  TransferTransaction,
-} from '@hiero-ledger/sdk';
+import { AccountId, TransactionId } from '@hiero-ledger/sdk';
 import { isHbarAsset } from '@x402/hedera';
 
 import { ValidationError } from '@/core/errors';
+import {
+  FtTransferEntry,
+  HbarTransferEntry,
+} from '@/core/services/transfer/transfer-entries';
 
 export class PaymentSignerServiceImpl implements PaymentSignerService {
-  constructor(private readonly kms: KmsService) {}
+  constructor(
+    private readonly kms: KmsService,
+    private readonly transfer: TransferService,
+  ) {}
 
   createSigner(params: CreateSignerParams): KmsClientSigner {
     const { keyRefId, accountId, network } = params;
@@ -58,18 +60,15 @@ export class PaymentSignerServiceImpl implements PaymentSignerService {
           );
         }
 
-        const payer = AccountId.fromString(accountId);
-        const payTo = AccountId.fromString(requirements.payTo);
-        const tx = new TransferTransaction();
-
-        if (isHbarAsset(requirements.asset)) {
-          tx.addHbarTransfer(payer, Hbar.fromTinybars((-amount).toString()));
-          tx.addHbarTransfer(payTo, Hbar.fromTinybars(amount.toString()));
-        } else {
-          const tokenId = TokenId.fromString(requirements.asset);
-          tx.addTokenTransfer(tokenId, payer, -amount);
-          tx.addTokenTransfer(tokenId, payTo, amount);
-        }
+        const entry = isHbarAsset(requirements.asset)
+          ? new HbarTransferEntry(accountId, requirements.payTo, amount)
+          : new FtTransferEntry(
+              accountId,
+              requirements.payTo,
+              requirements.asset,
+              amount,
+            );
+        const tx = this.transfer.buildTransferTransaction([entry]);
 
         const transactionId = TransactionId.generate(
           AccountId.fromString(feePayer),

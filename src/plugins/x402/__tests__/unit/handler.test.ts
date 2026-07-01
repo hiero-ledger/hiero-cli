@@ -12,6 +12,7 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { ValidationError } from '@/core/errors';
+import { TransferServiceImpl } from '@/core/services/transfer/transfer-service';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { x402Sign } from '@/plugins/x402/commands/sign/handler';
 import { X402SignOutputSchema } from '@/plugins/x402/commands/sign/output';
@@ -38,7 +39,10 @@ const setup = () => {
 
 test('produces a PAYMENT-SIGNATURE header for an HBAR payment', async () => {
   const { kms, keyResolver } = setup();
-  const args = makeArgs({ kms, keyResolver }, { challenge: makeChallenge() });
+  const args = makeArgs(
+    { kms, keyResolver, transfer: new TransferServiceImpl() },
+    { challenge: makeChallenge() },
+  );
 
   const result = await x402Sign(args);
   const output = assertOutput(result.result, X402SignOutputSchema);
@@ -52,7 +56,10 @@ test('produces a PAYMENT-SIGNATURE header for an HBAR payment', async () => {
 
 test('never leaks a private key into the output', async () => {
   const { kms, keyResolver } = setup();
-  const args = makeArgs({ kms, keyResolver }, { challenge: makeChallenge() });
+  const args = makeArgs(
+    { kms, keyResolver, transfer: new TransferServiceImpl() },
+    { challenge: makeChallenge() },
+  );
 
   const result = await x402Sign(args);
   const serialized = JSON.stringify(result.result);
