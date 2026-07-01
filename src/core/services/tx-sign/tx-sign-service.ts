@@ -10,9 +10,8 @@ import type { TxSignService } from './tx-sign-service.interface';
 
 import { AccountId, TransactionId } from '@hiero-ledger/sdk';
 
-import { StateError } from '@/core/errors';
-import { resolveDefaultMaxTransactionFee } from '@/core/utils/resolve-default-max-transaction-fee';
 import { TransactionError } from '@/core/errors';
+import { resolveDefaultMaxTransactionFee } from '@/core/utils/resolve-default-max-transaction-fee';
 
 export class TxSignServiceImpl implements TxSignService {
   private logger: Logger;

@@ -114,6 +114,7 @@ export async function x402Sign(
   const paymentSigner = new PaymentSignerServiceImpl(
     args.api.kms,
     args.api.transfer,
+    args.api.config,
   );
   return new X402SignCommand(paymentSigner).execute(args);
 }
