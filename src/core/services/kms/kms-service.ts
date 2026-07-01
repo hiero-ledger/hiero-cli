@@ -7,10 +7,12 @@ import type { ConfigService } from '@/core/services/config/config-service.interf
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
-import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { KeyManager as IKeyManager } from './key-managers/key-manager.interface';
 import type { KmsService } from './kms-service.interface';
-import type { KmsCredentialRecord } from './kms-types.interface';
+import type {
+  CreateClientParams,
+  KmsCredentialRecord,
+} from './kms-types.interface';
 import type { Signer } from './signers/signer.interface';
 
 import { AccountId, PrivateKey, PublicKey } from '@hiero-ledger/sdk';
@@ -24,7 +26,6 @@ import {
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { createClient } from '@/core/utils/client-init';
-import { parseMaxTransactionFee } from '@/core/utils/parse-max-transaction-fee';
 
 import { CredentialStorage } from './credential-storage';
 import { ALGORITHM_CONFIGS } from './encryption/algorithm-config';
@@ -323,12 +324,12 @@ export class KmsServiceImpl implements KmsService {
 
   // Removed registerProvider - no longer needed
 
-  createClient(network: SupportedNetwork): Client {
-    const operator = this.networkService.getOperator(network);
+  createClient(params: CreateClientParams): Client {
+    const operator = this.networkService.getOperator(params.network);
 
     if (!operator) {
       throw new ConfigurationError(
-        `No operator configured for network: ${network}`,
+        `No operator configured for network: ${params.network}`,
       );
     }
 
@@ -344,19 +345,12 @@ export class KmsServiceImpl implements KmsService {
       throw new ConfigurationError('Operator keyRef record not found');
     }
 
-    // Resolve the optional default max transaction fee ceiling (flag override
-    // takes precedence over persisted config; empty/0 means use SDK default).
-    const maxTransactionFee = parseMaxTransactionFee(
-      this.configService.getOption<string>(
-        ConfigOptionKey.default_max_transaction_fee,
-      ),
-    );
-
-    // Create client and set operator with credentials
+    // Create client and set operator with credentials. The optional default
+    // max transaction fee ceiling is resolved by the caller.
     const client = createClient(
-      network,
+      params.network,
       this.networkService.getLocalnetConfig(),
-      maxTransactionFee,
+      params.maxTransactionFee,
     );
 
     const accountIdObj = AccountId.fromString(accountId);

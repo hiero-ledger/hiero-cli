@@ -10,6 +10,7 @@ import {
   createMockTransactionResponse,
 } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
+  makeConfigMock,
   makeKmsMock,
   makeLogger,
   makeNetworkMock,
@@ -44,11 +45,19 @@ const setupService = () => {
   const logger = makeLogger();
   const kms = makeKmsMock();
   const networkService = makeNetworkMock(NETWORK);
+  const configService = makeConfigMock();
+  // No default max transaction fee configured for these tests.
+  configService.getOption.mockReturnValue('');
   const mockClient = createMockClient();
   kms.createClient.mockReturnValue(mockClient as unknown as Client);
 
-  const service = new TxExecuteServiceImpl(logger, kms, networkService);
-  return { service, logger, kms, networkService, mockClient };
+  const service = new TxExecuteServiceImpl(
+    logger,
+    kms,
+    networkService,
+    configService,
+  );
+  return { service, logger, kms, networkService, configService, mockClient };
 };
 
 const makeMockTx = () => ({
@@ -77,7 +86,10 @@ describe('TxExecuteServiceImpl', () => {
 
       const result = await service.execute(mockTx as never);
 
-      expect(kms.createClient).toHaveBeenCalledWith(NETWORK);
+      expect(kms.createClient).toHaveBeenCalledWith({
+        network: NETWORK,
+        maxTransactionFee: undefined,
+      });
       expect(mockTx.execute).toHaveBeenCalledWith(mockClient);
       expect(result.transactionId).toBe(MOCK_TX_ID);
       expect(result.success).toBe(true);

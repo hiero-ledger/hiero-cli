@@ -11,7 +11,13 @@ import type { Signer } from '@/core/services/kms/signers/signer.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 
-import { AccountId, Client, PrivateKey, PublicKey } from '@hiero-ledger/sdk';
+import {
+  AccountId,
+  Client,
+  Hbar,
+  PrivateKey,
+  PublicKey,
+} from '@hiero-ledger/sdk';
 
 import { MOCK_ACCOUNT_ID } from '@/__tests__/mocks/fixtures';
 import { makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
@@ -142,19 +148,13 @@ const getLocalKeyManager = (name: KeyManager = KeyManager.local) => {
   return localKeyManagerInstances[index];
 };
 
-const setupService = (options?: {
-  ed25519Enabled?: boolean;
-  defaultMaxTransactionFee?: string;
-}) => {
+const setupService = (options?: { ed25519Enabled?: boolean }) => {
   const logger = makeLogger();
   const state = makeStateMock() as StateService;
   const configService = {
     getOption: jest.fn((name: string) => {
       if (name === (ConfigOptionKey.ed25519_support as string)) {
         return options?.ed25519Enabled ?? false;
-      }
-      if (name === (ConfigOptionKey.default_max_transaction_fee as string)) {
-        return options?.defaultMaxTransactionFee ?? '';
       }
       return undefined;
     }),
@@ -447,7 +447,7 @@ describe('KmsServiceImpl', () => {
       privateKey: OPERATOR_PRIVATE_KEY,
     });
 
-    const client = service.createClient(SupportedNetwork.TESTNET);
+    const client = service.createClient({ network: SupportedNetwork.TESTNET });
 
     expect(networkService.getOperator).toHaveBeenCalledWith(
       SupportedNetwork.TESTNET,
@@ -458,14 +458,12 @@ describe('KmsServiceImpl', () => {
       expect.objectContaining({ toString: expect.any(Function) }),
       expect.any(Object),
     );
-    // No fee configured (default '') => client default fee left untouched.
+    // No fee provided => client default fee left untouched.
     expect(client.setDefaultMaxTransactionFee).not.toHaveBeenCalled();
   });
 
-  it('createClient applies the configured default max transaction fee', () => {
-    const { service, networkService } = setupService({
-      defaultMaxTransactionFee: '20',
-    });
+  it('createClient applies the provided default max transaction fee', () => {
+    const { service, networkService } = setupService();
     networkService.getOperator.mockReturnValue({
       accountId: MOCK_ACCOUNT_ID,
       keyRefId: KR_OPERATOR,
@@ -480,12 +478,15 @@ describe('KmsServiceImpl', () => {
       privateKey: OPERATOR_PRIVATE_KEY,
     });
 
-    const client = service.createClient(SupportedNetwork.TESTNET);
-
-    // 20 HBAR => 2_000_000_000 tinybars passed to Hbar.fromTinybars.
-    expect(client.setDefaultMaxTransactionFee).toHaveBeenCalledWith({
-      tinybars: '2000000000',
+    const maxTransactionFee = Hbar.fromTinybars('2000000000');
+    const client = service.createClient({
+      network: SupportedNetwork.TESTNET,
+      maxTransactionFee,
     });
+
+    expect(client.setDefaultMaxTransactionFee).toHaveBeenCalledWith(
+      maxTransactionFee,
+    );
   });
 
   it('list() includes keyAlgorithm for each credential', () => {

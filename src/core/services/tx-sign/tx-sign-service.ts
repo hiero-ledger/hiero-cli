@@ -2,6 +2,7 @@ import type {
   ContractCreateFlow,
   Transaction as HederaTransaction,
 } from '@hiero-ledger/sdk';
+import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
@@ -10,16 +11,24 @@ import type { TxSignService } from './tx-sign-service.interface';
 import { AccountId, TransactionId } from '@hiero-ledger/sdk';
 
 import { StateError } from '@/core/errors';
+import { resolveDefaultMaxTransactionFee } from '@/core/utils/resolve-default-max-transaction-fee';
 
 export class TxSignServiceImpl implements TxSignService {
   private logger: Logger;
   private kms: KmsService;
   private networkService: NetworkService;
+  private configService: ConfigService;
 
-  constructor(logger: Logger, kms: KmsService, networkService: NetworkService) {
+  constructor(
+    logger: Logger,
+    kms: KmsService,
+    networkService: NetworkService,
+    configService: ConfigService,
+  ) {
     this.logger = logger;
     this.kms = kms;
     this.networkService = networkService;
+    this.configService = configService;
   }
 
   async sign(
@@ -29,7 +38,10 @@ export class TxSignServiceImpl implements TxSignService {
     this.logger.debug(`[TX-SIGN] Signing with ${keyRefIds.length} key(s)`);
 
     const network = this.networkService.getCurrentNetwork();
-    const client = this.kms.createClient(network);
+    const maxTransactionFee = resolveDefaultMaxTransactionFee(
+      this.configService,
+    );
+    const client = this.kms.createClient({ network, maxTransactionFee });
     const payer = this.networkService.getPayer();
 
     if (payer && transaction.isFrozen()) {
