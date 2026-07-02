@@ -18,6 +18,10 @@ import {
   faucetRequest,
   FaucetRequestOutputSchema,
 } from '@/plugins/faucet/commands/request';
+import {
+  FAUCET_STATE_KEY_LAST_DISBURSEMENT,
+  FAUCET_STATE_NAMESPACE,
+} from '@/plugins/faucet/constants';
 
 import {
   successResponseFixture,
@@ -319,8 +323,8 @@ describe('faucet plugin - request', () => {
     await faucetRequest(args);
 
     expect(stateMock.set).toHaveBeenCalledWith(
-      'faucet',
-      'last_disbursement_at',
+      FAUCET_STATE_NAMESPACE,
+      FAUCET_STATE_KEY_LAST_DISBURSEMENT,
       expect.any(Number),
     );
   });
