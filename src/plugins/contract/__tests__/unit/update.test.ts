@@ -18,6 +18,7 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import { AliasType } from '@/core';
 import {
   NotFoundError,
+  StateError,
   TransactionError,
   ValidationError,
 } from '@/core/errors';
@@ -402,7 +403,7 @@ describe('contract plugin - update command', () => {
     ).rejects.toThrow('This contract is already marked deleted on the network');
   });
 
-  test('throws ValidationError when contract has no admin key on Hedera', async () => {
+  test('throws StateError when contract has no admin key on Hedera', async () => {
     const contractState = makeContractStateServiceMock({
       getContract: jest.fn().mockReturnValue(makeContractData()),
     });
@@ -421,13 +422,13 @@ describe('contract plugin - update command', () => {
 
     await expect(
       new UpdateContractCommand(contractState).execute(args),
-    ).rejects.toThrow(ValidationError);
+    ).rejects.toThrow(StateError);
     await expect(
       new UpdateContractCommand(contractState).execute(args),
     ).rejects.toThrow('This contract has no admin key on Hedera');
   });
 
-  test('throws ValidationError when not enough admin keys found in KMS', async () => {
+  test('throws StateError when not enough admin keys found in KMS', async () => {
     const contractState = makeContractStateServiceMock({
       getContract: jest.fn().mockReturnValue(makeContractData()),
     });
@@ -445,7 +446,7 @@ describe('contract plugin - update command', () => {
 
     await expect(
       new UpdateContractCommand(contractState).execute(args),
-    ).rejects.toThrow(ValidationError);
+    ).rejects.toThrow(StateError);
     await expect(
       new UpdateContractCommand(contractState).execute(args),
     ).rejects.toThrow(

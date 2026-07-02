@@ -12,6 +12,7 @@ export { NotFoundError } from './not-found-error';
 export { StateError } from './state-error';
 export { TransactionError } from './transaction-error';
 export { TransactionPrecheckError } from './transaction-precheck-error';
+export { TransactionValidationError } from './transaction-validation-error';
 export { ValidationError } from './validation-error';
 export {
   formatZodIssueLine,

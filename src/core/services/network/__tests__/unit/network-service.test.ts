@@ -6,7 +6,7 @@ import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 
 import { makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
-import { ConfigurationError, ValidationError } from '@/core/errors';
+import { ConfigurationError } from '@/core/errors';
 import { DEFAULT_NETWORK } from '@/core/services/network/network.config';
 import { NetworkServiceImpl } from '@/core/services/network/network-service';
 import { SupportedNetwork } from '@/core/types/shared.types';
@@ -104,7 +104,7 @@ describe('NetworkServiceImpl', () => {
     it('should throw ValidationError for unavailable network', () => {
       expect(() =>
         networkService.switchNetwork(NETWORK_INVALID as SupportedNetwork),
-      ).toThrow(ValidationError);
+      ).toThrow(ConfigurationError);
       expect(stateMock.set).not.toHaveBeenCalled();
     });
   });

@@ -4,13 +4,15 @@ import type {
   ConfigService,
 } from './config-service.interface';
 
-import { InternalError, ValidationError } from '@/core/errors';
+import { ConfigurationError } from '@/core';
 import { isStringifiable } from '@/core/utils/is-stringifiable';
 
 import { CONFIG_NAMESPACE, CONFIG_OPTIONS } from './config-service.interface';
 
 export class ConfigServiceImpl implements ConfigService {
   private state: StateService;
+  /** In-memory, per-process overrides set by global flags. Never persisted. */
+  private readonly runtimeOverrides = new Map<string, string>();
 
   constructor(stateService: StateService) {
     this.state = stateService;
@@ -40,11 +42,14 @@ export class ConfigServiceImpl implements ConfigService {
   getOption<T = boolean | number | string>(name: string): T {
     const spec = CONFIG_OPTIONS[name];
     if (!spec) {
-      throw new ValidationError(`Unknown config option: ${name}`, {
+      throw new ConfigurationError(`Unknown config option: ${name}`, {
         context: { optionName: name },
       });
     }
-    const raw = this.state.get<unknown>(CONFIG_NAMESPACE, name);
+    // Runtime overrides (e.g. global flags) take precedence over persisted state.
+    const raw =
+      this.runtimeOverrides.get(name) ??
+      this.state.get<unknown>(CONFIG_NAMESPACE, name);
     if (raw === undefined || raw === null) {
       // return default
       return spec.default as unknown as T;
@@ -83,14 +88,14 @@ export class ConfigServiceImpl implements ConfigService {
   setOption(name: string, value: boolean | number | string): void {
     const spec = CONFIG_OPTIONS[name];
     if (!spec) {
-      throw new ValidationError(`Unknown config option: ${name}`, {
+      throw new ConfigurationError(`Unknown config option: ${name}`, {
         context: { optionName: name },
       });
     }
     switch (spec.type) {
       case 'boolean':
         if (typeof value !== 'boolean') {
-          throw new ValidationError(
+          throw new ConfigurationError(
             `Invalid value for ${name}: expected boolean`,
             {
               context: { optionName: name, value, expectedType: 'boolean' },
@@ -101,7 +106,7 @@ export class ConfigServiceImpl implements ConfigService {
         return;
       case 'number': {
         if (typeof value !== 'number' || Number.isNaN(value)) {
-          throw new ValidationError(
+          throw new ConfigurationError(
             `Invalid value for ${name}: expected number`,
             {
               context: { optionName: name, value, expectedType: 'number' },
@@ -113,7 +118,7 @@ export class ConfigServiceImpl implements ConfigService {
       }
       case 'string': {
         if (typeof value !== 'string') {
-          throw new ValidationError(
+          throw new ConfigurationError(
             `Invalid value for ${name}: expected string`,
             {
               context: { optionName: name, value, expectedType: 'string' },
@@ -126,7 +131,7 @@ export class ConfigServiceImpl implements ConfigService {
       case 'enum': {
         if (typeof value !== 'string' || !spec.allowedValues.includes(value)) {
           const allowed = spec.allowedValues.join(', ');
-          throw new ValidationError(
+          throw new ConfigurationError(
             `Invalid value for ${name}: expected one of (${allowed})`,
             {
               context: {
@@ -142,9 +147,18 @@ export class ConfigServiceImpl implements ConfigService {
         return;
       }
       default:
-        throw new InternalError(`Unsupported option type for ${name}`, {
+        throw new ConfigurationError(`Unsupported option type for ${name}`, {
           context: { optionName: name },
         });
     }
+  }
+
+  setRuntimeOverride(name: string, value: string): void {
+    if (!CONFIG_OPTIONS[name]) {
+      throw new ConfigurationError(`Unknown config option: ${name}`, {
+        context: { optionName: name },
+      });
+    }
+    this.runtimeOverrides.set(name, value);
   }
 }

@@ -11,7 +11,7 @@ import {
   TokenId,
 } from '@hiero-ledger/sdk';
 
-import { ValidationError } from '@/core/errors';
+import { TransactionValidationError, ValidationError } from '@/core/errors';
 import { HEDERA_MAX_ALLOWANCE_ENTRIES_PER_TRANSACTION } from '@/core/shared/constants';
 
 export class AllowanceServiceImpl implements AllowanceService {
@@ -24,7 +24,7 @@ export class AllowanceServiceImpl implements AllowanceService {
       );
     }
     if (entries.length > HEDERA_MAX_ALLOWANCE_ENTRIES_PER_TRANSACTION) {
-      throw new ValidationError(
+      throw new TransactionValidationError(
         `AccountAllowanceApproveTransaction supports at most ${HEDERA_MAX_ALLOWANCE_ENTRIES_PER_TRANSACTION} entries per transaction`,
       );
     }

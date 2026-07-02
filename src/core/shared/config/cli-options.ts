@@ -16,6 +16,7 @@ import schedulePluginManifest from '@/plugins/schedule/manifest';
 import swapPluginManifest from '@/plugins/swap/manifest';
 import tokenPluginManifest from '@/plugins/token/manifest';
 import topicPluginManifest from '@/plugins/topic/manifest';
+import x402PluginManifest from '@/plugins/x402/manifest';
 
 export const RESERVED_LONG_OPTIONS = new Set<string>([
   'format',
@@ -32,6 +33,7 @@ export const RESERVED_LONG_OPTIONS = new Set<string>([
   'network',
   'payer',
   'confirm',
+  'max-transaction-fee',
 ]);
 
 export const RESERVED_SHORT_OPTIONS = new Set<string>([
@@ -41,6 +43,7 @@ export const RESERVED_SHORT_OPTIONS = new Set<string>([
   'P', // payer
   'F', // format
   'Y', // confirm
+  'M', // max-transaction-fee
 ]);
 
 export const DEFAULT_PLUGIN_STATE: PluginManifest[] = [
@@ -60,4 +63,5 @@ export const DEFAULT_PLUGIN_STATE: PluginManifest[] = [
   swapPluginManifest,
   eip712PluginManifest,
   faucetPluginManifest,
+  x402PluginManifest,
 ];

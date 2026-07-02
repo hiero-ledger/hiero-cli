@@ -18,12 +18,13 @@ hcli <plugin> <command> [options]
 
 ## Global flags
 
-| Flag        | Short | Default  | Description                                                              |
-| ----------- | ----- | -------- | ------------------------------------------------------------------------ |
-| `--format`  | `-F`  | `human`  | Output format: `human` or `json`                                         |
-| `--network` | `-N`  | active   | Override active network for this command                                 |
-| `--payer`   | `-P`  | operator | Override payer account for this command; defaults to operator if omitted |
-| `--confirm` | `-Y`  | `false`  | Skip all confirmation prompts                                            |
+| Flag                    | Short | Default  | Description                                                                                                                                                      |
+| ----------------------- | ----- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--format`              | `-F`  | `human`  | Output format: `human` or `json`                                                                                                                                 |
+| `--network`             | `-N`  | active   | Override active network for this command                                                                                                                         |
+| `--payer`               | `-P`  | operator | Override payer account for this command; defaults to operator if omitted                                                                                         |
+| `--confirm`             | `-Y`  | `false`  | Skip all confirmation prompts                                                                                                                                    |
+| `--max-transaction-fee` | `-M`  | config   | Max transaction fee ceiling for this run: HBAR (e.g. `20`) or tinybars (`200000000t`). Overrides the `default_max_transaction_fee` config; `0` means no override |
 
 ## Prerequisites
 
@@ -74,7 +75,7 @@ State is persisted in `~/.hiero-cli/state/` as JSON files, one per plugin namesp
 | `hbar`              | Transfer HBAR              | transfer HBAR, approve/revoke HBAR allowance                                                                                                                                                                                                                                            |
 | `token`             | Manage FT & NFT tokens     | create-ft/nft, create-from-file, mint, burn, wipe, transfer, airdrop, associate, dissociate, freeze/unfreeze, pause/unpause, grant/revoke KYC, allowance (FT/NFT), delete-allowance-nft, update-metadata-nft, pending-airdrops, cancel/claim/reject-airdrop, list, view, import, delete |
 | `topic`             | Hedera Consensus Service   | create, update, submit/find messages, import, list, delete                                                                                                                                                                                                                              |
-| `schedule`          | Scheduled transactions     | create schedule record, sign pending schedule, delete schedule, verify execution state. Use `--scheduled <name>` (`-X`) only on commands marked `[scheduled]` in the plugin reference                                                                                                   |
+| `schedule`          | Scheduled transactions     | create schedule record, sign pending schedule, delete schedule, verify execution state, list schedules. Use `--scheduled <name>` (`-X`) only on commands marked `[scheduled]` in the plugin reference                                                                                   |
 | `contract`          | Smart contract lifecycle   | compile + deploy Solidity, import, list, delete                                                                                                                                                                                                                                         |
 | `contract-erc20`    | ERC-20 contract calls      | name, symbol, decimals, balanceOf, transfer, transferFrom, approve, allowance, totalSupply. **Requires `contract` plugin** (contract must be deployed first)                                                                                                                            |
 | `contract-erc721`   | ERC-721 contract calls     | balanceOf, ownerOf, approve, setApprovalForAll, safeTransferFrom, transferFrom, mint, name, symbol, tokenURI, getApproved, isApprovedForAll. **Requires `contract` plugin** (contract must be deployed first)                                                                           |

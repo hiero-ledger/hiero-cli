@@ -1,3 +1,4 @@
+import { ValidationError } from '@/core/errors';
 import {
   DAY_IN_SECONDS,
   HOUR_IN_SECONDS,
@@ -23,7 +24,7 @@ const DURATION_SUFFIX_SECONDS: Record<string, number> = {
 export function parseAutoRenewPeriodToSeconds(raw: string): number {
   const trimmed = raw.trim();
   if (!trimmed) {
-    throw new Error('Auto-renew period cannot be empty');
+    throw new ValidationError('Auto-renew period cannot be empty');
   }
 
   const withSuffix = trimmed.match(/^(\d+)([smhd])$/i);
@@ -31,7 +32,7 @@ export function parseAutoRenewPeriodToSeconds(raw: string): number {
     const n = parseInt(withSuffix[1], 10);
     const mult = DURATION_SUFFIX_SECONDS[withSuffix[2].toLowerCase()];
     if (!mult) {
-      throw new Error(`Unsupported suffix in "${raw}"`);
+      throw new ValidationError(`Unsupported suffix in "${raw}"`);
     }
     return n * mult;
   }
@@ -40,7 +41,7 @@ export function parseAutoRenewPeriodToSeconds(raw: string): number {
     return parseInt(trimmed, 10);
   }
 
-  throw new Error(
+  throw new ValidationError(
     `Invalid auto-renew period "${raw}". Use a non-negative integer (seconds), or add suffix s, m, h, or d (e.g. 500, 500s, 50m, 2h, 1d).`,
   );
 }

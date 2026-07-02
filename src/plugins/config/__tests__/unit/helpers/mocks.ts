@@ -15,6 +15,7 @@ export const makeConfigServiceMock = (
   listOptions: jest.fn().mockReturnValue([]),
   getOption: jest.fn(),
   setOption: jest.fn(),
+  setRuntimeOverride: jest.fn(),
   ...overrides,
 });
 

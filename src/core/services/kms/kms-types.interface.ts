@@ -1,3 +1,5 @@
+import type { Hbar } from '@hiero-ledger/sdk';
+import type { SupportedNetwork } from '@/core';
 import type { KeyAlgorithm } from '@/core/shared/constants';
 
 import { z } from 'zod';
@@ -125,3 +127,11 @@ export type Credential =
   | KeyReferenceCredential
   | AliasCredential
   | EvmAddressCredential;
+
+/**
+ * Parameters for creating a Hedera client with operator credentials.
+ */
+export interface CreateClientParams {
+  network: SupportedNetwork;
+  maxTransactionFee?: Hbar;
+}

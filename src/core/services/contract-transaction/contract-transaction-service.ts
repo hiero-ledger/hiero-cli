@@ -23,7 +23,7 @@ import {
 } from '@hiero-ledger/sdk';
 import { ethers, getBytes } from 'ethers';
 
-import { ValidationError } from '@/core/errors';
+import { TransactionValidationError } from '@/core/errors';
 
 export class ContractTransactionServiceImpl implements ContractTransactionService {
   contractCreateFlowTransaction(
@@ -135,14 +135,17 @@ export class ContractTransactionServiceImpl implements ContractTransactionServic
       }
       return { transaction };
     } catch (error) {
-      throw new ValidationError('Invalid contract delete parameters', {
-        context: {
-          contractId: params.contractId,
-          transferAccountId: params.transferAccountId,
-          transferContractId: params.transferContractId,
+      throw new TransactionValidationError(
+        'Invalid contract delete parameters',
+        {
+          context: {
+            contractId: params.contractId,
+            transferAccountId: params.transferAccountId,
+            transferContractId: params.transferContractId,
+          },
+          cause: error,
         },
-        cause: error,
-      });
+      );
     }
   }
 
@@ -198,10 +201,13 @@ export class ContractTransactionServiceImpl implements ContractTransactionServic
 
       return { transaction };
     } catch (error) {
-      throw new ValidationError('Invalid contract update parameters', {
-        context: { contractId: params.contractId },
-        cause: error,
-      });
+      throw new TransactionValidationError(
+        'Invalid contract update parameters',
+        {
+          context: { contractId: params.contractId },
+          cause: error,
+        },
+      );
     }
   }
 }

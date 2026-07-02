@@ -102,6 +102,14 @@ export const configPluginManifest: PluginManifest = {
           description:
             'Set Hedera Portal Personal Access Token for faucet commands',
         },
+        {
+          name: 'default_max_transaction_fee',
+          short: 'f',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Set default max transaction fee ceiling applied to every client. HBAR (e.g. "20") or tinybars ("200000000t"). Set to 0 to clear the setting.',
+        },
       ],
       handler: configSet,
       output: {
