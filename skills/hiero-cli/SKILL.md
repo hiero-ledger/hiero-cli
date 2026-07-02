@@ -60,7 +60,6 @@ State is persisted in `~/.hiero-cli/state/` as JSON files, one per plugin namesp
 | `config`            | `config-storage.json`                                                |
 | `plugin-management` | `plugin-management-storage.json`                                     |
 | `credentials` (KMS) | `kms-credentials-storage.json`, `kms-secrets-encrypted-storage.json` |
-| `faucet`            | `faucet-storage.json`                                                |
 
 ## Amount notation
 

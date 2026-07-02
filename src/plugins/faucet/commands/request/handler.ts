@@ -1,19 +1,15 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { FaucetRequestOutput } from './output';
+import type { FaucetApiResponse } from './types';
 
+import { AuthorizationError } from '@/core/errors/authorization-error';
 import { ConfigurationError } from '@/core/errors/configuration-error';
 import { NetworkError } from '@/core/errors/network-error';
 import { ValidationError } from '@/core/errors/validation-error';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
-import {
-  FAUCET_API_URL,
-  FAUCET_STATE_KEY_LAST_DISBURSEMENT,
-  FAUCET_STATE_NAMESPACE,
-  PAT_DOCS_URL,
-  QUOTA_WINDOW_MS,
-} from '@/plugins/faucet/constants';
+import { FAUCET_API_URL, PAT_DOCS_URL } from '@/plugins/faucet/constants';
 
 import { FaucetRequestInputSchema } from './input';
 
@@ -62,29 +58,10 @@ export class FaucetRequestCommand implements Command {
     });
 
     if (!response.ok) {
-      const lastDisbursementAt = api.state.get<number>(
-        FAUCET_STATE_NAMESPACE,
-        FAUCET_STATE_KEY_LAST_DISBURSEMENT,
-      );
-      await handleFaucetErrorResponse(
-        response,
-        resolvedRecipient,
-        network,
-        lastDisbursementAt,
-      );
+      await handleFaucetErrorResponse(response, resolvedRecipient, network);
     }
 
-    const data = (await response.json()) as {
-      amount: number;
-      transactionId: string;
-      dailyQuota: { used: number; remaining: number };
-    };
-
-    api.state.set<number>(
-      FAUCET_STATE_NAMESPACE,
-      FAUCET_STATE_KEY_LAST_DISBURSEMENT,
-      Date.now(),
-    );
+    const data = (await response.json()) as FaucetApiResponse;
 
     const output: FaucetRequestOutput = {
       recipient: resolvedRecipient,
@@ -103,13 +80,12 @@ async function handleFaucetErrorResponse(
   response: Response,
   recipient: string,
   network: string,
-  lastDisbursementAt?: number,
 ): Promise<never> {
   const body = await response.json().catch(() => ({ message: undefined }));
   const message = (body as { message?: string }).message;
 
   if (response.status === 403) {
-    throw new ConfigurationError(
+    throw new AuthorizationError(
       `PAT authentication failed. Verify your token is valid.\nTo generate a new PAT, visit: ${PAT_DOCS_URL}`,
     );
   }
@@ -122,7 +98,7 @@ async function handleFaucetErrorResponse(
 
   if (response.status === 429) {
     throw new NetworkError(
-      `Daily faucet quota exhausted. You can request up to 100 HBAR per 24 hours.${formatResetTime(lastDisbursementAt)}`,
+      `Daily faucet quota exhausted. You can request up to 100 HBAR per 24 hours.`,
       { recoverable: false },
     );
   }
@@ -130,16 +106,6 @@ async function handleFaucetErrorResponse(
   throw new NetworkError(
     `Faucet API error (${response.status})${message ? `: ${message}` : ''}`,
   );
-}
-
-function formatResetTime(lastDisbursementAt?: number): string {
-  if (lastDisbursementAt == null) return '';
-  const remainingMs = lastDisbursementAt + QUOTA_WINDOW_MS - Date.now();
-  if (remainingMs <= 0) return '';
-  const hours = Math.floor(remainingMs / (60 * 60 * 1000));
-  const minutes = Math.floor((remainingMs % (60 * 60 * 1000)) / (60 * 1000));
-  if (hours === 0) return ` Available in ${minutes}m.`;
-  return ` Available in ${hours}h ${minutes}m.`;
 }
 
 export async function faucetRequest(
