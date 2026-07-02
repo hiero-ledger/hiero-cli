@@ -32,6 +32,7 @@ export const RESERVED_LONG_OPTIONS = new Set<string>([
   'network',
   'payer',
   'confirm',
+  'max-transaction-fee',
 ]);
 
 export const RESERVED_SHORT_OPTIONS = new Set<string>([
@@ -41,6 +42,7 @@ export const RESERVED_SHORT_OPTIONS = new Set<string>([
   'P', // payer
   'F', // format
   'Y', // confirm
+  'M', // max-transaction-fee
 ]);
 
 export const DEFAULT_PLUGIN_STATE: PluginManifest[] = [

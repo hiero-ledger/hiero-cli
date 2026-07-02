@@ -77,9 +77,14 @@ hcli config list
       "name": "skip_confirmations",
       "type": "boolean",
       "value": false
+    },
+    {
+      "name": "default_max_transaction_fee",
+      "type": "string",
+      "value": ""
     }
   ],
-  "totalCount": 4
+  "totalCount": 5
 }
 ```
 
@@ -115,6 +120,9 @@ hcli config set --default_key_manager local_encrypted
 hcli config set --log_level info
 hcli config set --ed25519_support true
 hcli config set --skip_confirmations false
+hcli config set --default_max_transaction_fee 20      # 20 ℏ ceiling
+hcli config set --default_max_transaction_fee 200000000t  # tinybars
+hcli config set --default_max_transaction_fee 0       # clear (use SDK default)
 ```
 
 **Options (pass exactly one):**
@@ -123,6 +131,7 @@ hcli config set --skip_confirmations false
 - `--ed25519_support <string>` - Set Ed25519 support (`true` | `false`)
 - `--log_level <string>` - Set log level (`silent` | `error` | `warn` | `info` | `debug`)
 - `--skip_confirmations <string>` - Set skip confirmations (`true` | `false`)
+- `--default_max_transaction_fee <string>` - Default max transaction fee ceiling applied to every client/transaction. Accepts HBAR (e.g. `20`) or tinybars (`200000000t`). Set to `0` to clear it (falls back to the SDK default). The per-run global flag `--max-transaction-fee` overrides this value.
 
 **Output:**
 

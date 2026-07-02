@@ -1,5 +1,6 @@
 import type { PaymentRequirements } from '@x402/core/types';
 import type { ClientHederaSigner } from '@x402/hedera';
+import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type { TransferService } from '@/core/services/transfer/transfer-service.interface';
 import type { PaymentSignerService } from './payment-signer.service.interface';
@@ -17,11 +18,13 @@ import {
   FtTransferEntry,
   HbarTransferEntry,
 } from '@/core/services/transfer/transfer-entries';
+import { resolveDefaultMaxTransactionFee } from '@/core/utils/resolve-default-max-transaction-fee';
 
 export class PaymentSignerServiceImpl implements PaymentSignerService {
   constructor(
     private readonly kms: KmsService,
     private readonly transfer: TransferService,
+    private readonly configService: ConfigService,
   ) {}
 
   createSigner(params: CreateSignerParams): KmsClientSigner {
@@ -75,7 +78,10 @@ export class PaymentSignerServiceImpl implements PaymentSignerService {
         );
         tx.setTransactionId(transactionId);
 
-        const client = this.kms.createClient(network);
+        const maxTransactionFee = resolveDefaultMaxTransactionFee(
+          this.configService,
+        );
+        const client = this.kms.createClient({ network, maxTransactionFee });
         try {
           tx.freezeWith(client);
           await this.kms.signTransaction(tx, keyRefId);

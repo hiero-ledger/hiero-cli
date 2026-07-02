@@ -1,11 +1,14 @@
 import type {
   Client,
   ContractCreateFlow,
-  Transaction as HederaTransaction,
+  Transaction,
 } from '@hiero-ledger/sdk';
 import type { KeyAlgorithm } from '@/core/shared/constants';
-import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { KeyManager, KmsCredentialRecord } from './kms-types.interface';
+import type {
+  CreateClientParams,
+  KeyManager,
+  KmsCredentialRecord,
+} from './kms-types.interface';
 import type { Signer } from './signers/signer.interface';
 
 export interface KmsService {
@@ -100,17 +103,14 @@ export interface KmsService {
 
   /**
    * Creates a Hedera client with operator credentials.
-   * @param network - Network to connect to
+   * @param params - Network and optional default max transaction fee ceiling
    */
-  createClient(network: SupportedNetwork): Client;
+  createClient(params: CreateClientParams): Client;
 
   /**
    * Signs a transaction with specified key.
    */
-  signTransaction(
-    transaction: HederaTransaction,
-    keyRefId: string,
-  ): Promise<void>;
+  signTransaction(transaction: Transaction, keyRefId: string): Promise<void>;
 
   /**
    * Signs a transaction with specified key.

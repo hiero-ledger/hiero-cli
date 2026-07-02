@@ -6,7 +6,7 @@ import { CommanderError, program } from 'commander';
 
 import pkg from '../package.json';
 
-import { createCoreApi } from './core';
+import { ConfigOptionKey, createCoreApi } from './core';
 import { PluginManager } from './core/plugins/plugin-manager';
 import { ErrorBoundaryServiceImpl } from './core/services/error-boundary/error-boundary-service';
 import { PayerResolutionServiceImpl } from './core/services/payer-resolution/payer-resolution-service';
@@ -14,6 +14,7 @@ import { DEFAULT_PLUGIN_STATE } from './core/shared/config/cli-options';
 import { validateNetwork } from './core/shared/validation/validate-network.zod';
 import { validateOutputFormat } from './core/shared/validation/validate-output-format.zod';
 import { addDisabledPluginsHelp } from './core/utils/add-disabled-plugins-help';
+import { processBalanceInput } from './core/utils/process-balance-input';
 
 program
   .name('hcli')
@@ -29,6 +30,10 @@ program
     'Payer account (alias or account-id:private-key format); defaults to operator if omitted',
   )
   .option('-Y, --confirm', 'Skip confirmation prompts')
+  .option(
+    '-M, --max-transaction-fee <amount>',
+    'Max transaction fee ceiling for this run: HBAR (e.g. "20") or tinybars ("200000000t"). Overrides the default_max_transaction_fee config; 0 means no override.',
+  )
   .showHelpAfterError('use --help for available options')
   .configureHelp({
     showGlobalOptions: true,
@@ -72,6 +77,20 @@ async function initializeCLI() {
         coreApi.logger,
       );
       await payerResolution.resolvePayer(payer);
+    }
+
+    const maxTransactionFee = (opts.maxTransactionFee || opts.M) as
+      | string
+      | undefined;
+    if (maxTransactionFee !== undefined) {
+      // Validate eagerly so a bad value fails fast; 0 means "no override".
+      const tinybars = processBalanceInput(maxTransactionFee);
+      if (tinybars > 0n) {
+        coreApi.config.setRuntimeOverride(
+          ConfigOptionKey.default_max_transaction_fee,
+          maxTransactionFee,
+        );
+      }
     }
 
     // Setup global error handlers with validated format

@@ -209,6 +209,27 @@ hcli hbar transfer --amount 1 --to 0.0.789012 --network testnet --payer myaccoun
 - The payer is used for all transactions executed by the command
 - The payer account must be accessible (either as an alias or via the provided private key)
 
+#### `--max-transaction-fee` / `-M` - Max Transaction Fee Override
+
+Raise the maximum transaction fee ceiling applied to the Hedera client for this run. Useful when a transaction (e.g. a contract deploy) fails with `INSUFFICIENT_TX_FEE` because the default ceiling is too low. The value accepts HBAR by default, or tinybars with a `t` suffix:
+
+```sh
+# Allow up to 20 HBAR for this contract deploy
+hcli contract create --name MyContract --file ./MyContract.sol --max-transaction-fee 20
+
+# Same, expressed in tinybars
+hcli contract create --name MyContract --file ./MyContract.sol --max-transaction-fee 2000000000t
+```
+
+This flag applies only to the current invocation. To persist a ceiling across all commands, set the `default_max_transaction_fee` config option instead:
+
+```sh
+hcli config set --default_max_transaction_fee 20   # persistent ceiling
+hcli config set --default_max_transaction_fee 0    # clear (use SDK default)
+```
+
+Precedence: `--max-transaction-fee` (this run) overrides the `default_max_transaction_fee` config, which overrides the SDK default. A value of `0` means "no override."
+
 ### 8. Optional: Setting Up an Alias
 
 To avoid typing the full command each time, you can set an alias in your shell profile. Replace the path with the absolute path to your `hiero-cli` installation.

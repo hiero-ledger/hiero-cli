@@ -5,6 +5,7 @@ import type {
   TransactionReceipt,
   TransactionResponse,
 } from '@hiero-ledger/sdk';
+import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
@@ -16,21 +17,32 @@ import { PrecheckStatusError, ReceiptStatusError } from '@hiero-ledger/sdk';
 import { TransactionError, TransactionPrecheckError } from '@/core/errors';
 import { getCauseMessage } from '@/core/utils/get-cause-message';
 import { mapReceiptToTransactionResult } from '@/core/utils/receipt-mapper';
+import { resolveDefaultMaxTransactionFee } from '@/core/utils/resolve-default-max-transaction-fee';
 
 export class TxExecuteServiceImpl implements TxExecuteService {
   private logger: Logger;
   private kms: KmsService;
   private networkService: NetworkService;
+  private configService: ConfigService;
 
-  constructor(logger: Logger, kms: KmsService, networkService: NetworkService) {
+  constructor(
+    logger: Logger,
+    kms: KmsService,
+    networkService: NetworkService,
+    configService: ConfigService,
+  ) {
     this.logger = logger;
     this.kms = kms;
     this.networkService = networkService;
+    this.configService = configService;
   }
 
   private getClient(): Client {
     const network = this.networkService.getCurrentNetwork();
-    return this.kms.createClient(network);
+    const maxTransactionFee = resolveDefaultMaxTransactionFee(
+      this.configService,
+    );
+    return this.kms.createClient({ network, maxTransactionFee });
   }
 
   private wrapTransactionError(

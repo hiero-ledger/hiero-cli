@@ -1,3 +1,4 @@
+import type { Hbar } from '@hiero-ledger/sdk';
 import type { LocalnetConfig } from '@/core/services/network/network-service.interface';
 
 import { AccountId, Client } from '@hiero-ledger/sdk';
@@ -7,6 +8,7 @@ import { ConfigurationError, SupportedNetwork } from '@/core';
 export function createClient(
   network: SupportedNetwork,
   localnetConfig: LocalnetConfig,
+  maxTransactionFee?: Hbar,
 ) {
   let client: Client;
   switch (network) {
@@ -35,5 +37,10 @@ export function createClient(
     default:
       throw new ConfigurationError(`Unsupported network: ${String(network)}`);
   }
+
+  if (maxTransactionFee) {
+    client.setDefaultMaxTransactionFee(maxTransactionFee);
+  }
+
   return client;
 }

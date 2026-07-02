@@ -929,7 +929,7 @@ export const tokenPluginManifest: PluginManifest = {
         },
         {
           name: 'memo',
-          short: 'M',
+          short: 'o',
           type: OptionType.STRING,
           required: false,
           description:
@@ -1188,7 +1188,7 @@ export const tokenPluginManifest: PluginManifest = {
         },
         {
           name: 'memo',
-          short: 'M',
+          short: 'o',
           type: OptionType.STRING,
           required: false,
           description: 'Optional memo for the token (max 100 characters)',
@@ -1992,7 +1992,7 @@ export const tokenPluginManifest: PluginManifest = {
         },
         {
           name: 'metadata-key',
-          short: 'M',
+          short: 'D',
           type: OptionType.REPEATABLE,
           required: false,
           description:
@@ -2394,7 +2394,7 @@ export const tokenPluginManifest: PluginManifest = {
         },
         {
           name: 'memo',
-          short: 'M',
+          short: 'o',
           type: OptionType.STRING,
           required: false,
           description: 'New memo for the token. Pass "null" to clear.',

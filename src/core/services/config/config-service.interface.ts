@@ -13,6 +13,7 @@ export enum ConfigOptionKey {
   log_level = 'log_level',
   default_key_manager = 'default_key_manager',
   skip_confirmations = 'skip_confirmations',
+  default_max_transaction_fee = 'default_max_transaction_fee',
 }
 
 type OptionSpec =
@@ -53,6 +54,10 @@ export const CONFIG_OPTIONS: Record<string, OptionSpec> = {
     type: 'boolean',
     default: false,
   },
+  default_max_transaction_fee: {
+    type: 'string',
+    default: '',
+  },
 } as const;
 
 export const CONFIG_OPTION_TYPES = [
@@ -86,4 +91,11 @@ export interface ConfigService {
    * Set a configuration option by name (with type validation)
    */
   setOption(name: string, value: boolean | number | string): void;
+
+  /**
+   * Set an in-memory override for a configuration option that takes precedence
+   * over the persisted value for the current process only (never persisted).
+   * Used by per-invocation global flags such as --max-transaction-fee.
+   */
+  setRuntimeOverride(name: string, value: string): void;
 }
