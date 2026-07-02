@@ -133,11 +133,11 @@ async function handleFaucetErrorResponse(
 }
 
 function formatResetTime(lastDisbursementAt?: number): string {
-  if (!lastDisbursementAt) return '';
+  if (lastDisbursementAt == null) return '';
   const remainingMs = lastDisbursementAt + QUOTA_WINDOW_MS - Date.now();
   if (remainingMs <= 0) return '';
   const hours = Math.floor(remainingMs / (60 * 60 * 1000));
-  const minutes = Math.ceil((remainingMs % (60 * 60 * 1000)) / (60 * 1000));
+  const minutes = Math.floor((remainingMs % (60 * 60 * 1000)) / (60 * 1000));
   if (hours === 0) return ` Available in ${minutes}m.`;
   return ` Available in ${hours}h ${minutes}m.`;
 }

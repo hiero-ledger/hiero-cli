@@ -2,7 +2,7 @@
 
 A plugin for topping up accounts with HBAR on testnet and previewnet via the Hedera Portal Faucet API.
 
-## 🏗️ Architecture
+## Architecture
 
 - **Stateless handler** – no shared globals; all dependencies injected via `CommandHandlerArgs`
 - **Manifest-driven** – commands, options, and output schemas declared in `manifest.ts`
@@ -10,7 +10,7 @@ A plugin for topping up accounts with HBAR on testnet and previewnet via the Hed
 - **Structured output** – handler returns `CommandResult` with standardized output
 - **Alias-aware** – recipient accepts an account alias, Hedera account ID, or EVM address
 
-## 📁 Structure
+## Structure
 
 ```
 src/plugins/faucet/
@@ -25,7 +25,7 @@ src/plugins/faucet/
 └── index.ts                 # Plugin exports
 ```
 
-## 🔑 Setup
+## Setup
 
 The faucet plugin requires a Hedera Portal Personal Access Token (PAT). To obtain one:
 
@@ -40,7 +40,7 @@ hcli config set --portal_pat <your-token>
 hcli config set -p <your-token>
 ```
 
-## 🚀 Commands
+## Commands
 
 ### Faucet Request
 
@@ -100,13 +100,13 @@ Faucet request successful!
   Daily quota:    100 HBAR used / 0 HBAR remaining
 ```
 
-## 🔧 Core API Integration
+## Core API Integration
 
 - `api.config` – reads `portal_pat` to authenticate with the faucet API
 - `api.network` – resolves current network; validates testnet/previewnet
 - `api.identityResolution` – resolves account aliases and EVM addresses to entity IDs
 
-## 🧪 Testing
+## Testing
 
 Unit tests located in `__tests__/unit/`:
 
