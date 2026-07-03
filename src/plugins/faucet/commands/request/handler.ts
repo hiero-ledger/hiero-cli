@@ -1,19 +1,20 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
+import type { FaucetDisbursementService } from '@/plugins/faucet/services/faucet-disbursement.service.interface';
 import type { FaucetRequestOutput } from './output';
-import type { FaucetApiResponse } from './types';
 
-import { AuthorizationError } from '@/core/errors/authorization-error';
 import { ConfigurationError } from '@/core/errors/configuration-error';
-import { NetworkError } from '@/core/errors/network-error';
 import { ValidationError } from '@/core/errors/validation-error';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
-import { FAUCET_API_URL, PAT_DOCS_URL } from '@/plugins/faucet/constants';
+import { PAT_DOCS_URL } from '@/plugins/faucet/constants';
+import { FaucetDisbursementServiceImpl } from '@/plugins/faucet/services/faucet-disbursement.service';
 
 import { FaucetRequestInputSchema } from './input';
 
 export class FaucetRequestCommand implements Command {
+  constructor(private readonly disbursement: FaucetDisbursementService) {}
+
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
 
@@ -44,24 +45,12 @@ export class FaucetRequestCommand implements Command {
         aliasType: AliasType.Account,
       });
 
-    const response = await fetch(FAUCET_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${pat}`,
-      },
-      body: JSON.stringify({
-        address: resolvedRecipient,
-        amount: validArgs.amount,
-        network,
-      }),
+    const data = await this.disbursement.disburse({
+      pat,
+      address: resolvedRecipient,
+      amount: validArgs.amount,
+      network,
     });
-
-    if (!response.ok) {
-      await handleFaucetErrorResponse(response, resolvedRecipient, network);
-    }
-
-    const data = (await response.json()) as FaucetApiResponse;
 
     const output: FaucetRequestOutput = {
       recipient: resolvedRecipient,
@@ -76,40 +65,9 @@ export class FaucetRequestCommand implements Command {
   }
 }
 
-async function handleFaucetErrorResponse(
-  response: Response,
-  recipient: string,
-  network: string,
-): Promise<never> {
-  const body = await response.json().catch(() => ({ message: undefined }));
-  const message = (body as { message?: string }).message;
-
-  if (response.status === 403) {
-    throw new AuthorizationError(
-      `PAT authentication failed. Verify your token is valid.\nTo generate a new PAT, visit: ${PAT_DOCS_URL}`,
-    );
-  }
-
-  if (response.status === 422) {
-    throw new ValidationError(
-      `Recipient ${recipient} is not fundable. Ensure the account exists on ${network}.`,
-    );
-  }
-
-  if (response.status === 429) {
-    throw new NetworkError(
-      `Daily faucet quota exhausted. You can request up to 100 HBAR per 24 hours.`,
-      { recoverable: false },
-    );
-  }
-
-  throw new NetworkError(
-    `Faucet API error (${response.status})${message ? `: ${message}` : ''}`,
-  );
-}
-
 export async function faucetRequest(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new FaucetRequestCommand().execute(args);
+  const disbursement = new FaucetDisbursementServiceImpl();
+  return new FaucetRequestCommand(disbursement).execute(args);
 }
