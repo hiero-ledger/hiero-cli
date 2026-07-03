@@ -1,10 +1,8 @@
-import type { FaucetDisbursementService } from './faucet-disbursement.service.interface';
+import type { FaucetPortalApiService } from './faucet-portal-api.service.interface';
 import type {
-  FaucetDisbursementParams,
-  FaucetDisbursementResult,
-} from './faucet-disbursement.service.types';
-
-import { z } from 'zod';
+  FaucetRequestFundsParams,
+  FaucetRequestFundsResult,
+} from './faucet-portal-api.service.types';
 
 import { AuthorizationError } from '@/core/errors/authorization-error';
 import { NetworkError } from '@/core/errors/network-error';
@@ -12,20 +10,12 @@ import { ValidationError } from '@/core/errors/validation-error';
 import { parseWithSchema } from '@/core/shared/validation/parse-with-schema.zod';
 import { FAUCET_API_URL, PAT_DOCS_URL } from '@/plugins/faucet/constants';
 
-const FaucetDisbursementResultSchema: z.ZodType<FaucetDisbursementResult> =
-  z.object({
-    amount: z.number(),
-    transactionId: z.string(),
-    dailyQuota: z.object({
-      used: z.number(),
-      remaining: z.number(),
-    }),
-  });
+import { FaucetRequestFundsResultSchema } from './faucet-portal-api.service.types';
 
-export class FaucetDisbursementServiceImpl implements FaucetDisbursementService {
-  async disburse(
-    params: FaucetDisbursementParams,
-  ): Promise<FaucetDisbursementResult> {
+export class FaucetPortalApiServiceImpl implements FaucetPortalApiService {
+  async requestFunds(
+    params: FaucetRequestFundsParams,
+  ): Promise<FaucetRequestFundsResult> {
     const { pat, address, amount, network } = params;
 
     const response = await fetch(FAUCET_API_URL, {
@@ -42,7 +32,7 @@ export class FaucetDisbursementServiceImpl implements FaucetDisbursementService 
     }
 
     return parseWithSchema(
-      FaucetDisbursementResultSchema,
+      FaucetRequestFundsResultSchema,
       await response.json(),
       'Faucet API POST /api/disbursement/cli',
     );

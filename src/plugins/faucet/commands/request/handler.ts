@@ -1,6 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { FaucetDisbursementService } from '@/plugins/faucet/services/faucet-disbursement.service.interface';
+import type { FaucetPortalApiService } from '@/plugins/faucet/services/faucet-portal-api.service.interface';
 import type { FaucetRequestOutput } from './output';
 
 import { ConfigurationError } from '@/core/errors/configuration-error';
@@ -8,12 +8,12 @@ import { ValidationError } from '@/core/errors/validation-error';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 import { PAT_DOCS_URL } from '@/plugins/faucet/constants';
-import { FaucetDisbursementServiceImpl } from '@/plugins/faucet/services/faucet-disbursement.service';
+import { FaucetPortalApiServiceImpl } from '@/plugins/faucet/services/faucet-portal-api.service';
 
 import { FaucetRequestInputSchema } from './input';
 
 export class FaucetRequestCommand implements Command {
-  constructor(private readonly disbursement: FaucetDisbursementService) {}
+  constructor(private readonly portalApi: FaucetPortalApiService) {}
 
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
@@ -45,7 +45,7 @@ export class FaucetRequestCommand implements Command {
         aliasType: AliasType.Account,
       });
 
-    const data = await this.disbursement.disburse({
+    const data = await this.portalApi.requestFunds({
       pat,
       address: resolvedRecipient,
       amount: validArgs.amount,
@@ -68,6 +68,6 @@ export class FaucetRequestCommand implements Command {
 export async function faucetRequest(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  const disbursement = new FaucetDisbursementServiceImpl();
-  return new FaucetRequestCommand(disbursement).execute(args);
+  const portalApi = new FaucetPortalApiServiceImpl();
+  return new FaucetRequestCommand(portalApi).execute(args);
 }
