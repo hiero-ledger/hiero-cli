@@ -93,6 +93,35 @@ describe('config plugin - set', () => {
     expect(configSvc.setOption).not.toHaveBeenCalled();
   });
 
+  test('sets portal_pat string value', async () => {
+    const configSvc = makeConfigServiceMock({
+      getOption: jest.fn().mockReturnValue(''),
+      listOptions: jest.fn().mockReturnValue([
+        {
+          name: ConfigOptionKey.portal_pat,
+          type: 'string',
+          value: '',
+        },
+      ]),
+      setOption: jest.fn(),
+    });
+    const api = makeApiMock(configSvc);
+    const args = makeCommandArgs({
+      api,
+      args: { [ConfigOptionKey.portal_pat]: 'my-pat-token' },
+    });
+
+    const result = await configSet(args);
+    expect(configSvc.setOption).toHaveBeenCalledWith(
+      ConfigOptionKey.portal_pat,
+      'my-pat-token',
+    );
+    const output = assertOutput(result.result, ConfigSetOutputSchema);
+    expect(output.name).toBe(ConfigOptionKey.portal_pat);
+    expect(output.previousValue).toBe('');
+    expect(output.newValue).toBe('my-pat-token');
+  });
+
   test('accepts valid enum value for default_key_manager', async () => {
     const configSvc = makeConfigServiceMock({
       getOption: jest.fn().mockReturnValue('local'),

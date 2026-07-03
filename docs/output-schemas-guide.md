@@ -1307,6 +1307,36 @@ When a command that supports batching is invoked with `--batch <batch-name>`, th
 }
 ```
 
+### Faucet Plugin
+
+#### `faucet request`
+
+**Output**:
+
+```json
+{
+  "recipient": "0.0.12345",
+  "amount": 100,
+  "transactionId": "0.0.123@1700000000.123456789",
+  "network": "testnet",
+  "quotaUsed": 100,
+  "quotaRemaining": 0
+}
+```
+
+**Schema:** `FaucetRequestOutputSchema` from `src/plugins/faucet/commands/request/output.ts`
+
+| Field            | Type               | Description                                     |
+| ---------------- | ------------------ | ----------------------------------------------- |
+| `recipient`      | `string`           | Account ID or EVM address that received the HBAR |
+| `amount`         | `number`           | Amount of HBAR disbursed                        |
+| `transactionId`  | `string`           | Hedera transaction ID                           |
+| `network`        | `SupportedNetwork` | Network where the disbursement was executed     |
+| `quotaUsed`      | `number`           | HBAR used from the 24-hour rolling quota        |
+| `quotaRemaining` | `number`           | HBAR remaining in the 24-hour rolling quota     |
+
+Only available on `testnet` and `previewnet`. Requires a Hedera Portal PAT configured via `hcli config set --portal_pat <token>`. The daily quota is 100 HBAR per 24-hour rolling window.
+
 ### Network Plugin
 
 #### `network list`

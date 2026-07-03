@@ -52,6 +52,10 @@ export const ConfigSetInputSchema = z
         "Log level - allowed values: silent | error | warn | info | debug',",
       ),
     skip_confirmations: BooleanStringSchema.optional(),
+    portal_pat: z
+      .string()
+      .optional()
+      .describe('Hedera Portal Personal Access Token for faucet commands'),
     default_max_transaction_fee: MaxTransactionFeeSchema.optional().describe(
       'Default max transaction fee ceiling - HBAR (e.g. "20") or tinybars ("200000000t"); 0 clears it',
     ),

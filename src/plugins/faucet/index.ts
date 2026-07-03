@@ -1,0 +1,1 @@
+export { faucetPluginManifest } from './manifest';

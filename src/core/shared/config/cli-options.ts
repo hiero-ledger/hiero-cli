@@ -8,6 +8,7 @@ import contractErc20PluginManifest from '@/plugins/contract-erc20/manifest';
 import contractErc721PluginManifest from '@/plugins/contract-erc721/manifest';
 import credentialsPluginManifest from '@/plugins/credentials/manifest';
 import eip712PluginManifest from '@/plugins/eip712/manifest';
+import faucetPluginManifest from '@/plugins/faucet/manifest';
 import hbarPluginManifest from '@/plugins/hbar/manifest';
 import networkPluginManifest from '@/plugins/network/manifest';
 import pluginManagementManifest from '@/plugins/plugin-management/manifest';
@@ -61,5 +62,6 @@ export const DEFAULT_PLUGIN_STATE: PluginManifest[] = [
   contractErc721PluginManifest,
   swapPluginManifest,
   eip712PluginManifest,
+  faucetPluginManifest,
   x402PluginManifest,
 ];

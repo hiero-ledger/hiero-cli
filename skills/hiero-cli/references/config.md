@@ -10,6 +10,7 @@ Manage CLI configuration options: list all settings, get or set individual value
 | `log_level`                   | enum    | `silent`   | `silent`, `error`, `warn`, `info`, `debug`                 | CLI logging verbosity                                                                                                           |
 | `default_key_manager`         | enum    | `local`    | `local`, `local_encrypted`                                 | Default key manager used when `--key-manager` is omitted                                                                        |
 | `skip_confirmations`          | boolean | `false`    | `true`, `false`                                            | Skip all confirmation prompts globally                                                                                          |
+| `portal_pat`                  | string  | `""`       | any string                                                 | Hedera Portal Personal Access Token for faucet commands                                                                         |
 | `default_max_transaction_fee` | string  | `` (unset) | HBAR (e.g. `20`) or tinybars (`200000000t`); `0` clears it | Default max transaction fee ceiling applied to every client. Overridden per-run by the global `--max-transaction-fee`/`-M` flag |
 
 ---
@@ -56,6 +57,7 @@ Set the value of a configuration option. Pass exactly one named option flag per 
 | `--ed25519_support_enabled`     | string | one of   | `true`, `false`                                            |
 | `--log_level`                   | string | one of   | `silent`, `error`, `warn`, `info`, `debug`                 |
 | `--skip_confirmations`          | string | one of   | `true`, `false`                                            |
+| `--portal_pat` / `-p`           | string | one of   | any string                                                 |
 | `--default_max_transaction_fee` | string | one of   | HBAR (e.g. `20`) or tinybars (`200000000t`); `0` clears it |
 
 **Example:**
@@ -65,6 +67,7 @@ hcli config set --default_key_manager local_encrypted
 hcli config set --skip_confirmations true
 hcli config set --log_level debug
 hcli config set --ed25519_support_enabled false
+hcli config set --portal_pat <your-hedera-portal-pat>
 hcli config set --default_max_transaction_fee 20
 hcli config set --default_max_transaction_fee 200000000t
 hcli config set --default_max_transaction_fee 0   # clears the ceiling

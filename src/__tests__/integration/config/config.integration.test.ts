@@ -28,13 +28,16 @@ describe('Config Integration Tests', () => {
     });
 
     const listConfigOutput = listConfigResult.result as ConfigListOutput;
-    expect(listConfigOutput.totalCount).toBe(5);
+    expect(listConfigOutput.totalCount).toBe(6);
     const optionNames = listConfigOutput.options.map((option) => option.name);
     expect(optionNames).toEqual(
       expect.arrayContaining([
         ConfigOptionKey.ed25519_support,
         ConfigOptionKey.log_level,
         ConfigOptionKey.default_key_manager,
+        ConfigOptionKey.skip_confirmations,
+        ConfigOptionKey.portal_pat,
+        ConfigOptionKey.default_max_transaction_fee,
       ]),
     );
   });

@@ -95,6 +95,14 @@ export const configPluginManifest: PluginManifest = {
           description: 'Set skip confirmations - true or false',
         },
         {
+          name: 'portal_pat',
+          short: 'p',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Set Hedera Portal Personal Access Token for faucet commands',
+        },
+        {
           name: 'default_max_transaction_fee',
           short: 'f',
           type: OptionType.STRING,
