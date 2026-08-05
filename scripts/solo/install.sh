@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Installs the Solo CLI globally. Pinned to the same version CI uses so local and
 # CI deploys stay reproducible.
-SOLO_VERSION="${SOLO_VERSION:-0.72.0}"
+SOLO_VERSION="${SOLO_VERSION:-0.79.1}"
 
 echo "Installing @hiero-ledger/solo@${SOLO_VERSION} globally via npm..."
 npm install -g "@hiero-ledger/solo@${SOLO_VERSION}"
