@@ -92,7 +92,7 @@
     "@swc/core": "1.15.43",
     "@swc/jest": "0.2.39",
     "@types/jest": "30.0.0",
-    "@types/node": "25.9.1",
+    "@types/node": "26.1.1",
     "@typescript-eslint/eslint-plugin": "8.62.1",
     "@typescript-eslint/parser": "8.62.1",
     "copyfiles": "2.4.1",
