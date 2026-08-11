@@ -72,7 +72,7 @@
     "url": "https://github.com/hiero-ledger/hiero-cli.git"
   },
   "dependencies": {
-    "@clack/prompts": "0.11.0",
+    "@clack/prompts": "1.7.0",
     "@x402/core": "2.17.0",
     "@x402/hedera": "2.17.0",
     "@hiero-ledger/sdk": "2.85.0",
