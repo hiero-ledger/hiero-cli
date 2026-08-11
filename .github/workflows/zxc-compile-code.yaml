@@ -107,7 +107,7 @@ jobs:
         run: npm run test:unit
 
       - name: Publish Unit Test Report
-        uses: step-security/publish-unit-test-result-action@c8537a200a435e2560109a6a8ed9cac838b62656 # v2.20.5
+        uses: step-security/publish-unit-test-result-action@681100d67b09305624c089873f12c545ee7cbc24 # v2.23.0
         if: ${{ inputs.enable-unit-tests && steps.npm-deps.conclusion == 'success' && !cancelled() }}
         with:
           check_name: 'Unit Test Results'
@@ -182,7 +182,7 @@ jobs:
         run: npm run test:solo:destroy
 
       - name: Publish Integration Test Report
-        uses: step-security/publish-unit-test-result-action@c8537a200a435e2560109a6a8ed9cac838b62656 # v2.20.5
+        uses: step-security/publish-unit-test-result-action@681100d67b09305624c089873f12c545ee7cbc24 # v2.23.0
         if: ${{ inputs.enable-integration-tests && steps.npm-deps.conclusion == 'success' && !cancelled() }}
         with:
           check_name: 'Integration Test Results'
