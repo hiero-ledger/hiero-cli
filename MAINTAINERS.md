@@ -16,8 +16,12 @@ Maintainers are assigned the following scopes in this repository:
 
 | Name             | GitHub ID      | Scope | LFID | Discord ID | Email | Company Affiliation |
 | ---------------- | -------------- | ----- | ---- | ---------- | ----- | ------------------- |
-| Michiel Mulders  | michielmulders |       |      |            |       | Hashgraph           |
 | Giuseppe Bertone | Neurone        |       |      |            |       | Hashgraph           |
+| Peter Swierzy    | piotrswierzy   |       |      |            |       | BlockyDevs          |
+| Mike Abrams      | devmab         |       |      |            |       |                     |
+| Michal Myslinski | mmyslblocky    |       |      |            |       | BlockyDevs          |
+|                  | misiek-blocky  |       |      |            |       | BlockyDevs          |
+|                  | jaycoolh       |       |      |            |       |                     |
 
 ## Emeritus Maintainers
 
