@@ -43,21 +43,30 @@ defaults:
     shell: bash
 
 permissions:
-  id-token: write
   contents: read
-  actions: read
-  pull-requests: write
-  checks: write
-  statuses: write
 
 jobs:
   code:
     name: Code
     uses: ./.github/workflows/zxc-compile-code.yaml
+    permissions:
+      id-token: write
+      contents: read
+      actions: read
+      pull-requests: write
+      checks: write
+      statuses: write
 
   code-style:
     name: Code Style
     uses: ./.github/workflows/zxc-compile-code.yaml
+    permissions:
+      id-token: write
+      contents: read
+      actions: read
+      pull-requests: write
+      checks: write
+      statuses: write
     needs:
       - code
     with:
@@ -67,6 +76,13 @@ jobs:
   unit-tests:
     name: Unit Tests
     uses: ./.github/workflows/zxc-compile-code.yaml
+    permissions:
+      id-token: write
+      contents: read
+      actions: read
+      pull-requests: write
+      checks: write
+      statuses: write
     if: ${{ github.event_name == 'push' || github.event.inputs.enable-unit-tests == 'true' }}
     with:
       custom-job-label: Standard
@@ -75,6 +91,13 @@ jobs:
   integration-tests:
     name: Integration Tests
     uses: ./.github/workflows/zxc-compile-code.yaml
+    permissions:
+      id-token: write
+      contents: read
+      actions: read
+      pull-requests: write
+      checks: write
+      statuses: write
     if: ${{ github.event_name == 'push' || github.event.inputs.enable-integration-tests == 'true' }}
     with:
       custom-job-label: Standard
@@ -87,6 +110,12 @@ jobs:
   analyze:
     name: Analyze
     uses: ./.github/workflows/zxc-code-analysis.yaml
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
+      checks: write
+      statuses: write
     needs:
       - unit-tests
       - integration-tests
