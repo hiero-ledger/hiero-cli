@@ -27,6 +27,9 @@ defaults:
   run:
     shell: bash
 
+permissions:
+  contents: read
+
 concurrency:
   group: pr-checks-${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
@@ -35,10 +38,24 @@ jobs:
   build:
     name: Code
     uses: ./.github/workflows/zxc-compile-code.yaml
+    permissions:
+      id-token: write
+      contents: read
+      actions: read
+      pull-requests: write
+      checks: write
+      statuses: write
 
   code-style:
     name: Code Style
     uses: ./.github/workflows/zxc-compile-code.yaml
+    permissions:
+      id-token: write
+      contents: read
+      actions: read
+      pull-requests: write
+      checks: write
+      statuses: write
     needs:
       - build
     with:
@@ -48,6 +65,13 @@ jobs:
   unit-tests:
     name: Unit Tests
     uses: ./.github/workflows/zxc-compile-code.yaml
+    permissions:
+      id-token: write
+      contents: read
+      actions: read
+      pull-requests: write
+      checks: write
+      statuses: write
     needs:
       - code-style
     with:
@@ -57,6 +81,13 @@ jobs:
   integration-tests:
     name: Integration Tests
     uses: ./.github/workflows/zxc-compile-code.yaml
+    permissions:
+      id-token: write
+      contents: read
+      actions: read
+      pull-requests: write
+      checks: write
+      statuses: write
     needs:
       - code-style
     with:
@@ -70,6 +101,12 @@ jobs:
   codecov:
     name: CodeCov
     uses: ./.github/workflows/zxc-code-analysis.yaml
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
+      checks: write
+      statuses: write
     needs:
       - unit-tests
       - integration-tests
@@ -84,6 +121,12 @@ jobs:
   codacy-coverage:
     name: Codacy
     uses: ./.github/workflows/zxc-code-analysis.yaml
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
+      checks: write
+      statuses: write
     needs:
       - unit-tests
       - integration-tests

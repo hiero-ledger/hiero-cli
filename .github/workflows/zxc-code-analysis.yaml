@@ -72,15 +72,17 @@ defaults:
 
 permissions:
   contents: read
-  actions: read
-  pull-requests: write
-  checks: write
-  statuses: write
 
 jobs:
   analyze:
     name: ${{ inputs.custom-job-label || 'Analyze' }}
     runs-on: hiero-cli-linux-medium
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
+      checks: write
+      statuses: write
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
