@@ -4,15 +4,15 @@ Manage smart contract lifecycle: compile Solidity, deploy to Hedera, import exis
 
 ---
 
-### `hcli contract create`
+## `hcli contract create`
 
 Compile and deploy a smart contract. Accepts a Solidity file or a built-in template.
 
 | Option                               | Short | Type       | Required | Default        | Description                                                                                                                                                                      |
 | ------------------------------------ | ----- | ---------- | -------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--name`                             | `-n`  | string     | **yes**  | —              | Local name for the contract in CLI state                                                                                                                                         |
-| `--file`                             | `-f`  | string     | no       | —              | Path to Solidity file (absolute or relative). Mutually exclusive with `--default`                                                                                                |
-| `--default`                          | `-d`  | string     | no       | —              | Built-in template: `erc20` or `erc721`. Mutually exclusive with `--file`                                                                                                         |
+| `--file`                             | `-f`  | string     | no       | —              | Path to Solidity file (absolute or relative). Exactly one of `--file` or `--default` is required                                                                                 |
+| `--default`                          | `-d`  | string     | no       | —              | Built-in template: `erc20` or `erc721`. Exactly one of `--file` or `--default` is required                                                                                       |
 | `--base-path`                        | `-b`  | string     | no       | current dir    | Base directory for resolving Solidity imports                                                                                                                                    |
 | `--gas`                              | `-g`  | number     | no       | `2000000`      | Gas limit for contract creation                                                                                                                                                  |
 | `--admin-key`                        | `-a`  | repeatable | no       | —              | Admin key: `accountId:privateKey`, `{ed25519\|ecdsa}:public:{hex}`, `{ed25519\|ecdsa}:private:{hex}`, account ID, alias, or key reference. Pass multiple times for multiple keys |
@@ -31,7 +31,7 @@ Compile and deploy a smart contract. Accepts a Solidity file or a built-in templ
 
 **Example:**
 
-```
+```bash
 # Deploy built-in ERC-20
 hcli contract create --name myErc20 --default erc20 -c "TokenName" -c "TKN"
 
@@ -39,25 +39,25 @@ hcli contract create --name myErc20 --default erc20 -c "TokenName" -c "TKN"
 hcli contract create --name myContract --file ./contracts/MyContract.sol --gas 3000000
 ```
 
-**Output:** `{ contractId, evmAddress, name, transactionId }`
+**Output:** `{ contractId, contractName, contractEvmAddress, name?, network, transactionId, adminKeyPresent, adminKeyThreshold, adminKeyCount?, verified }`
 
 ---
 
-### `hcli contract list`
+## `hcli contract list`
 
 List all smart contracts stored in local state. No options.
 
 **Example:**
 
-```
+```bash
 hcli contract list
 ```
 
-**Output:** Array of `{ contractId, evmAddress, name }`
+**Output:** `{ contracts, totalCount }` where each contract is `{ contractId, name?, contractEvmAddress, adminKeyPresent, network, verified }`
 
 ---
 
-### `hcli contract import`
+## `hcli contract import`
 
 Import an existing contract from the Hedera network by contract ID or EVM address.
 
@@ -68,16 +68,16 @@ Import an existing contract from the Hedera network by contract ID or EVM addres
 
 **Example:**
 
-```
+```bash
 hcli contract import --contract 0.0.123456 --name myContract
 hcli contract import --contract 0xAbCd1234... --name myAlias
 ```
 
-**Output:** `{ contractId, evmAddress, name, ... }`
+**Output:** `{ contractId, contractEvmAddress, name?, network, memo?, verified }`
 
 ---
 
-### `hcli contract update`
+## `hcli contract update`
 
 Update smart contract properties on the Hedera network. The CLI loads the contract's admin key from the mirror node to determine signing requirements and auto-discovers matching KMS keys. At least one updatable field must be provided. After a successful update, local state is synced; if the admin key changes, all registered aliases have their key reference updated.
 
@@ -99,7 +99,7 @@ Update smart contract properties on the Hedera network. The CLI loads the contra
 
 **Example:**
 
-```
+```bash
 # Update memo
 hcli contract update --contract my-contract --memo "new description"
 
@@ -123,24 +123,24 @@ hcli contract update --contract my-contract \
 
 ---
 
-### `hcli contract delete`
+## `hcli contract delete`
 
 **Default:** submits `ContractDeleteTransaction` on Hedera, then removes the contract from local CLI state. **With `--state-only`:** only removes it from local CLI state (no network transaction). Hedera does not allow deleting a contract on the network if it has no admin key; in that case use `--state-only` for local cleanup only. When the contract has an admin key, pass `--admin-key` (or keep a stored admin reference from `contract create --admin-key`) if signing material is not already in state.
 
 ⚠️ Requires confirmation unless using `--confirm` / script mode.
 
-| Option                   | Short | Type       | Required | Default | Description                                                                                                               |
-| ------------------------ | ----- | ---------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `--contract`             | `-c`  | string     | **yes**  | —       | Contract ID (`0.0.xxx`) or alias; for network delete, state entry optional if mirror can resolve ID                       |
-| `--state-only`           | `-s`  | boolean    | no       | `false` | Remove only from local CLI state; do not submit a network delete                                                          |
-| `--transfer-id`          | `-t`  | string     | no†      | —       | Account receiving remaining HBAR (ID or alias). †One of `-t` or `-r` required for network delete. Not with `--state-only` |
-| `--transfer-contract-id` | `-r`  | string     | no†      | —       | Contract receiving remaining HBAR. †One of `-t` or `-r` required for network delete. Not with `--state-only`              |
-| `--admin-key`            | `-a`  | repeatable | no       | —       | Admin key if not stored in state (same as create). Not with `--state-only`                                                |
-| `--key-manager`          | `-k`  | string     | no       | config  | Key manager when resolving `--admin-key`                                                                                  |
+| Option                   | Short | Type       | Required | Default | Description                                                                                                                                  |
+| ------------------------ | ----- | ---------- | -------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--contract`             | `-c`  | string     | **yes**  | —       | Contract ID (`0.0.xxx`) or alias; for network delete, state entry optional if mirror can resolve ID                                          |
+| `--state-only`           | `-s`  | boolean    | no       | `false` | Remove only from local CLI state; do not submit a network delete                                                                             |
+| `--transfer-id`          | `-t`  | string     | no†      | —       | Account receiving remaining HBAR (ID or alias). †Exactly one of `-t` or `-r` required for network delete (not both). Not with `--state-only` |
+| `--transfer-contract-id` | `-r`  | string     | no†      | —       | Contract receiving remaining HBAR. †Exactly one of `-t` or `-r` required for network delete (not both). Not with `--state-only`              |
+| `--admin-key`            | `-a`  | repeatable | no       | —       | Admin key if not stored in state (same as create). Not with `--state-only`                                                                   |
+| `--key-manager`          | `-k`  | string     | no       | config  | Key manager when resolving `--admin-key`                                                                                                     |
 
 **Example:**
 
-```
+```bash
 hcli contract delete --contract myErc20 --transfer-id 0.0.1234 --confirm
 hcli contract delete --contract 0.0.123456 --state-only --confirm
 ```

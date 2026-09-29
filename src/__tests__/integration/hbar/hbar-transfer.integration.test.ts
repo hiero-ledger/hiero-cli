@@ -77,7 +77,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
     expect(viewAccountOutput.balance).toBe(200000000n); // result in tinybars
     expect(viewAccountOutput.evmAddress).toBe(createAccountOutput.evmAddress);
     expect(viewAccountOutput.publicKey).toBe(createAccountOutput.publicKey);
-  }, 60000);
+  });
 
   it('should transfer HBAR from defined account to account and then verify it with account view method', async () => {
     const suffix = Date.now();
@@ -159,5 +159,5 @@ describe('HBAR Transfer Account Integration Tests', () => {
     expect(viewAccountToOutput.accountId).toBe(accountToOutput.accountId);
     expect(viewAccountToOutput.balance).toBe(200000000n); // result in tinybars
     expect(viewAccountToOutput.publicKey).toBe(accountToOutput.publicKey);
-  }, 90000);
+  });
 });

@@ -80,8 +80,7 @@ async function initializeCLI() {
     }
 
     const maxTransactionFee = (opts.maxTransactionFee || opts.M) as
-      | string
-      | undefined;
+      string | undefined;
     if (maxTransactionFee !== undefined) {
       // Validate eagerly so a bad value fails fast; 0 means "no override".
       const tinybars = processBalanceInput(maxTransactionFee);

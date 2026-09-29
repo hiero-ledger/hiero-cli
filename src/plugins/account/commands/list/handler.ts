@@ -30,6 +30,9 @@ export class AccountListCommand implements Command {
         type: account.type,
         network: account.network,
         evmAddress: account.evmAddress,
+        // State written before the field existed carries no origin: it is
+        // reported as `created`.
+        origin: account.origin ?? 'created',
         ...(showPrivateKeys && { keyRefId: account.keyRefId }),
       })),
       totalCount: accounts.length,

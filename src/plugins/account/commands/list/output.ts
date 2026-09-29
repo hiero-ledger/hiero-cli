@@ -9,6 +9,7 @@ import {
   KeyTypeSchema,
   NetworkSchema,
 } from '@/core/schemas/common-schemas';
+import { AccountOriginSchema } from '@/plugins/account/schema';
 
 /**
  * List Accounts Command Output Schema
@@ -21,6 +22,9 @@ export const AccountListOutputSchema = z.object({
       type: KeyTypeSchema,
       network: NetworkSchema,
       evmAddress: EvmAddressSchema,
+      origin: AccountOriginSchema.describe(
+        'How the account entered local state',
+      ),
       keyRefId: z.string().describe('Key reference ID').optional(), // Only included when --private flag is used
     }),
   ),

@@ -4,21 +4,21 @@ Manage CLI plugins: add custom plugins, enable/disable, list, get info, remove, 
 
 ---
 
-### `hcli plugin-management list`
+## `hcli plugin-management list`
 
 Show all loaded plugins with their status. No options.
 
 **Example:**
 
-```
+```bash
 hcli plugin-management list
 ```
 
-**Output:** Array of `{ name, version, enabled, type }`
+**Output:** `{ plugins: [{ name, enabled }], count }`
 
 ---
 
-### `hcli plugin-management info`
+## `hcli plugin-management info`
 
 Show detailed information about a specific plugin.
 
@@ -28,15 +28,15 @@ Show detailed information about a specific plugin.
 
 **Example:**
 
-```
+```bash
 hcli plugin-management info --name token
 ```
 
-**Output:** `{ name, version, displayName, description, commands[], enabled }`
+**Output:** `{ found, message, plugin?: { name, version, displayName, description, commands[], enabled } }`
 
 ---
 
-### `hcli plugin-management add`
+## `hcli plugin-management add`
 
 Add a plugin by name (default plugin) or path (custom plugin).
 
@@ -45,20 +45,20 @@ Add a plugin by name (default plugin) or path (custom plugin).
 | `--path` | `-p`  | string | no       | Filesystem path to plugin directory containing `manifest.js` |
 | `--name` | `-n`  | string | no       | Name of a default plugin to add (e.g. `account`, `token`)    |
 
-At least one of `--path` or `--name` must be provided.
+Exactly one of `--path` or `--name` must be provided (both together is rejected). Fails if a plugin with the same name already exists in state.
 
 **Example:**
 
-```
+```bash
 hcli plugin-management add --name token
 hcli plugin-management add --path /home/user/my-custom-plugin
 ```
 
-**Output:** `{ name, added: true, enabled: true }`
+**Output:** `{ name, path, added, message }`
 
 ---
 
-### `hcli plugin-management remove`
+## `hcli plugin-management remove`
 
 Remove a plugin from state.
 
@@ -68,15 +68,15 @@ Remove a plugin from state.
 
 **Example:**
 
-```
+```bash
 hcli plugin-management remove --name token
 ```
 
-**Output:** `{ name, removed: true }`
+**Output:** `{ name, removed, message }`
 
 ---
 
-### `hcli plugin-management enable`
+## `hcli plugin-management enable`
 
 Enable a disabled plugin.
 
@@ -86,15 +86,15 @@ Enable a disabled plugin.
 
 **Example:**
 
-```
+```bash
 hcli plugin-management enable --name token
 ```
 
-**Output:** `{ name, enabled: true }`
+**Output:** `{ name, path, enabled, message }`
 
 ---
 
-### `hcli plugin-management disable`
+## `hcli plugin-management disable`
 
 Disable an active plugin.
 
@@ -104,15 +104,15 @@ Disable an active plugin.
 
 **Example:**
 
-```
+```bash
 hcli plugin-management disable --name token
 ```
 
-**Output:** `{ name, enabled: false }`
+**Output:** `{ name, removed, message }` (`removed` is `true` on successful disable)
 
 ---
 
-### `hcli plugin-management reset`
+## `hcli plugin-management reset`
 
 Reset plugin state to defaults. Custom plugins will be removed.
 
@@ -120,8 +120,8 @@ Reset plugin state to defaults. Custom plugins will be removed.
 
 **Example:**
 
-```
+```bash
 hcli plugin-management reset --confirm
 ```
 
-**Output:** `{ reset: true }`
+**Output:** `{ reset, message }`

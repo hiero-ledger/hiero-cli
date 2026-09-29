@@ -4,6 +4,10 @@
     "outDir": "dist",
     "rootDir": "src"
   },
+  "ts-node": {
+    "files": true,
+    "require": ["tsconfig-paths/register"]
+  },
   "include": ["src/**/*", "package.json"],
   "exclude": [
     "hardhat.config.js",

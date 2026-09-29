@@ -31,18 +31,18 @@ Search existing issues before opening a new one.
 
 ## Development Setup
 
-**Prerequisites:** Node.js `>=18.0.0`, npm
+**Prerequisites:** Node.js `>24.19.0`, npm
 
-```sh
+```bash
 git clone https://github.com/hiero-ledger/hiero-cli.git
 cd hiero-cli
-npm install
+npm run install:safe
 npm run build
 ```
 
-Copy `.env.test.sample` to `.env.test` and fill in your Hedera testnet credentials if you plan to run integration tests.
+Update `.env.test` with your Hedera testnet credentials if you plan to run integration tests with a live network, or leave the predefined local Hiero network credentials if you use solo (`npm run solo`).
 
-For a full local development environment, see [Manual Setup (For Developers)](./README.md#manual-setup-for-developers) in the root README.
+For a full local development environment, see [Development](./README.md#development) in the root README.
 
 ## Project Structure
 
@@ -61,7 +61,7 @@ For a full local development environment, see [Manual Setup (For Developers)](./
 
 ## Working on Plugins
 
-Most feature work lives under `src/plugins/`. See [`PLUGIN_ARCHITECTURE_GUIDE.md`](./PLUGIN_ARCHITECTURE_GUIDE.md) for the full guide on creating and extending plugins.
+Most feature work lives under `src/plugins/`. See [`PLUGIN_ARCHITECTURE_GUIDE.md`](./docs/PLUGIN_ARCHITECTURE_GUIDE.md) for the full guide on creating and extending plugins.
 
 When modifying a plugin:
 
@@ -81,13 +81,13 @@ Format: `feat({issue}): {short_description}`
 
 Example:
 
-```
+```text
 feat(1662): add kyc grant/revoke commands
 ```
 
 Breaking changes go in the footer:
 
-```
+```text
 feat(1662): replace state file format
 
 BREAKING CHANGE: existing .hiero-cli/state/ files must be migrated
@@ -95,7 +95,7 @@ BREAKING CHANGE: existing .hiero-cli/state/ files must be migrated
 
 ## Branch Naming
 
-```
+```text
 feat/{issue}-{task_name}
 ```
 
@@ -128,7 +128,7 @@ If any command fails, fix it before submitting.
 
 Unit tests (no network required):
 
-```sh
+```bash
 npm run test:unit
 ```
 
@@ -136,27 +136,45 @@ Jest is configured via `jest.unit.config.js`. Each plugin keeps its tests under 
 
 Integration tests require a Hedera account configured in `.env.test`:
 
-```sh
+```bash
 npm run test:integration
 ```
 
 `.env.test` must define the following variables:
 
-| Variable       | Description                              | Example    |
-| -------------- | ---------------------------------------- | ---------- |
-| `OPERATOR_ID`  | Account ID of the operator               | `0.0.1234` |
-| `OPERATOR_KEY` | DER-encoded private key of the operator  | `302e...`  |
-| `NETWORK`      | Target network (`testnet` or `localnet`) | `testnet`  |
+| Variable          | Description                                                                          | Example    |
+| ----------------- | ------------------------------------------------------------------------------------ | ---------- |
+| `OPERATOR_ID`     | Account ID of the operator                                                           | `0.0.1234` |
+| `OPERATOR_KEY`    | DER-encoded private key of the operator                                              | `302e...`  |
+| `NETWORK`         | Target network (`testnet` or `localnet`)                                             | `testnet`  |
+| `ED25519_SUPPORT` | `true` if the operator key is ED25519 (e.g. the Solo `0.0.2` operator), else `false` | `true`     |
 
-Copy `.env.test.sample` as a starting point. For `localnet`, spin up a local Hedera node and point the CLI at it — see [Manual Setup (For Developers)](./README.md#manual-setup-for-developers) for details.
+For `localnet`, spin up a local Hedera node and point the CLI at it — see [Development](./README.md#development) for details. `.env.test.sample` ships ready-to-use defaults for the Solo network started by `npm run solo`.
+
+The CI pipeline always runs the integration tests against a Solo localnet that it deploys on the fly, using Solo's genesis operator (`0.0.2`) and its well-known ED25519 key. It does not use the Hedera testnet and needs no repository secrets.
+
+Localnet endpoints are resolved from the environment, so the tests can reach a network that is not published on this machine's `localhost` — for example a Solo running on the host, reached from inside a container through `host.docker.internal`:
+
+| Variable                  | Description                                                                            | Default                       |
+| ------------------------- | -------------------------------------------------------------------------------------- | ----------------------------- |
+| `CONSENSUS_NODE_ENDPOINT` | Consensus node gRPC endpoint, as `host:port`                                           | `localhost:35211`             |
+| `MIRROR_NODE_URL`         | Mirror node REST base URL (the CLI appends `/api/v1`)                                  | `http://localhost:38081`      |
+| `JSON_RPC_RELAY_URL`      | JSON-RPC relay URL                                                                     | `http://localhost:37546`      |
+| `EXPLORER_URL`            | Explorer base URL for localnet — the CLI appends `/localnet`                           | `http://localhost:38080`      |
+| `ED25519_SUPPORT`         | Sets the `ed25519_support` config option for the run — required for solo's ED25519 key | unset (option stays disabled) |
 
 ## Code Style & Tooling
 
-```sh
+```bash
 npm run lint        # check for lint errors
 npm run lint:fix    # auto-fix where possible
 npm run format      # apply Prettier formatting
 npm run format:check
 ```
+
+ESLint runs on v10 using the flat config in `eslint.config.js`. The import
+rules come from `eslint-plugin-import-x` — the original `eslint-plugin-import`
+does not support ESLint 10 yet — so its rules and settings use the
+`import-x/*` namespace (e.g. `import-x/no-duplicates`, `import-x/resolver`).
 
 Run linting and formatting before every PR. The CI pipeline will block PRs that fail either check.

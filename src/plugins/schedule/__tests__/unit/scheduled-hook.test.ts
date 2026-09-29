@@ -187,7 +187,7 @@ describe('schedule plugin — scheduled hook', () => {
       adminPublicKeys: [ECDSA_HEX_PUBLIC_KEY],
       adminKeyRefIds: [ADMIN_KEY_REF],
       payerKeyRefId: PAYER_KEY_REF_ID,
-      payerAccountId: '0.0.3',
+      payerAccountId: '0.0.2',
       memo: 'memo',
       expirationTime: new Date(Date.now() + 86400000).toISOString(),
       waitForExpiry: true,
@@ -221,7 +221,7 @@ describe('schedule plugin — scheduled hook', () => {
 
     expect(buildScheduleCreateTransaction).toHaveBeenCalledWith({
       innerTransaction: innerTx,
-      payerAccountId: '0.0.3',
+      payerAccountId: '0.0.2',
       adminKey: expect.any(PublicKey),
       scheduleMemo: 'memo',
       expirationTime: expect.any(Date),

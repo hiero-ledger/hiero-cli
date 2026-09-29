@@ -41,7 +41,7 @@ const KEY_MANAGER_OPTIONS = [
   },
 ];
 
-function ensureNotCanceled<T>(result: T | symbol): T {
+function ensureNotCanceled<T>(result: T | typeof clack.CANCEL_SYMBOL): T {
   if (clack.isCancel(result)) {
     clack.cancel('Operation cancelled.');
     process.exit(0);

@@ -1,6 +1,6 @@
 # batch plugin
 
-Create and execute batches of Hedera transactions atomically. Commands that support batching expose a `--batch <name>` flag (marked **[batchify]** in other plugin references) to queue transactions without immediate execution.
+Create and execute batches of Hedera transactions atomically. Commands that support batching expose a `--batch <name>` flag (marked **`[batchify]`** in other plugin references) to queue transactions without immediate execution.
 
 ## Workflow
 
@@ -23,11 +23,11 @@ Create a new named batch with a signing key.
 
 **Example:**
 
-```
+```bash
 hcli batch create --name mintBatch --key 0.0.12345:302e...
 ```
 
-**Output:** `{ batchName, keyRef }`
+**Output:** `{ name, keyRefId }`
 
 ---
 
@@ -41,11 +41,11 @@ Execute a batch — sign and submit all queued transactions.
 
 **Example:**
 
-```
+```bash
 hcli batch execute --name mintBatch
 ```
 
-**Output:** `{ batchName, transactionsExecuted, transactionIds[] }`
+**Output:** `{ batchName, transactionId, success, network }`
 
 ---
 
@@ -55,11 +55,11 @@ List all available batches. No options.
 
 **Example:**
 
-```
+```bash
 hcli batch list
 ```
 
-**Output:** Array of `{ batchName, transactionCount, status }`
+**Output:** `{ batches: [{ name, batchKey?, transactionCount, executed, success }], totalCount }`
 
 ---
 
@@ -74,7 +74,7 @@ Delete an entire batch or a single transaction from a batch.
 
 **Example:**
 
-```
+```bash
 # Delete entire batch
 hcli batch delete --name mintBatch
 
@@ -82,7 +82,7 @@ hcli batch delete --name mintBatch
 hcli batch delete --name mintBatch --order 2
 ```
 
-**Output:** `{ batchName, deleted, order? }`
+**Output:** `{ name, order? }`
 
 ---
 
@@ -90,7 +90,7 @@ hcli batch delete --name mintBatch --order 2
 
 Use the `--batch <name>` (short `-B`) flag on any batchify-compatible command:
 
-```
+```bash
 # Queue a token mint (does NOT execute immediately)
 hcli token mint-ft --token MTK --amount 1000 --supply-key 0.0.123:302e... --batch mintBatch
 
@@ -118,5 +118,5 @@ Batchify-compatible commands (check each plugin reference for `[batchify]` marke
 - `token airdrop-ft`, `token airdrop-nft`
 - `token cancel-airdrop`, `token claim-airdrop`, `token reject-airdrop`
 - `token update-metadata-nft`
-- `token delete`
+- `token delete`, `token update`
 - `topic create`, `topic update`, `topic submit-message`, `topic delete`

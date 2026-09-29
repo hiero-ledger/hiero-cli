@@ -8,8 +8,8 @@ fi
 # --- Pre-flight checks for dependencies and build (skip when using global CLI) ---
 if [[ "${HIERO_SCRIPT_CLI_MODE:-local}" != "global" ]]; then
   if [[ ! -d "${PROJECT_DIR}/node_modules" ]]; then
-    print_warn "Project dependencies are not installed. Running: npm install"
-    npm run install
+    print_warn "Project dependencies are not installed. Running: npm run install:safe"
+    npm run ci
   fi
 
   if [[ ! -f "${PROJECT_DIR}/dist/hiero-cli.js" ]]; then

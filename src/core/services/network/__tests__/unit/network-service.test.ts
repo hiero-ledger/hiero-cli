@@ -185,9 +185,9 @@ describe('NetworkServiceImpl', () => {
     it('should return localnet configuration', () => {
       const config = networkService.getLocalnetConfig();
 
-      expect(config.localNodeAddress).toBe('127.0.0.1:35211');
+      expect(config.localNodeAddress).toBe('localhost:35211');
       expect(config.localNodeAccountId).toBe('0.0.3');
-      expect(config.localNodeMirrorAddressGRPC).toBe('127.0.0.1:35600');
+      expect(config.localNodeMirrorAddressGRPC).toBe('localhost:35600');
       expect(loggerMock.debug).toHaveBeenCalledWith(
         '[NETWORK] Getting localnet configuration',
       );

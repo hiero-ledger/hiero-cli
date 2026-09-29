@@ -198,6 +198,7 @@ export class AccountCreateCommand extends BaseTransactionCommand<
       evmAddress,
       keyRefId: normalisedParams.keyRefId,
       network: normalisedParams.network,
+      origin: 'created',
     };
     const accountKey = composeKey(
       normalisedParams.network,

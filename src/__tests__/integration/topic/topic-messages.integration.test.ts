@@ -1,4 +1,5 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { TopicCreateOutput } from '@/plugins/topic/commands/create';
 import type { TopicFindMessageOutput } from '@/plugins/topic/commands/find-message';
 import type { TopicListOutput } from '@/plugins/topic/commands/list';
@@ -7,10 +8,9 @@ import type { TopicSubmitMessageOutput } from '@/plugins/topic/commands/submit-m
 import '@/core/utils/json-serialize';
 
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
-import { delay } from '@/__tests__/utils/common-utils';
+import { waitFor } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
-import { SupportedNetwork } from '@/core/types/shared.types';
 import {
   topicCreate,
   topicFindMessage,
@@ -18,14 +18,7 @@ import {
   topicSubmitMessage,
 } from '@/plugins/topic';
 
-/*
-Tests in this suite are only executed when we do not use localnet as selected network due to the fact that
-there is a problem with acquiring topic information on Hedera local node when using hiero-local-node or solo to deploy it.
-This behavior prevents us from fully testing the topic commands like submit-message and find-message here.
-*/
-const describeSuite =
-  process.env.NETWORK === SupportedNetwork.LOCALNET ? describe.skip : describe;
-describeSuite('Topic Messages Integration Tests', () => {
+describe('Topic Messages Integration Tests', () => {
   let coreApi: CoreApi;
   let network: SupportedNetwork;
 
@@ -68,7 +61,10 @@ describeSuite('Topic Messages Integration Tests', () => {
     expect(topic?.createdAt).toBe(createTopicOutput.createdAt);
     expect(topic?.topicId).toBe(createTopicOutput.topicId);
 
-    await delay(5000);
+    await waitFor(
+      () => coreApi.mirror.getTopicInfo(createTopicOutput.topicId),
+      (topicInfo) => topicInfo.topic_id === createTopicOutput.topicId,
+    );
 
     for (let i = 0; i < 10; i++) {
       const topicMessageSubmitArgs: Record<string, unknown> = {
@@ -85,7 +81,13 @@ describeSuite('Topic Messages Integration Tests', () => {
       expect(submitMessageOutput.message).toBe(`Test message ${i + 1}`);
     }
 
-    await delay(5000);
+    await waitFor(
+      () =>
+        coreApi.mirror.getTopicMessages({
+          topicId: createTopicOutput.topicId,
+        }),
+      (response) => response.messages.length === 10,
+    );
 
     const findMessageEqArgs: Record<string, string | number> = {
       topic: createTopicOutput.topicId,
@@ -151,5 +153,5 @@ describeSuite('Topic Messages Integration Tests', () => {
       findMessageLteResult.result as TopicFindMessageOutput;
     expect(findMessageLteOutput.topicId).toBe(createTopicOutput.topicId);
     expect(findMessageLteOutput.messages.length).toBe(4);
-  }, 120000);
+  }, 60000);
 });

@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 # Non-interactive shells don't load ~/.bashrc, so system `node` (e.g. v12) wins unless we source nvm.
 
-#Install kubectl
+# Install kubectl
 ARCH="$(dpkg --print-architecture)"
 curl -fsSLo kubectl "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${ARCH}/kubectl"
 chmod +x kubectl
 sudo mv kubectl /usr/local/bin/kubectl
 
-#Install kind
+# Install kind
 curl -Lo ./kind https://kind.sigs.k8s.io/dl/latest/kind-linux-amd64
 chmod +x ./kind
 sudo mv ./kind /usr/local/bin/kind
 
-#Install solo
+# Install solo
 npm install -g @hashgraph/solo@latest
 
 rm -rf ~/.solo

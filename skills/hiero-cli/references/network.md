@@ -6,21 +6,21 @@ Configure and manage Hedera network connections: list available networks, switch
 
 ---
 
-### `hcli network list`
+## `hcli network list`
 
 List all available networks with their configuration and health status. No options.
 
 **Example:**
 
-```
+```bash
 hcli network list
 ```
 
-**Output:** Array of `{ name, active, nodeAddress, mirrorNode, status }`
+**Output:** `{ networks[], activeNetwork }` where each network is `{ name, isActive, mirrorNodeUrl, rpcUrl, operatorId?, mirrorNodeHealth?, rpcHealth? }` (health: `{ status, code? }`)
 
 ---
 
-### `hcli network use`
+## `hcli network use`
 
 Switch the active network.
 
@@ -30,30 +30,30 @@ Switch the active network.
 
 **Example:**
 
-```
+```bash
 hcli network use --global testnet
 hcli network use --global mainnet
 ```
 
-**Output:** `{ network, active: true }`
+**Output:** `{ activeNetwork }`
 
 ---
 
-### `hcli network get-operator`
+## `hcli network get-operator`
 
 Get the current operator credentials for the active network. No options.
 
 **Example:**
 
-```
+```bash
 hcli network get-operator
 ```
 
-**Output:** `{ accountId, publicKey, keyRef }`
+**Output:** `{ network, operator?: { accountId, keyRefId, publicKey? } }`
 
 ---
 
-### `hcli network set-operator`
+## `hcli network set-operator`
 
 Set operator credentials for signing transactions on the active network.
 
@@ -64,9 +64,9 @@ Set operator credentials for signing transactions on the active network.
 
 **Example:**
 
-```
+```bash
 hcli network set-operator --operator 0.0.12345:302e020100300506...
 hcli network set-operator --operator myAccountAlias
 ```
 
-**Output:** `{ accountId, network, keyRef }`
+**Output:** `{ network, operator: { accountId, keyRefId, publicKey? } }`
