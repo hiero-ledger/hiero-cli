@@ -86,6 +86,48 @@ describe('account plugin - list command (ADR-003)', () => {
     expect(output.accounts[0].keyRefId).toBe('kr_test123');
   });
 
+  test('reports accounts stored without an origin (older CLI state) as created', async () => {
+    const logger = makeLogger();
+    const accounts = [
+      makeAccountData({ name: 'legacy', accountId: '0.0.4444' }),
+    ];
+
+    MockedHelper.mockImplementation(() => ({
+      listAccounts: jest.fn().mockReturnValue(accounts),
+    }));
+
+    const api: Partial<CoreApi> = { state: makeStateMock(), logger };
+    const args = makeArgs({ ...api, logger }, {});
+
+    const result = await accountList(args);
+
+    const output = assertOutput(result.result, AccountListOutputSchema);
+    expect(output.accounts[0].origin).toBe('created');
+  });
+
+  test('reports imported accounts as imported', async () => {
+    const logger = makeLogger();
+    const accounts = [
+      makeAccountData({
+        name: 'foreign',
+        accountId: '0.0.5555',
+        origin: 'imported',
+      }),
+    ];
+
+    MockedHelper.mockImplementation(() => ({
+      listAccounts: jest.fn().mockReturnValue(accounts),
+    }));
+
+    const api: Partial<CoreApi> = { state: makeStateMock(), logger };
+    const args = makeArgs({ ...api, logger }, {});
+
+    const result = await accountList(args);
+
+    const output = assertOutput(result.result, AccountListOutputSchema);
+    expect(output.accounts[0].origin).toBe('imported');
+  });
+
   test('throws error when listAccounts fails', async () => {
     const logger = makeLogger();
 

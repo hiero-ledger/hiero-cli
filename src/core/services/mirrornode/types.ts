@@ -4,6 +4,7 @@
 import type { KeyAlgorithm } from '@/core/shared/constants';
 import type { MirrorNodeRequestOrderParameter } from '@/core/types/shared.types';
 
+import { LOCALNET_ENDPOINTS } from '@/core/services/network/network.config';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
 // Base URL mapping for different networks
@@ -11,7 +12,7 @@ export const NetworkToBaseUrl = new Map<SupportedNetwork, string>([
   [SupportedNetwork.MAINNET, 'https://mainnet-public.mirrornode.hedera.com'],
   [SupportedNetwork.TESTNET, 'https://testnet.mirrornode.hedera.com'],
   [SupportedNetwork.PREVIEWNET, 'https://previewnet.mirrornode.hedera.com'],
-  [SupportedNetwork.LOCALNET, 'http://localhost:38081'],
+  [SupportedNetwork.LOCALNET, LOCALNET_ENDPOINTS.mirrorNodeUrl],
 ]);
 
 export enum MirrorNodeKeyType {

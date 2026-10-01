@@ -23,7 +23,7 @@ Create a new named swap. No network interaction.
 
 **Example:**
 
-```
+```bash
 hcli swap create --name my-swap
 hcli swap create --name my-swap --memo "Alice sends HBAR, Bob sends tokens"
 ```
@@ -36,17 +36,17 @@ hcli swap create --name my-swap --memo "Alice sends HBAR, Bob sends tokens"
 
 Add an HBAR transfer step to an existing swap.
 
-| Option          | Short | Type   | Required | Default        | Description                                                 |
-| --------------- | ----- | ------ | -------- | -------------- | ----------------------------------------------------------- |
-| `--name`        | `-n`  | string | **yes**  | —              | Name of the swap                                            |
-| `--to`          | `-t`  | string | **yes**  | —              | Destination account (accountId or alias)                    |
-| `--amount`      | `-a`  | string | **yes**  | —              | Amount: `"10"` = 10 HBAR, `"1000t"` = 1000 tinybars         |
-| `--from`        | `-f`  | string | no       | operator       | Source account: `accountId:privateKey`, alias, or accountId |
-| `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                   |
+| Option          | Short | Type   | Required | Default        | Description                                                       |
+| --------------- | ----- | ------ | -------- | -------------- | ----------------------------------------------------------------- |
+| `--name`        | `-n`  | string | **yes**  | —              | Name of the swap                                                  |
+| `--to`          | `-t`  | string | **yes**  | —              | Destination account (accountId or alias)                          |
+| `--amount`      | `-a`  | string | **yes**  | —              | Amount (must be > 0): `"10"` = 10 HBAR, `"1000t"` = 1000 tinybars |
+| `--from`        | `-f`  | string | no       | operator       | Source account: `accountId:privateKey`, alias, or accountId       |
+| `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                         |
 
 **Example:**
 
-```
+```bash
 hcli swap add-hbar -n my-swap --to alice --amount 10
 hcli swap add-hbar -n my-swap --from bob --to 0.0.123456 --amount 500t
 ```
@@ -59,18 +59,18 @@ hcli swap add-hbar -n my-swap --from bob --to 0.0.123456 --amount 500t
 
 Add a fungible token transfer step to an existing swap. Fetches token decimals from mirror node to convert display amount to base units.
 
-| Option          | Short | Type   | Required | Default        | Description                                                 |
-| --------------- | ----- | ------ | -------- | -------------- | ----------------------------------------------------------- |
-| `--name`        | `-n`  | string | **yes**  | —              | Name of the swap                                            |
-| `--to`          | `-t`  | string | **yes**  | —              | Destination account (accountId or alias)                    |
-| `--token`       | `-T`  | string | **yes**  | —              | Fungible token identifier (token ID or alias)               |
-| `--amount`      | `-a`  | string | **yes**  | —              | Amount: `"10"` = 10 tokens, `"1000t"` = base units          |
-| `--from`        | `-f`  | string | no       | operator       | Source account: `accountId:privateKey`, alias, or accountId |
-| `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                   |
+| Option          | Short | Type   | Required | Default        | Description                                                      |
+| --------------- | ----- | ------ | -------- | -------------- | ---------------------------------------------------------------- |
+| `--name`        | `-n`  | string | **yes**  | —              | Name of the swap                                                 |
+| `--to`          | `-t`  | string | **yes**  | —              | Destination account (accountId or alias)                         |
+| `--token`       | `-T`  | string | **yes**  | —              | Fungible token identifier (token ID or alias)                    |
+| `--amount`      | `-a`  | string | **yes**  | —              | Amount (must be > 0): `"10"` = 10 tokens, `"1000t"` = base units |
+| `--from`        | `-f`  | string | no       | operator       | Source account: `accountId:privateKey`, alias, or accountId      |
+| `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                        |
 
 **Example:**
 
-```
+```bash
 hcli swap add-ft -n my-swap --to alice --token my-token --amount 100
 hcli swap add-ft -n my-swap --from bob --to 0.0.123456 --token 0.0.8849743 --amount 50t
 ```
@@ -94,7 +94,7 @@ Add one or more NFT serial transfers to an existing swap. Each serial number cou
 
 **Example:**
 
-```
+```bash
 hcli swap add-nft -n my-swap --to alice --token my-nft --serials 1,2,3
 hcli swap add-nft -n my-swap --from bob --to 0.0.123456 --token 0.0.8849743 --serials 5
 ```
@@ -113,7 +113,7 @@ Sign with all required keys and submit all transfers in a single transaction. Th
 
 **Example:**
 
-```
+```bash
 hcli swap execute --name my-swap
 ```
 
@@ -131,7 +131,7 @@ Display full details and all transfers of a single swap.
 
 **Example:**
 
-```
+```bash
 hcli swap view --name my-swap
 ```
 
@@ -147,7 +147,7 @@ Display a summary of all saved swaps. No options.
 
 **Example:**
 
-```
+```bash
 hcli swap list
 ```
 
@@ -165,7 +165,7 @@ Remove a swap from state without executing it.
 
 **Example:**
 
-```
+```bash
 hcli swap delete --name my-swap
 ```
 

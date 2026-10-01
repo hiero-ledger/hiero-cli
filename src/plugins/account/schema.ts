@@ -12,6 +12,11 @@ import {
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
+/** How an account entered local state. */
+export const AccountOriginSchema = z.enum(['created', 'imported']);
+
+export type AccountOrigin = z.infer<typeof AccountOriginSchema>;
+
 // Zod schema for runtime validation
 export const AccountDataSchema = z.object({
   keyRefId: z.string().min(1, 'Key reference ID is required'),
@@ -30,6 +35,9 @@ export const AccountDataSchema = z.object({
       message: 'Network must be one of: mainnet, testnet, previewnet, localnet',
     }),
   }),
+  // Optional: state written by older CLI versions has no such field and must
+  // keep working, being read back as `created`.
+  origin: AccountOriginSchema.optional(),
 });
 
 // TypeScript type inferred from Zod schema

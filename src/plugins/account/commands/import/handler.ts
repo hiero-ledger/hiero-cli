@@ -76,6 +76,7 @@ export class AccountImportCommand implements Command {
       evmAddress,
       keyRefId: resolved.keyRefId,
       network: api.network.getCurrentNetwork(),
+      origin: 'imported',
     };
 
     this.accountState.saveAccount(accountKey, account);

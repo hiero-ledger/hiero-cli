@@ -4,7 +4,7 @@ set -uo pipefail
 # down even if an earlier step fails (e.g. a missing kind cluster).
 
 # Tears down the Solo network and any kind clusters it created. Mirrors the
-# teardown step in CI workflows so `pnpm test:solo:down` cleans up the same way.
+# teardown step in CI workflows so `npm run solo:down` cleans up the same way.
 
 echo "Destroying Solo deployment..."
 solo one-shot single destroy 2>/dev/null || true

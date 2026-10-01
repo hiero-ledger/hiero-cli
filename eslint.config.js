@@ -3,7 +3,7 @@ const tseslint = require('@typescript-eslint/eslint-plugin');
 const tsparser = require('@typescript-eslint/parser');
 const simpleImportSort = require('eslint-plugin-simple-import-sort');
 const noRelativeImportPaths = require('eslint-plugin-no-relative-import-paths');
-const importPlugin = require('eslint-plugin-import');
+const importPlugin = require('eslint-plugin-import-x');
 const prettier = require('eslint-plugin-prettier');
 const prettierConfig = require('eslint-config-prettier');
 const globals = require('globals');
@@ -19,7 +19,6 @@ module.exports = [
       'hardhat.config.js',
       'jest.config.js',
       'jest.*.config.js',
-      'jest.integration.setup.js',
       'jest.integration.global.teardown.ts',
       'jest.integration.global.setup.ts',
       'src/__tests__/mocks/plugin-mock/test',
@@ -43,10 +42,10 @@ module.exports = [
       },
     },
     settings: {
-      'import/parsers': {
+      'import-x/parsers': {
         [require.resolve('@typescript-eslint/parser')]: ['.ts', '.tsx'],
       },
-      'import/resolver': {
+      'import-x/resolver': {
         typescript: {
           alwaysTryTypes: true,
           project: ['./tsconfig.json', './tsconfig.test.json'],
@@ -58,7 +57,7 @@ module.exports = [
       '@typescript-eslint': tseslint,
       'simple-import-sort': simpleImportSort,
       'no-relative-import-paths': noRelativeImportPaths,
-      import: importPlugin,
+      'import-x': importPlugin,
       prettier: prettier,
     },
     rules: {
@@ -94,14 +93,18 @@ module.exports = [
         },
       ],
       'simple-import-sort/exports': 'error',
-      'import/no-duplicates': 'error',
-      'import/no-unused-modules': [
+      'import-x/no-duplicates': 'error',
+      'import-x/no-unused-modules': [
         'error',
         {
           unusedExports: true,
           ignoreUnusedTypeExports: true,
           src: ['src'],
           ignoreExports: ['src/core/index.ts'],
+          // ESLint 10 removed the FileEnumerator API this rule depends on, so
+          // import-x treats it as a no-op until an alternative lands; this
+          // only suppresses the notice while keeping the intent configured.
+          suppressMissingFileEnumeratorAPIWarning: true,
         },
       ],
 
@@ -146,17 +149,17 @@ module.exports = [
       '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/unbound-method': 'off',
-      'import/no-unused-modules': 'off',
+      'import-x/no-unused-modules': 'off',
     },
   },
 
-  // import/no-unused-modules only follows static imports. Plugin commands are wired through
+  // import-x/no-unused-modules only follows static imports. Plugin commands are wired through
   // PluginManifest objects and loaded at runtime (e.g. jiti), so the rule would flag almost
   // every plugin export as unused even when the manifest references that module.
   {
     files: ['src/plugins/**/*.ts'],
     rules: {
-      'import/no-unused-modules': 'off',
+      'import-x/no-unused-modules': 'off',
     },
   },
 
@@ -170,7 +173,7 @@ module.exports = [
       '**/__tests__/**/fixtures/**/*.ts',
     ],
     rules: {
-      'import/no-unused-modules': 'off',
+      'import-x/no-unused-modules': 'off',
     },
   },
 

@@ -29,13 +29,13 @@ defaults:
     shell: bash
 
 permissions:
-  id-token: write
-  checks: write
-  statuses: write
-  pull-requests: write
-  contents: write
-  issues: write
   actions: read
+  checks: write
+  contents: write
+  id-token: write
+  issues: write
+  pull-requests: write
+  statuses: write
 
 jobs:
   prepare-release:
@@ -46,24 +46,20 @@ jobs:
       need-release: ${{ steps.set-outputs.outputs.need-release }}
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           egress-policy: audit
 
       - name: Prepare Job
-        uses: pandaswhocode/initialize-github-job@ffb7446339e8e6007b942312ac95457d1a20b6cf # 1.0.4
+        uses: pandaswhocode/initialize-github-job@0ed960ecaed898893e404ad55c7aa12fdc3b2a53 # 1.4.0
         with:
           checkout: 'true'
           checkout-ref: '${{ github.ref }}'
           checkout-token: '${{ secrets.GH_ACCESS_TOKEN }}'
+          setup-jq: 'true'
           setup-node: 'true'
-          node-version: '22'
+          node-version: '24'
           node-registry: 'https://registry.npmjs.org/'
-
-      - name: Setup JQ
-        uses: dcarbone/install-jq-action@b7ef57d46ece78760b4019dbc4080a1ba2a40b45 # v3.2.0
-        with:
-          version: 1.7
 
       - name: Install Semantic Release
         run: |
@@ -138,10 +134,6 @@ jobs:
       enable-unit-tests: true
       enable-integration-tests: true
       enable-code-style-check: true
-    secrets:
-      integration-tests-network: ${{ secrets.INTEGRATION_TESTS_NETWORK }}
-      integration-tests-operator-id: ${{ secrets.INTEGRATION_TESTS_OPERATOR_ID }}
-      integration-tests-operator-key: ${{ secrets.INTEGRATION_TESTS_OPERATOR_KEY }}
 
   create-github-release:
     name: Github / Release
@@ -154,18 +146,19 @@ jobs:
       npm-artifact-name: ${{ steps.set-publish-data.outputs.artifact-name }}
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           egress-policy: audit
 
       - name: Prepare Job
-        uses: pandaswhocode/initialize-github-job@ffb7446339e8e6007b942312ac95457d1a20b6cf # 1.0.4
+        uses: pandaswhocode/initialize-github-job@0ed960ecaed898893e404ad55c7aa12fdc3b2a53 # 1.4.0
         with:
           checkout: 'true'
           checkout-ref: '${{ github.ref }}'
           checkout-token: '${{ secrets.GH_ACCESS_TOKEN }}'
+          setup-jq: 'true'
           setup-node: 'true'
-          node-version: '22'
+          node-version: '24'
           node-registry: 'https://registry.npmjs.org/'
 
       - name: Install GnuPG Tools
@@ -189,11 +182,6 @@ jobs:
           git_user_signingkey: true
           git_commit_gpgsign: true
           git_tag_gpgsign: false
-
-      - name: Setup JQ
-        uses: dcarbone/install-jq-action@b7ef57d46ece78760b4019dbc4080a1ba2a40b45 # v3.2.0
-        with:
-          version: 1.7
 
       - name: Setup JFrog CLI
         uses: jfrog/setup-jfrog-cli@c32bf10843e4071112c4ea3abf622d3b27cd8c17 # v4.7.0
@@ -222,7 +210,7 @@ jobs:
           npm install -g marked-mangle@1.1.6 marked-gfm-heading-id@3.1.2 semantic-release-conventional-commits@3.0.0
 
       - name: Install Dependencies
-        run: jf npm ci
+        run: jf npm run install:safe
 
       - name: Publish Semantic Release
         env:
@@ -276,7 +264,7 @@ jobs:
 
       # Upload the artifact
       - name: Upload Hiero CLI Package Artifact
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: cli-npm-package
           path: ./dist/${{ steps.set-publish-data.outputs.artifact-name }}
@@ -290,32 +278,32 @@ jobs:
   publish-npm-package:
     name: Publish Hiero CLI NPM Package
     if: ${{ needs.prepare-release.outputs.need-release == 'true' && inputs.dry-run-enabled != true }}
-    runs-on: ubuntu-latest
+    runs-on: hiero-cli-linux-medium
     needs:
       - create-github-release
       - prepare-release
       - safety-checks
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           egress-policy: audit
 
       - name: Prepare Release
-        uses: pandaswhocode/initialize-github-job@ffb7446339e8e6007b942312ac95457d1a20b6cf # 1.0.4
+        uses: pandaswhocode/initialize-github-job@0ed960ecaed898893e404ad55c7aa12fdc3b2a53 # 1.4.0
         with:
           checkout: 'true'
           checkout-ref: '${{ github.ref }}'
           checkout-token: '${{ secrets.GH_ACCESS_TOKEN }}'
           setup-node: 'true'
-          node-version: '22'
+          node-version: '24'
           node-registry: 'https://registry.npmjs.org/'
 
       - name: Install NPM latest
-        run: npm install -g npm@11.7.0
+        run: npm install -g npm@latest
 
       - name: Download Hiero CLI NPM Package Artifact
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: cli-npm-package
 

@@ -1,44 +1,71 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { SupportedNetwork } from '@/core/types/shared.types';
+import type { AccountCreateOutput } from '@/plugins/account/commands/create';
 import type { AccountImportOutput } from '@/plugins/account/commands/import';
 import type { AccountViewOutput } from '@/plugins/account/commands/view';
 
 import '@/core/utils/json-serialize';
 
+import { PrivateKey } from '@hiero-ledger/sdk';
+
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
+import { waitFor } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
-import { SupportedNetwork } from '@/core/types/shared.types';
-import { accountImport, accountView } from '@/plugins/account';
+import {
+  accountCreate,
+  accountDelete,
+  accountImport,
+  accountView,
+} from '@/plugins/account';
 
 describe('Import Account Integration Tests', () => {
   let coreApi: CoreApi;
   let network: SupportedNetwork;
-  let accountId: string;
-  let accountKey: string;
-  let evmAddress: string;
 
   beforeAll(async () => {
     coreApi = createCoreApi(STATE_STORAGE_FILE_PATH);
     await setDefaultOperatorForNetwork(coreApi);
     network = coreApi.network.getCurrentNetwork();
-    accountId =
-      network === SupportedNetwork.LOCALNET ? '0.0.1004' : '0.0.7300370';
-    accountKey =
-      network === SupportedNetwork.LOCALNET
-        ? '3030020100300706052b8104000a0422042045a5a7108a18dd5013cf2d5857a28144beadc9c70b3bdbd914e38df4e804b8d8'
-        : '3030020100300706052b8104000a042204206790ef7f62d1b4a2d2fdcf4e0fc0882b86786dfbb1efc9ace8a2e3656adea122';
-    evmAddress =
-      network === SupportedNetwork.LOCALNET
-        ? '0x927e41ff8307835a1c081e0d7fd250625f2d4d0e'
-        : '0x91d9247415c979a289aa178c4c67181e11d38872';
   });
 
   describe('Valid Import Account Scenarios', () => {
     it('should import an account and verify with view method', async () => {
+      // The import must start from an account that exists on the network but
+      // is not known to local state, so the test creates one with a key it
+      // controls instead of relying on an account hardcoded per network. The
+      // raw hex form is what the CLI itself stores for generated keys.
+      const accountKey = PrivateKey.generateECDSA().toStringRaw();
+      const createAccountResult = await accountCreate({
+        args: {
+          name: 'account-to-import',
+          balance: 1,
+          key: accountKey,
+        },
+        api: coreApi,
+      });
+      const createdAccount = createAccountResult.result as AccountCreateOutput;
+
+      // Both the state-only delete and the import resolve the account through
+      // the mirror, which needs a moment to index a brand-new account.
+      await waitFor(
+        () =>
+          accountView({
+            args: { account: createdAccount.accountId },
+            api: coreApi,
+          }),
+        (result) => !!(result.result as AccountViewOutput).accountId,
+        { timeout: 10000, interval: 500 },
+      );
+      await accountDelete({
+        args: { account: 'account-to-import', stateOnly: true },
+        api: coreApi,
+      });
+
       const importAccountArgs: Record<string, unknown> = {
         name: 'account-imported',
-        key: `${accountId}:${accountKey}`,
+        key: `${createdAccount.accountId}:${accountKey}`,
       };
       const importAccountResult = await accountImport({
         args: importAccountArgs,
@@ -47,11 +74,11 @@ describe('Import Account Integration Tests', () => {
 
       const importAccountOutput =
         importAccountResult.result as AccountImportOutput;
-      expect(importAccountOutput.accountId).toBe(accountId);
+      expect(importAccountOutput.accountId).toBe(createdAccount.accountId);
       expect(importAccountOutput.name).toBe('account-imported');
       expect(importAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
       expect(importAccountOutput.network).toBe(network);
-      expect(importAccountOutput.evmAddress).toBe(evmAddress);
+      expect(importAccountOutput.evmAddress).toBe(createdAccount.evmAddress);
 
       const viewAccountArgs: Record<string, unknown> = {
         account: 'account-imported',

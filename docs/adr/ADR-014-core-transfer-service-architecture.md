@@ -1,4 +1,4 @@
-### ADR-014: Core TransferService and AllowanceService Architecture
+# ADR-014: Core TransferService and AllowanceService Architecture
 
 - Status: Proposed
 - Date: 2026-04-28
@@ -271,8 +271,7 @@ export interface NftAllowanceDeleteAllSerialsParams {
 }
 
 export type NftAllowanceDeleteParams =
-  | NftAllowanceDeleteSpecificParams
-  | NftAllowanceDeleteAllSerialsParams;
+  NftAllowanceDeleteSpecificParams | NftAllowanceDeleteAllSerialsParams;
 ```
 
 `buildTransferTransaction` iterates over the entries and calls `entry.apply(tx)` on a single shared `TransferTransaction` instance, then sets `memo` if provided. Each entry class (`HbarTransferEntry`, `FtTransferEntry`, `NftTransferEntry`) encapsulates the SDK call for its asset type; the service contains no switch or type dispatch. An empty `entries` array is a programmer error; the implementation must throw before constructing a transaction so that a vacuous `TransferTransaction` is never submitted to the network.

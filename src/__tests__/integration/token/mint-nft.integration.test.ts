@@ -9,7 +9,7 @@ import type { TokenViewOutput } from '@/plugins/token/commands/view';
 import '@/core/utils/json-serialize';
 
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
-import { delay, waitFor } from '@/__tests__/utils/common-utils';
+import { waitFor } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
@@ -80,10 +80,12 @@ describe('Mint NFT Integration Tests', () => {
     expect(createNftOutput.symbol).toBe('TNFT');
     expect(createNftOutput.supplyType).toBe(SupplyType.FINITE);
 
+    // mint-nft resolves token info from the mirror, which must have indexed
+    // the token first (NotFoundError otherwise).
     await waitFor(
       () =>
-        accountView({ args: { account: 'account-mint-nft' }, api: coreApi }),
-      (result) => !!(result.result as AccountViewOutput).accountId,
+        tokenView({ args: { token: createNftOutput.tokenId }, api: coreApi }),
+      (result) => !!(result.result as TokenViewOutput).tokenId,
     );
 
     const mintNftArgs: Record<string, unknown> = {
@@ -91,8 +93,6 @@ describe('Mint NFT Integration Tests', () => {
       metadata: 'Test NFT Metadata',
       supplyKey: ['account-mint-nft'],
     };
-
-    await delay(3000);
 
     const mintNftResult = await tokenMintNft({
       args: mintNftArgs,
@@ -122,5 +122,5 @@ describe('Mint NFT Integration Tests', () => {
     );
     expect(viewTokenOutput.nftSerial?.owner).toBe(viewAccountOutput.accountId);
     expect(viewTokenOutput.nftSerial?.metadata).toBe('Test NFT Metadata');
-  }, 90000);
+  });
 });

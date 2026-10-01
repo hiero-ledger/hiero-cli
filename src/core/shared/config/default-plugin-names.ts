@@ -13,4 +13,7 @@ export const DEFAULT_PLUGIN_NAMES = new Set([
   'contract-erc721',
   'swap',
   'faucet',
+  'schedule',
+  'eip712',
+  'x402',
 ]);

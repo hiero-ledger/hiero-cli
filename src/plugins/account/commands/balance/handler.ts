@@ -31,7 +31,7 @@ export class AccountBalanceCommand implements Command {
     api.logger.info(`Getting balance for account: ${accountIdOrNameOrAlias}`);
 
     const network = api.network.getCurrentNetwork();
-    let accountId = accountIdOrNameOrAlias;
+    let accountId: string;
 
     const account = api.alias.resolve(
       accountIdOrNameOrAlias,

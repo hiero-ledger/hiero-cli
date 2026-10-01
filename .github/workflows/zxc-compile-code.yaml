@@ -42,33 +42,23 @@ on:
         description: 'NodeJS Version:'
         type: string
         required: false
-        default: '22'
+        default: '24'
       custom-job-label:
         description: 'Custom Job Label:'
         type: string
         required: false
         default: 'Compiles'
-    secrets:
-      integration-tests-network:
-        description: 'Selected network for integration tests:'
-        required: false
-      integration-tests-operator-id:
-        description: 'Operator ID for integration tests:'
-        required: false
-      integration-tests-operator-key:
-        description: 'Operator private key for integration tests:'
-        required: false
 
 defaults:
   run:
     shell: bash
 
 permissions:
-  id-token: write
-  contents: read
   actions: read
-  pull-requests: write
   checks: write
+  contents: read
+  id-token: write
+  pull-requests: write
   statuses: write
 
 jobs:
@@ -77,22 +67,31 @@ jobs:
     runs-on: hiero-cli-linux-medium
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           egress-policy: audit
 
       - name: Checkout Code
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ inputs.node-version }}
           #cache: npm
 
+      # SWC >= 1.16 unpacks its native addon into a cache directory and refuses any location whose
+      # parent is writable by other users without the sticky bit (ERR_SWC_NATIVE_CACHE). On this
+      # runner /home/runner is world-writable, so only /tmp (sticky) is accepted.
+      - name: Set SWC Native Binding Cache
+        run: |
+          swc_cache_dir="/tmp/swc-native-cache-$(id -u)"
+          mkdir -p -m 700 "$swc_cache_dir"
+          echo "SWC_NATIVE_BINDING_CACHE=$swc_cache_dir" >> "$GITHUB_ENV"
+
       - name: Install Dependencies
         id: npm-deps
-        run: npm ci
+        run: npm run install:safe
 
       - name: Compile Code
         id: compile
@@ -107,96 +106,83 @@ jobs:
         run: npm run test:unit
 
       - name: Publish Unit Test Report
-        uses: step-security/publish-unit-test-result-action@c8537a200a435e2560109a6a8ed9cac838b62656 # v2.20.5
+        uses: step-security/publish-unit-test-result-action@681100d67b09305624c089873f12c545ee7cbc24 # v2.23.0
         if: ${{ inputs.enable-unit-tests && steps.npm-deps.conclusion == 'success' && !cancelled() }}
         with:
           check_name: 'Unit Test Results'
           files: 'junit.xml'
 
       - name: Publish Unit Test Coverage Report
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ inputs.enable-unit-tests && !cancelled() }}
         with:
           name: Unit Test Coverage Report
           path: 'coverage/unit'
 
-      - name: Install Docker Compose Plugin (if tests are performed on localnet)
-        env:
-          INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
-        if: ${{ inputs.enable-integration-tests && env.INTEGRATION_TESTS_NETWORK == 'localnet' && !cancelled() && !failure() }}
+      - name: Install Docker Compose Plugin
+        if: ${{ inputs.enable-integration-tests && !cancelled() && !failure() }}
         run: |
-          sudo curl -fLo /usr/local/lib/docker/cli-plugins/docker-compose https://github.com/docker/compose/releases/download/v2.29.1/docker-compose-linux-x86_64
+          sudo curl -fLo /usr/local/lib/docker/cli-plugins/docker-compose https://github.com/docker/compose/releases/download/v5.5.1/docker-compose-linux-x86_64
           sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
       - name: Setup Kind
-        env:
-          INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
-        if: ${{ inputs.enable-integration-tests && env.INTEGRATION_TESTS_NETWORK == 'localnet' && !cancelled() && !failure() }}
-        uses: helm/kind-action@a1b0e391336a6ee6713a0583f8c6240d70863de3 # v1.12.0
+        if: ${{ inputs.enable-integration-tests && !cancelled() && !failure() }}
+        uses: helm/kind-action@06c1ae10762d3b9c1644e7fe69596ae519e015a2 # v1.15.0
         with:
           install_only: true
           node_image: kindest/node:v1.32.5@sha256:e3b2327e3a5ab8c76f5ece68936e4cafaa82edf58486b769727ab0b3b97a5b0d
-          version: v0.29.0
+          version: v0.33.0
           kubectl_version: v1.32.5
           verbosity: 3
           wait: 120s
 
-      - name: Install solo (Integration Tests) (if tests are performed on localnet)
-        env:
-          INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
-        if: ${{ inputs.enable-integration-tests && env.INTEGRATION_TESTS_NETWORK == 'localnet' && !cancelled() && !failure() }}
-        run: npm run test:solo:install
+      - name: Install solo (Integration Tests)
+        if: ${{ inputs.enable-integration-tests && !cancelled() && !failure() }}
+        run: npm run solo:install
 
-      - name: Deploy solo (Integration Tests) (if tests are performed on localnet)
-        env:
-          INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
-        if: ${{ inputs.enable-integration-tests && env.INTEGRATION_TESTS_NETWORK == 'localnet' && !cancelled() && !failure() }}
-        run: npm run test:solo:deploy
+      - name: Deploy solo (Integration Tests)
+        if: ${{ inputs.enable-integration-tests && !cancelled() && !failure() }}
+        run: npm run solo:deploy
 
-      - name: Wait for Solo endpoints (Integration Tests) (if tests are performed on localnet)
-        env:
-          INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
-        if: ${{ inputs.enable-integration-tests && env.INTEGRATION_TESTS_NETWORK == 'localnet' && !cancelled() && !failure() }}
-        run: npm run test:solo:check
+      - name: Wait for Solo endpoints (Integration Tests)
+        if: ${{ inputs.enable-integration-tests && !cancelled() && !failure() }}
+        run: npm run solo:check
 
       - name: Configure Integration Tests
-        env:
-          INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
-          INTEGRATION_TESTS_OPERATOR_ID: ${{ secrets.integration-tests-operator-id }}
-          INTEGRATION_TESTS_OPERATOR_KEY: ${{ secrets.integration-tests-operator-key }}
         if: ${{ inputs.enable-integration-tests && !cancelled() && !failure() }}
         run: |
-          touch .env.test
-          echo "OPERATOR_ID=${{ env.INTEGRATION_TESTS_OPERATOR_ID }}" >> ".env.test"
-          echo "OPERATOR_KEY=${{ env.INTEGRATION_TESTS_OPERATOR_KEY }}" >> ".env.test"
-          echo "NETWORK=${{ env.INTEGRATION_TESTS_NETWORK }}" >> ".env.test"
+          # Solo's genesis operator (0.0.2) and its well-known ED25519 key, published in Solo's output
+          cat > .env.test <<'EOF'
+          OPERATOR_ID=0.0.2
+          OPERATOR_KEY=302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137
+          NETWORK=localnet
+          ED25519_SUPPORT=true
+          EOF
 
       - name: Run Integration Tests
         if: ${{ inputs.enable-integration-tests && !cancelled() && !failure() }}
         run: npm run test:integration
 
-      - name: Destroy solo instance (Integration Tests) (if tests are performed on localnet)
-        env:
-          INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
-        if: ${{ always() && inputs.enable-integration-tests && env.INTEGRATION_TESTS_NETWORK == 'localnet' }}
-        run: npm run test:solo:destroy
+      - name: Destroy solo instance (Integration Tests)
+        if: ${{ always() && inputs.enable-integration-tests }}
+        run: npm run solo:destroy
 
       - name: Publish Integration Test Report
-        uses: step-security/publish-unit-test-result-action@c8537a200a435e2560109a6a8ed9cac838b62656 # v2.20.5
+        uses: step-security/publish-unit-test-result-action@681100d67b09305624c089873f12c545ee7cbc24 # v2.23.0
         if: ${{ inputs.enable-integration-tests && steps.npm-deps.conclusion == 'success' && !cancelled() }}
         with:
           check_name: 'Integration Test Results'
           files: 'junit-integration.xml'
 
       - name: Publish Integration Coverage Report
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ inputs.enable-integration-tests && !cancelled() }}
         with:
           name: Integration Coverage Report
           path: 'coverage/integration'
 
       - name: Publish Test Reports
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ inputs.enable-unit-tests && steps.npm-deps.conclusion == 'success' && !cancelled() }}
         with:
           name: Test Reports

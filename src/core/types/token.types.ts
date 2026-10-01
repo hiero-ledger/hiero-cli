@@ -190,8 +190,7 @@ export interface NftAllowanceApproveAllSerialsParams {
 }
 
 export type NftAllowanceApproveParams =
-  | NftAllowanceApproveSpecificParams
-  | NftAllowanceApproveAllSerialsParams;
+  NftAllowanceApproveSpecificParams | NftAllowanceApproveAllSerialsParams;
 
 export interface NftAllowanceDeleteSpecificParams {
   tokenId: string;
@@ -208,8 +207,7 @@ export interface NftAllowanceDeleteAllSerialsParams {
 }
 
 export type NftAllowanceDeleteParams =
-  | NftAllowanceDeleteSpecificParams
-  | NftAllowanceDeleteAllSerialsParams;
+  NftAllowanceDeleteSpecificParams | NftAllowanceDeleteAllSerialsParams;
 
 export interface TokenAllowanceFtParams {
   tokenId: string;

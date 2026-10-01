@@ -1134,7 +1134,7 @@ interface CommandHandlerArgs {
 - `config` – ConfigView (alias for ConfigService) for accessing and modifying CLI configuration options
 - `logger` – Structured logging interface with info, error, warn, and debug methods
 
-For handler patterns, result contracts, and testing examples, see [`PLUGIN_ARCHITECTURE_GUIDE.md`](../PLUGIN_ARCHITECTURE_GUIDE.md).
+For handler patterns, result contracts, and testing examples, see [`PLUGIN_ARCHITECTURE_GUIDE.md`](./PLUGIN_ARCHITECTURE_GUIDE.md).
 
 ## Output Schemas
 
@@ -1144,12 +1144,8 @@ Core API services are designed to work with structured command outputs defined v
 
 ## 📚 Related Documentation
 
-- [Plugin Development Guide](../PLUGIN_ARCHITECTURE_GUIDE.md)
+- [Plugin Development Guide](./PLUGIN_ARCHITECTURE_GUIDE.md)
 - [Architecture Overview](./architecture.md)
 - [Output Schemas Guide](./output-schemas-guide.md)
 - [Contributing Guide](../CONTRIBUTING.md)
 - [Architecture Decision Records](./adr/) - ADRs for interested developers
-
-```
-
-```

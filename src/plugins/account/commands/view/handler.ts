@@ -18,7 +18,7 @@ export class AccountViewCommand implements Command {
 
     api.logger.info(`Viewing account details: ${accountIdOrNameOrAlias}`);
 
-    let accountId = accountIdOrNameOrAlias;
+    let accountId: string;
 
     const network = api.network.getCurrentNetwork();
     const account = api.alias.resolve(

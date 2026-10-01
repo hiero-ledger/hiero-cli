@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+set -e
+
+echo "commit-msg: running commitlint"
+if npx commitlint --edit "$1"; then
+	echo "commit-msg: commit message follows conventional commits"
+else
+	code=$?
+	echo "commit-msg: commit message rejected (code $code)"
+	exit $code
+fi

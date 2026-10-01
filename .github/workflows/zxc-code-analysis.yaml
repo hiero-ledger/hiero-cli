@@ -49,7 +49,7 @@ on:
         description: 'NodeJS Version:'
         type: string
         required: false
-        default: '22'
+        default: '24'
       custom-job-label:
         description: 'Custom Job Label:'
         type: string
@@ -71,10 +71,10 @@ defaults:
     shell: bash
 
 permissions:
-  contents: read
   actions: read
-  pull-requests: write
   checks: write
+  contents: read
+  pull-requests: write
   statuses: write
 
 jobs:
@@ -83,37 +83,37 @@ jobs:
     runs-on: hiero-cli-linux-medium
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           egress-policy: audit
 
       - name: Checkout Code
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.workflow_run.head_branch }}
-          fetch-depth: ${{ inputs.enable-sonar-analysis && '0' || '' }}
+          fetch-depth: 1
 
       - name: Setup Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ inputs.node-version }}
 
       - name: Download Unit Test Coverage Report
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         if: ${{ (inputs.enable-codecov-analysis || inputs.enable-codacy-coverage) && !cancelled() && !failure() }}
         with:
           name: Unit Test Coverage Report
           path: 'coverage/unit'
 
       - name: Download Integration Coverage Report
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         if: ${{ (inputs.enable-codecov-analysis || inputs.enable-codacy-coverage) && inputs.enable-integration-coverage-report && !cancelled() && !failure() }}
         with:
           name: Integration Coverage Report
           path: 'coverage/integration'
 
       - name: Publish To Codecov
-        uses: codecov/codecov-action@5c47607acb93fed5485fdbf7232e8a31425f672a # v5.0.2
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         if: ${{ inputs.enable-codecov-analysis && !cancelled() && !failure() }}
         env:
           CODECOV_TOKEN: ${{ secrets.codecov-token }}
@@ -179,7 +179,7 @@ jobs:
           echo "::endgroup::"
 
       - name: Publish Snyk Reports
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: ${{ inputs.enable-snyk-scan && !cancelled() && !failure() }}
         with:
           name: Snyk Reports

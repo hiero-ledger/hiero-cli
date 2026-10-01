@@ -1,10 +1,10 @@
 # topic plugin
 
-Manage Hedera Consensus Service (HCS) topics: create, import, list, submit messages, find messages, delete.
+Manage Hedera Consensus Service (HCS) topics: create, import, list, submit messages, find messages, update, delete.
 
 ---
 
-### `hcli topic create` [batchify] [scheduled]
+## `hcli topic create` `[batchify]` `[scheduled]`
 
 Create a new Hedera Consensus Service topic.
 
@@ -22,17 +22,17 @@ Create a new Hedera Consensus Service topic.
 
 **Example:**
 
-```
+```bash
 hcli topic create --name myTopic --memo "My topic"
 hcli topic create --name privateTopic --submit-key 0.0.123:302e...
 hcli topic create --name myTopic --batch myBatch
 ```
 
-**Output:** `{ topicId, name, transactionId }`
+**Output:** `{ topicId, name?, network, memo?, adminKeyPresent, submitKeyPresent, adminKeyThreshold, adminKeyCount?, submitKeyThreshold, submitKeyCount?, transactionId, createdAt }`
 
 ---
 
-### `hcli topic import`
+## `hcli topic import`
 
 Import an existing topic into local state.
 
@@ -43,7 +43,7 @@ Import an existing topic into local state.
 
 **Example:**
 
-```
+```bash
 hcli topic import --topic 0.0.123456 --name importedTopic
 ```
 
@@ -51,21 +51,21 @@ hcli topic import --topic 0.0.123456 --name importedTopic
 
 ---
 
-### `hcli topic list`
+## `hcli topic list`
 
 List all topics stored in local state. No options.
 
 **Example:**
 
-```
+```bash
 hcli topic list
 ```
 
-**Output:** Array of `{ topicId, name, memo? }`
+**Output:** `{ topics, totalCount, stats }` where each topic is `{ name?, topicId, network, memo, adminKeyPresent, submitKeyPresent, createdAt }` and `stats` is `{ withAdminKey, withSubmitKey, withMemo, byNetwork }`
 
 ---
 
-### `hcli topic submit-message` [batchify] [scheduled]
+## `hcli topic submit-message` `[batchify]` `[scheduled]`
 
 Submit a message to a Hedera Consensus Service topic.
 
@@ -80,19 +80,19 @@ Submit a message to a Hedera Consensus Service topic.
 
 **Example:**
 
-```
+```bash
 hcli topic submit-message --topic myTopic --message "Hello, Hedera!"
 hcli topic submit-message --topic privateTopic --message "Secret" --signer 0.0.123:302e...
 hcli topic submit-message --topic myTopic --message "Hello" --batch myBatch
 ```
 
-**Output:** `{ topicId, sequenceNumber, transactionId }`
+**Output:** `{ topicId, message, sequenceNumber, transactionId, submittedAt, network }`
 
 ---
 
-### `hcli topic find-message`
+## `hcli topic find-message`
 
-Find messages in a topic by sequence number filters.
+Find messages in a topic by sequence number filters. Filter values must be positive integers. `--sequence-eq` cannot be combined with any other filter, and a lower bound (`-gt`/`-gte`) must be less than the upper bound (`-lt`/`-lte`).
 
 | Option           | Short | Type   | Required | Default | Description                              |
 | ---------------- | ----- | ------ | -------- | ------- | ---------------------------------------- |
@@ -105,28 +105,28 @@ Find messages in a topic by sequence number filters.
 
 **Example:**
 
-```
+```bash
 hcli topic find-message --topic myTopic --sequence-eq 1
 hcli topic find-message --topic myTopic --sequence-gte 5 --sequence-lte 10
 ```
 
-**Output:** Array of `{ sequenceNumber, message, consensusTimestamp }`
+**Output:** `{ topicId, messages, totalCount, network }` where each message is `{ sequenceNumber, message, timestamp, consensusTimestamp }`
 
 ---
 
-### `hcli topic update` [batchify]
+## `hcli topic update` `[batchify]`
 
-Update an existing Hedera Consensus Service topic's properties on-chain.
+Update an existing Hedera Consensus Service topic's properties on-chain. At least one field to update must be provided.
 
 | Option                   | Short | Type       | Required | Default        | Description                                                                                                                                                  |
 | ------------------------ | ----- | ---------- | -------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `--topic`                | `-t`  | string     | **yes**  | —              | Topic ID or alias to update                                                                                                                                  |
 | `--memo`                 | `-m`  | string     | no       | —              | New topic memo. Set to `"null"` to clear                                                                                                                     |
 | `--admin-key`            | `-a`  | repeatable | no       | —              | New admin key(s). Cannot be cleared, only replaced. Same formats as `topic create`                                                                           |
-| `--admin-key-threshold`  | `-A`  | number     | no       | —              | M-of-N for threshold admin keys                                                                                                                              |
+| `--admin-key-threshold`  | `-A`  | number     | no       | —              | M-of-N for threshold admin keys (requires at least 2 `--admin-key` values)                                                                                   |
 | `--admin-signing-key`    | `-x`  | repeatable | no       | —              | Explicit credential(s) to sign the update (current admin key). Pass multiple times for threshold keys. Required when the admin key is not in the key manager |
 | `--submit-key`           | `-s`  | repeatable | no       | —              | New submit key(s). Set to `"null"` to clear                                                                                                                  |
-| `--submit-key-threshold` | `-S`  | number     | no       | —              | M-of-N for threshold submit keys                                                                                                                             |
+| `--submit-key-threshold` | `-S`  | number     | no       | —              | M-of-N for threshold submit keys (requires at least 2 `--submit-key` values)                                                                                 |
 | `--key-manager`          | `-k`  | string     | no       | config default | Key manager: `local` or `local_encrypted`                                                                                                                    |
 | `--auto-renew-account`   | `-r`  | string     | no       | —              | Auto-renew account ID or alias. Set to `"null"` to clear                                                                                                     |
 | `--auto-renew-period`    | `-p`  | number     | no       | —              | Auto-renew period in seconds (min 2592000/30d, max 8000000/~92d)                                                                                             |
@@ -135,7 +135,7 @@ Update an existing Hedera Consensus Service topic's properties on-chain.
 
 **Example:**
 
-```
+```bash
 hcli topic update --topic myTopic --memo "updated memo"
 hcli topic update --topic 0.0.123456 --auto-renew-period 7776000
 hcli topic update --topic privateTopic --submit-key alice --submit-key-threshold 1
@@ -147,23 +147,23 @@ hcli topic update --topic 0.0.123456 --memo "updated" --admin-signing-key 0.0.10
 
 ---
 
-### `hcli topic delete` [batchify]
+## `hcli topic delete` `[batchify]`
 
 Delete a Hedera topic on the network and remove it from local state, or remove from local state only.
 
 ⚠️ Requires confirmation. Use `--confirm` to skip.
 
-| Option          | Short | Type    | Required | Default | Description                                                                                                                                    |
-| --------------- | ----- | ------- | -------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--topic`       | `-t`  | string  | **yes**  | —       | Topic name or topic ID                                                                                                                         |
-| `--state-only`  | `-s`  | boolean | no       | false   | Remove only from local CLI state (no `TopicDeleteTransaction` on Hedera)                                                                       |
-| `--admin-key`   | `-a`  | string  | no       | —       | Admin key(s) when the topic is not in state, or to override keys from state (same formats as `topic create`; repeatable for KeyList/threshold) |
-| `--key-manager` | `-k`  | string  | no       | config  | Key manager when resolving `--admin-key`                                                                                                       |
-| `--batch`       | `-B`  | string  | no       | —       | Queue into a named batch instead of executing immediately                                                                                      |
+| Option          | Short | Type       | Required | Default | Description                                                                                                                                    |
+| --------------- | ----- | ---------- | -------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--topic`       | `-t`  | string     | **yes**  | —       | Topic name or topic ID                                                                                                                         |
+| `--state-only`  | `-s`  | boolean    | no       | false   | Remove only from local CLI state (no `TopicDeleteTransaction` on Hedera)                                                                       |
+| `--admin-key`   | `-a`  | repeatable | no       | —       | Admin key(s) when the topic is not in state, or to override keys from state (same formats as `topic create`; repeatable for KeyList/threshold) |
+| `--key-manager` | `-k`  | string     | no       | config  | Key manager when resolving `--admin-key`                                                                                                       |
+| `--batch`       | `-B`  | string     | no       | —       | Queue into a named batch instead of executing immediately                                                                                      |
 
 **Example:**
 
-```
+```bash
 hcli topic delete --topic myTopic --confirm
 hcli topic delete --topic 0.0.123456 --state-only --confirm
 hcli topic delete --topic importedTopic --admin-key alice --confirm
