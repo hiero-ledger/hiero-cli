@@ -29,18 +29,20 @@ defaults:
     shell: bash
 
 permissions:
-  id-token: write
-  checks: write
-  statuses: write
-  pull-requests: write
-  contents: write
-  issues: write
-  actions: read
+  contents: read
 
 jobs:
   prepare-release:
     name: Release / Prepare
     runs-on: hiero-cli-linux-medium
+    permissions:
+      id-token: write
+      checks: write
+      statuses: write
+      pull-requests: write
+      contents: write
+      issues: write
+      actions: read
     outputs:
       version: ${{ steps.set-outputs.outputs.version }}
       need-release: ${{ steps.set-outputs.outputs.need-release }}
@@ -133,6 +135,13 @@ jobs:
   safety-checks:
     name: Release
     uses: ./.github/workflows/zxc-compile-code.yaml
+    permissions:
+      id-token: write
+      contents: read
+      actions: read
+      pull-requests: write
+      checks: write
+      statuses: write
     with:
       custom-job-label: 'Safety Checks'
       enable-unit-tests: true
@@ -147,6 +156,14 @@ jobs:
     name: Github / Release
     if: ${{ needs.prepare-release.outputs.need-release == 'true' }}
     runs-on: hiero-cli-linux-medium
+    permissions:
+      id-token: write
+      checks: write
+      statuses: write
+      pull-requests: write
+      contents: write
+      issues: write
+      actions: read
     needs:
       - prepare-release
       - safety-checks
@@ -291,6 +308,14 @@ jobs:
     name: Publish Hiero CLI NPM Package
     if: ${{ needs.prepare-release.outputs.need-release == 'true' && inputs.dry-run-enabled != true }}
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      checks: write
+      statuses: write
+      pull-requests: write
+      contents: write
+      issues: write
+      actions: read
     needs:
       - create-github-release
       - prepare-release
