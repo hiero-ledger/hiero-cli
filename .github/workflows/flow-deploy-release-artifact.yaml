@@ -57,7 +57,7 @@ jobs:
           checkout-ref: '${{ github.ref }}'
           checkout-token: '${{ secrets.GH_ACCESS_TOKEN }}'
           setup-node: 'true'
-          node-version: '22'
+          node-version: '22.23.4'
           node-registry: 'https://registry.npmjs.org/'
 
       - name: Setup JQ
@@ -165,7 +165,7 @@ jobs:
           checkout-ref: '${{ github.ref }}'
           checkout-token: '${{ secrets.GH_ACCESS_TOKEN }}'
           setup-node: 'true'
-          node-version: '22'
+          node-version: '22.23.4'
           node-registry: 'https://registry.npmjs.org/'
 
       - name: Install GnuPG Tools
@@ -308,7 +308,7 @@ jobs:
           checkout-ref: '${{ github.ref }}'
           checkout-token: '${{ secrets.GH_ACCESS_TOKEN }}'
           setup-node: 'true'
-          node-version: '22'
+          node-version: '22.23.4'
           node-registry: 'https://registry.npmjs.org/'
 
       - name: Install NPM latest

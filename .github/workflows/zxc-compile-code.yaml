@@ -42,7 +42,7 @@ on:
         description: 'NodeJS Version:'
         type: string
         required: false
-        default: '22'
+        default: '22.23.4'
       custom-job-label:
         description: 'Custom Job Label:'
         type: string
@@ -93,6 +93,9 @@ jobs:
       - name: Install Dependencies
         id: npm-deps
         run: npm ci
+
+      - name: Audit Production Dependencies
+        run: npm audit --omit=dev --audit-level=high
 
       - name: Compile Code
         id: compile

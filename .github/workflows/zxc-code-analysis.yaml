@@ -44,7 +44,7 @@ on:
         description: 'NodeJS Version:'
         type: string
         required: false
-        default: '22'
+        default: '22.23.4'
       custom-job-label:
         description: 'Custom Job Label:'
         type: string

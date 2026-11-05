@@ -34,7 +34,7 @@ describe('transfer entries - EVM-aware recipient', () => {
       const recipient = tx.addHbarTransfer.mock.calls[1][0] as AccountId;
       expect(recipient.num.toNumber()).toBe(0);
       expect(recipient.evmAddress).not.toBeNull();
-      expect(recipient.toSolidityAddress()).toBe(MOCK_EVM_ADDRESS_RAW);
+      expect(recipient.toEvmAddress()).toBe(MOCK_EVM_ADDRESS_RAW);
     });
 
     test('builds account-id recipient via fromString', () => {
@@ -55,7 +55,7 @@ describe('transfer entries - EVM-aware recipient', () => {
       const recipient = tx.addTokenTransfer.mock.calls[1][1] as AccountId;
       expect(recipient.num.toNumber()).toBe(0);
       expect(recipient.evmAddress).not.toBeNull();
-      expect(recipient.toSolidityAddress()).toBe(MOCK_EVM_ADDRESS_RAW);
+      expect(recipient.toEvmAddress()).toBe(MOCK_EVM_ADDRESS_RAW);
     });
 
     test('builds account-id recipient via fromString', () => {
@@ -76,7 +76,7 @@ describe('transfer entries - EVM-aware recipient', () => {
       const recipient = tx.addNftTransfer.mock.calls[0][2] as AccountId;
       expect(recipient.num.toNumber()).toBe(0);
       expect(recipient.evmAddress).not.toBeNull();
-      expect(recipient.toSolidityAddress()).toBe(MOCK_EVM_ADDRESS_RAW);
+      expect(recipient.toEvmAddress()).toBe(MOCK_EVM_ADDRESS_RAW);
     });
 
     test('builds account-id recipient via fromString', () => {

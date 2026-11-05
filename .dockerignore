@@ -1,0 +1,11 @@
+node_modules
+dist
+coverage
+.git
+.env
+.env.*
+!.env.test.sample
+.hiero-cli-test
+*.tgz
+*.docx
+junit*.xml
