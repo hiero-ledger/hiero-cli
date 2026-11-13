@@ -1,6 +1,7 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { AccountCreateOutput } from '@/plugins/account/commands/create';
+import type { AccountViewOutput } from '@/plugins/account/commands/view';
 import type { TokenAssociateOutput } from '@/plugins/token/commands/associate';
 import type { TokenCreateNftOutput } from '@/plugins/token/commands/create-nft';
 import type { TokenMintNftOutput } from '@/plugins/token/commands/mint-nft';
@@ -10,12 +11,12 @@ import type { TokenViewOutput } from '@/plugins/token/commands/view';
 import '@/core/utils/json-serialize';
 
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
-import { delay } from '@/__tests__/utils/common-utils';
+import { waitFor } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
-import { accountCreate } from '@/plugins/account';
+import { accountCreate, accountView } from '@/plugins/account';
 import {
   tokenAssociate,
   tokenCreateNft,
@@ -55,7 +56,14 @@ describe('Transfer NFT Integration Tests', () => {
       expect(createSourceAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
       expect(createSourceAccountOutput.network).toBe(network);
 
-      await delay(5000);
+      await waitFor(
+        () =>
+          accountView({
+            args: { account: 'account-nft-transfer-source' },
+            api: coreApi,
+          }),
+        (result) => !!(result.result as AccountViewOutput).accountId,
+      );
 
       const createDestinationAccountArgs: Record<string, unknown> = {
         name: 'account-nft-transfer-destination',
@@ -76,7 +84,14 @@ describe('Transfer NFT Integration Tests', () => {
       expect(createDestinationAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
       expect(createDestinationAccountOutput.network).toBe(network);
 
-      await delay(5000);
+      await waitFor(
+        () =>
+          accountView({
+            args: { account: 'account-nft-transfer-destination' },
+            api: coreApi,
+          }),
+        (result) => !!(result.result as AccountViewOutput).accountId,
+      );
 
       const createNftArgs: Record<string, unknown> = {
         tokenName: 'Test NFT Transfer Collection',
@@ -102,7 +117,14 @@ describe('Transfer NFT Integration Tests', () => {
       expect(createNftOutput.symbol).toBe('TNFTC');
       expect(createNftOutput.supplyType).toBe(SupplyType.FINITE);
 
-      await delay(5000);
+      await waitFor(
+        () =>
+          tokenView({
+            args: { token: createNftOutput.tokenId },
+            api: coreApi,
+          }),
+        (result) => !!(result.result as TokenViewOutput).tokenId,
+      );
 
       const mintNftArgs: Record<string, unknown> = {
         token: createNftOutput.tokenId,
@@ -119,7 +141,17 @@ describe('Transfer NFT Integration Tests', () => {
       expect(mintNftOutput.network).toBe(network);
       expect(mintNftOutput.transactionId).toBeDefined();
 
-      await delay(5000);
+      await waitFor(
+        () =>
+          tokenView({
+            args: {
+              token: createNftOutput.tokenId,
+              serial: mintNftOutput.serialNumber,
+            },
+            api: coreApi,
+          }),
+        (result) => (result.result as TokenViewOutput).nftSerial != null,
+      );
 
       const associateTokenArgs: Record<string, unknown> = {
         token: createNftOutput.tokenId,
@@ -135,8 +167,6 @@ describe('Transfer NFT Integration Tests', () => {
       expect(associateTokenOutput.accountId).toBe(
         createDestinationAccountOutput.accountId,
       );
-
-      await delay(5000);
 
       const viewTokenBeforeTransferArgs: Record<string, unknown> = {
         token: createNftOutput.tokenId,
@@ -184,16 +214,19 @@ describe('Transfer NFT Integration Tests', () => {
       expect(transferNftOutput.network).toBe(network);
       expect(transferNftOutput.transactionId).toBeDefined();
 
-      await delay(5000);
-
-      const viewTokenAfterTransferArgs: Record<string, unknown> = {
-        token: createNftOutput.tokenId,
-        serial: mintNftOutput.serialNumber,
-      };
-      const viewTokenAfterTransferResult = await tokenView({
-        args: viewTokenAfterTransferArgs,
-        api: coreApi,
-      });
+      const viewTokenAfterTransferResult = await waitFor(
+        () =>
+          tokenView({
+            args: {
+              token: createNftOutput.tokenId,
+              serial: mintNftOutput.serialNumber,
+            },
+            api: coreApi,
+          }),
+        (result) =>
+          (result.result as TokenViewOutput).nftSerial?.owner ===
+          createDestinationAccountOutput.accountId,
+      );
       const viewTokenAfterTransferOutput =
         viewTokenAfterTransferResult.result as TokenViewOutput;
       expect(viewTokenAfterTransferOutput.tokenId).toBe(
@@ -208,7 +241,7 @@ describe('Transfer NFT Integration Tests', () => {
       expect(viewTokenAfterTransferOutput.nftSerial?.metadata).toBe(
         'Test NFT Transfer Metadata',
       );
-    }, 120000);
+    }, 60000);
   });
 
   describe('Invalid Transfer NFT Scenarios', () => {
@@ -230,7 +263,14 @@ describe('Transfer NFT Integration Tests', () => {
       expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
       expect(createAccountOutput.network).toBe(network);
 
-      await delay(5000);
+      await waitFor(
+        () =>
+          accountView({
+            args: { account: 'account-nft-not-owned-test' },
+            api: coreApi,
+          }),
+        (result) => !!(result.result as AccountViewOutput).accountId,
+      );
 
       const createNftArgs: Record<string, unknown> = {
         tokenName: 'Test NFT Not Owned',
@@ -248,7 +288,14 @@ describe('Transfer NFT Integration Tests', () => {
       });
       const createNftOutput = createNftResult.result as TokenCreateNftOutput;
 
-      await delay(5000);
+      await waitFor(
+        () =>
+          tokenView({
+            args: { token: createNftOutput.tokenId },
+            api: coreApi,
+          }),
+        (result) => !!(result.result as TokenViewOutput).tokenId,
+      );
 
       const mintNftArgs: Record<string, unknown> = {
         token: createNftOutput.tokenId,
@@ -261,7 +308,17 @@ describe('Transfer NFT Integration Tests', () => {
       });
       const mintNftOutput = mintNftResult.result as TokenMintNftOutput;
 
-      await delay(5000);
+      await waitFor(
+        () =>
+          tokenView({
+            args: {
+              token: createNftOutput.tokenId,
+              serial: mintNftOutput.serialNumber,
+            },
+            api: coreApi,
+          }),
+        (result) => (result.result as TokenViewOutput).nftSerial != null,
+      );
 
       const createAnotherAccountArgs: Record<string, unknown> = {
         name: 'account-nft-wrong-owner',
@@ -274,7 +331,14 @@ describe('Transfer NFT Integration Tests', () => {
         api: coreApi,
       });
 
-      await delay(5000);
+      await waitFor(
+        () =>
+          accountView({
+            args: { account: 'account-nft-wrong-owner' },
+            api: coreApi,
+          }),
+        (result) => !!(result.result as AccountViewOutput).accountId,
+      );
 
       const transferNftArgs: Record<string, unknown> = {
         token: createNftOutput.tokenId,
@@ -288,7 +352,7 @@ describe('Transfer NFT Integration Tests', () => {
           api: coreApi,
         }),
       ).rejects.toThrow('NFT not owned by sender');
-    }, 90000);
+    }, 60000);
 
     it('should fail validation when trying to transfer more than 10 serials', async () => {
       const transferNftArgs: Record<string, unknown> = {

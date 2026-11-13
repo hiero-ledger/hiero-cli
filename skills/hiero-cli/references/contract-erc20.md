@@ -8,7 +8,7 @@ State-changing commands (`transfer`, `transfer-from`, `approve`) are signed by t
 
 ---
 
-### `hcli contract-erc20 name`
+## `hcli contract-erc20 name`
 
 Call `name()` — returns the token name.
 
@@ -18,15 +18,15 @@ Call `name()` — returns the token name.
 
 **Example:**
 
-```
+```bash
 hcli contract-erc20 name --contract myErc20
 ```
 
-**Output:** `{ name: string }`
+**Output:** `{ contractId, contractName, network }`
 
 ---
 
-### `hcli contract-erc20 symbol`
+## `hcli contract-erc20 symbol`
 
 Call `symbol()` — returns the token symbol.
 
@@ -36,15 +36,15 @@ Call `symbol()` — returns the token symbol.
 
 **Example:**
 
-```
+```bash
 hcli contract-erc20 symbol --contract myErc20
 ```
 
-**Output:** `{ symbol: string }`
+**Output:** `{ contractId, contractSymbol, network }`
 
 ---
 
-### `hcli contract-erc20 decimals`
+## `hcli contract-erc20 decimals`
 
 Call `decimals()` — returns the number of decimals.
 
@@ -54,15 +54,15 @@ Call `decimals()` — returns the number of decimals.
 
 **Example:**
 
-```
+```bash
 hcli contract-erc20 decimals --contract myErc20
 ```
 
-**Output:** `{ decimals: number }`
+**Output:** `{ contractId, decimals, network }`
 
 ---
 
-### `hcli contract-erc20 total-supply`
+## `hcli contract-erc20 total-supply`
 
 Call `totalSupply()` — returns total token supply.
 
@@ -72,15 +72,15 @@ Call `totalSupply()` — returns total token supply.
 
 **Example:**
 
-```
+```bash
 hcli contract-erc20 total-supply --contract myErc20
 ```
 
-**Output:** `{ totalSupply: number }`
+**Output:** `{ contractId, totalSupply, network }` (`totalSupply` is an integer string)
 
 ---
 
-### `hcli contract-erc20 balance-of`
+## `hcli contract-erc20 balance-of`
 
 Call `balanceOf(address)` — returns token balance for an account.
 
@@ -91,16 +91,16 @@ Call `balanceOf(address)` — returns token balance for an account.
 
 **Example:**
 
-```
+```bash
 hcli contract-erc20 balance-of --contract myErc20 --account 0.0.12345
 hcli contract-erc20 balance-of --contract myErc20 --account 0xAbCd...
 ```
 
-**Output:** `{ balance: number }`
+**Output:** `{ contractId, account, balance, network }` (`balance` is an integer string, `account` is the EVM address)
 
 ---
 
-### `hcli contract-erc20 allowance`
+## `hcli contract-erc20 allowance`
 
 Call `allowance(owner, spender)` — returns approved spending amount.
 
@@ -112,15 +112,15 @@ Call `allowance(owner, spender)` — returns approved spending amount.
 
 **Example:**
 
-```
+```bash
 hcli contract-erc20 allowance --contract myErc20 --owner alice --spender bob
 ```
 
-**Output:** `{ allowance: number }`
+**Output:** `{ contractId, owner, spender, allowance, network }` (`allowance` is an integer string; `owner`/`spender` are EVM addresses)
 
 ---
 
-### `hcli contract-erc20 transfer`
+## `hcli contract-erc20 transfer`
 
 Call `transfer(to, value)` — transfer tokens to an address.
 
@@ -133,15 +133,15 @@ Call `transfer(to, value)` — transfer tokens to an address.
 
 **Example:**
 
-```
+```bash
 hcli contract-erc20 transfer --contract myErc20 --to alice --value 100
 ```
 
-**Output:** `{ transactionId, to, value }`
+**Output:** `{ contractId, network, transactionId }`
 
 ---
 
-### `hcli contract-erc20 transfer-from`
+## `hcli contract-erc20 transfer-from`
 
 Call `transferFrom(from, to, value)` — transfer tokens on behalf of `from` (requires prior approval).
 
@@ -155,15 +155,15 @@ Call `transferFrom(from, to, value)` — transfer tokens on behalf of `from` (re
 
 **Example:**
 
-```
+```bash
 hcli contract-erc20 transfer-from --contract myErc20 --from alice --to bob --value 50
 ```
 
-**Output:** `{ transactionId, from, to, value }`
+**Output:** `{ contractId, network, transactionId }`
 
 ---
 
-### `hcli contract-erc20 approve`
+## `hcli contract-erc20 approve`
 
 Call `approve(spender, value)` — approve a spender to spend tokens.
 
@@ -176,8 +176,8 @@ Call `approve(spender, value)` — approve a spender to spend tokens.
 
 **Example:**
 
-```
+```bash
 hcli contract-erc20 approve --contract myErc20 --spender bob --value 200
 ```
 
-**Output:** `{ transactionId, spender, value }`
+**Output:** `{ contractId, network, transactionId }`

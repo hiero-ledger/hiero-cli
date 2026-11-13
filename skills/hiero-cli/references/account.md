@@ -4,14 +4,14 @@ Manage Hedera accounts: create, import, view balances, list, view, update, delet
 
 ---
 
-### `hcli account create` [batchify] [scheduled]
+## `hcli account create` `[batchify]` `[scheduled]`
 
 Create a new Hedera account with specified balance and settings.
 
 | Option                | Short | Type   | Required | Default        | Description                                                                                               |
 | --------------------- | ----- | ------ | -------- | -------------- | --------------------------------------------------------------------------------------------------------- |
 | `--balance`           | `-b`  | string | **yes**  | —              | Initial HBAR balance. Default: display units. Add `"t"` for base units.                                   |
-| `--auto-associations` | `-a`  | number | no       | `0`            | Max number of automatic token associations allowed                                                        |
+| `--auto-associations` | `-a`  | number | no       | `0`            | Max number of automatic token associations allowed (0-5000)                                               |
 | `--name`              | `-n`  | string | no       | —              | Alias for the created account                                                                             |
 | `--key-manager`       | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                                                 |
 | `--key-type`          | `-t`  | string | no       | `ecdsa`        | Key type: `ecdsa` or `ed25519`. Mutually exclusive with `--key`                                           |
@@ -21,39 +21,39 @@ Create a new Hedera account with specified balance and settings.
 
 **Example:**
 
-```
+```bash
 hcli account create --balance 10 --name myAccount --key-type ecdsa
 hcli account create --balance 10 --batch myBatch
 hcli account create --balance 10 --scheduled mySchedule
 ```
 
-**Output:** `{ accountId, publicKey, privateKey, keyRef, name, balance }`
+**Output:** `{ accountId, name?, type, network, transactionId, evmAddress, publicKey }`
 
 ---
 
-### `hcli account balance`
+## `hcli account balance`
 
 Retrieve the balance for an account ID or alias.
 
-| Option        | Short | Type    | Required | Default | Description                                                 |
-| ------------- | ----- | ------- | -------- | ------- | ----------------------------------------------------------- |
-| `--account`   | `-a`  | string  | **yes**  | —       | Account ID (e.g. `0.0.123`) or alias                        |
-| `--hbar-only` | `-H`  | boolean | no       | `false` | Show only HBAR balance                                      |
-| `--token`     | `-t`  | string  | no       | —       | Filter by token ID or token name                            |
-| `--raw`       | `-r`  | boolean | no       | `false` | Display balances in raw units (tinybars / base token units) |
+| Option        | Short | Type    | Required | Default | Description                                                             |
+| ------------- | ----- | ------- | -------- | ------- | ----------------------------------------------------------------------- |
+| `--account`   | `-a`  | string  | **yes**  | —       | Account ID (e.g. `0.0.123`), EVM address, or alias                      |
+| `--hbar-only` | `-H`  | boolean | no       | `false` | Show only HBAR balance                                                  |
+| `--token`     | `-t`  | string  | no       | —       | Filter by token ID or token name. Mutually exclusive with `--hbar-only` |
+| `--raw`       | `-r`  | boolean | no       | `false` | Display balances in raw units (tinybars / base token units)             |
 
 **Example:**
 
-```
+```bash
 hcli account balance --account myAccount
 hcli account balance --account 0.0.123456 --hbar-only
 ```
 
-**Output:** `{ accountId, hbarBalance, tokenBalances[] }`
+**Output:** `{ accountId, network, hbarBalance?, hbarBalanceDisplay?, hbarOnly?, tokenOnly?, raw?, tokenBalances?[], nftBalances? }` (`tokenBalances[]`: `{ tokenId, name?, symbol?, alias?, balance, balanceDisplay?, decimals? }`; `nftBalances`: `{ collections[], totalCount, truncated }`)
 
 ---
 
-### `hcli account list`
+## `hcli account list`
 
 List all accounts stored in the local address book.
 
@@ -63,16 +63,16 @@ List all accounts stored in the local address book.
 
 **Example:**
 
-```
+```bash
 hcli account list
 hcli account list --private
 ```
 
-**Output:** Array of `{ accountId, name, publicKey, keyRef? }`
+**Output:** `{ accounts[], totalCount }` where each account is `{ name?, accountId, type, network, evmAddress, origin, keyRefId? }` (`keyRefId` only with `--private`)
 
 ---
 
-### `hcli account import`
+## `hcli account import`
 
 Import an existing Hedera account into local state.
 
@@ -84,15 +84,15 @@ Import an existing Hedera account into local state.
 
 **Example:**
 
-```
+```bash
 hcli account import --key "0.0.123456:302e020100300506..." --name alice
 ```
 
-**Output:** `{ accountId, name, keyRef }`
+**Output:** `{ accountId, name?, type, network, balance, evmAddress }`
 
 ---
 
-### `hcli account view`
+## `hcli account view`
 
 View detailed information about an account.
 
@@ -102,16 +102,16 @@ View detailed information about an account.
 
 **Example:**
 
-```
+```bash
 hcli account view --account alice
 hcli account view --account 0.0.123456
 ```
 
-**Output:** `{ accountId, name, balance, publicKey, keyType, autoAssociations, ... }`
+**Output:** `{ accountId, balance, evmAddress?, publicKey?, balanceTimestamp, network }`
 
 ---
 
-### `hcli account delete` [batchify]
+## `hcli account delete` `[batchify]`
 
 Delete a Hedera account on-chain and remove it from local state, or remove from local state only.
 
@@ -128,17 +128,17 @@ Delete a Hedera account on-chain and remove it from local state, or remove from 
 
 **Example:**
 
-```
+```bash
 hcli account delete --account alice --transfer-id bob --confirm
 hcli account delete --account 0.0.123 --state-only --confirm
 hcli account delete --account alice --transfer-id bob --batch myBatch
 ```
 
-**Output:** `{ accountId, deleted, transactionId?, network, stateOnly }`
+**Output:** `{ deletedAccount: { name?, accountId }, removedAliases?[], network, transactionId?, stateOnly? }`
 
 ---
 
-### `hcli account clear`
+## `hcli account clear`
 
 Remove **all** accounts from the local address book.
 
@@ -146,15 +146,15 @@ Remove **all** accounts from the local address book.
 
 **Example:**
 
-```
+```bash
 hcli account clear --confirm
 ```
 
-**Output:** `{ cleared: true }`
+**Output:** `{ clearedCount }`
 
 ---
 
-### `hcli account update` [batchify] [scheduled]
+## `hcli account update` `[batchify]` `[scheduled]`
 
 Update an existing Hedera account's properties on-chain.
 
@@ -163,19 +163,21 @@ Update an existing Hedera account's properties on-chain.
 | `--account`                     | `-a`  | string | **yes**  | —              | Account ID or alias to update                                                                      |
 | `--key`                         | `-K`  | string | no       | —              | New key for the account (private/public key, key reference, or alias). Requires private key in KMS |
 | `--key-manager`                 | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                                          |
-| `--memo`                        | `-m`  | string | no       | —              | Account memo (max 100 chars). Set to `"null"` to clear                                             |
-| `--max-auto-associations`       |       | number | no       | —              | Max automatic token associations (`-1` = unlimited, `0` = disable)                                 |
+| `--memo`                        | `-m`  | string | no       | —              | Account memo (max 100 chars). Set to `"null"` or `""` to clear                                     |
+| `--max-auto-associations`       |       | number | no       | —              | Max automatic token associations (`-1` = unlimited, `0` = disable, max 5000)                       |
 | `--staked-account-id`           |       | string | no       | —              | Account ID to stake to. Set to `"null"` to clear                                                   |
 | `--staked-node-id`              |       | number | no       | —              | Node ID to stake to. Set to `"null"` to clear                                                      |
 | `--decline-staking-reward`      |       | flag   | no       | —              | Decline staking rewards (presence-only flag, no value)                                             |
-| `--auto-renew-period`           |       | number | no       | —              | Auto-renew period in seconds                                                                       |
+| `--auto-renew-period`           |       | number | no       | —              | Auto-renew period in seconds (min 1)                                                               |
 | `--receiver-signature-required` |       | flag   | no       | —              | Require receiver signature for incoming transfers (presence-only flag, no value)                   |
 | `--batch`                       | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately                                          |
 | `--scheduled`                   | `-X`  | string | no       | —              | Wrap as a scheduled transaction. Value is the local schedule record name                           |
 
+At least one update field is required. `--staked-account-id` and `--staked-node-id` are mutually exclusive.
+
 **Example:**
 
-```
+```bash
 hcli account update --account alice --memo "updated memo"
 hcli account update --account 0.0.123 --max-auto-associations 10
 hcli account update --account alice --staked-node-id 3 --decline-staking-reward

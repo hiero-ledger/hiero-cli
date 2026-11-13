@@ -6,9 +6,9 @@ Complete guide to creating, developing, and testing plugins for the Hiero CLI.
 
 The Hiero CLI uses a plugin-based architecture that allows developers to extend functionality without modifying the core codebase. This guide covers everything you need to know to create plugins and highlights where to find deeper reference material:
 
-- [`docs/architecture.md`](docs/architecture.md) – system architecture
-- [`docs/core-api.md`](docs/core-api.md) – full Core API reference
-- [`docs/output-schemas-guide.md`](docs/output-schemas-guide.md) – Output schemas and templates
+- [`docs/architecture.md`](./architecture.md) – system architecture
+- [`docs/core-api.md`](./core-api.md) – full Core API reference
+- [`docs/output-schemas-guide.md`](./output-schemas-guide.md) – Output schemas and templates
 
 ## 🏗️ Plugin Architecture
 
@@ -22,7 +22,7 @@ The Hiero CLI uses a plugin-based architecture that allows developers to extend 
 
 ### Plugin Structure
 
-```
+```text
 my-plugin/
 ├── manifest.ts              # Plugin manifest (required)
 ├── commands/                # Command handlers
@@ -275,7 +275,7 @@ export interface CreateItemParams {
 
 ## 🛠️ Core API Services
 
-Plugins interact with the Hedera network exclusively through the Core API. Command handlers receive an `api` instance via dependency injection, so every capability is available without manual wiring:
+Plugins interact with Hiero networks exclusively through the Core API. Command handlers receive an `api` instance via dependency injection, so every capability is available without manual wiring:
 
 - account and token operations
 - topic management
@@ -291,7 +291,7 @@ Plugins interact with the Hedera network exclusively through the Core API. Comma
 - **How to use**: extract `api` from `CommandHandlerArgs` and call the service you need (e.g. `api.token.createTokenAssociationTransaction`, `api.mirror.getAccount`, `api.output.handleOutput`).
 - **Best practice**: keep service usage close to business logic; avoid recreating SDK clients manually—Core API already manages credentials, network selection, and output handling.
 
-For a complete reference (interfaces, return types, advanced usage patterns), see [`docs/core-api.md`](docs/core-api.md).
+For a complete reference (interfaces, return types, advanced usage patterns), see [`docs/core-api.md`](./core-api.md).
 
 ## 🖨️ Output Formatting Pipeline
 
@@ -409,8 +409,8 @@ Ensure your plugins comply with the [ADR-007 structured error handling contract]
 
 Create a proper npm package structure:
 
-```
-my-hedera-plugin/
+```text
+my-hiero-plugin/
 ├── package.json
 ├── src/
 │   ├── manifest.ts
@@ -441,11 +441,11 @@ my-hedera-plugin/
     "@hiero-ledger/hiero-cli": "^1.0.0"
   },
   "devDependencies": {
-    "@types/node": "^18.0.0",
+    "@types/node": "^24.19.0",
     "typescript": "^5.0.0",
     "jest": "^29.0.0"
   },
-  "keywords": ["hedera", "cli", "plugin", "blockchain"]
+  "keywords": ["hedera", "hiero", "cli", "plugin", "blockchain"]
 }
 ```
 
@@ -516,7 +516,7 @@ For more complex state operations (list, getKeys, etc.), use `StateService` meth
 
 ### 2. Reusing Core Services
 
-Handlers receive `api` (CoreApi) with all Hedera services. Use `api.account`, `api.token`, `api.mirror`, `api.network`, etc. instead of creating SDK clients manually. For contract operations, use `api.contractCompiler`, `api.contractTransaction`, `api.contractVerifier`, and `api.contractQuery`.
+Handlers receive `api` (CoreApi) with all Hiero services. Use `api.account`, `api.token`, `api.mirror`, `api.network`, etc. instead of creating SDK clients manually. For contract operations, use `api.contractCompiler`, `api.contractTransaction`, `api.contractVerifier`, and `api.contractQuery`.
 
 ### 3. External Plugin Support
 
@@ -718,8 +718,8 @@ Get-Content .hiero-cli/state/my-plugin-data-storage.json | ConvertFrom-Json | Co
 
 ## 📖 Related Documentation
 
-- [Architecture Overview](docs/architecture.md)
-- [Core API Reference](docs/core-api.md)
+- [Architecture Overview](./architecture.md)
+- [Core API Reference](./core-api.md)
 - [Contributing Guide](../CONTRIBUTING.md)
-- [Architecture Decision Records](docs/adr/) - ADRs for interested developers
+- [Architecture Decision Records](./adr/) - ADRs for interested developers
 - Plugin-specific READMEs: `src/plugins/<plugin-name>/README.md`

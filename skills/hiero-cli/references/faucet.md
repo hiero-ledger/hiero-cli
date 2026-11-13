@@ -6,11 +6,11 @@ Request HBAR from the Hedera Portal faucet on testnet or previewnet.
 
 A Hedera Portal Personal Access Token (PAT) must be configured:
 
-```
+```bash
 hcli config set --portal_pat <your-token>
 ```
 
-To obtain a PAT: https://docs.hedera.com/native/tutorials/getting-started/create-api-key
+To obtain a PAT: <https://docs.hedera.com/native/tutorials/getting-started/create-api-key>
 
 ## Constraints
 
@@ -28,15 +28,15 @@ Send HBAR to an account on testnet or previewnet.
 | Option        | Short | Type   | Required | Description                                                        |
 | ------------- | ----- | ------ | -------- | ------------------------------------------------------------------ |
 | `--recipient` | `-r`  | string | **yes**  | Account alias, Hedera account ID (`0.0.x`), or EVM address (`0x…`) |
-| `--amount`    | `-a`  | number | no       | HBAR to request (1–100, default: 100)                              |
+| `--amount`    | `-a`  | number | no       | HBAR to request (integer 1–100, default: 100)                      |
 
 **Examples:**
 
-```
+```bash
 hcli faucet request --recipient myAccount
 hcli faucet request --recipient 0.0.12345 --amount 50
 hcli faucet request -r 0.0.12345 -a 50
 hcli faucet request --recipient 0xabc...def --amount 10 -N previewnet
 ```
 
-**Output:** `{ recipient, amount, transactionId, network, quotaUsed, quotaRemaining }`
+**Output:** (`recipient` is the resolved account ID or EVM address) `{ recipient, amount, transactionId, network, quotaUsed, quotaRemaining }`

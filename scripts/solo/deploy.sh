@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Deploys a single-node Solo network into a kind cluster. Same command used by
 # CI (.github/workflows/zxc-compile-code.yaml) so local and CI stay aligned.
-# Requires: kind, kubectl, and solo (run `pnpm test:solo:install` first).
+# Requires: kind, kubectl, and solo (run `npm run solo:install` first).
 
 export SOLO_CLUSTER_NAME=solo
 export SOLO_NAMESPACE=solo

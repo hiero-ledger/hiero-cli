@@ -5,6 +5,7 @@ import type { AccountCreateOutput } from '@/plugins/account/commands/create';
 import type { AccountViewOutput } from '@/plugins/account/commands/view';
 import type { TokenCreateFtOutput } from '@/plugins/token/commands/create-ft';
 import type { TokenMintFtOutput } from '@/plugins/token/commands/mint-ft';
+import type { TokenViewOutput } from '@/plugins/token/commands/view';
 
 import '@/core/utils/json-serialize';
 
@@ -15,7 +16,7 @@ import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import { accountBalance, accountCreate, accountView } from '@/plugins/account';
-import { tokenCreateFt, tokenMintFt } from '@/plugins/token';
+import { tokenCreateFt, tokenMintFt, tokenView } from '@/plugins/token';
 
 describe('Mint FT Integration Tests', () => {
   let coreApi: CoreApi;
@@ -80,6 +81,14 @@ describe('Mint FT Integration Tests', () => {
     expect(createTokenOutput.treasuryId).toBe(createAccountOutput.accountId);
     expect(createTokenOutput.symbol).toBe('TTM');
     expect(createTokenOutput.supplyType).toBe(SupplyType.INFINITE);
+
+    // mint-ft reads token info from the mirror, which must have indexed the
+    // token first (NotFoundError otherwise).
+    await waitFor(
+      () =>
+        tokenView({ args: { token: createTokenOutput.tokenId }, api: coreApi }),
+      (result) => !!(result.result as TokenViewOutput).tokenId,
+    );
 
     const accountBalanceBeforeMintArgs: Record<string, unknown> = {
       account: 'account-mint-ft',

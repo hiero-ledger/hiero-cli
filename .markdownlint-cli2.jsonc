@@ -1,0 +1,11 @@
+{
+  "globs": ["skills/**/*.md"],
+  "config": {
+    "default": true,
+    // MD013 (line length) is off: the skill references are mostly wide tables
+    // that cannot be wrapped, and Prettier does not wrap markdown prose.
+    "MD013": false,
+    // Flags bare [text] that VS Code reports as a missing link definition.
+    "MD052": { "shortcut_syntax": true }
+  }
+}

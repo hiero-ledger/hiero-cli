@@ -104,6 +104,7 @@ describe('account plugin - create command (ADR-003)', () => {
         network: SupportedNetwork.TESTNET,
         keyRefId: 'kr_test123',
         evmAddress: ACCOUNT_ID_EVM_ADDRESS_9999,
+        origin: 'created',
       }),
     );
 

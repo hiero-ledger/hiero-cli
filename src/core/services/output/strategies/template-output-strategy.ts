@@ -3,7 +3,7 @@
  * Formats output data using Handlebars templates with the strategy pattern
  */
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { HashscanEntityType } from '@/core/utils/hashscan-link';
+import type { HashscanEntityType } from '@/core/utils/explorer-link';
 import type {
   FormatStrategyOptions,
   OutputFormatterStrategy,
@@ -12,7 +12,7 @@ import type {
 import * as Handlebars from 'handlebars';
 
 import { InternalError } from '@/core/errors';
-import { createHashscanLink } from '@/core/utils/hashscan-link';
+import { createHashscanLink } from '@/core/utils/explorer-link';
 import { isStringifiable } from '@/core/utils/is-stringifiable';
 
 export class TemplateOutputStrategy implements OutputFormatterStrategy {

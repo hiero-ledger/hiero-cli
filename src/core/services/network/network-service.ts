@@ -13,11 +13,11 @@ import type {
 } from './network-service.interface';
 
 import { ConfigurationError } from '@/core/errors';
-import { HASHSCAN_BASE_URL } from '@/core/shared/constants';
 import {
   NetworkChainMap,
   type SupportedNetwork,
 } from '@/core/types/shared.types';
+import { getExplorerUrl } from '@/core/utils/explorer-link';
 
 import {
   DEFAULT_LOCALNET_NODE,
@@ -92,7 +92,7 @@ export class NetworkServiceImpl implements NetworkService {
       rpcUrl: config.rpcUrl,
       mirrorNodeUrl: config.mirrorNodeUrl,
       chainId: `0x${chainId.toString(16)}`,
-      explorerUrl: `${HASHSCAN_BASE_URL}${network}`,
+      explorerUrl: getExplorerUrl(network as SupportedNetwork),
       isTestnet: network !== 'mainnet',
     };
   }

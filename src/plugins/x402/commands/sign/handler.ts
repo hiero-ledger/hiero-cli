@@ -75,6 +75,13 @@ export class X402SignCommand implements Command {
       'hedera:*',
       new ExactHederaScheme(kmsSigner.signer),
     );
+    // @x402/core >= 2.27 enforces client spend controls while creating the
+    // payload: by default only assets the scheme reports as "default" (USDC
+    // for Hedera, HBAR is not one) are accepted, capped at $1. This command
+    // signs exactly the requirement the user selected from the challenge and
+    // performs no client-side preflight (the facilitator validates at
+    // settlement), so the built-in controls are disabled here.
+    client.setSpendControls(false);
     const scoped: PaymentRequired = {
       ...paymentRequired,
       accepts: [requirement],

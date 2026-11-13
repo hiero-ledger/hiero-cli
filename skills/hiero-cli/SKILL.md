@@ -1,18 +1,24 @@
 ---
 name: hiero-cli
-description: Use when user wants to interact with Hedera blockchain: create/transfer
-  tokens, manage NFTs, deploy contracts, manage topics, transfer HBAR, configure
-  networks. Provides full spec for hcli CLI tool. Trigger keywords: hedera, hiero,
-  hbar, token, nft, contract, topic, hcli, ledger
+description: >-
+  Use when user wants to interact with Hedera blockchain: create/transfer
+  tokens, manage NFTs, deploy contracts, manage topics, transfer HBAR, sign x402
+  payment challenges, configure networks. Also use when an HTTP request returns 402
+  with a PAYMENT-REQUIRED header for the Hedera x402 scheme (read references/x402.md). Provides full spec for hcli CLI tool. Trigger keywords: hedera,
+  hiero, hbar, token, nft, contract, topic, x402, 402, payment-required, hcli, ledger
+metadata:
+  hcli-version: 1.3.0
 ---
 
 # hiero-cli (hcli)
+
+> **Documented version: hcli `1.3.0`.** Before relying on this spec, run `hcli --version`. If the installed version differs, warn the user that flags, options and output shapes may not match, and prefer `hcli <command> --help` over this document.
 
 `hcli` is a command-line tool for interacting with the Hedera blockchain — managing accounts, tokens (FT/NFT), smart contracts, consensus topics, and network configuration.
 
 ## Binary syntax
 
-```
+```bash
 hcli <plugin> <command> [options]
 ```
 
@@ -45,21 +51,22 @@ Keys and signers accept multiple formats:
 
 ## Local state storage
 
-State is persisted in `~/.hiero-cli/state/` as JSON files, one per plugin namespace:
+State is persisted in `~/.hiero-cli/state/` as JSON files, one per namespace:
 
-| Plugin              | File                                                                 |
-| ------------------- | -------------------------------------------------------------------- |
-| `account`           | `account-accounts-storage.json`                                      |
-| `token`             | `token-tokens-storage.json`                                          |
-| `topic`             | `topic-topics-storage.json`                                          |
-| `batch`             | `batch-batches-storage.json`                                         |
-| `swap`              | `swap-storage.json`                                                  |
-| `contract`          | `contract-contracts-storage.json`                                    |
-| `schedule`          | `schedule-transactions-storage.json`                                 |
-| `network`           | `network-config-storage.json`                                        |
-| `config`            | `config-storage.json`                                                |
-| `plugin-management` | `plugin-management-storage.json`                                     |
-| `credentials` (KMS) | `kms-credentials-storage.json`, `kms-secrets-encrypted-storage.json` |
+| Plugin              | File                                                                                                   |
+| ------------------- | ------------------------------------------------------------------------------------------------------ |
+| `account`           | `account-accounts-storage.json`                                                                        |
+| `token`             | `token-tokens-storage.json`                                                                            |
+| `topic`             | `topic-topics-storage.json`                                                                            |
+| `batch`             | `batch-batches-storage.json`                                                                           |
+| `swap`              | `swap-storage.json`                                                                                    |
+| `contract`          | `contract-contracts-storage.json`                                                                      |
+| `schedule`          | `schedule-transactions-storage.json`                                                                   |
+| `network`           | `network-config-storage.json`                                                                          |
+| `config`            | `config-storage.json`                                                                                  |
+| `plugin-management` | `plugin-management-storage.json`                                                                       |
+| `credentials` (KMS) | `kms-credentials-storage.json`, `kms-secrets-local-storage.json`, `kms-secrets-encrypted-storage.json` |
+| aliases (core)      | `aliases-storage.json`                                                                                 |
 
 ## Amount notation
 
@@ -85,6 +92,7 @@ State is persisted in `~/.hiero-cli/state/` as JSON files, one per plugin namesp
 | `swap`              | Multi-party asset exchange | create swap, add HBAR/FT/NFT transfers, view, list, execute, delete                                                                                                                                                                                                                     |
 | `eip712`            | EIP-712 typed data signing | `hash` compute digest, `sign-ecdsa` / `sign-ed25519` sign payload (accepts pre-computed hash or domain+types+message), `verify-ecdsa` recover signer EVM address, `verify-ed25519` verify Ed25519 signature against a public key                                                        |
 | `faucet`            | Testnet/previewnet faucet  | `request` — disburse up to 100 HBAR to any account ID, EVM address, or alias. Requires Portal PAT configured via `hcli config set --portal_pat`                                                                                                                                         |
+| `x402`              | x402 payment signing       | `sign` a `PAYMENT-REQUIRED` challenge into a `PAYMENT-SIGNATURE` header via KMS; payer key never exposed, facilitator submits                                                                                                                                                           |
 | `plugin-management` | Plugin lifecycle           | add, remove, enable, disable, list, reset, info                                                                                                                                                                                                                                         |
 
 ## Agent instruction
@@ -99,20 +107,24 @@ Example: to batch `hcli token mint-ft`, read both `references/batch.md` and `ref
 
 **When working with scheduled transactions, read `references/schedule.md` AND the reference for the command being scheduled.**
 
-Only commands marked **[scheduled]** in their reference support `--scheduled <name>` / `-X`.
+Only commands marked **`[scheduled]`** in their reference support `--scheduled <name>` / `-X`.
 
 Example: to schedule `hcli token burn-ft`, read both `references/schedule.md` and `references/token.md`.
+
+## x402 paid endpoints
+
+If fetching a URL returns HTTP `402` with a `PAYMENT-REQUIRED` header, the endpoint is x402-gated. Inspect the header payload: if its `accepts` lists a `hedera:mainnet` / `hedera:testnet` `exact` requirement, **read `references/x402.md`** and follow the flow there. The agent makes the HTTP requests itself; `hcli x402 sign` only produces the `PAYMENT-SIGNATURE` value. If the challenge is for a non-Hedera scheme, this CLI cannot sign it.
 
 ## hcli not found / not installed
 
 If any `hcli` command fails with a "command not found" or similar error, tell the user:
 
 > `hcli` is not installed or not available in PATH.
-> Docs & quick start: https://www.npmjs.com/package/@hiero-ledger/hiero-cli#quick-start
+> Docs & quick start: <https://www.npmjs.com/package/@hiero-ledger/hiero-cli#quick-start>
 >
 > Install with:
 >
-> ```
+> ```bash
 > npm install -g @hiero-ledger/hiero-cli
 > ```
 >

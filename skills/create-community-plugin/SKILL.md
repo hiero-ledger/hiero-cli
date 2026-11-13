@@ -1,10 +1,21 @@
+---
+name: create-community-plugin
+description:
+  Use when the user wants to scaffold a standalone TypeScript community
+  plugin project for hiero-cli (hcli), registered via hcli plugin-management add.
+metadata:
+  hcli-version: 1.3.0
+---
+
 # create-community-plugin skill
+
+> **Documented version: hcli `1.3.0`.** The rules and templates below target this hiero-cli version. Before generating, compare it with the hiero-cli version the user will depend on (see Phase 1); if they differ, warn the user that the generated project may not be compatible.
 
 Scaffold a standalone TypeScript project that exports one or more plugins for hiero-cli, registered via `hcli plugin-management add -p '<manifest-path>'`.
 
 ## Setup
 
-Before doing anything else, read the full contents of `.claude/skills/create-community-plugin/references/RULES.md`. It contains project structure rules, config file templates, naming conventions, and code generation standards. Apply them silently — do not narrate rule application. Only surface a rule if the user's requirements conflict with it.
+Before doing anything else, read the full contents of `references/RULES.md`, located next to this `SKILL.md` (in the hiero-cli repository: `skills/create-community-plugin/references/RULES.md`; if the skill is installed elsewhere, e.g. under `.claude/skills/create-community-plugin/`, use the copy beside this file). It contains project structure rules, config file templates, naming conventions, and code generation standards. Apply them silently — do not narrate rule application. Only surface a rule if the user's requirements conflict with it.
 
 ---
 
@@ -67,7 +78,7 @@ Ask questions one at a time. The goal is to gather enough information to generat
 
 Before generating anything, present a summary:
 
-```
+```text
 Project: {name}
 Directory: {absolute-path}
 hiero-cli: {npm version | file:/absolute/path.tgz}
@@ -104,10 +115,10 @@ Generate files in this order:
 
 1. Create the project directory
 2. Run `git init` inside it; create `.gitignore`
-3. `package.json` — use the template from RULES.md §12, substituting `{project-name}`, `{description}`, and the hiero-cli dependency value; cross-check all `devDependencies` versions against `hiero-ledger/hiero-cli` `package.json`
+3. `package.json` — use the template from RULES.md §12, substituting `{project-name}`, `{description}`, and the hiero-cli dependency value; pin every version exactly (no `^`/`~`) and cross-check all `dependencies`/`devDependencies` versions against `hiero-ledger/hiero-cli` `package.json`
 4. `tsconfig.base.json`, `tsconfig.json`, `tsconfig.test.json` — copy verbatim from `hiero-ledger/hiero-cli` (see RULES.md §12)
 5. `jest.config.js`, `jest.unit.config.js` — copy verbatim from `hiero-ledger/hiero-cli`
-6. `eslint.config.js` — copy verbatim from `hiero-ledger/hiero-cli`
+6. `eslint.config.js`, `.prettierrc`, `.prettierignore` — copy verbatim from `hiero-ledger/hiero-cli`
 7. `README.md` — project name, one-line description, and the ready-to-run `hcli plugin-management add` command
 
 ### 4b. Plugin files
@@ -133,10 +144,12 @@ Apply all rules from RULES.md silently. If a user requirement conflicts with a r
 
 Run sequentially from inside the project directory:
 
-```
+```bash
 npm install
 npm run build
 ```
+
+Node >=24.19.0 is required (same as hiero-cli). `npm install` is used because the freshly generated project has no lockfile yet (the `install:safe` guard of the hiero-cli repo itself is not part of the generated project).
 
 If either command fails:
 
@@ -153,7 +166,7 @@ Do not declare success until both commands complete cleanly.
 
 Output a short summary:
 
-```
+```text
 ✅ Plugin project scaffolded.
 
 Project: {absolute-path}

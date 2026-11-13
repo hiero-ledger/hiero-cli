@@ -6,7 +6,7 @@ Manage CLI configuration options: list all settings, get or set individual value
 
 | Option                        | Type    | Default    | Allowed values                                             | Description                                                                                                                     |
 | ----------------------------- | ------- | ---------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `ed25519_support_enabled`     | boolean | `false`    | `true`, `false`                                            | Enable Ed25519 key support                                                                                                      |
+| `ed25519_support`             | boolean | `false`    | `true`, `false`                                            | Enable Ed25519 key support                                                                                                      |
 | `log_level`                   | enum    | `silent`   | `silent`, `error`, `warn`, `info`, `debug`                 | CLI logging verbosity                                                                                                           |
 | `default_key_manager`         | enum    | `local`    | `local`, `local_encrypted`                                 | Default key manager used when `--key-manager` is omitted                                                                        |
 | `skip_confirmations`          | boolean | `false`    | `true`, `false`                                            | Skip all confirmation prompts globally                                                                                          |
@@ -21,7 +21,7 @@ List all configuration options with their current values. No options.
 
 **Example:**
 
-```
+```bash
 hcli config list
 ```
 
@@ -39,7 +39,7 @@ Get the value of a single configuration option.
 
 **Example:**
 
-```
+```bash
 hcli config get --option default_key_manager
 ```
 
@@ -51,26 +51,26 @@ hcli config get --option default_key_manager
 
 Set the value of a configuration option. Pass exactly one named option flag per invocation.
 
-| Option                          | Type   | Required | Allowed values                                             |
-| ------------------------------- | ------ | -------- | ---------------------------------------------------------- |
-| `--default_key_manager`         | string | one of   | `local`, `local_encrypted`                                 |
-| `--ed25519_support_enabled`     | string | one of   | `true`, `false`                                            |
-| `--log_level`                   | string | one of   | `silent`, `error`, `warn`, `info`, `debug`                 |
-| `--skip_confirmations`          | string | one of   | `true`, `false`                                            |
-| `--portal_pat` / `-p`           | string | one of   | any string                                                 |
-| `--default_max_transaction_fee` | string | one of   | HBAR (e.g. `20`) or tinybars (`200000000t`); `0` clears it |
+| Option                                 | Type   | Required | Allowed values                                             |
+| -------------------------------------- | ------ | -------- | ---------------------------------------------------------- |
+| `--default_key_manager` / `-k`         | string | one of   | `local`, `local_encrypted`                                 |
+| `--ed25519_support` / `-e`             | string | one of   | `true`, `false`                                            |
+| `--log_level` / `-l`                   | string | one of   | `silent`, `error`, `warn`, `info`, `debug`                 |
+| `--skip_confirmations` / `-c`          | string | one of   | `true`, `false`                                            |
+| `--portal_pat` / `-p`                  | string | one of   | any string                                                 |
+| `--default_max_transaction_fee` / `-f` | string | one of   | HBAR (e.g. `20`) or tinybars (`200000000t`); `0` clears it |
 
 **Example:**
 
-```
+```bash
 hcli config set --default_key_manager local_encrypted
 hcli config set --skip_confirmations true
 hcli config set --log_level debug
-hcli config set --ed25519_support_enabled false
+hcli config set --ed25519_support false
 hcli config set --portal_pat <your-hedera-portal-pat>
 hcli config set --default_max_transaction_fee 20
 hcli config set --default_max_transaction_fee 200000000t
 hcli config set --default_max_transaction_fee 0   # clears the ceiling
 ```
 
-**Output:** `{ name, previousValue, newValue }`
+**Output:** `{ name, type, previousValue?, newValue }`

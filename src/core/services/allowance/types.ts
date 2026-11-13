@@ -13,5 +13,4 @@ export interface NftAllowanceDeleteAllSerialsParams {
 }
 
 export type NftAllowanceDeleteParams =
-  | NftAllowanceDeleteSpecificParams
-  | NftAllowanceDeleteAllSerialsParams;
+  NftAllowanceDeleteSpecificParams | NftAllowanceDeleteAllSerialsParams;

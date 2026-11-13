@@ -5,5 +5,4 @@ module.exports = {
   testMatch: ['**/__tests__/unit/**/*.test.ts'],
   testPathIgnorePatterns: [...(base.testPathIgnorePatterns || [])],
   maxWorkers: '75%',
-  forceExit: true,
 };

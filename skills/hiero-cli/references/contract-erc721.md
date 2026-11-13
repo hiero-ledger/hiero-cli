@@ -6,7 +6,7 @@ State-changing commands (`approve`, `set-approval-for-all`, `safe-transfer-from`
 
 ---
 
-### `hcli contract-erc721 name`
+## `hcli contract-erc721 name`
 
 Call `name()` — returns the NFT collection name.
 
@@ -16,15 +16,15 @@ Call `name()` — returns the NFT collection name.
 
 **Example:**
 
-```
+```bash
 hcli contract-erc721 name --contract myNft
 ```
 
-**Output:** `{ name: string }`
+**Output:** `{ contractId, contractName, network }`
 
 ---
 
-### `hcli contract-erc721 symbol`
+## `hcli contract-erc721 symbol`
 
 Call `symbol()` — returns the token symbol.
 
@@ -34,15 +34,15 @@ Call `symbol()` — returns the token symbol.
 
 **Example:**
 
-```
+```bash
 hcli contract-erc721 symbol --contract myNft
 ```
 
-**Output:** `{ symbol: string }`
+**Output:** `{ contractId, symbol, network }`
 
 ---
 
-### `hcli contract-erc721 balance-of`
+## `hcli contract-erc721 balance-of`
 
 Call `balanceOf(owner)` — returns NFT count owned by an address.
 
@@ -53,15 +53,15 @@ Call `balanceOf(owner)` — returns NFT count owned by an address.
 
 **Example:**
 
-```
+```bash
 hcli contract-erc721 balance-of --contract myNft --owner alice
 ```
 
-**Output:** `{ balance: number }`
+**Output:** `{ contractId, owner, balance, network }` (`balance` is an integer string, `owner` is the EVM address)
 
 ---
 
-### `hcli contract-erc721 owner-of`
+## `hcli contract-erc721 owner-of`
 
 Call `ownerOf(tokenId)` — returns the owner address of a specific token.
 
@@ -72,15 +72,15 @@ Call `ownerOf(tokenId)` — returns the owner address of a specific token.
 
 **Example:**
 
-```
+```bash
 hcli contract-erc721 owner-of --contract myNft --token-id 1
 ```
 
-**Output:** `{ owner: string }`
+**Output:** `{ contractId, owner, ownerAlias?, ownerEntityId?, network }`
 
 ---
 
-### `hcli contract-erc721 token-uri`
+## `hcli contract-erc721 token-uri`
 
 Call `tokenURI(tokenId)` — returns the metadata URI for a token.
 
@@ -91,15 +91,15 @@ Call `tokenURI(tokenId)` — returns the metadata URI for a token.
 
 **Example:**
 
-```
+```bash
 hcli contract-erc721 token-uri --contract myNft --token-id 1
 ```
 
-**Output:** `{ tokenURI: string }`
+**Output:** `{ contractId, tokenId, tokenURI, network }`
 
 ---
 
-### `hcli contract-erc721 get-approved`
+## `hcli contract-erc721 get-approved`
 
 Call `getApproved(tokenId)` — returns the approved address for a token.
 
@@ -110,15 +110,15 @@ Call `getApproved(tokenId)` — returns the approved address for a token.
 
 **Example:**
 
-```
+```bash
 hcli contract-erc721 get-approved --contract myNft --token-id 1
 ```
 
-**Output:** `{ approved: string }`
+**Output:** `{ contractId, tokenId, approved, approvedAlias?, approvedEntityId?, network }`
 
 ---
 
-### `hcli contract-erc721 is-approved-for-all`
+## `hcli contract-erc721 is-approved-for-all`
 
 Call `isApprovedForAll(owner, operator)` — check if an operator is approved for all tokens.
 
@@ -130,15 +130,15 @@ Call `isApprovedForAll(owner, operator)` — check if an operator is approved fo
 
 **Example:**
 
-```
+```bash
 hcli contract-erc721 is-approved-for-all --contract myNft --owner alice --operator bob
 ```
 
-**Output:** `{ isApproved: boolean }`
+**Output:** `{ contractId, owner, operator, isApprovedForAll, network }`
 
 ---
 
-### `hcli contract-erc721 approve`
+## `hcli contract-erc721 approve`
 
 Call `approve(to, tokenId)` — approve an address to transfer a specific token.
 
@@ -151,15 +151,15 @@ Call `approve(to, tokenId)` — approve an address to transfer a specific token.
 
 **Example:**
 
-```
+```bash
 hcli contract-erc721 approve --contract myNft --to alice --token-id 1
 ```
 
-**Output:** `{ transactionId, to, tokenId }`
+**Output:** `{ contractId, network, transactionId }`
 
 ---
 
-### `hcli contract-erc721 set-approval-for-all`
+## `hcli contract-erc721 set-approval-for-all`
 
 Call `setApprovalForAll(operator, approved)` — grant/revoke operator approval for all tokens.
 
@@ -172,38 +172,38 @@ Call `setApprovalForAll(operator, approved)` — grant/revoke operator approval 
 
 **Example:**
 
-```
+```bash
 hcli contract-erc721 set-approval-for-all --contract myNft --operator bob --approved true
 ```
 
-**Output:** `{ transactionId, operator, approved }`
+**Output:** `{ contractId, network, transactionId }`
 
 ---
 
-### `hcli contract-erc721 safe-transfer-from`
+## `hcli contract-erc721 safe-transfer-from`
 
 Call `safeTransferFrom(from, to, tokenId[, data])` — safely transfer a token.
 
-| Option       | Short | Type   | Required | Default  | Description                                            |
-| ------------ | ----- | ------ | -------- | -------- | ------------------------------------------------------ |
-| `--contract` | `-c`  | string | **yes**  | —        | Contract alias, ID, or EVM address                     |
-| `--from`     | `-f`  | string | **yes**  | —        | Current owner: alias, account ID, or EVM address       |
-| `--to`       | `-t`  | string | **yes**  | —        | Recipient: alias, account ID, or EVM address           |
-| `--token-id` | `-T`  | number | **yes**  | —        | Token ID (uint256) to transfer                         |
-| `--gas`      | `-g`  | number | no       | `100000` | Gas limit                                              |
-| `--data`     | `-d`  | string | no       | —        | Optional arbitrary bytes data (for 4-argument variant) |
+| Option       | Short | Type   | Required | Default  | Description                                                     |
+| ------------ | ----- | ------ | -------- | -------- | --------------------------------------------------------------- |
+| `--contract` | `-c`  | string | **yes**  | —        | Contract alias, ID, or EVM address                              |
+| `--from`     | `-f`  | string | **yes**  | —        | Current owner: alias, account ID, or EVM address                |
+| `--to`       | `-t`  | string | **yes**  | —        | Recipient: alias, account ID, or EVM address                    |
+| `--token-id` | `-T`  | number | **yes**  | —        | Token ID (uint256) to transfer                                  |
+| `--gas`      | `-g`  | number | no       | `100000` | Gas limit                                                       |
+| `--data`     | `-d`  | string | no       | —        | Optional hex-encoded bytes (`0x...`) for the 4-argument variant |
 
 **Example:**
 
-```
+```bash
 hcli contract-erc721 safe-transfer-from --contract myNft --from alice --to bob --token-id 1
 ```
 
-**Output:** `{ transactionId, from, to, tokenId }`
+**Output:** `{ contractId, network, transactionId }`
 
 ---
 
-### `hcli contract-erc721 transfer-from`
+## `hcli contract-erc721 transfer-from`
 
 Call `transferFrom(from, to, tokenId)` — transfer a token (no safety check).
 
@@ -217,15 +217,15 @@ Call `transferFrom(from, to, tokenId)` — transfer a token (no safety check).
 
 **Example:**
 
-```
+```bash
 hcli contract-erc721 transfer-from --contract myNft --from alice --to bob --token-id 1
 ```
 
-**Output:** `{ transactionId, from, to, tokenId }`
+**Output:** `{ contractId, network, transactionId }`
 
 ---
 
-### `hcli contract-erc721 mint` ⚠️ EXPERIMENTAL
+## `hcli contract-erc721 mint` ⚠️ EXPERIMENTAL
 
 Call custom `mint(to, tokenId)` — mint a new token. Requires a custom `mint` function in the ERC-721 contract (not part of the standard interface).
 
@@ -238,8 +238,8 @@ Call custom `mint(to, tokenId)` — mint a new token. Requires a custom `mint` f
 
 **Example:**
 
-```
+```bash
 hcli contract-erc721 mint --contract myNft --to alice --token-id 42
 ```
 
-**Output:** `{ transactionId, to, tokenId }`
+**Output:** `{ contractId, network, transactionId }`

@@ -125,9 +125,9 @@ export const makeNetworkMock = (
   })),
   isNetworkAvailable: jest.fn().mockReturnValue(true),
   getLocalnetConfig: jest.fn().mockReturnValue({
-    localNodeAddress: '127.0.0.1:35211',
+    localNodeAddress: 'localhost:35211',
     localNodeAccountId: '0.0.3',
-    localNodeMirrorAddressGRPC: '127.0.0.1:5600',
+    localNodeMirrorAddressGRPC: 'localhost:35600',
   }),
   setOperator: jest.fn(),
   getOperator: jest.fn().mockReturnValue(null),

@@ -11,7 +11,7 @@ import type { TokenViewOutput } from '@/plugins/token/commands/view';
 import '@/core/utils/json-serialize';
 
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
-import { delay, waitFor } from '@/__tests__/utils/common-utils';
+import { waitFor } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
@@ -105,8 +105,6 @@ describe('Transfer Token Integration Tests', () => {
     expect(associateTokenOutput.tokenId).toBe(createTokenOutput.tokenId);
     expect(associateTokenOutput.accountId).toBe(createAccountOutput.accountId);
 
-    await delay(5000);
-
     const transferTokenArgs: Record<string, unknown> = {
       token: createTokenOutput.tokenId,
       from: `${process.env.OPERATOR_ID}:${process.env.OPERATOR_KEY}`,
@@ -142,5 +140,5 @@ describe('Transfer Token Integration Tests', () => {
       createTokenOutput.tokenId,
     );
     expect(accountBalanceOutput.tokenBalances?.at(0)?.balance).toBe(5n);
-  }, 90000);
+  });
 });

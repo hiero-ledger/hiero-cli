@@ -4,7 +4,7 @@ This folder contains example configuration files and documentation for end-to-en
 
 Each script focuses on a simple, concrete scenario and prints clear, human-readable messages while it runs.
 
-### CLI execution mode
+## CLI execution mode
 
 Scripts can use either a **local** build (from the repo) or the **globally** installed `@hiero-ledger/hiero-cli` package. Control this with the `HIERO_SCRIPT_CLI_MODE` environment variable:
 
@@ -50,19 +50,19 @@ There are also helper scripts that are put inside directory `examples/scripts/co
 
 ## 1. Create account demo (`examples/scripts/create-account-demo.sh`)
 
-### What this script does
+### 1.1 What this script does
 
 This the first and simplest script. Its job is to:
 
 - Create a demo account with a balance of 1 HBAR
 - View account details with `account view` command
 
-### How to run this script
+### 1.2 How to run this script
 
 1. **Install prerequisites** (only once):
    - Install **Node.js 18 or newer** on your machine.
    - Clone this repository and install dependencies in the project folder:
-     - `npm install`
+     - `npm run install:safe`
    - Build the CLI so the compiled binary is available:
      - `npm run build`
 
@@ -74,7 +74,7 @@ This the first and simplest script. Its job is to:
 
 ## 2. Transfer HBAR demo (`examples/scripts/transfer-hbar-demo.sh`)
 
-### What this script does
+### 2.1 What this script does
 
 This script job is end-to-end example script that executes HBAR transfer between accounts. It shows how to:
 
@@ -92,9 +92,9 @@ This script represents simple story:
 3. "Send 2 HBAR from the richer wallet to the poorer one"
 4. "Show the final money amounts in both wallets"
 
-### How to run this script
+### 2.2 How to run this script
 
-1. **Install prerequisites** (only once): Node.js 18+, then for **local** mode: clone the repo, `npm install`, `npm run build`. For **global** mode: `npm install -g @hiero-ledger/hiero-cli` (see [CLI execution mode](#cli-execution-mode)).
+1. **Install prerequisites** (only once): Node.js 18+, then for **local** mode: clone the repo, `npm run install:safe`, `npm run build`. For **global** mode: `npm install -g @hiero-ledger/hiero-cli` (see [CLI execution mode](#cli-execution-mode)).
 
 2. **Prepare your Hedera operator credentials** (see [Credentials (required)](#credentials-required) above): either create `examples/scripts/.env` from `.env.sample` or export `HEDERA_OPERATOR_ACCOUNT_ID` and `HEDERA_OPERATOR_KEY`.
 
@@ -104,7 +104,7 @@ This script represents simple story:
 
 ## 3. Token and topics operations demo (`examples/scripts/token-topic-operations-demo.sh`)
 
-### What this script does
+### 3.1 What this script does
 
 The last script's job is to execute script that would perform token operations and record this information on the topic. Its job is two:
 
@@ -117,9 +117,9 @@ The last script's job is to execute script that would perform token operations a
 - Record the transfer step on public topic
 - Check account balance for each of the created account
 
-### How to run this script
+### 3.2 How to run this script
 
-1. **Install prerequisites** (only once): Node.js 18+, then for **local** mode: clone the repo, `npm install`, `npm run build`. For **global** mode: `npm install -g @hiero-ledger/hiero-cli` (see [CLI execution mode](#cli-execution-mode)).
+1. **Install prerequisites** (only once): Node.js 18+, then for **local** mode: clone the repo, `npm run install:safe`, `npm run build`. For **global** mode: `npm install -g @hiero-ledger/hiero-cli` (see [CLI execution mode](#cli-execution-mode)).
 
 2. **Prepare your Hedera operator credentials** (see [Credentials (required)](#credentials-required) above): either create `examples/scripts/.env` from `.env.sample` or export `HEDERA_OPERATOR_ACCOUNT_ID` and `HEDERA_OPERATOR_KEY`.
 

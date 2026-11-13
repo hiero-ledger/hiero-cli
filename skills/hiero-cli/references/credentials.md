@@ -8,7 +8,7 @@ Key aliases (`--alias`) are human-readable names scoped to the current network t
 
 ---
 
-### `hcli credentials generate`
+## `hcli credentials generate`
 
 Generate a new private key in KMS and optionally assign a key alias.
 
@@ -20,7 +20,7 @@ Generate a new private key in KMS and optionally assign a key alias.
 
 **Example:**
 
-```
+```bash
 hcli credentials generate
 hcli credentials generate --alias my-signing-key --key-type ed25519
 ```
@@ -29,7 +29,7 @@ hcli credentials generate --alias my-signing-key --key-type ed25519
 
 ---
 
-### `hcli credentials import`
+## `hcli credentials import`
 
 Import an existing private key into KMS and optionally assign a key alias.
 
@@ -41,7 +41,7 @@ Import an existing private key into KMS and optionally assign a key alias.
 
 **Example:**
 
-```
+```bash
 hcli credentials import --key ecdsa:private:abc123... --alias my-key
 hcli credentials import --key 0.0.123456:302e... --key-manager local_encrypted
 ```
@@ -50,13 +50,13 @@ hcli credentials import --key 0.0.123456:302e... --key-manager local_encrypted
 
 ---
 
-### `hcli credentials list`
+## `hcli credentials list`
 
 Show all stored credentials and their metadata, including any linked key alias on the current network. No options.
 
 **Example:**
 
-```
+```bash
 hcli credentials list
 ```
 
@@ -64,7 +64,7 @@ hcli credentials list
 
 ---
 
-### `hcli credentials remove`
+## `hcli credentials remove`
 
 Remove credentials by key reference ID or key alias. Exactly one of `--id` or `--alias` must be provided.
 
@@ -79,7 +79,7 @@ Removing by `--id` also unregisters any key alias on the current network that po
 
 **Example:**
 
-```
+```bash
 hcli credentials remove --id kr_abc123 --confirm
 hcli credentials remove --alias my-signing-key --confirm
 ```

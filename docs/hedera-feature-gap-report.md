@@ -2,7 +2,7 @@
 
 **Purpose:** One-page “visual” gap view of which **Hedera / Hiero** network capabilities are exposed through **hiero-cli** command groups, and what is still missing or only partially covered.
 
-**Status legend**
+**Status legend:**
 
 | Symbol      | Meaning                                                                                          |
 | ----------- | ------------------------------------------------------------------------------------------------ |

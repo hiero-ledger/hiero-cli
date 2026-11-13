@@ -6,7 +6,7 @@ This document provides a comprehensive overview of the Hiero CLI architecture, f
 
 The Hiero CLI is built on a plugin-based architecture designed to be extensible, maintainable, and secure.
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                    Hiero CLI Architecture                   │
 ├─────────────────────────────────────────────────────────────┤
@@ -74,7 +74,7 @@ The plugin architecture follows these key principles:
 
 ### Plugin Lifecycle
 
-```
+```text
 Plugin Discovery → Validation → Loading → Initialization → Command Registration
                                                                     ↓
 Command Execution ← Command Routing ← User Input ← CLI Interface
@@ -84,7 +84,7 @@ Command Execution ← Command Routing ← User Input ← CLI Interface
 
 Plugins are regular TypeScript modules located under `src/plugins/<plugin-name>/` and follow a consistent folder layout:
 
-```
+```text
 plugin/
 ├── manifest.ts              # Plugin manifest (name, commands, output specs)
 ├── schema.ts                # State/output schemas (Zod + JSON Schema)
@@ -103,7 +103,7 @@ plugin/
     └── unit/                # Unit tests for handlers/schemas
 ```
 
-For a detailed, step‑by‑step plugin development guide, see [`PLUGIN_ARCHITECTURE_GUIDE.md`](../PLUGIN_ARCHITECTURE_GUIDE.md) in the repository root.
+For a detailed, step‑by‑step plugin development guide, see [`PLUGIN_ARCHITECTURE_GUIDE.md`](./PLUGIN_ARCHITECTURE_GUIDE.md) in the repository root.
 
 ## 🛠️ Core Services
 
@@ -525,7 +525,7 @@ interface ContractQueryService {
 
 ### Command Execution Flow
 
-```
+```text
 1. User Input
    ↓
 2. Command Router (identifies plugin and command)
@@ -545,7 +545,7 @@ interface ContractQueryService {
 
 ### State Management Flow
 
-```
+```text
 1. Plugin Request
    ↓
 2. State Service
@@ -563,7 +563,7 @@ interface ContractQueryService {
 
 ## 🏛️ Service Dependencies
 
-```
+```text
 Core API
 ├── State Service (Zustand)
 ├── Network Service
@@ -673,7 +673,7 @@ Core API
 
 ### 1. Plugin Development
 
-```
+```text
 1. Create plugin structure
 2. Define manifest
 3. Implement command handlers
@@ -684,7 +684,7 @@ Core API
 
 ### 2. Service Development
 
-```
+```text
 1. Define interface
 2. Implement service
 3. Add to Core API
@@ -695,7 +695,7 @@ Core API
 
 ### 3. Core API Changes
 
-```
+```text
 1. Update interfaces
 2. Implement changes
 3. Update all services
@@ -725,7 +725,7 @@ Core API
 
 ## 📚 Related Documentation
 
-- [Plugin Development Guide](../PLUGIN_ARCHITECTURE_GUIDE.md)
+- [Plugin Development Guide](./PLUGIN_ARCHITECTURE_GUIDE.md)
 - [Core API Reference](./core-api.md)
 - [Contributing Guide](../CONTRIBUTING.md)
 - [Architecture Decision Records](./adr/) - ADRs for interested developers

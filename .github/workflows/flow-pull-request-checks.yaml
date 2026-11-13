@@ -22,10 +22,23 @@ on:
       - opened
       - reopened
       - synchronize
+    paths-ignore:
+      - '.github/**'
+      - 'docs/**'
+      - '**/*.md'
 
 defaults:
   run:
     shell: bash
+
+permissions:
+  actions: read
+  contents: read
+  checks: write
+  id-token: write # Required for OIDC authentication
+  packages: read
+  pull-requests: write
+  statuses: write
 
 concurrency:
   group: pr-checks-${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -62,10 +75,6 @@ jobs:
     with:
       custom-job-label: Standard
       enable-integration-tests: true
-    secrets:
-      integration-tests-network: ${{ secrets.INTEGRATION_TESTS_NETWORK }}
-      integration-tests-operator-id: ${{ secrets.INTEGRATION_TESTS_OPERATOR_ID }}
-      integration-tests-operator-key: ${{ secrets.INTEGRATION_TESTS_OPERATOR_KEY }}
 
   codecov:
     name: CodeCov

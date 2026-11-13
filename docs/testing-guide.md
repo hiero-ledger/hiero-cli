@@ -6,7 +6,7 @@ This document defines the rules and patterns for writing unit tests in hiero-cli
 
 ## 1. File structure
 
-```
+```text
 src/
   __tests__/
     mocks/

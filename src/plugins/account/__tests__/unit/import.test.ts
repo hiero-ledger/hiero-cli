@@ -84,6 +84,7 @@ describe('account plugin - import command (ADR-003)', () => {
         network: SupportedNetwork.TESTNET,
         keyRefId: 'kr_test123',
         evmAddress: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        origin: 'imported',
       }),
     );
 

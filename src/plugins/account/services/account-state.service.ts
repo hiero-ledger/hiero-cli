@@ -288,6 +288,7 @@ export class AccountStateServiceImpl implements AccountStateService {
       evmAddress,
       keyRefId: params.keyRefId,
       network: params.network,
+      origin: 'created',
     };
     const accountKey = composeKey(params.network, stateAccountId);
     this.saveAccount(accountKey, accountData);

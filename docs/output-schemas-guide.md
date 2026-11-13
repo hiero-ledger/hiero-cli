@@ -83,6 +83,7 @@ The `common-schemas.ts` file exports Zod schemas for runtime validation and Type
 #### Token Balance
 
 - **Structure**:
+
   ```json
   {
     "baseUnitAmount": 105000,
@@ -90,6 +91,7 @@ The `common-schemas.ts` file exports Zod schemas for runtime validation and Type
     "decimals": 4
   }
   ```
+
 - **Usage**: Token balance with denomination information
 - **Note**: `baseUnitAmount` uses `TokenAmountSchema` for int64 validation
 
@@ -1326,14 +1328,14 @@ When a command that supports batching is invoked with `--batch <batch-name>`, th
 
 **Schema:** `FaucetRequestOutputSchema` from `src/plugins/faucet/commands/request/output.ts`
 
-| Field            | Type               | Description                                     |
-| ---------------- | ------------------ | ----------------------------------------------- |
+| Field            | Type               | Description                                      |
+| ---------------- | ------------------ | ------------------------------------------------ |
 | `recipient`      | `string`           | Account ID or EVM address that received the HBAR |
-| `amount`         | `number`           | Amount of HBAR disbursed                        |
-| `transactionId`  | `string`           | Hedera transaction ID                           |
-| `network`        | `SupportedNetwork` | Network where the disbursement was executed     |
-| `quotaUsed`      | `number`           | HBAR used from the 24-hour rolling quota        |
-| `quotaRemaining` | `number`           | HBAR remaining in the 24-hour rolling quota     |
+| `amount`         | `number`           | Amount of HBAR disbursed                         |
+| `transactionId`  | `string`           | Hedera transaction ID                            |
+| `network`        | `SupportedNetwork` | Network where the disbursement was executed      |
+| `quotaUsed`      | `number`           | HBAR used from the 24-hour rolling quota         |
+| `quotaRemaining` | `number`           | HBAR remaining in the 24-hour rolling quota      |
 
 Only available on `testnet` and `previewnet`. Requires a Hedera Portal PAT configured via `hcli config set --portal_pat <token>`. The daily quota is 100 HBAR per 24-hour rolling window.
 

@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CONSENSUS_NODE_ENDPOINT="127.0.0.1:35211"
+CONSENSUS_NODE_ENDPOINT="localhost:35211"
 CONSENSUS_NODE_ACCOUNT_ID="0.0.3"
-MIRROR_NODE_ENDPOINT="127.0.0.1:5600"
-MIRROR_NODE_REST_URL="${HEDERA_MIRROR_NODE_REST_URL:-http://127.0.0.1:38081/api/v1}"
-JSON_RPC_RELAY_URL="${HEDERA_JSON_RPC_RELAY_URL:-http://127.0.0.1:37546}"
+MIRROR_NODE_ENDPOINT="localhost:5600"
+MIRROR_NODE_REST_URL="${HEDERA_MIRROR_NODE_REST_URL:-http://localhost:38081/api/v1}"
+JSON_RPC_RELAY_URL="${HEDERA_JSON_RPC_RELAY_URL:-http://localhost:37546}"
 # Long-zero EVM address for Hedera system account 0.0.2. Exists on every Hedera
 # network including a fresh Solo. Used as `from` in the web3 probe so the
 # simulator has a funded sender to attribute the call to.

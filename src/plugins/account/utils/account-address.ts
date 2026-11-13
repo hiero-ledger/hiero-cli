@@ -23,7 +23,7 @@ export function buildEvmAddressFromAccountId(accountId: string): string {
       'accountId is required to derive account addresses',
     );
   }
-  const solidityAddress = AccountId.fromString(accountId).toSolidityAddress();
+  const solidityAddress = AccountId.fromString(accountId).toEvmAddress();
   return `0x${solidityAddress}`;
 }
 
@@ -39,7 +39,7 @@ export function buildAccountEvmAddress({
     );
   }
 
-  const solidityAddress = AccountId.fromString(accountId).toSolidityAddress();
+  const solidityAddress = AccountId.fromString(accountId).toEvmAddress();
   const solidityAddressFull = `0x${solidityAddress}`;
 
   const evmAddress: string | undefined =

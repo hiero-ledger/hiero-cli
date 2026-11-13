@@ -114,9 +114,6 @@ dist
 # MacOS files
 .DS_Store
 
-# Visual Studio Code files
-.vscode/
-
 # JUnit test result output
 junit*.xml
 
@@ -148,4 +145,6 @@ hiero-cli.config.*.local.json
 CLAUDE.md
 docs/superpowers/
 
-pnpm-lock.yaml
+contributors.csv
+
+temp/

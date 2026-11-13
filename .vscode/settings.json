@@ -1,0 +1,7 @@
+{
+  "markdown.validate.enabled": true,
+  "js/ts.tsdk.path": "node_modules/typescript/lib",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "prettier.requireConfig": true,
+  "prettier.prettierPath": "node_modules/prettier"
+}

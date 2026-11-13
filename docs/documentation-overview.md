@@ -5,7 +5,7 @@ Technical documentation for developers and contributors working on the Hiero CLI
 ## 📚 Documentation Structure
 
 - **[Architecture Overview](./architecture.md)** - System architecture and design principles
-- **[Plugin Development Guide](../PLUGIN_ARCHITECTURE_GUIDE.md)** - Complete guide to creating plugins
+- **[Plugin Development Guide](./PLUGIN_ARCHITECTURE_GUIDE.md)** - Complete guide to creating plugins
 - **[Core API Reference](./core-api.md)** - Detailed Core API documentation
 - **[Output Schemas Guide](./output-schemas-guide.md)** - Output schemas and templates
 - **[Contributing Guide](../CONTRIBUTING.md)** - Development setup and contribution guidelines
@@ -13,7 +13,7 @@ Technical documentation for developers and contributors working on the Hiero CLI
 
 ## 🏗️ Project Structure
 
-```
+```text
 hiero-cli/
 ├── src/
 │   ├── core/                    # Core API and services
@@ -93,7 +93,7 @@ hiero-cli/
 
 ### Development
 
-- [Plugin Development Guide](../PLUGIN_ARCHITECTURE_GUIDE.md) - Creating and developing plugins
+- [Plugin Development Guide](./PLUGIN_ARCHITECTURE_GUIDE.md) - Creating and developing plugins
 - [Core API Reference](./core-api.md) - Core API services and interfaces
 - [Output Schemas Guide](./output-schemas-guide.md) - Output schemas and templates
 - [Contributing Guide](../CONTRIBUTING.md) - Development setup and guidelines
@@ -101,7 +101,7 @@ hiero-cli/
 ## 🔧 Development Workflow
 
 1. **Understanding the Architecture**: Start with [Architecture Overview](./architecture.md)
-2. **Plugin Development**: Follow the [Plugin Development Guide](../PLUGIN_ARCHITECTURE_GUIDE.md)
+2. **Plugin Development**: Follow the [Plugin Development Guide](./PLUGIN_ARCHITECTURE_GUIDE.md)
 3. **API Reference & Outputs**: Use [Core API Reference](./core-api.md) and [Output Schemas Guide](./output-schemas-guide.md) for implementation details
 4. **Contributing**: Check [Contributing Guide](../CONTRIBUTING.md) for development standards
 

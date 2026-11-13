@@ -10,7 +10,9 @@ import {
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
 import { ValidationError } from '@/core/errors';
+import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
+import { ACCOUNT_CREATE_COMMAND_NAME } from '@/plugins/account/commands/create/handler';
 import { ACCOUNT_NAMESPACE } from '@/plugins/account/constants';
 import { AccountStateServiceImpl } from '@/plugins/account/services/account-state.service';
 
@@ -102,5 +104,48 @@ describe('AccountStateServiceImpl', () => {
     );
 
     expect(service.listAccounts()).toEqual([validAccount]);
+  });
+
+  test('saves accounts created through a batch item with origin "created"', async () => {
+    const state = makeStateMock();
+    const receipt = makeReceiptMock();
+    receipt.getReceipt.mockResolvedValue({
+      success: true,
+      transactionId: 'mock-tx-id',
+      receipt: { status: { status: 'success', transactionId: 'mock-tx-id' } },
+      consensusTimestamp: '2024-01-01T00:00:00.000Z',
+      accountId: '0.0.9999',
+    });
+    const service = new AccountStateServiceImpl(
+      state,
+      makeLogger(),
+      receipt,
+      makeMirrorMock() as HederaMirrornodeService,
+      makeAliasMock(),
+      makeKmsMock(),
+      makeNetworkMock(SupportedNetwork.TESTNET),
+    );
+
+    await service.applyAccountCreateFromBatchItem({
+      transactionBytes: 'abcdef',
+      order: 1,
+      command: ACCOUNT_CREATE_COMMAND_NAME,
+      keyRefIds: ['kr_batch'],
+      normalizedParams: {
+        maxAutoAssociations: -1,
+        name: 'batch-acc',
+        publicKey: 'pub-key',
+        keyRefId: 'kr_batch',
+        keyType: KeyAlgorithm.ECDSA,
+        network: SupportedNetwork.TESTNET,
+      },
+      transactionId: 'mock-tx-id',
+    });
+
+    expect(state.set).toHaveBeenCalledWith(
+      ACCOUNT_NAMESPACE,
+      'testnet:0.0.9999',
+      expect.objectContaining({ accountId: '0.0.9999', origin: 'created' }),
+    );
   });
 });
