@@ -103,20 +103,3 @@ jobs:
       enable-integration-coverage-report: true
     secrets:
       codacy-project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-
-  # ERROR Authentication error (SNYK-0005)
-  # Authentication credentials not recognized, or user access is not provisioned.  
-  # Revise credentials and try again, or request access from your Snyk administrator.                                                                                                                                                         
-  # Status:  401 Unauthorized 
-  # snyk:
-  #   name: Snyk Scan
-  #   uses: ./.github/workflows/zxc-code-analysis.yaml
-  #   needs:
-  #     - unit-tests
-  #     - integration-tests
-  #   if: ${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name && github.actor != 'dependabot[bot]' }}
-  #   with:
-  #     custom-job-label: Standard
-  #     enable-snyk-scan: true
-  #   secrets:
-  #     snyk-token: ${{ secrets.SNYK_TOKEN }}
